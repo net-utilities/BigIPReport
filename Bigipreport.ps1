@@ -133,6 +133,7 @@
 #                                   in the root folder.
 #		4.5.4		2017-07-21		Replacing old Javascript loader with one that is smoother when loading		Patrik Jonsson
 #									larger sets of data
+#		4.5.5		2017-07-22		Adding a reset filters button												Patrik Jonsson
 #
 #		To do:
 #		Add reset filters

@@ -141,6 +141,29 @@ $(window).load(function() {
 		
 		/*************************************************************************************************************
 		
+			This section inserts the reset filters button and it's handlers
+		
+		**************************************************************************************************************/			
+
+		$("#allbigips_filter").append("<a id=\"resetFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
+
+		$("#resetFiltersButton").on("click", function(){
+
+			$("input[type='search']").val("");
+
+			$("thead input").each(function(){
+				this.className = "search_init";
+				this.value = asInitVals[$("thead input").index(this)];
+			});
+
+ 			oTable.search('')
+ 				.columns().search('')
+ 				.draw();
+		});
+
+
+		/*************************************************************************************************************
+		
 			This section inserts a share link
 		
 		**************************************************************************************************************/	
