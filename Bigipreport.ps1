@@ -135,9 +135,6 @@
 #									larger sets of data
 #		4.5.5		2017-07-22		Adding a reset filters button												Patrik Jonsson
 #
-#		To do:
-#		Add reset filters
-#
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
 #
