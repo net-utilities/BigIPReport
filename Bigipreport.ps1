@@ -1670,12 +1670,14 @@ $Global:html = @'
 <html>
 	<head>
 
+		<script type="text/javascript" language="javascript" src="./js/pace.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.min.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.dataTables.min.js"></script>
 		
-		<LINK href="./css/jquery.dataTables.css" rel="stylesheet" type="text/css">
-		<LINK href="./css/bigipreportstyle.css" rel="stylesheet" type="text/css">
-		<LINK href="./css/sh_style.css" rel="stylesheet" type="text/css">
+		<link href="./css/pace.css" rel="stylesheet" type="text/css"/>
+		<link href="./css/jquery.dataTables.css" rel="stylesheet" type="text/css">
+		<link href="./css/bigipreportstyle.css" rel="stylesheet" type="text/css">
+		<link href="./css/sh_style.css" rel="stylesheet" type="text/css">
 		
 		<!-- This one comes from http://smallenvelop.com/display-loading-icon-page-loads-completely/ -->
 		<script type="text/javascript" language="javascript" src="./js/modernizr.js"></script>
