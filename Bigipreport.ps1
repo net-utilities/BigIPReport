@@ -1679,8 +1679,6 @@ $Global:html = @'
 		<link href="./css/bigipreportstyle.css" rel="stylesheet" type="text/css">
 		<link href="./css/sh_style.css" rel="stylesheet" type="text/css">
 		
-		<!-- This one comes from http://smallenvelop.com/display-loading-icon-page-loads-completely/ -->
-		<script type="text/javascript" language="javascript" src="./js/modernizr.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.highlight.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/bigipreport.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/sh_main.js"></script>
@@ -1714,7 +1712,6 @@ $Global:html += @'
 		</script>
 	</head>
 	<body>
-		<div class="se-pre-con"></div>
 		<div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
 '@
 
