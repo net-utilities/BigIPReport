@@ -113,7 +113,7 @@
 #		4.2.9		2016-09-12		Showing persistence profile in virtual server details						Patrik Jonsson
 #		4.3.0		2016-01-10		Fixing support for partitions single configuration objects
 #		4.3.1		2017-03-02		Removing any route domain before comparing to NAT list						Patrik Jonsson
-#		4.3.2		2017-03-02		Making the script do recursive calls instead of per partition. Much faster Patrik Jonsson
+#		4.3.2		2017-03-02		Making the script do recursive calls instead of per partition. Much faster  Patrik Jonsson
 #		4.3.3		2017-03-02		Adding basic ASM support													Patrik Jonsson
 #		4.3.4		2017-03-07		Fixing a mistake where the wrong column setting was referred				Patrik Jonsson
 #		4.3.5		2017-03-23		Improving the check for missing data										Patrik Jonsson
@@ -127,8 +127,8 @@
 #		4.4.3		2017-07-09		Moved preferences to its own window 										Patrik Jonsson
 #		4.5.0		2017-07-12		Adding column toggle. Moving iRule selector to its own window.				Patrik Jonsson
 #									Optimizing css
-#		4.5.1		2017-07-15		Now also fetching information about the load balancers for future user 		Patrik Jonsson
-#		4.5.2		2017-07-16		Re-adding basic ASM support for load devices running version 12 and above.	Patrik Jonsson
+#		4.5.1		2017-07-15		Now also fetching information about the load balancers for future use 		Patrik Jonsson
+#		4.5.2		2017-07-16		Re-adding basic ASM support for devices running version 12 and above.		Patrik Jonsson
 #       4.5.3       2017-07-20      Fixing a bug when highlighting irules and the js folder is not located      Patrik Jonsson
 #                                   in the root folder.
 #
