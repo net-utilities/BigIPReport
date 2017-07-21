@@ -113,7 +113,7 @@
 #		4.2.9		2016-09-12		Showing persistence profile in virtual server details						Patrik Jonsson
 #		4.3.0		2016-01-10		Fixing support for partitions single configuration objects
 #		4.3.1		2017-03-02		Removing any route domain before comparing to NAT list						Patrik Jonsson
-#		4.3.2		2017-03-02		Making the script do recursive calls instead of per partition. Much faster Patrik Jonsson
+#		4.3.2		2017-03-02		Making the script do recursive calls instead of per partition. Much faster  Patrik Jonsson
 #		4.3.3		2017-03-02		Adding basic ASM support													Patrik Jonsson
 #		4.3.4		2017-03-07		Fixing a mistake where the wrong column setting was referred				Patrik Jonsson
 #		4.3.5		2017-03-23		Improving the check for missing data										Patrik Jonsson
@@ -127,14 +127,15 @@
 #		4.4.3		2017-07-09		Moved preferences to its own window 										Patrik Jonsson
 #		4.5.0		2017-07-12		Adding column toggle. Moving iRule selector to its own window.				Patrik Jonsson
 #									Optimizing css
-#		4.5.1		2017-07-15		Now also fetching information about the load balancers for future user 		Patrik Jonsson
-#		4.5.2		2017-07-16		Re-adding basic ASM support for load devices running version 12 and above.	Patrik Jonsson
+#		4.5.1		2017-07-15		Now also fetching information about the load balancers for future use 		Patrik Jonsson
+#		4.5.2		2017-07-16		Re-adding basic ASM support for devices running version 12 and above.		Patrik Jonsson
 #       4.5.3       2017-07-20      Fixing a bug when highlighting irules and the js folder is not located      Patrik Jonsson
 #                                   in the root folder.
+#		4.5.4		2017-07-21		Replacing old Javascript loader with one that is smoother when loading		Patrik Jonsson
+#									larger sets of data
 #
 #		To do:
 #		Add reset filters
-#       Fix a css-only loader
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -1670,15 +1671,15 @@ $Global:html = @'
 <html>
 	<head>
 
+		<script type="text/javascript" language="javascript" src="./js/pace.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.min.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.dataTables.min.js"></script>
 		
-		<LINK href="./css/jquery.dataTables.css" rel="stylesheet" type="text/css">
-		<LINK href="./css/bigipreportstyle.css" rel="stylesheet" type="text/css">
-		<LINK href="./css/sh_style.css" rel="stylesheet" type="text/css">
+		<link href="./css/pace.css" rel="stylesheet" type="text/css"/>
+		<link href="./css/jquery.dataTables.css" rel="stylesheet" type="text/css">
+		<link href="./css/bigipreportstyle.css" rel="stylesheet" type="text/css">
+		<link href="./css/sh_style.css" rel="stylesheet" type="text/css">
 		
-		<!-- This one comes from http://smallenvelop.com/display-loading-icon-page-loads-completely/ -->
-		<script type="text/javascript" language="javascript" src="./js/modernizr.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.highlight.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/bigipreport.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/sh_main.js"></script>
@@ -1712,7 +1713,6 @@ $Global:html += @'
 		</script>
 	</head>
 	<body>
-		<div class="se-pre-con"></div>
 		<div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
 '@
 
