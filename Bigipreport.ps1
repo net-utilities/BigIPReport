@@ -134,6 +134,7 @@
 #		4.5.4		2017-07-21		Replacing old Javascript loader with one that is smoother when loading		Patrik Jonsson
 #									larger sets of data
 #		4.5.5		2017-07-22		Adding a reset filters button												Patrik Jonsson
+#       4.5.6       2017-08-04      Adding VLAN information to the virtual server object                        Patrik Jonsson
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -146,7 +147,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.5.0"
+$Global:ScriptVersion = "4.5.6"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -519,6 +520,8 @@ public class VirtualServer
 	public string persistence;
 	public string[] irules;
 	public string[] pools;
+    public string[] vlans;
+    public string vlanstate;
 	public string sourcexlatetype;
 	public string sourcexlatepool;
 	public string[] asmPolicies;
@@ -1108,6 +1111,7 @@ function cacheLTMinformation {
 	[array]$virtualserverprofilelist = $f5.LocalLBVirtualServer.get_profile($virtualserverlist)
 	[array]$virtualserverirulelist = $f5.LocalLBVirtualServer.get_rule($virtualserverlist)
 	[array]$virtualserverpersistencelist = $f5.LocalLBVirtualServer.get_persistence_profile($virtualserverlist)
+    [array]$virtualservervlans = $f5.LocalLBVirtualServer.get_vlan($virtualserverlist);
 	
 	#Only supported since version 11.3
 	if($MajorVersion -gt 11 -or ($MajorVersion -eq 11 -and $Minorversion -gt 3)){
@@ -1211,6 +1215,16 @@ function cacheLTMinformation {
 			#Hiding iRules to the users
 			$objTempVirtualServer.irules = @();
 		}
+
+        if($virtualservervlans[$i].state -eq "STATE_DISABLED" -and $virtualservervlans[$i].vlans.count -eq 0){
+            $objTempVirtualServer.vlanstate = "enabled"
+        } elseif ($virtualservervlans[$i].state -eq "STATE_DISABLED") {
+            $objTempVirtualServer.vlanstate = "disabled"
+            $objTempVirtualServer.vlans = $virtualservervlans[$i].vlans
+        } elseif ($virtualservervlans[$i].state -eq "STATE_ENABLED") {
+            $objTempVirtualServer.vlanstate = "enabled"
+            $objTempVirtualServer.vlans = $virtualservervlans[$i].vlans
+        }
 
 		$VSASMPolicies = $LBASMPolicies | Where-Object { $_.virtualServers -contains $vsname }
 
