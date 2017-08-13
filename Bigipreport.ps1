@@ -135,6 +135,7 @@
 #									larger sets of data
 #		4.5.5		2017-07-22		Adding a reset filters button												Patrik Jonsson
 #       4.5.6       2017-08-04      Adding VLAN information to the virtual server object                        Patrik Jonsson
+#		4.5.7		2017-08-13		Adding icons 																Patrik Jonsson
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -1344,27 +1345,27 @@ Function Get-DefinedRules {
 Function Translate-Status {
 
 	Param($Member)
-	
+
 	if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-		Return '<b><font color="green">UP</font></b>'
+		Return '<span class="statusicon"><img src="./images/green-circle-checkmark.png" title="Pool member is up"/></span> <span class="textstatus">UP</span>'
 	} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT" -and $Member.Status -eq "Pool member is available"){
-		Return '<b>DISABLED</b>'
+		Return '<span class="statusicon"><img src="./images/black-circle-checkmark.png" title="Member available, but disabled by parent"/></span> <span class="textstatus">DISABLED</span>'
 	} elseif ($Member.Status.contains("unable to connect") -or $Member.Status.contains("Could not connect")) {
-		Return  '<b><font color="red">DOWN</font></b>'
+		Return  '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Could not connect, member down"/></span> <span class="textstatus">DOWN</span>'
 	} elseif ($Member.Status.contains("Failed to succeed before deadline")) {
-		Return '<b><font color="red">DOWN</font></b>'
+		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Failed to succed before deadline"/></span> <span class="textstatus">DOWN</span>'
 	} elseif ($Member.Status -eq "Pool member is available, user disabled"){
-		Return '<b>DISABLED</b>'
-	} elseif ($Member.Status.Contains("Failed to succeed before deadline")){
-		Return '<b><font color="red">DOWN</font></b>'
+		Return '<span class="statusicon"><img src="./images/black-circle-checkmark.png" title="Member is available, but disabled"/></span> <span class="textstatus">DISABLED</span>'
 	} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-		Return '<b><font color="red">DOWN</font></b>'
+		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Member is marked down by a monitor"/></span> <span class="textstatus">DOWN</span>'
 	} elseif ($Member.Status -eq "Parent down"){
-		Return '<b>DISABLED</b>'
+		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Parent monitor failed"/></span> <span class="textstatus">DOWN</span>'
 	} elseif ($Member.Status -eq "Pool member does not have service checking enabled"){
-		Return '<b><font color="blue">NO MONITOR</font></b>'
+		Return '<span class="statusicon"><img src="./images/blue-square-questionmark.png" title="Member has no monitor assigned"/></span> <span class="textstatus">UNKNOWN</span>'
+	} elseif ($Member.Status -eq "Forced down"){
+		Return '<span class="statusicon"><img src="./images/black-diamond-exclamationmark.png" tile="Member is forced down"/></span> <span class="textstatus">DISABLED</span>'
 	} else {
-		Return '<b><font color="red">Unknown</font></b>'
+		Return '<span class="statusicon"><img src="./images/blue-square-questionmark.png" title="Unknown status"/></span> <span class="textstatus">UNKNOWN</span>'
 	}
 }
 #Endregion
@@ -1797,7 +1798,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 							)
 						</td>
 						<td class="virtualServerCell">
-							<a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($vs.name)" data-loadbalancer="$($vs.loadbalancer)" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($vs.name)<p>Click to see virtual server details</p></a>  <span class="adcLinkSpan"><a href="https://$($vs.loadbalancer)/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($vs.name)">Edit</a></span>
+							<a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($vs.name)" data-loadbalancer="$($vs.loadbalancer)" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($vs.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a>  <span class="adcLinkSpan"><a href="https://$($vs.loadbalancer)/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($vs.name)">Edit</a></span>
 						</td>
 "@
 		
@@ -1933,14 +1934,13 @@ foreach($LoadbalancerName in $BigIPDict.values){
 "@
 						if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){ 
 							$Global:html += @"
-								$($vspool.split("/")[2])
+								$($vspool.split("/")[2]) <span class="detailsicon"><img src="./images/details.png"/></span>
 "@
 						} else {
 							$Global:html += @"
-							$vspool 
+							$vspool <span class="detailsicon"><img src="./images/details.png"/></span>
 "@											
 						}
-											
 											$Global:html += @"
 											<p>Click to see pool details</p></a>  
 											<span class="adcLinkSpan"><a href="https://$($pool.loadbalancer)/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=$($pool.name)">Edit</a></span>
@@ -1959,11 +1959,11 @@ foreach($LoadbalancerName in $BigIPDict.values){
 
 											if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){ 
 												$Global:html += @"
-												$($vspool.split("/")[2])
+												$($vspool.split("/")[2]) <span class="detailsicon"><img src="./images/details.png"/></span>
 "@
 											} else {
 												$Global:html += @"
-												$vspool 
+												$vspool <span class="detailsicon"><img src="./images/details.png"/></span>
 "@											
 											}
 
