@@ -493,7 +493,17 @@ a.preferencesButton:hover, a.irulesButton:hover, a.definedRuleButton:hover {
 	text-decoration: none;
 }
 
+span.statusicon, span.detailsicon {
+	vertical-align: middle;
+}
 
+span.detailsicon {
+	margin-left: 4px;
+}
+
+span.textstatus {
+	visibility:hidden;
+}
 
 /****************************************************************************************************************************
 	This section contains the style for the object details lightbox content
