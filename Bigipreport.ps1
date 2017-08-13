@@ -136,6 +136,7 @@
 #		4.5.5		2017-07-22		Adding a reset filters button												Patrik Jonsson
 #       4.5.6       2017-08-04      Adding VLAN information to the virtual server object                        Patrik Jonsson
 #		4.5.7		2017-08-13		Adding icons 																Patrik Jonsson
+#		4.5.8		2017-08-14		Adding filter icon 															Patrik Jonsson
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -148,7 +149,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.5.6"
+$Global:ScriptVersion = "4.5.8"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()

@@ -31,6 +31,9 @@
 	font-size:14px;
 	width:100%;
 	text-align:center;
+	background-image: url(../images/filter.png);
+	background-repeat: no-repeat;
+	background-position: right;
 }
 
 /* This style controls how the search results should be highlighted */
