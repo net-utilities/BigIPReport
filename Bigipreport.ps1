@@ -138,8 +138,6 @@
 #		4.5.7		2017-08-13		Adding icons 																Patrik Jonsson
 #		4.5.8		2017-08-14		Adding filter icon 															Patrik Jonsson
 #		4.5.9		2017-08-16		Adding traffic group to the virtual server object and showing it.			Patrik Jonsson
-#									Removing virtual server details for orphaned pools
-#									Fixing a bug where default pool says null instead of N/A
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -152,7 +150,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.5.9"
+$Global:ScriptVersion = "4.5.8"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -531,6 +529,8 @@ public class VirtualServer
 	public string sourcexlatetype;
 	public string sourcexlatepool;
 	public string[] asmPolicies;
+	public string availability;
+	public string enabled;
 	public string loadbalancer;
 }
 '@
@@ -1137,6 +1137,7 @@ function cacheLTMinformation {
 	[array]$virtualserverpersistencelist = $f5.LocalLBVirtualServer.get_persistence_profile($virtualserverlist)
     [array]$virtualservervlans = $f5.LocalLBVirtualServer.get_vlan($virtualserverlist);
 	[array]$virtualserverdestination = $f5.LocalLBVirtualServer.get_destination($virtualserverlist)
+	[array]$virtualserverstate = $F5.LocalLBVirtualServer.get_object_status($virtualserverlist)
 
 
 	#Only supported since version 11.3
@@ -1262,7 +1263,10 @@ function cacheLTMinformation {
 		$Destination = $virtualserverdestination[$i].address
 
 		$objTempVirtualServer.trafficgroup = $TrafficGroupDict["/$Partition/$Destination"]
-		
+
+		$objTempVirtualServer.availability = $virtualserverstate[$i].availability_status
+		$objTempVirtualServer.enabled = $virtualserverstate[$i].enabled_status
+
 		$LBVirtualservers += $objTempVirtualServer
 
 	}
