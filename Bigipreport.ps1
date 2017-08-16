@@ -137,6 +137,9 @@
 #       4.5.6       2017-08-04      Adding VLAN information to the virtual server object                        Patrik Jonsson
 #		4.5.7		2017-08-13		Adding icons 																Patrik Jonsson
 #		4.5.8		2017-08-14		Adding filter icon 															Patrik Jonsson
+#		4.5.9		2017-08-16		Adding traffic group to the virtual server object and showing it.			Patrik Jonsson
+#									Removing virtual server details for orphaned pools
+#									Fixing a bug where default pool says null instead of N/A
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -149,7 +152,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.5.8"
+$Global:ScriptVersion = "4.5.9"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -523,6 +526,7 @@ public class VirtualServer
 	public string[] irules;
 	public string[] pools;
     public string[] vlans;
+    public string trafficgroup;
     public string vlanstate;
 	public string sourcexlatetype;
 	public string sourcexlatepool;
@@ -1102,6 +1106,24 @@ function cacheLTMinformation {
 	$Global:iRules += $LBiRules
 	
 	#EndRegion	
+
+	#Region Cache virtual address information
+
+	$TrafficGroupDict = @{}
+
+	[array]$virtualaddresslist = $f5.LocalLBVirtualAddressV2.get_list()
+	[array]$virtualaddresstrafficgroups = $f5.LocalLBVirtualAddressV2.get_traffic_group($virtualaddresslist)
+
+	for($i=0;$i -lt ($virtualaddresslist.Count);$i++){
+		
+		$VirtualAddress = $virtualaddresslist[$i]
+		$TrafficGroup = $virtualaddresstrafficgroups[$i]
+
+		$TrafficGroupDict.add($VirtualAddress, $TrafficGroup)
+
+	}
+
+	#EndRegion
 	
 	#Region Cache Virtual Server information
 	
@@ -1114,7 +1136,9 @@ function cacheLTMinformation {
 	[array]$virtualserverirulelist = $f5.LocalLBVirtualServer.get_rule($virtualserverlist)
 	[array]$virtualserverpersistencelist = $f5.LocalLBVirtualServer.get_persistence_profile($virtualserverlist)
     [array]$virtualservervlans = $f5.LocalLBVirtualServer.get_vlan($virtualserverlist);
-	
+	[array]$virtualserverdestination = $f5.LocalLBVirtualServer.get_destination($virtualserverlist)
+
+
 	#Only supported since version 11.3
 	if($MajorVersion -gt 11 -or ($MajorVersion -eq 11 -and $Minorversion -gt 3)){
 		$virtualserversourceaddresstranlationtypelist = $f5.LocalLBVirtualServer.get_source_address_translation_type($virtualserverlist)
@@ -1233,6 +1257,11 @@ function cacheLTMinformation {
 		if($VSASMPolicies -ne $null){
 			$objTempVirtualServer.asmPolicies = $VSASMPolicies.name
 		}
+
+		$Partition = $objTempVirtualServer.name.split("/")[1]
+		$Destination = $virtualserverdestination[$i].address
+
+		$objTempVirtualServer.trafficgroup = $TrafficGroupDict["/$Partition/$Destination"]
 		
 		$LBVirtualservers += $objTempVirtualServer
 
@@ -1798,11 +1827,24 @@ foreach($LoadbalancerName in $BigIPDict.values){
 								}
 							)
 						</td>
+"@
+
+		if($vs.name -eq "N/A (Orphan pool)"){
+			$Global:html += @"
+
+						<td class="virtualServerCell">
+							N/A (Orphan pool)
+						</td>
+"@
+
+		} else {
+			$Global:html += @"
+
 						<td class="virtualServerCell">
 							<a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($vs.name)" data-loadbalancer="$($vs.loadbalancer)" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($vs.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a>  <span class="adcLinkSpan"><a href="https://$($vs.loadbalancer)/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($vs.name)">Edit</a></span>
 						</td>
 "@
-		
+		}
 		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
 		$vsipexrd = $vs.ip -replace "%[0-9]+$", ""
 		

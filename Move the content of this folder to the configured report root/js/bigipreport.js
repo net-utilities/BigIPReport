@@ -874,13 +874,9 @@ function showVirtualServerDetails(virtualserver, loadbalancer){
 				var xlate = "Unknown";
 		}
 		
-		if(matchingvirtualserver.defaultpool == ""){
-			 defaultpool = "N/A"
-		} else {
-			 defaultpool = matchingvirtualserver.defaultpool
-		}
-		
-		
+		var trafficGroup = matchingvirtualserver.trafficgroup || "N/A"
+		var defaultPool = matchingvirtualserver.defaultpool || "N/A"
+
 		//Build the table and headers
 		$(".firstlayerdetailsheader").html(matchingvirtualserver.name);
 
@@ -895,7 +891,8 @@ function showVirtualServerDetails(virtualserver, loadbalancer){
 		table += '				<table class="virtualserverdetailstable">';
 		table += '					<tr><th>Name</th><td>' + matchingvirtualserver.name + '</td></tr>';
 		table += '					<tr><th>IP:Port</th><td>' + matchingvirtualserver.ip + ':' + matchingvirtualserver.port + '</td></tr>';
-		table += '					<tr><th>Default pool</th><td>' + defaultpool + '</td></tr>';
+		table += '					<tr><th>Default pool</th><td>' + defaultPool + '</td></tr>';
+		table += '					<tr><th>Traffic Group</th><td>' + trafficGroup + '</td></tr>';
 		table += '				</table>';
 		table += '			</td>';
 		
