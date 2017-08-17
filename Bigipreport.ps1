@@ -1376,7 +1376,7 @@ Function Get-DefinedRules {
 
 
 #Region Function Translate-status
-Function Translate-Status {
+Function Translate-Member-Status {
 
 	Param($Member)
 
@@ -1401,6 +1401,36 @@ Function Translate-Status {
 	} else {
 		Return '<span class="statusicon"><img src="./images/blue-square-questionmark.png" title="Unknown status"/></span> <span class="textstatus">UNKNOWN</span>'
 	}
+}
+#Endregion
+
+#Region Function Translate-status
+Function Translate-VirtualServer-Status {
+
+	Param($virtualserver)
+
+	if($virtualserver.enabled -eq "ENABLED_STATUS_ENABLED" -and $virtualserver.availability -eq "AVAILABILITY_STATUS_GREEN"){
+	
+		Return "<span class=`"statusicon`"><img src=`"./images/green-circle-checkmark.png`" title=`"Available (Enabled) - The virtual server is available`"/></span> <span class=`"textstatus`">UP</span>"
+	
+	} elseif($virtualserver.enabled -eq "ENABLED_STATUS_DISABLED" -and $virtualserver.availability -eq "AVAILABILITY_STATUS_BLUE"){
+	
+		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-checkmark.png`" title=`"Unknown (Disabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">DISABLED</span>"
+	
+	} elseif($virtualserver.enabled -eq "ENABLED_STATUS_ENABLED" -and $virtualserver.availability -eq "AVAILABILITY_STATUS_BLUE") {
+	
+		Return "<span class=`"statusicon`"><img src=`"./images/blue-square-questionmark.png`" title=`"Unknown (Enabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">UNKNOWN</span>"
+	
+	} elseif($virtualserver.enabled -eq "ENABLED_STATUS_ENABLED" -and $virtualserver.availability -eq "AVAILABILITY_STATUS_RED"){
+	
+		Return "<span class=`"statusicon`"><img src=`"./images/red-circle-cross.png`" title=`"Offline (Enabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
+	
+	} elseif($virtualserver.enabled -eq "ENABLED_STATUS_DISABLED" -and $virtualserver.availability -eq "AVAILABILITY_STATUS_RED"){
+	
+		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-checkmark.png`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
+	
+	}
+
 }
 #Endregion
 
@@ -1845,7 +1875,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 			$Global:html += @"
 
 						<td class="virtualServerCell">
-							<a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($vs.name)" data-loadbalancer="$($vs.loadbalancer)" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($vs.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a>  <span class="adcLinkSpan"><a href="https://$($vs.loadbalancer)/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($vs.name)">Edit</a></span>
+							$(Translate-VirtualServer-Status -virtualserver $vs) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($vs.name)" data-loadbalancer="$($vs.loadbalancer)" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($vs.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$($vs.loadbalancer)/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($vs.name)">Edit</a></span>
 						</td>
 "@
 		}
@@ -2040,7 +2070,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 								$Global:html += @"
 								
 									<td class="PoolMember" id="Poolmember$xMember">
-										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Status -Member $Member)
+										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Member-Status -Member $Member)
 									</td>
 								</tr>
 "@
@@ -2053,7 +2083,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 								
 								<tr class="$pool-$xPool">
 									<td class="PoolMember" id="Poolmember$xMember">
-										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Status -Member $Member)
+										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Member-Status -Member $Member)
 									</td>
 								</tr>
 "@
