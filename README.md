@@ -1,2 +1,14 @@
 # BigIPReport
-Overview of your loadbalancer configuration
+
+This tool will pull the configuration from multiple load balancers and display it in a table.
+
+Demo can be shown here:
+
+[https://loadbalancing.se/bigipreportdemo](https://loadbalancing.se/bigipreportdemo)
+
+### Some omponents used for this project
+* [jQuery](https://jquery.com/)
+* [Data tables](https://datatables.net/)
+* [chosen](https://harvesthq.github.io/chosen/)
+* [jQuery hightlight plugin](http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html)
+* [SHJS](http://shjs.sourceforge.net/doc/gplv3.html)
