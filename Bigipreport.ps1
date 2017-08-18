@@ -140,6 +140,7 @@
 #		4.5.9		2017-08-16		Adding traffic group to the virtual server object and showing it.			Patrik Jonsson
 #		4.6.0		2017-08-17		Adding virtual server state icons 											Patrik Jonsson
 #		4.6.1		2017-08-18		Fixing bug when extracting source NAT pool 									Patrik Jonsson
+#		4.6.2		2017-08-18		Fixing a bug when extracting version information 							Patrik Jonsson
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -152,7 +153,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.6.1"
+$Global:ScriptVersion = "4.6.2"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -741,7 +742,7 @@ function cacheLTMinformation {
 	$loadBalancer = New-Object -Type Loadbalancer
 
 	#Get the version information
-	$versionInformation = $f5.SystemSoftwareManagement.get_all_software_status()
+	$versionInformation = ($f5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
 
 	#Get provisioned modules
 	$modules = $f5.ManagementProvision.get_provisioned_list()
