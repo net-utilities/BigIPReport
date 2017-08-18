@@ -138,6 +138,8 @@
 #		4.5.7		2017-08-13		Adding icons 																Patrik Jonsson
 #		4.5.8		2017-08-14		Adding filter icon 															Patrik Jonsson
 #		4.5.9		2017-08-16		Adding traffic group to the virtual server object and showing it.			Patrik Jonsson
+#		4.6.0		2017-08-17		Adding virtual server state icons 											Patrik Jonsson
+#		4.6.1		2017-08-18		Fixing bug when extracting source NAT pool 									Patrik Jonsson
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -150,7 +152,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.5.8"
+$Global:ScriptVersion = "4.6.1"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -1141,9 +1143,11 @@ function cacheLTMinformation {
 
 
 	#Only supported since version 11.3
-	if($MajorVersion -gt 11 -or ($MajorVersion -eq 11 -and $Minorversion -gt 3)){
-		$virtualserversourceaddresstranlationtypelist = $f5.LocalLBVirtualServer.get_source_address_translation_type($virtualserverlist)
+	Try {
+		$virtualserversourceaddresstranslationtypelist = $f5.LocalLBVirtualServer.get_source_address_translation_type($virtualserverlist)
 		$virtualserversourceaddresssnatpool = $f5.LocalLBVirtualServer.get_source_address_translation_snat_pool($virtualserverlist)
+	} Catch {
+		log info "Unable to get address translationlist"
 	}
 	
 	for($i=0;$i -lt ($virtualserverlist.Count);$i++){
@@ -1229,10 +1233,10 @@ function cacheLTMinformation {
 		
 		$objTempVirtualServer.pools = $objTempVirtualServer.pools | select -Unique
 		
-		if($MajorVersion -gt 11 -or ($MajorVersion -eq 11 -and $Minorversion -gt 3)){
-			$objTempVirtualServer.sourcexlatetype = [string]$virtualserversourceaddresstranlationtypelist[$i]
+		Try{
+			$objTempVirtualServer.sourcexlatetype = [string]$virtualserversourceaddresstranslationtypelist[$i]
 			$objTempVirtualServer.sourcexlatepool = [string]$virtualserversourceaddresssnatpool[$i]
-		} else {
+		} Catch {
 			$objTempVirtualServer.sourcexlatetype = "OLDVERSION"
 			$objTempVirtualServer.sourcexlatepool = "OLDVERSION"
 		}
