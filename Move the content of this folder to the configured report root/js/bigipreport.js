@@ -1296,7 +1296,17 @@ function showPoolDetails(pool, loadbalancer, layer = "first"){
 		//Build the table and headers
 		$("." + layer + "layerdetailsheader").html(matchingpool.name);
 		
-		table = '<table class="pooldetailstable">';
+		var table = '<table class="pooldetailstable">';
+		table += '<thead><tr><th>Load Balancing Method</th><th>Action On Service Down</th><th>Allow NAT</th><th>Allow SNAT</th></tr></thead>';
+		table += '<tbody>';
+		table += '<tr><td>' + matchingpool.loadbalancingmethod + '</td><td>' + matchingpool.actiononservicedown + '</td><td>' + matchingpool.allownat + '</td><td>' + matchingpool.allowsnat + '</td></tr>';
+		table += '</tbody>';
+		table += '</table>';
+
+		table += '<br>'
+
+		table += '<div class="monitordetailsheader">Member details</div>'
+		table += '<table class="pooldetailstable">';
 		table += '	<thead><tr><th>Member name</th><th>Member IP</th><th>Port</th><th>Priority group</td><th>Member availability</th><th>Enabled</th><th>Member Status description</th></tr></thead><tbody>';
 		
 		poolmonitors = matchingpool.monitors

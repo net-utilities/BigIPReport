@@ -554,6 +554,10 @@ public class Pool {
     public string name;
     public string[] monitors;
 	public Member[] members;
+	public string loadbalancingmethod;
+	public string actiononservicedown;
+	public string allownat;
+	public string allowsnat;
 	public string loadbalancer;
 }
 '@
@@ -665,6 +669,41 @@ $Global:ModuleToDescription = @{
 	"AVR" = "The Application Visualization and Reporting Module";
 }
 
+$Global:LBMethodToString = @{
+	"LB_METHOD_ROUND_ROBIN" = "Round Robin";
+	"LB_METHOD_RATIO_Member" = "Ratio (Member)";
+	"LB_METHOD_LEAST_CONNECTION_Member" = "Least Connections (Member)";
+	"LB_METHOD_OBSERVED_Member" = "Observed (Member)";
+	"LB_METHOD_PREDICTIVE_Member" = "Predictive (Member)";
+	"LB_METHOD_RATIO_NODE_ADDRESS" = "Ratio (Node)";
+	"LB_METHOD_LEAST_CONNECTION_NODE_ADDRESS" = "Least Connection (Node)";
+	"LB_METHOD_FASTEST_NODE_ADDRESS" = "Fastest (node)";
+	"LB_METHOD_OBSERVED_NODE_ADDRESS" = "Observed (node)";
+	"LB_METHOD_PREDICTIVE_NODE_ADDRESS" = "Predictive (node)";
+	"LB_METHOD_DYNAMIC_RATIO" = "Dynamic Ratio";
+	"LB_METHOD_FASTEST_APP_RESPONSE" = "Fastest App Response";
+	"LB_METHOD_LEAST_SESSIONS" = "Least sessions";
+	"LB_METHOD_DYNAMIC_RATIO_Member" = "Dynamic Ratio (Member)";
+	"LB_METHOD_L3_ADDR" = "L3 Address";
+	"LB_METHOD_UNKNOWN" = "Unknown";
+	"LB_METHOD_WEIGHTED_LEAST_CONNECTION_Member" = "Weighted Least Connection (Member)";
+	"LB_METHOD_WEIGHTED_LEAST_CONNECTION_NODE_ADDRESS" = "Weighted Least Connection (Node)";
+	"LB_METHOD_RATIO_SESSION" = "Ratio Sessions";
+	"LB_METHOD_RATIO_LEAST_CONNECTION_Member" = "Ratio Least Connections (Member)";
+	"LB_METHOD_RATIO_LEAST_CONNECTION_NODE_ADDRESS" = "Least Connections (Node)";
+}
+
+$Global:ActionOnPoolFailureToString = @{
+	"SERVICE_DOWN_ACTION_NONE" = "None";
+	"SERVICE_DOWN_ACTION_RESET" = "Reject";
+	"SERVICE_DOWN_ACTION_DROP" = "Drop";
+	"SERVICE_DOWN_ACTION_RESELECT" = "Reselect";
+}
+
+$Global:StateToString = @{
+	"STATE_ENABLED" = "Yes";
+	"STATE_DISABLED" = "No";
+}
 
 
 #Enable of disable the use of TLS1.2
@@ -1023,10 +1062,14 @@ function cacheLTMinformation {
 	[array]$PoolMembers = $f5.LocalLBPool.get_member_v2($PoolList)
 	[array]$PoolMemberstatuses = $F5.LocalLBPool.get_member_object_status($PoolList, $Poolmembers)
 	[array]$PoolMemberpriorities = $F5.LocalLBPool.get_member_priority($Poollist, $PoolMembers)
+	[array]$PoolLBMethods = $F5.LocalLBPool.get_lb_method($PoolList)
+	[array]$PoolActionOnServiceDown = $F5.LocalLBPool.get_action_on_service_down($PoolList)
+	[array]$PoolAllowNAT = $F5.LocalLBPool.get_allow_nat_state($PoolList)
+	[array]$PoolAllowSNAT = $F5.LocalLBPool.get_allow_snat_state($PoolList)
 	
 	for($i=0;$i -lt ($PoolList.Count);$i++){
 	
-		$objTempPool = New-Object Pool
+		$objTempPool = New-Object -Type Pool
 		
 		$objTempPool.name = [string]$Poollist[$i]
 		
@@ -1059,7 +1102,11 @@ function cacheLTMinformation {
 			$objTempPool.members += $objTempMember
 			
 		}
-		
+
+		$objTempPool.loadbalancingmethod = $Global:LBMethodToString[[string]($PoolLBMethods[$i])]
+		$objTempPool.actiononservicedown = $Global:ActionOnPoolFailureToString[[string]($PoolActionOnServiceDown[$i])]
+		$objTempPool.allownat = $StateToString[[string]($PoolAllowNAT[$i])]
+		$objTempPool.allowsnat = $StateToString[[string]($PoolAllowSNAT[$i])]
 		$objTempPool.loadbalancer = $loadbalancername
 		
 		$LBPools += $objTempPool
