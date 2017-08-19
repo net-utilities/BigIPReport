@@ -228,7 +228,7 @@ td.ASMBlockingMode {
 }
 
 /* Header with the monitor name */
-.monitordetailsheader {
+.monitordetailsheader, .monitordetailsheader {
 	font-family:Cambria;
 	font-size:20px;
 	font-weight:bold;
