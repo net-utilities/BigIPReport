@@ -142,6 +142,7 @@
 #		4.6.1		2017-08-18		Fixing bug when extracting source NAT pool 									Patrik Jonsson
 #		4.6.2		2017-08-18		Fixing a bug when extracting version information 							Patrik Jonsson
 #		4.6.3		2017-08-19		Adding LB method, SNAT and NAT to pool details 								Patrik Jonsson
+#		4.6.4		2017-08-24		Adding "All" to the pagination options										Patrik Jonsson
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -154,7 +155,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.6.3"
+$Global:ScriptVersion = "4.6.4"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
