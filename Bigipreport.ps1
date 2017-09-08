@@ -143,6 +143,8 @@
 #		4.6.2		2017-08-18		Fixing a bug when extracting version information 							Patrik Jonsson
 #		4.6.3		2017-08-19		Adding LB method, SNAT and NAT to pool details 								Patrik Jonsson
 #		4.6.4		2017-08-24		Adding "All" to the pagination options										Patrik Jonsson
+#		4.6.5		2017-09-08		Fixing a bug when dealing with modules that is not known. 					Patrik Jonsson
+#									Also defining iRulesLX as a known module
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -649,6 +651,7 @@ $Global:ModuleToShort = @{
 	"TMOS_MODULE_UI" = "UI";
 	"TMOS_MODULE_MONITORS" = "MONITORS";
 	"TMOS_MODULE_AVR" = "AVR";
+	"TMOS_MODULE_ILX" = "ILX";
  }
  
 $Global:ModuleToDescription = @{
@@ -669,6 +672,7 @@ $Global:ModuleToDescription = @{
 	"UI" = "The GUI part of the Core OS.";
 	"MONITORS" = "Represents the external monitors - used for stats only.";
 	"AVR" = "The Application Visualization and Reporting Module";
+	"ILX" = "iRulesLX"
 }
 
 $Global:LBMethodToString = @{
@@ -796,13 +800,20 @@ function cacheLTMinformation {
 	$ModuleDict = @{}
 
 	foreach($module in $modules){
+
 		$moduleCode = [string]$module
 
-		$moduleShortName = $ModuleToShort[$moduleCode]
-		$moduleDescription = $ModuleToDescription[$moduleShortName]
-
-		if($moduleShortName -eq $null) { $moduleShortName = "Unknown" }
-		if($moduleDescription -eq $null) { $moduleShortName = "Unknown" }
+		if($ModuleToShort.keys -contains $moduleCode){
+			$moduleShortName = $ModuleToShort[$moduleCode]
+		} else {
+			$moduleShortName = $moduleCode.replace("TMOS_MODULE_", "")
+		}
+		
+		if($ModuleToDescription.keys -contains $moduleShortName){
+			$moduleDescription = $ModuleToDescription[$moduleShortName]
+		} else {
+			$moduleDescription = "No description found"
+		}
 
 		if(!($ModuleDict.keys -contains $moduleShortName)){
 			$ModuleDict.add($moduleShortName, $moduleDescription)
