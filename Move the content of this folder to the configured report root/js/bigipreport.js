@@ -910,7 +910,14 @@ function showVirtualServerDetails(virtualserver, loadbalancer){
 		table += '		</tr>';
 		table += '	</tbody>';
 		table += '</table>';
-		table += '<br>';
+		table += '<br/>';
+
+		table += '<table class="virtualserverdetailstable">';
+		table += '	<tr><th>Current Connections</th><th>Maximum Connections</th><th>5 second average CPU usage</th><th>1 minute average CPU usage</th><th>5 minute average CPU usage</th></tr>';
+		table += '	<tr><td>' + matchingvirtualserver.currentconnections + '</td><td>' + matchingvirtualserver.maximumconnections + '</td><td>' + matchingvirtualserver.cpuavg5sec + '</td><td>' + matchingvirtualserver.cpuavg1min + '</td><td>' + matchingvirtualserver.cpuavg5min + '</td></tr>';
+		table += '</table>';
+
+		table += '<br/>'
 		
 		if(ShowiRules == true){
 			if(matchingvirtualserver.irules.length > 0 && ShowiRules ){
@@ -968,8 +975,10 @@ function showVirtualServerDetails(virtualserver, loadbalancer){
 				
 				table += '</table>';
 			}
-		} 
+		}
+
 	}
+
 	$('.firstlayerdetailsfooter').html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut();">Close virtual server details</a>');
 	$("#firstlayerdetailscontentdiv").html(table);
 	$("#firstlayerdiv").fadeIn();
@@ -1308,7 +1317,7 @@ function showPoolDetails(pool, loadbalancer, layer = "first"){
 
 		table += '<div class="monitordetailsheader">Member details</div>'
 		table += '<table class="pooldetailstable">';
-		table += '	<thead><tr><th>Member name</th><th>Member IP</th><th>Port</th><th>Priority group</td><th>Member availability</th><th>Enabled</th><th>Member Status description</th></tr></thead><tbody>';
+		table += '	<thead><tr><th>Member name</th><th>Member IP</th><th>Port</th><th>Priority group</th><th>Connections</th><th>Max Connections</th><th>Member availability</th><th>Enabled</th><th>Member Status description</th></tr></thead><tbody>';
 		
 		poolmonitors = matchingpool.monitors
 
@@ -1330,7 +1339,7 @@ function showPoolDetails(pool, loadbalancer, layer = "first"){
 			member = members[i];
 			memberstatus = translateStatus(member);
 			
-			table += '<tr><td>' + member.name + '</td><td>' + member.ip + '</td><td>' + member.port + '</td><td>' + member.priority + '<td>' + memberstatus['availability'] + '</td><td>' + memberstatus['enabled'] + '</td><td>' + member.status + '</td></tr>';
+			table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + member.priority + "</td><td>" + member.currentconnections + "</td><td>" + member.maximumconnections + "</td><td>" + memberstatus["availability"] + "</td><td>" + memberstatus["enabled"] + "</td><td>" + member.status + "</td></tr>";
 		}	
 		
 		
