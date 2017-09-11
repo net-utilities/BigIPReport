@@ -193,7 +193,7 @@ style for the pool details lightbox div **************************************
 	border-collapse: collapse;
 	font-family: Calibri;
 	margin: 0 auto;
-	width:95%;
+	width:100%;
 }
 
 .pooldetailstable tbody > tr > td {
@@ -241,7 +241,7 @@ td.ASMBlockingMode {
 	border-collapse: collapse;
 	font-family: Calibri;
 	margin: 0 auto;
-	width:95%;
+	width:100%;
 }
 
 .monitordetailstable tbody > tr > td {
@@ -273,7 +273,7 @@ td.ASMBlockingMode {
 	border-collapse: collapse;
 	font-family: Calibri;
 	margin: 0 auto;
-	width:95%;
+	width:100%;
 }
 
 .membermonitortable tbody > tr > td {
