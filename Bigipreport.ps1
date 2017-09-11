@@ -146,6 +146,7 @@
 #		4.6.5		2017-09-08		Fixing a bug when dealing with modules that is not known. 					Patrik Jonsson  No
 #									Also defining iRulesLX as a known module
 #		4.6.6		2017-09-11		Adding virtual server and pool statistics				 					Patrik Jonsson  No
+#		4.6.7		2017-09-12		Small CSS fix to make the pool details prettier								Patrik Jonsson  No
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -158,7 +159,7 @@
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.6.6"
+$Global:ScriptVersion = "4.6.7"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()

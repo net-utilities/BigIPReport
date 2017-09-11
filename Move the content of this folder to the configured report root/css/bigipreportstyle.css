@@ -203,6 +203,10 @@ style for the pool details lightbox div **************************************
 	text-align:center;
 }
 
+.pooldetailstable tbody > tr > td:first-child {
+    white-space: nowrap;
+}
+
 .pooldetailstable tbody > tr > td.testlinks {
 	width:140px;
 }
