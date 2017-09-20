@@ -147,6 +147,7 @@
 #									Also defining iRulesLX as a known module
 #		4.6.6		2017-09-11		Adding virtual server and pool statistics				 					Patrik Jonsson  No
 #		4.6.7		2017-09-12		Small CSS fix to make the pool details prettier								Patrik Jonsson  No
+#		4.6.8		2017-09-20		Adding fix for duplicate detected data group lists.							Patrik Jonsson  No
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.

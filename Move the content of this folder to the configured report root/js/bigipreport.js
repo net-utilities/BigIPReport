@@ -1017,8 +1017,6 @@ function showiRuleDetails(irule, loadbalancer){
 		//Populate the header
 		$(".secondlayerdetailsheader").html(matchingirule.name);
 		
-		
-		
 		//Save the definition to a variable for some classic string mangling
 		var definition = matchingirule.definition
 		
@@ -1036,9 +1034,9 @@ function showiRuleDetails(irule, loadbalancer){
 				//There was, let's loop through each
 				for(var dg in connecteddatagrouplists){
 					//First, prepare a regexp to replace all instances of the data group list with a link
-					var regexp = new RegExp(dg, "g");
+					var regexp = new RegExp("\\s" + dg + "(\\s|\])", "g");
 					//Prepare the link
-					var dglink = '<a href="javascript:void(0);" onClick="Javascript:showDataGroupListDetails(\'' + connecteddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a>';
+					var dglink = ' <a href="javascript:void(0);" onClick="Javascript:showDataGroupListDetails(\'' + connecteddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a> ';
 					//Do the actual replacement
 					definition = definition.replace(regexp, dglink);
 				}
@@ -1193,13 +1191,15 @@ function ParseDataGroupLists(irule){
 								continue
 							}
 
+							console.log(matchingdatagrouplist.name)
+							console.log(detecteddict)
 							//Check if the data group list has been detected before
 							//If it hasn't, add it to the array of detected data group lists
-							if(detecteddict[dg] >= 0){
+							if(matchingdatagrouplist.name in detecteddict){
 								continue;
 							} else {
 								//Update the dictionary
-								detecteddict[dg] = matchingdatagrouplist;
+								detecteddict[matchingdatagrouplist.name] = matchingdatagrouplist;
 							}
 						}
 					}
