@@ -22,6 +22,11 @@ var oTable;
 
 $(window).load(function() {
 	// Animate loader off screen
+    
+    //Prevent caching of ajax requests
+    $(document).ready(function() {
+        $.ajaxSetup({ cache: false });
+    });
 	
 	$.when(
 		// Get pools
