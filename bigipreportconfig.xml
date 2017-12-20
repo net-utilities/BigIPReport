@@ -371,5 +371,28 @@
 				<ShowiRuleLinks>true</ShowiRuleLinks>
 				<ShowDataGroupListsLinks>true</ShowDataGroupListsLinks>
 			</iRules>
+		
+		<!--
 			
+			***********************************************************************************************************************************************
+			*
+			*	Export link settings
+			* 
+			*	Enabled:
+			*	<ExportLink>
+			*		<Enabled>true</Enabled>
+			*	</ExportLink>
+			*
+			*	Disabled:
+			*	<ExportLink>
+			*		<Enabled>false</Enabled>
+			*	</ExportLink>			*
+			************************************************************************************************************************************************
+
+		-->
+
+		<ExportLink>
+			<Enabled>true</Enabled>
+		</ExportLink>
+
 	</Settings>
