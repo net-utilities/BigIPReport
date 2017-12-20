@@ -1407,9 +1407,13 @@ function showPoolDetails(pool, loadbalancer, layer = "first"){
 						
 						requestparameters = getMonitorRequestParameters(sendstring)
 						globheader = requestparameters;
-						if(requestparameters['verb'] == "GET"){
+						if(requestparameters['verb'] === "GET" || requestparameters['verb'] === "HEAD"){
 													
 							var curlcommand = 'curl';
+
+							if (requestparameters['verb'] === "HEAD"){
+					            curlcommand += " -I"
+					        }
 							
 							for(var x in requestparameters['headers']){
 								header = requestparameters['headers'][x];
