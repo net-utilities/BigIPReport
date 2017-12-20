@@ -13,6 +13,5 @@ Installation instructions are available here:
 ### Some components used for this project
 * [jQuery](https://jquery.com/)
 * [Data tables](https://datatables.net/)
-* [chosen](https://harvesthq.github.io/chosen/)
 * [jQuery hightlight plugin](http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html)
 * [SHJS](http://shjs.sourceforge.net/doc/gplv3.html)
