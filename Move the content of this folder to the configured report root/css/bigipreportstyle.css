@@ -470,7 +470,7 @@ a:hover.sharepoollink p input {
 }
 
 
-a.preferencesButton, a.irulesButton, a.definedRuleButton {
+a.preferencesButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
 	position: relative;
 	display: inline;
 	background: #3498db;
