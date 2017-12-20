@@ -10,7 +10,7 @@ Installation instructions are available here:
 
 [https://loadbalancing.se/bigip-report/](https://loadbalancing.se/bigip-report/)
 
-### Some omponents used for this project
+### Some components used for this project
 * [jQuery](https://jquery.com/)
 * [Data tables](https://datatables.net/)
 * [chosen](https://harvesthq.github.io/chosen/)
