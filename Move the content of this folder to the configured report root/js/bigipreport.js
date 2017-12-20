@@ -178,6 +178,17 @@ $(window).load(function() {
 		
 		/*************************************************************************************************************
 		
+			This section inserts a button that exports the report to CSV
+		
+		**************************************************************************************************************/	
+		
+		if(ShowExportLink){
+			$("#allbigips_filter").append("<a id=\"exportCSVButton\" class=\"exportCSVButton\" href=\"javascript:void(0);\">Export to CSV</a>");
+			$("#exportCSVButton").on("click", downloadCSV);
+		}
+
+		/*************************************************************************************************************
+		
 			This section inserts the iRules button if any rules are defined
 		
 		**************************************************************************************************************/	
@@ -1455,5 +1466,114 @@ function loadPreferences(){
 	for(var k in defaultPreferences){
 		if(localStorage.getItem(k) === null){ localStorage.setItem(k, defaultPreferences[k]) }
 	}
+
+}
+
+
+function getPool(pool, loadbalancer){
+	for(var i in pools){
+		if(pools[i].name === pool && pools[i].loadbalancer === loadbalancer){
+			return pools[i];
+		}
+	}
+
+	return false;
+}
+
+function getVirtualServer(vs, loadbalancer){
+	for(var i in virtualservers){
+		if(virtualservers[i].name === vs && virtualservers[i].loadbalancer === loadbalancer){
+			return virtualservers[i];
+		}
+	}
+
+	return false;
+}
+
+function generateCSV(){
+
+	var csv = "name;ip;port;sslprofile;compressionprofile;persistenceprofile;availability;enabled;currentconnections;cpuavg5sec;cpuavg1min;cpuavg5min;defaultpool;associated-pools;loadbalancer\n";
+
+	$("#allbigips tbody tr.virtualserverrow").each(function(){
+		
+		var line = "";
+
+		vsname = $(this).find("td.virtualServerCell a").attr("data-originalvirtualservername") || "N/A (Orphan pool)"
+
+		if(vsname !== "N/A (Orphan pool)"){
+
+			var loadbalancer = $(this).find("td.virtualServerCell a").attr("data-loadbalancer");
+
+			vs = getVirtualServer(vsname, loadbalancer)
+
+			var line = vs.name + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofile || "None") + ";" + (vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" + vs.cpuavg5sec + ";" + vs.cpuavg1min + ";" + vs.cpuavg5min + ";" + (vs.defaultpool || "None") + ";";
+
+			var firstpool = true;
+
+			for(var p in vs.pools){
+			
+				if(!firstpool){ line += "|"} else { firstpool = false }
+				
+				pool = getPool(vs.pools[p], vs.loadbalancer);
+				
+			}
+			
+			
+		} else {
+
+			var poolname = $(this).find("td.poolname a").attr("data-originalpoolname");
+			var loadbalancer = $(this).find("td.poolname a").attr("data-loadbalancer");
+			
+			line = "N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);";
+
+			pool = getPool(poolname, loadbalancer);
+
+		}
+
+		line += pool.name + ": "
+
+		var first = true;
+		var firstmember = true;
+
+		for(var m in pool.members){
+		    if(!firstmember){ line += ", "} else { firstmember = false;}
+			var member = pool.members[m]
+			line += member.name + ":" + member.port + " (" + member.name + ":" + member.port + ")";
+		}
+
+		line += ";" + pool.loadbalancer;
+
+		csv += line + "\n";
+
+	})
+
+	return(csv);
+}
+
+function downloadCSV() {
+  	
+  	var text = generateCSV();
+
+  	var d = new Date();
+
+  	var year = d.getFullYear();
+  	var month = d.getMonth();
+  	var day = d.getDay();
+
+  	if(month < 10){ month = "0" + month }
+  	if(day < 10){ day = "0" + day }
+
+  	var filename =  year + "-" + month + "-" + day + "-bigipreportexport.csv";
+
+	var element = document.createElement('a');
+	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+	element.setAttribute('download', filename);
+
+	element.style.display = 'none';
+	document.body.appendChild(element);
+
+	element.click();
+
+	document.body.removeChild(element);
 
 }
