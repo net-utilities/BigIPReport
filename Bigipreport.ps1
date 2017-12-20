@@ -150,7 +150,8 @@
 #		4.6.8		2017-09-20		Adding fix for duplicate detected data group lists.							Patrik Jonsson  No
 #		4.6.9		2017-09-25		Preventing caching of Json.                         						Patrik Jonsson  No
 #		4.7.0		2017-12-20		Adding options to export to the report to CSV. 								Patrik Jonsson	Yes
-#		4.7.1		2017-12-20		Adding support for monitors using HEAD.										Patrik jonsson  No
+#		4.7.1		2017-12-20		Adding support for monitors using HEAD.										Patrik Jonsson  No
+#		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik jonsson 	No
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -160,10 +161,12 @@
 #
 ######################################################################################################################################
 
+Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
+
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.6.7"
+$Global:ScriptVersion = "4.7.2"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -178,10 +181,10 @@ $starttime = Get-Date
 ################################################################################################################################################
 
 #Check if the configuration file exists
-if(Test-Path "$PSScriptRoot\bigipreportconfig.xml"){
+if(Test-Path $ConfigurationFile){
 	
 	#Read the file as xml
-	[xml]$Global:Bigipreportconfig = Get-Content "$PSScriptRoot\bigipreportconfig.xml"
+	[xml]$Global:Bigipreportconfig = Get-Content $ConfigurationFile
 	
 	#Verify that the file was succssfully loaded, otherwise exit
 	if($?){
