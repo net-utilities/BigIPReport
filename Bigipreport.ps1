@@ -149,6 +149,7 @@
 #		4.6.7		2017-09-12		Small CSS fix to make the pool details prettier								Patrik Jonsson  No
 #		4.6.8		2017-09-20		Adding fix for duplicate detected data group lists.							Patrik Jonsson  No
 #		4.6.9		2017-09-25		Preventing caching of Json.                         						Patrik Jonsson  No
+#		4.7.0		2017-12-20		Adding options to export to the report to CSV 								Patrik Jonsson	Yes
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -1930,6 +1931,12 @@ $Global:html = @'
 		} else {
 			$Global:html += "var ShowDataGroupListsLinks = false;"
 		}
+
+		if($Global:Bigipreportconfig.Settings.ExportLink.Enabled -eq $true){
+			$Global:html += "var ShowExportLink = true;"
+		} else {
+			$Global:html += "var ShowExportLink = false;"
+		}		
 
 
 $Global:html += @'		
