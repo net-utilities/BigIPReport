@@ -28,31 +28,62 @@ $(window).load(function() {
         $.ajaxSetup({ cache: false });
     });
 	
+	$("#firstlayerdetailscontentdiv").html(`
+		<div id="jsonloadingerrors">
+			<h2 class="jsonloadingerrors">There were errors when loading the object json files</h2>
+			This usually happens when the script has had issues when creating the data or were not able to write the files due to lack of permissions.
+			<br>Double check your script execution logs, web folder content and try again?
+			<br>
+			<h3>The following json files did not load:</h3>
+			<div id="jsonloadingerrordetails">
+			</div>
+
+			<h3>Please note that while you can close these details, the report won't function as it should until these problems has been solved.</h3>
+
+		</div>`
+	);
+
+	$("#firstlayerdetailsfooter").html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut()">Close error details</a>');
+
+
+	let addJSONLoadingFailure = function(jqxhr){
+		
+		//Remove the random query string not to confuse people
+		let url = this.url.split("?")[0];
+
+		$("#jsonloadingerrordetails").append(`
+				<span class="error">Failed object:</span><span class="errordetails"><a href="` + url + `">` + url + `</a></span>
+				<br><span class="error">Status code:</span><span class="errordetails"> ` + jqxhr.status + `</span>
+				<br><span class="error">Reason:</span><span class="errordetails"> ` + jqxhr.statusText + "<br><br>"
+		)
+
+		$("#firstlayerdiv").fadeIn();
+	}
+
 	$.when(
 		// Get pools
 		$.getJSON("./json/pools.json", function(result){
 			pools = result;
-		}),
-
+		}).fail(addJSONLoadingFailure),
 		//Get the monitor data
 		$.getJSON("./json/monitors.json", function(result){
 			monitors = result;
-		}),
+		}).fail(addJSONLoadingFailure),
 		//Get the virtual servers data
 		$.getJSON("./json/virtualservers.json", function(result){
 			virtualservers = result;
-		}),
+		}).fail(addJSONLoadingFailure),
 		//Get the irules data
 		$.getJSON("./json/irules.json", function(result){
 			irules = result;
-		}),
+		}).fail(addJSONLoadingFailure),
 		//Get the datagroup list data
 		$.getJSON("./json/datagrouplists.json", function(result){
 			datagrouplists = result;
-		}),
+		}).fail(addJSONLoadingFailure),
 		$.getJSON("./json/defaultpreferences.json", function(result){
 			defaultPreferences = result;
-		})
+		}).fail(addJSONLoadingFailure)
 	).then(function() {
 
 		/********************************************************************************************************************************************************************************************
@@ -60,7 +91,6 @@ $(window).load(function() {
 			All pre-requisite things has loaded
 
 		********************************************************************************************************************************************************************************************/
-
 
 		/*************************************************************************************************************
 
