@@ -172,11 +172,10 @@
 
 .virtualserverdetailstable tbody > tr:nth-child(odd) > td {     background-
 color:#6890B2;     border-collapse: collapse;     border:1px solid #CBCBCB; }
-/*****************************************************************************
-***********************************************     This section contains the
-style for the pool details lightbox div **************************************
-******************************************************************************
-*********/
+
+/****************************************************************************************************************************     
+				This section contains the  style for the pool details lightbox div 
+*****************************************************************************************************************************/
 
 /*Header with the pool name */
 
@@ -553,6 +552,33 @@ span.textstatus {
 	margin-top:40px;
 }
 
+/****************************************************************************************************************************
+	This section contains the style for the json loading error lightbox content
+*****************************************************************************************************************************/
+
+div.jsonloadingerrors {
+	display: table;
+	margin: 0 auto;
+	max-width: 95%;
+}
+
+h2.jsonloadingerrors {
+	color:#800000;
+	text-align:center;
+}
+
+#jsonloadingerrors li {
+	padding:10px;
+}
+
+#jsonloadingerrordetails span.error {
+	color:red;
+	font-weight:bold;
+}
+
+#jsonloadingerrordetails span.errordetails {
+	font-style:italic;
+}
 
 /****************************************************************************************************************************
 	This section contains the style for the irule details lightbox content
@@ -1060,7 +1086,6 @@ span.adcLinkSpan a:hover {
   background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
   text-decoration: none;
 }
-
 
 #toggleHeader {
 	font-family: Arial;

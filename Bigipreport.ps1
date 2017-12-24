@@ -152,6 +152,8 @@
 #		4.7.0		2017-12-20		Adding options to export to the report to CSV. 								Patrik Jonsson	Yes
 #		4.7.1		2017-12-20		Adding support for monitors using HEAD.										Patrik Jonsson  No
 #		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik jonsson 	No
+#		4.7.3		2017-12-20		Adding more script pre-execution checks
+#									Adding javascript error handling when loading the report json files			Patrik jonsson 	No
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -166,7 +168,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.7.2"
+$Global:ScriptVersion = "4.7.3"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -442,18 +444,61 @@ if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $null){
 	$SaneConfig = $false
 }
 
-
-
 if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
 	log error "You can't show data group lists without showing irules in the current version."
 	$SaneConfig = $false
 }
+
 if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigipreportconfig.Settings.ReportRoot -eq ""){
 	log error "No report root configured"
 	$SaneConfig = $false
-} elseif(-not (Test-Path $Global:Bigipreportconfig.Settings.ReportRoot)){
-	log error "Can't access the site root $($Global:Bigipreportconfig.Settings.ReportRoot)"
-	$SaneConfig = $false
+} else {
+
+	#Make sure the site root ends with \
+	if(-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")){
+		$Global:bigipreportconfig.Settings.ReportRoot += "\"
+	}
+
+	if(-not (Test-Path $Global:Bigipreportconfig.Settings.ReportRoot)){
+
+		log error "Can't access the site root $($Global:Bigipreportconfig.Settings.ReportRoot)"
+		$SaneConfig = $false
+
+	} else {
+
+		if(-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "json"))){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+			$SaneConfig = $false
+		} elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "json")).count -eq 0){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not contain any files. Did you accidentally delete some files?"
+			$SaneConfig = $false
+		}
+
+		if(-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "js"))){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "js") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+			$SaneConfig = $false
+		} elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "js")).count -eq 0){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "js") does not contain any files. Did you accidentally delete some files?"
+			$SaneConfig = $false
+		}
+
+		if(-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "images"))){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "images") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+			$SaneConfig = $false
+		} elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "images")).count -eq 0){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "images") does not contain any files. Did you accidentally delete some files?"
+			$SaneConfig = $false
+		}
+
+		if(-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "css"))){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "css") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+			$SaneConfig = $false
+		} elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "css")).count -eq 0){
+			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "css") does not contain any files. Did you accidentally delete some files?"
+			$SaneConfig = $false
+		}
+	}
+
 }
 
 #Initialize iControlSnapin
@@ -509,11 +554,6 @@ $Global:monitors = @()
 $Global:DataGroupLists = @()
 $Global:loadBalancers = @()
 $Global:ASMPolicies = @()
-
-#Make sure the site root ends with \
-if(-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")){
-	$Global:bigipreportconfig.Settings.ReportRoot += "\"
-}
 
 #Build the path to the default document
 $Global:reportpath = $Global:bigipreportconfig.Settings.ReportRoot + $Global:bigipreportconfig.Settings.Defaultdocument
