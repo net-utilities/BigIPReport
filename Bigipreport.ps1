@@ -1,3 +1,4 @@
+#Requires -Version 4
 ######################################################################################################################################
 #
 #		Copyright (C) 2016 Patrik Jonsson <patrik.jonsson#at#gmail-com>
@@ -151,9 +152,10 @@
 #		4.6.9		2017-09-25		Preventing caching of Json.                         						Patrik Jonsson  No
 #		4.7.0		2017-12-20		Adding options to export to the report to CSV. 								Patrik Jonsson	Yes
 #		4.7.1		2017-12-20		Adding support for monitors using HEAD.										Patrik Jonsson  No
-#		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik jonsson 	No
+#		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik Jonsson 	No
 #		4.7.3		2017-12-20		Adding more script pre-execution checks
-#									Adding javascript error handling when loading the report json files			Patrik jonsson 	No
+#									Adding javascript error handling when loading the report json files			Patrik Jonsson 	No
+#		4.7.4		2017-12-27		Adding script requirement for Powershell version 4.							Patrik Jonssson No
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -168,7 +170,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.7.3"
+$Global:ScriptVersion = "4.7.4"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
