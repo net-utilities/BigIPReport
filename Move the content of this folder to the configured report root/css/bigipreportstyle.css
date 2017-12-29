@@ -562,7 +562,7 @@ div.jsonloadingerrors {
 	max-width: 95%;
 }
 
-h2.jsonloadingerrors {
+h1.jsonloadingerrors {
 	color:#800000;
 	text-align:center;
 }
@@ -578,6 +578,17 @@ h2.jsonloadingerrors {
 
 #jsonloadingerrordetails span.errordetails {
 	font-style:italic;
+}
+
+div.failedjsonitem {
+	margin-bottom: 10px;
+}
+
+div.webconfig {
+	white-space: pre;
+	font-family: monospace;
+	background-color: #eff0f1;
+	color: black;
 }
 
 /****************************************************************************************************************************
