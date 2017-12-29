@@ -150,12 +150,13 @@
 #		4.6.7		2017-09-12		Small CSS fix to make the pool details prettier								Patrik Jonsson  No
 #		4.6.8		2017-09-20		Adding fix for duplicate detected data group lists.							Patrik Jonsson  No
 #		4.6.9		2017-09-25		Preventing caching of Json.                         						Patrik Jonsson  No
-#		4.7.0		2017-12-20		Adding options to export to the report to CSV. 								Patrik Jonsson	Yes
+#		4.7.0		2017-12-20		Adding options to export to the report to CSV. 								Patrik Jonsson  Yes
 #		4.7.1		2017-12-20		Adding support for monitors using HEAD.										Patrik Jonsson  No
-#		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik Jonsson 	No
+#		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik Jonsson  No
 #		4.7.3		2017-12-20		Adding more script pre-execution checks
-#									Adding javascript error handling when loading the report json files			Patrik Jonsson 	No
-#		4.7.4		2017-12-27		Adding script requirement for Powershell version 4.							Patrik Jonssson No
+#									Adding javascript error handling when loading the report json files			Patrik Jonsson  No
+#		4.7.4		2017-12-27		Adding script requirement for Powershell version 4.							Patrik Jonsson  No
+#		4.7.5		2017-12-28		Adding more verbose error messages when the json files fails to load.		Patrik Jonsson  No
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -170,7 +171,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.7.4"
+$Global:ScriptVersion = "4.7.5"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()

@@ -30,13 +30,20 @@ $(window).load(function() {
 	
 	$("#firstlayerdetailscontentdiv").html(`
 		<div id="jsonloadingerrors">
-			<h2 class="jsonloadingerrors">There were errors when loading the object json files</h2>
-			This usually happens when the script has had issues when creating the data or were not able to write the files due to lack of permissions.
-			<br>Double check your script execution logs, web folder content and try again?
-			<br>
+			<h1 class="jsonloadingerrors">There were errors when loading the object json files</h1>
+
 			<h3>The following json files did not load:</h3>
 			<div id="jsonloadingerrordetails">
 			</div>
+
+			<h3>Possible reasons</h3>
+
+			<h4>The web server hosting the report is IIS7.x or older</h4>
+			If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME files settings.<br><a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">Detailed instructions are available here</a>.<br>
+
+			<h4>File permissions or network issues</h4>
+			Script has had issues when creating the files due to lack of permissions or network issues.<br>
+			Double check your script execution logs, web folder content and try running the script manually.<br>
 
 			<h3>Please note that while you can close these details, the report won't function as it should until these problems has been solved.</h3>
 
@@ -48,13 +55,14 @@ $(window).load(function() {
 
 	let addJSONLoadingFailure = function(jqxhr){
 		
+		console.log(this);
 		//Remove the random query string not to confuse people
 		let url = this.url.split("?")[0];
 
 		$("#jsonloadingerrordetails").append(`
-				<span class="error">Failed object:</span><span class="errordetails"><a href="` + url + `">` + url + `</a></span>
+				<div class="failedjsonitem"><span class="error">Failed object:</span><span class="errordetails"><a href="` + url + `">` + url + `</a></span>
 				<br><span class="error">Status code:</span><span class="errordetails"> ` + jqxhr.status + `</span>
-				<br><span class="error">Reason:</span><span class="errordetails"> ` + jqxhr.statusText + "<br><br>"
+				<br><span class="error">Reason:</span><span class="errordetails"> ` + jqxhr.statusText + "</div>"
 		)
 
 		$("#firstlayerdiv").fadeIn();
