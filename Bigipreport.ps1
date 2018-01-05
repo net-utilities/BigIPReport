@@ -567,7 +567,7 @@ $Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json
 $Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\virtualservers.json"
 $Global:irulesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\irules.json"
 $Global:datagrouplistjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\datagrouplists.json"
-
+$Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loadbalancers.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -1756,21 +1756,21 @@ Function Update-ReportData {
 	Move-Item -Force $($Global:poolsjsonpath + ".tmp") $Global:poolsjsonpath
 	
 	if(!$?){
-		log error "Failed to update the temporary pools json file"
+		log error "Failed to update the pools json file"
 		$Status  = $false
 	}
 	
 	Move-Item -Force $($Global:monitorsjsonpath + ".tmp") $Global:monitorsjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary monitor json file"
+		log error "Failed to update the monitor json file"
 		$Status  = $false
 	}
 
 	Move-Item -Force $($Global:virtualserversjsonpath + ".tmp") $Global:virtualserversjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary virtual server json file"
+		log error "Failed to update the virtual server json file"
 		$Status  = $false
 	}
 
@@ -1778,14 +1778,21 @@ Function Update-ReportData {
 	Move-Item -Force $($Global:irulesjsonpath + ".tmp") $Global:irulesjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary irules json file"
+		log error "Failed to update the irules json file"
 		$Status  = $false
 	}
 	
 	Move-Item -Force $($Global:datagrouplistjsonpath + ".tmp") $Global:datagrouplistjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary data group lists json file"
+		log error "Failed to update the data group lists json file"
+		$Status  = $false
+	}
+
+	Move-Item -Force $($Global:loadbalancersjsonpath + ".tmp") $Global:loadbalancersjsonpath
+	
+	if(!$?){ 
+		log error "Failed to update the data group lists json file"
 		$Status  = $false
 	}
 	
@@ -1835,6 +1842,17 @@ Function Write-TemporaryFiles {
 	
 	if(!$?){ 
 		log error "Failed to update the temporary monitor json file"	
+		$Status  = $false
+	}
+
+	$StreamWriter.dispose()
+
+	log info "Writing temporary loadbalancer json object to $($Global:loadbalancersjsonpath + ".tmp")"
+	$StreamWriter = New-Object System.IO.StreamWriter($($Global:loadbalancersjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
+	$StreamWriter.Write($($Global:loadBalancers | ConvertTo-Json -Compress -Depth 5))
+	
+	if(!$?){ 
+		log error "Failed to update the temporary load balancer json file"	
 		$Status  = $false
 	}
 
