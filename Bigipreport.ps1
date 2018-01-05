@@ -231,6 +231,7 @@ Function log {
 		
 		switch($logtype) { 
 	        "error" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
+	        "warning" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
 			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }}
 			"info" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }}
 			default { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) } }
@@ -241,6 +242,7 @@ Function log {
 	
 	switch($logtype) { 
         "error" 	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Red" }
+		"warning" 	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Yellow" }
 		"success" 	{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Green" } }
 		"info" 		{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
 		default 	{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
@@ -676,6 +678,7 @@ Add-Type @'
 		public string baseBuild;
 		public string model;
 		public Hashtable modules;
+		public string poolStatusVip;
 	}
 
 '@
@@ -884,10 +887,6 @@ function cacheLTMinformation {
 	$MajorVersion = $loadBalancer.version.Split(".")[0]
 	$Minorversion = $loadBalancer.version.Split(".")[1]
 
-
-	$Global:loadBalancers += $loadBalancer
-
-
 	If($MajorVersion -gt 11){
 
 		#Check if ASM is enabled
@@ -951,8 +950,6 @@ function cacheLTMinformation {
 		$LBNodes += $objTempNode
 
 	}
-	
-	$Global:nodes += $LBNodes
 	
 	#EndRegion
 		
@@ -1029,8 +1026,6 @@ function cacheLTMinformation {
 		$LBMonitors += $objTempMonitor
 		
 	}
-	
-	$Global:monitors += $LBMonitors
 	
 	#EndRegion
 	
@@ -1194,8 +1189,6 @@ function cacheLTMinformation {
 		$LBPools += $objTempPool
 	}
 	
-	$Global:Pools += $LBPools
-	
 	#EndRegion
 	
 	#Region Cache information about irules
@@ -1234,8 +1227,6 @@ function cacheLTMinformation {
 			
 		$LBiRules += $objiRule
 	}
-	
-	$Global:iRules += $LBiRules
 	
 	#EndRegion	
 
@@ -1422,8 +1413,6 @@ function cacheLTMinformation {
 
 	}
 	
-	$Global:virtualservers += $LBVirtualservers
-	
 	#EndRegion
 	
 	#Region Get Orphaned Pools
@@ -1451,6 +1440,44 @@ function cacheLTMinformation {
 			$Global:virtualservers += $objTempVirtualServer
 		}
 	}
+
+	log info "Detecting pool status VIP"
+	[array]$PoolStatusVIPs = $LBVirtualservers | Where-Object { $_.irules -like "*/bigipreport_pool_status" }
+
+	if ($PoolStatusVIPs -eq $null) {
+
+		log warning "Unable to identify a pool status VIP on $loadbalancername"
+	
+	} else {
+		
+		$SaneConfig = $true
+
+		$PoolStatusVIP = $PoolStatusVIPs | Select -First 1
+
+		if($PoolStatusVIP.sslprofile -ne "None"){
+			log error "The pool status VIP $($PoolStatusVIP.name) must not have an SSL profile"
+			$SaneConfig = $false
+		}
+
+		if($PoolStatusVIP.enabled -ne "ENABLED_STATUS_ENABLED"){
+			log error "The pool status VIP $($PoolStatusVIP.name) is not enabled"
+			$SaneConfig = $false
+		}
+
+		if($SaneConfig){
+			log success "Pool status VIP $($PoolStatusVIP.name) detected, adding it to the load balancer object"
+			$LoadBalancer.poolStatusVip = "$($PoolStatusVIP.ip):$($PoolStatusVIP.port)"
+		}
+
+	}
+
+	#Adding the configuration to the the global objects
+	$Global:nodes += $LBNodes
+	$Global:monitors += $LBMonitors
+	$Global:Pools += $LBPools
+	$Global:loadBalancers += $loadBalancer
+	$Global:iRules += $LBiRules
+	$Global:virtualservers += $LBVirtualservers
 	
 	#EndRegion
 }
