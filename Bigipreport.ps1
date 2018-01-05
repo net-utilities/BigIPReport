@@ -1854,7 +1854,7 @@ Function Write-TemporaryFiles {
 	log info "Writing temporary pools json object to $($Global:poolsjsonpath + ".tmp")"	
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:poolsjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($($Global:pools | ConvertTo-Json -Compress -Depth 5))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:pools))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary pool json file"	
@@ -1865,7 +1865,7 @@ Function Write-TemporaryFiles {
 	
 	log info "Writing temporary monitor json object to $($Global:monitorsjsonpath + ".tmp")"
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:monitorsjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($($Global:monitors | ConvertTo-Json -Compress -Depth 5))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:monitors))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary monitor json file"	
@@ -1876,7 +1876,7 @@ Function Write-TemporaryFiles {
 
 	log info "Writing temporary loadbalancer json object to $($Global:loadbalancersjsonpath + ".tmp")"
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:loadbalancersjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($($Global:loadBalancers | ConvertTo-Json -Compress -Depth 5))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:loadBalancers))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary load balancer json file"	
@@ -1888,7 +1888,7 @@ Function Write-TemporaryFiles {
 	log info "Writing temporary virtual server json object to $($Global:virtualserversjsonpath + ".tmp")"
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:virtualserversjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($($Global:virtualservers | ConvertTo-Json -Compress -Depth 5))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:virtualservers))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary virtual server json file"	
@@ -1902,7 +1902,7 @@ Function Write-TemporaryFiles {
 		log info "Writing temporary irules json object to $($Global:irulesjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:irulesjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-		$StreamWriter.Write($($Global:irules | ConvertTo-Json -Compress -Depth 5))
+		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:irules))
 		
 		if(!$?){ 
 			log error "Failed to update the temporary irules json file"	
@@ -1921,7 +1921,7 @@ Function Write-TemporaryFiles {
 		if($ruleScope.count -eq 0){
 			$StreamWriter.Write("[]")
 		} else {
-			$StreamWriter.Write($($ruleScope | ConvertTo-Json -Compress -Depth 5))
+			$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ruleScope))
 		}
 		if(!$?){ 
 			log error "Failed to update the temporary irules json file"	
@@ -1936,7 +1936,7 @@ Function Write-TemporaryFiles {
 		log info "Writing temporary data group list json object to $($Global:datagrouplistjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:datagrouplistjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-		$StreamWriter.Write($($Global:DataGroupLists | ConvertTo-Json -Compress -Depth 5))
+		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:DataGroupLists))
 		
 		if(!$?){ 
 			log error "Failed to update the temporary data group lists json file"	
