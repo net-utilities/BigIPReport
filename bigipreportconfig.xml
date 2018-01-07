@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="4.7.5">
+	<Settings version="4.8.0">
 	
 		<!-- 
 		***************************************************************************
@@ -299,7 +299,7 @@
 			<ErrorReporting>
 				<Enabled>false</Enabled>
 			</ErrorReporting>
-			
+						
 			
 		<!--
 			
@@ -367,7 +367,7 @@
 		-->
 		
 			<iRules>
-				<Enabled>false</Enabled>
+				<Enabled>true</Enabled>
 				<ShowiRuleLinks>true</ShowiRuleLinks>
 				<ShowDataGroupListsLinks>true</ShowDataGroupListsLinks>
 			</iRules>
@@ -394,5 +394,36 @@
 		<ExportLink>
 			<Enabled>true</Enabled>
 		</ExportLink>
+
+		<!--
+			
+			***********************************************************************************************************************************************
+			*
+			*	Realtime data
+			*
+			*	This section configures the maximum queue and the refresh rate of the report data.
+			*
+			*	Realtime data is not enabled through the configuration file, but via the BigIP configuration.
+			*	More information about this is available here:
+			*	https://loadbalancing.se/bigip-report/#Realtime_Pool_Member_State
+			* 
+			*	Update a maximum of 5 members at the same time.
+			*	<RealTimeMemberStates>
+			*		<MaxQueue>
+			*			5
+			*		</MaxQueue>
+			*		<RefreshRate>
+			*			60
+			*		</RefreshRate>
+			*	</RealTimeMemberStates>
+			*
+			************************************************************************************************************************************************
+
+		-->
+
+			<RealTimeMemberStates>
+				<MaxQueue>1</MaxQueue>
+				<RefreshRate>60</RefreshRate>
+			</RealTimeMemberStates>	
 
 	</Settings>

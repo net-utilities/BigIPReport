@@ -1,11 +1,11 @@
 when HTTP_REQUEST {
 
-    set poolname [URI::query [HTTP::uri] pool]    
+    set poolname [HTTP::path]  
 
     if { [catch { 
         set poolmembers [members -list $poolname]
 
-        set returnjson "\{\n\t\"success\"\:true,\n\t\"memberstatus\": \{"
+        set returnjson "\{\n\t\"success\"\:true,\n\t\"poolname\": \"$poolname\",\n\t\"memberstatus\": \{"
 
         set membercount [llength $poolmembers]
         set i 0
@@ -23,7 +23,7 @@ when HTTP_REQUEST {
         }
 
         set returnjson "$returnjson\n\t\}\n\}"
-        HTTP::respond 200 content $returnjson Content-Type text/plain Connection Close
+        HTTP::respond 200 content $returnjson Content-Type application/json Access-Control-Allow-Origin "*" Connection Close
 
     } ] } {
         HTTP::respond 404 content "\{\
@@ -32,6 +32,6 @@ when HTTP_REQUEST {
                             \t\t\"code\"\: 404,\n\
                             \t\t\"message\"\: \"No pool with that name\"\n\
                         \t\}\n\
-                    \}"
+                    \}" Content-Type application/json Access-Control-Allow-Origin "*" Connection Close
     }
 }
