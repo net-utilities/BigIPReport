@@ -157,6 +157,8 @@
 #									Adding javascript error handling when loading the report json files			Patrik Jonsson  No
 #		4.7.4		2017-12-27		Adding script requirement for Powershell version 4.							Patrik Jonsson  No
 #		4.7.5		2017-12-28		Adding more verbose error messages when the json files fails to load.		Patrik Jonsson  No
+#		4.8.0		2018-01-07		The script now supports real-time member status.							Patrik Jonssson Yes
+#									A lot of small fixes.
 #
 #		This script generates a report of the LTM configuration on F5 BigIP's.
 #		It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -171,7 +173,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.7.5"
+$Global:ScriptVersion = "4.8.0"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -454,6 +456,11 @@ if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigi
 	$SaneConfig = $false
 }
 
+if($Global:Bigipreportconfig.Settings.RealTimeMemberStates -eq $null){
+	log error "Real time member states is missing from the configuration file. Update the the latest version of the file and try again."
+	$SaneConfig = $false
+}
+
 if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigipreportconfig.Settings.ReportRoot -eq ""){
 	log error "No report root configured"
 	$SaneConfig = $false
@@ -573,103 +580,94 @@ $Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + 
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
-public class VirtualServer
-{
-    public string name;
-    public string ip;
-	public string port;
-	public string defaultpool;
-	public string sslprofile;
-	public string compressionprofile;
-	public string persistence;
-	public string[] irules;
-	public string[] pools;
-    public string[] vlans;
-    public string trafficgroup;
-    public string vlanstate;
-	public string sourcexlatetype;
-	public string sourcexlatepool;
-	public string[] asmPolicies;
-	public string availability;
-	public string enabled;
-	public string currentconnections;
-	public string maximumconnections;
-	public string cpuavg5sec;
-	public string cpuavg1min;
-	public string cpuavg5min;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-
-public class Member {
-	public string name;
-	public string ip;
-	public string port;
-	public string availability;
-	public string enabled;
-	public string status;
-	public long priority;
-	public string currentconnections;
-	public string maximumconnections;
-}
-
-public class Pool {
-    public string name;
-    public string[] monitors;
-	public Member[] members;
-	public string loadbalancingmethod;
-	public string actiononservicedown;
-	public string allownat;
-	public string allowsnat;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-public class iRule {
-    public string name;
-    public string[] pools;
-	public string definition;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-public class Node {
-    public string ip;
-    public string name;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-public class Monitor {
-    public string name;
-    public string type;
-	public string sendstring;
-	public string receivestring;
-	public string loadbalancer;
-	public string interval;
-	public string timeout;
-}
-'@
-
-
-Add-Type @'
-using System.Collections;
-
-public class Datagrouplist {
-    public string name;
-    public string type;
-	public Hashtable data;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
+	
 	using System.Collections;
+
+	public class VirtualServer
+	{
+	    public string name;
+	    public string ip;
+		public string port;
+		public string defaultpool;
+		public string sslprofile;
+		public string compressionprofile;
+		public string persistence;
+		public string[] irules;
+		public string[] pools;
+	    public string[] vlans;
+	    public string trafficgroup;
+	    public string vlanstate;
+		public string sourcexlatetype;
+		public string sourcexlatepool;
+		public string[] asmPolicies;
+		public string availability;
+		public string enabled;
+		public string currentconnections;
+		public string maximumconnections;
+		public string cpuavg5sec;
+		public string cpuavg1min;
+		public string cpuavg5min;
+		public string loadbalancer;
+	}
+
+	public class Member {
+		public string name;
+		public string ip;
+		public string port;
+		public string availability;
+		public string enabled;
+		public string status;
+		public long priority;
+		public string currentconnections;
+		public string maximumconnections;
+	}
+
+	public class Pool {
+	    public string name;
+	    public string[] monitors;
+		public Member[] members;
+		public string loadbalancingmethod;
+		public string actiononservicedown;
+		public string allownat;
+		public string allowsnat;
+		public string loadbalancer;
+	}
+
+	public class iRule {
+	    public string name;
+	    public string[] pools;
+		public string definition;
+		public string loadbalancer;
+	}
+
+	public class Node {
+	    public string ip;
+	    public string name;
+		public string loadbalancer;
+	}
+
+	public class Monitor {
+	    public string name;
+	    public string type;
+		public string sendstring;
+		public string receivestring;
+		public string loadbalancer;
+		public string interval;
+		public string timeout;
+	}
+
+	public class Datagrouplist {
+	    public string name;
+	    public string type;
+		public Hashtable data;
+		public string loadbalancer;
+	}
+
+	public class PoolStatusVip {
+		public string url;
+		public string working;
+		public string state;
+	}
 
 	public class Loadbalancer {
 		public string name;
@@ -678,12 +676,8 @@ Add-Type @'
 		public string baseBuild;
 		public string model;
 		public Hashtable modules;
-		public string poolStatusVip;
+		public PoolStatusVip statusvip;
 	}
-
-'@
-
-Add-Type @'
 
 	public class ASMPolicy {
 		public string name;
@@ -941,12 +935,6 @@ function cacheLTMinformation {
 			$objTempNode.name = "Unnamed"
 		}
 		
-		#Since the report does not fully support route domains, remove the %id.
-		if($objTempNode.ip.Contains("%")){
-			$objTempNode.ip = $objTempNode.ip.Split("%")[0]
-		}
-		
-		
 		$LBNodes += $objTempNode
 
 	}
@@ -1161,11 +1149,6 @@ function cacheLTMinformation {
 			$objTempMember.Enabled = $PoolMemberstatuses[$i][$x].enabled_status
 			$objTempMember.Status = $PoolMemberstatuses[$i][$x].status_description
 			$objTempMember.Priority = $PoolMemberpriorities[$i][$x]
-			
-			#Remove the route domain id if it exists
-			if($objTempMember.ip.contains("%")){
-				$objTempMember.ip = $objTempMember.ip.Split("%")[0]
-			}
 
 			Try { 
 				$Statistics = $PoolMemberStatisticsDict[$objTempMember.Name + ":" + [string]$objTempMember.port]
@@ -1174,7 +1157,7 @@ function cacheLTMinformation {
 			} Catch {
 				log "error" "Unable to get statistics for member $(objTempMember.Name):$(objTempMember.Port) in pool $($objTempPool.name)"
 			}
-			
+
 			#Add the object to a list
 			$objTempPool.members += $objTempMember
 			
@@ -1444,10 +1427,12 @@ function cacheLTMinformation {
 	log info "Detecting pool status VIP"
 	[array]$PoolStatusVIPs = $LBVirtualservers | Where-Object { $_.irules -like "*/bigipreport_pool_status" }
 
+	$PoolStatusObj = New-Object -Type PoolStatusVip
+
 	if ($PoolStatusVIPs -eq $null) {
 
 		log warning "Unable to identify a pool status VIP on $loadbalancername"
-	
+		
 	} else {
 		
 		$SaneConfig = $true
@@ -1465,12 +1450,21 @@ function cacheLTMinformation {
 		}
 
 		if($SaneConfig){
+
 			log success "Pool status VIP $($PoolStatusVIP.name) detected, adding it to the load balancer object"
-			$LoadBalancer.poolStatusVip = "$($PoolStatusVIP.ip):$($PoolStatusVIP.port)"
+
+			
+
+			#Remove any route domain
+			$ipExRd = $PoolStatusVIP.ip -replace "%[0-9]+$", ""
+
+			$PoolStatusObj.url =  "http://$($ipExRd):$($PoolStatusVIP.port)"
 		}
 
 	}
 
+	$LoadBalancer.statusvip = $PoolStatusObj
+	
 	#Adding the configuration to the the global objects
 	$Global:nodes += $LBNodes
 	$Global:monitors += $LBMonitors
@@ -1478,7 +1472,7 @@ function cacheLTMinformation {
 	$Global:loadBalancers += $loadBalancer
 	$Global:iRules += $LBiRules
 	$Global:virtualservers += $LBVirtualservers
-	
+
 	#EndRegion
 }
 
@@ -1599,29 +1593,81 @@ Function Get-DefinedRules {
 #Region Function Translate-status
 Function Translate-Member-Status {
 
-	Param($Member)
+	Param($Member, $RealTimeStatus)
 
-	if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-		Return '<span class="statusicon"><img src="./images/green-circle-checkmark.png" title="Pool member is up"/></span> <span class="textstatus">UP</span>'
-	} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT" -and $Member.Status -eq "Pool member is available"){
-		Return '<span class="statusicon"><img src="./images/black-circle-checkmark.png" title="Member available, but disabled by parent"/></span> <span class="textstatus">DISABLED</span>'
-	} elseif ($Member.Status.contains("unable to connect") -or $Member.Status.contains("Could not connect")) {
-		Return  '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Could not connect, member down"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status.contains("Failed to succeed before deadline")) {
-		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Failed to succed before deadline"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status -eq "Pool member is available, user disabled"){
-		Return '<span class="statusicon"><img src="./images/black-circle-checkmark.png" title="Member is available, but disabled"/></span> <span class="textstatus">DISABLED</span>'
-	} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Member is marked down by a monitor"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status -eq "Parent down"){
-		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Parent monitor failed"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status -eq "Pool member does not have service checking enabled"){
-		Return '<span class="statusicon"><img src="./images/blue-square-questionmark.png" title="Member has no monitor assigned"/></span> <span class="textstatus">UNKNOWN</span>'
-	} elseif ($Member.Status -eq "Forced down"){
-		Return '<span class="statusicon"><img src="./images/black-diamond-exclamationmark.png" tile="Member is forced down"/></span> <span class="textstatus">DISABLED</span>'
+	if($RealTimeStatus){
+		if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$class = "memberup"
+			$icon = "green-circle-checkmark.png"
+			$title = "Pool member is able to pass traffic"
+			$textStatus = "UP"
+		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED"){
+			$icon = "red-circle-cross.png"
+			$title = "Pool member is unable to pass traffic"
+			$textStatus = "DOWN"
+		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_BLUE" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$icon = "green-circle-checkmark.png"
+			$title = "Pool member is able to pass traffic"
+			$textStatus = "UP"
+		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED" -or $Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT"){
+			$icon = "black-circle-checkmark.png"
+			$title = "Member is available, but disabled"
+			$textStatus = "DISABLED"
+		} else {
+			$icon = "blue-square-questionmark.png"
+			$title = "Unknown status"
+			$textStatus = "UNKNOWN"
+		}
 	} else {
-		Return '<span class="statusicon"><img src="./images/blue-square-questionmark.png" title="Unknown status"/></span> <span class="textstatus">UNKNOWN</span>'
+		if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$class = "memberup"
+			$icon = "green-circle-checkmark.png"
+			$title = "Pool member is up"
+			$textStatus = "UP"
+		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT" -and $Member.Status -eq "Pool member is available"){
+			$icon = "black-circle-checkmark.png"
+			$title = "Member available, but disabled by parent"
+			$textStatus = "DISABLED"
+		} elseif ($Member.Status.contains("unable to connect") -or $Member.Status.contains("Could not connect")) {
+			$icon = "red-circle-cross.png"
+			$title = "Could not connect, member down"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status.contains("Failed to succeed before deadline")) {
+			$icon = "red-circle-cross.png"
+			$title = "Failed to succed before deadline"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status -eq "Pool member is available, user disabled"){
+			$icon = "black-circle-checkmark.png"
+			$title = "Member is available, but disabled"
+			$textStatus = "DISABLED"
+		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$icon = "red-circle-cross.png"
+			$title = "Member is marked down by a monitor"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status -eq "Parent down"){
+			$icon = "red-circle-cross.png"
+			$title = "Parent monitor failed"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status -eq "Pool member does not have service checking enabled"){
+			$icon = "blue-square-questionmark.png"
+			$title = "Member has no monitor assigned"
+			$textStatus = "UNKNOWN"
+		} elseif ($Member.Status -eq "Forced down"){
+			$icon = "black-diamond-exclamationmark.png"
+			$title = "Member is forced down"
+			$textStatus = "DISABLED"
+		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED" -and $Member.Availability -eq "AVAILABILITY_STATUS_RED"){
+			$icon = "black-circle-cross.png"
+			$title = "Member is disabled and marked as down by a monitor"
+			$textStatus = "DISABLED"
+		} else {
+			$icon = "blue-square-questionmark.png"
+			$title = "Unknown status"
+			$textStatus = "UNKNOWN"
+		}
 	}
+
+	Return '<span class="statusicon"><img src="./images/' + $icon + '" title="' + $title + '"/></span> <span class="textstatus">' + $textStatus + '</span>'
 }
 #Endregion
 
@@ -1987,7 +2033,7 @@ $Global:html = @'
 <html>
 	<head>
 
-		<script type="text/javascript" language="javascript" src="./js/pace.js"></script>
+		<script type="text/javascript" language="javascript" src="./js/pace.js" data-pace-options='{ "restartOnRequestAfter": false }'></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.min.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.dataTables.min.js"></script>
 		
@@ -2028,13 +2074,25 @@ $Global:html = @'
 			$Global:html += "var ShowExportLink = true;"
 		} else {
 			$Global:html += "var ShowExportLink = false;"
-		}		
+		}
 
+		$Global:html += "const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";"
+		$Global:html += "const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";"
 
 $Global:html += @'		
 		</script>
 	</head>
 	<body>
+		<div style="position: absolute; border:1px;top:10px; left:25px;">
+			<table>
+				<tr>
+					<td><span class="topleftheader">Status VIPs:</span></td><td><span id="realtimetestsuccess">0</span> working, <span id="realtimetestfailed">0</span> failed, <span id="realtimenotconfigured">0</span> not configured</td>
+				</tr>
+				<tr>
+					<td><span class="topleftheader">Polling state:</span></td><td><span id="ajaxqueue">0</span> queued</td>
+				</tr>
+			</table>
+		</div>
 		<div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
 '@
 
@@ -2075,6 +2133,12 @@ $xPool = 0
 $xMember = 0
 $xVirtual = 0
 
+$RealTimeStatusDetected = ($Loadbalancers | Where-Object { $_.statusvip -ne $null }).Count -gt 0
+
+if($RealTimeStatusDetected){
+	log info "Status vips detected in the configuration, simplified icons will be used for the whole report"
+}
+
 foreach($LoadbalancerName in $BigIPDict.values){
 
 	#Cache objects to make the search faster
@@ -2084,9 +2148,8 @@ foreach($LoadbalancerName in $BigIPDict.values){
 	$LBmonitors = $Global:monitors | Where-Object { $_.loadbalancer -eq $loadbalancerName }
 	$LBiRules = $Global:irules | Where-Object { $_.loadbalancer -eq $loadbalancerName }
 	$LBDataGroupLists = $Global:datagrouplists | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	
-	foreach($vs in $LBvirtualservers
-	){
+
+	foreach($vs in $LBvirtualservers){
 		
 		$i++
 		
@@ -2108,7 +2171,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 						</td>
 "@
 
-		if($vs.name -eq "N/A (Orphan pool)"){
+		if($vs -eq "N/A (Orphan pool)"){
 			$Global:html += @"
 
 						<td class="virtualServerCell">
@@ -2314,8 +2377,8 @@ foreach($LoadbalancerName in $BigIPDict.values){
 								
 								$Global:html += @"
 								
-									<td class="PoolMember" id="Poolmember$xMember">
-										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Member-Status -Member $Member)
+									<td class="PoolMember" data-pool="Pool$xPool">
+										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - <span data-member="$($Member.ip + ":" + $Member.port)">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</div>
 									</td>
 								</tr>
 "@
@@ -2327,8 +2390,8 @@ foreach($LoadbalancerName in $BigIPDict.values){
 								$Global:html += @"
 								
 								<tr class="$pool-$xPool">
-									<td class="PoolMember" id="Poolmember$xMember">
-										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Member-Status -Member $Member)
+									<td class="PoolMember" data-pool="Pool$xPool">
+										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - <span data-member="$($Member.ip + ":" + $Member.port)">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</span>
 									</td>
 								</tr>
 "@

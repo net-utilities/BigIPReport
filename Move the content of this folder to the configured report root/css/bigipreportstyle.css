@@ -122,6 +122,27 @@
 	border:none;
 }
 
+/* Containing style for the top left information box */
+
+
+span.topleftheader {
+	font-weight: bold;
+}
+
+span#realtimetestsuccess {
+	font-weight: bold;
+	color:green;
+}
+
+span#realtimetestfailed {
+	font-weight: bold;
+	color:red;
+}
+
+span#realtimenotconfigured {
+	font-weight: bold;
+	color:#cc9900;
+}
 
 /* Containing the chevrons used to collapse and expand the pool*/
 
