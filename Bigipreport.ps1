@@ -1694,7 +1694,7 @@ Function Translate-VirtualServer-Status {
 	
 	} elseif($virtualserver.enabled -eq "ENABLED_STATUS_DISABLED" -and $virtualserver.availability -eq "AVAILABILITY_STATUS_RED"){
 	
-		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-checkmark.png`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
+		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-cross.png`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
 	
 	}
 
