@@ -124,9 +124,15 @@
 
 /* Containing style for the top left information box */
 
+div.realtimestatusdiv {
+	position: absolute;
+	top:15px;
+	left:25px;
+}
 
 span.topleftheader {
 	font-weight: bold;
+	color: #111;
 }
 
 span#realtimetestsuccess {
@@ -142,6 +148,10 @@ span#realtimetestfailed {
 span#realtimenotconfigured {
 	font-weight: bold;
 	color:#cc9900;
+}
+
+span#refreshcountdown {
+	font-weight: bold;
 }
 
 /* Containing the chevrons used to collapse and expand the pool*/

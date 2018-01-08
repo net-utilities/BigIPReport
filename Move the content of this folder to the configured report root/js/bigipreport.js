@@ -474,7 +474,9 @@
 	function initializeStatusVIPs(){
 
 		// Also initialize the ajaxQueue
-		siteData.ajaxQueue = 0;
+		siteData.memberStates = {}
+		siteData.memberStates.ajaxQueue = 0;
+		siteData.memberStates.ajaxFailures = [];
 		
 		var loadbalancers = siteData.loadbalancers;
 
@@ -513,7 +515,7 @@
 			loadbalancer.statusvip.reason = "No pools with members found";
 		} else {
 			
-			siteData.ajaxQueue++;
+			siteData.memberStates.ajaxQueue++;
 
 			$.ajax({
 			  dataType: "json",
@@ -522,7 +524,7 @@
 			  	$("span#realtimetestsuccess").text(parseInt($("span#realtimetestsuccess").text()) + 1);
 			  	loadbalancer.statusvip.working = true;
 				loadbalancer.statusvip.reason = "";
-				siteData.ajaxQueue--;
+				siteData.memberStates.ajaxQueue--;
 			  },
 			  timeout: 2000
 			})					
@@ -530,31 +532,58 @@
 				$("span#realtimetestfailed").text(parseInt($("span#realtimetestfailed").text()) + 1);
 				loadbalancer.statusvip.working = false;
 				loadbalancer.statusvip.reason = jqxhr.statusText;
-				siteData.ajaxQueue--;
+				siteData.memberStates.ajaxQueue--;
 			})
 			.complete(function(){
 
-				if(siteData.ajaxQueue === 0){
+				if(siteData.memberStates.ajaxQueue === 0){
+					
 					//Initiate pool status updates
+					var pollCurrentView = function(){
+						resetClock();
+						$("span#ajaxqueue").text($("table.pooltable tr td.poolname:visible").length);
+						$("table.pooltable tr td.poolname:visible").each(function(){
+							getPoolStatus(this);
+						});
+					}
+
+					pollCurrentView()
+
 					setInterval(function(){
-						if(siteData.ajaxQueue === 0){
-							$("span#ajaxqueue").text($("table.pooltable tr td.poolname:visible").length);
-							$("table.pooltable tr td.poolname:visible").each(function(){
-								getPoolStatus(this);
-							});
+						if(siteData.memberStates.ajaxQueue === 0){
+							pollCurrentView();
 						} else {
+							resetClock();
 							console.log("Did not finish the previous refresh in time.")
 						}
-					}, (AJAXREFRESHRATE * 300));
+					}, (AJAXREFRESHRATE * 1000));
 				}
 
 			});
 		}
 	}
 
+
+	function resetClock(){
+
+		var countDown = AJAXREFRESHRATE;
+
+		$("span#realtimenextrefresh").html(", refresh in <span id=\"refreshcountdown\">" + countDown + "</span> seconds");
+
+		var clock = setInterval(function(){
+			countDown--;
+			if(countDown === 0){
+				clearTimeout(clock)
+			}
+			$("span#realtimenextrefresh").html(", refresh in <b>" + countDown + "</b> seconds");
+
+		}, 1000);
+
+	}
+
 	function getPoolStatus(poolCell) {
 
-		if(siteData.ajaxQueue >= AJAXMAXQUEUE){
+		if(siteData.memberStates.ajaxQueue >= AJAXMAXQUEUE){
 			setTimeout(function(){
 				getPoolStatus(poolCell)
 			}, 200);
@@ -574,14 +603,15 @@
 				var poolId = $(poolCell).attr("id");
 
 				var pool = getPool(poolName, loadbalancerName);
-
+				var url = loadbalancer.statusvip.url + pool.name
+				
 				$.ajax({
 				  dataType: "json",
-				  url: loadbalancer.statusvip.url + pool.name,
+				  url: url,
 				  success: function(data){
 				  	if(data.success){
 
-				  		decreaseAjaxQueue()
+				  		decreaseAjaxQueue();
 
 				  		for(var memberStatus in data.memberstatuses){
 
@@ -601,12 +631,13 @@
 				  			}
 				  		}
 
-
 				  	}
 				  },
 				  timeout: 2000
 				})					
 				.fail(function(jqxhr){
+					// To be used later in the console
+					// siteData.memberStates.ajaxFailures.push({ url: url, code: jqxhr.status, reason: jqxhr.statusText })
 					decreaseAjaxQueue()
 					return false;
 				});
@@ -619,14 +650,15 @@
 	}
 
 	function decreaseAjaxQueue(){
-		siteData.ajaxQueue--;
+
+		siteData.memberStates.ajaxQueue--;
 
 		//Decrease the total queue
 		$("span#ajaxqueue").text($("span#ajaxqueue").text() - 1);
 	}
 
 	function increaseAjaxQueue(){
-		siteData.ajaxQueue++;
+		siteData.memberStates.ajaxQueue++;
 	}
 
 	function setMemberState(statusSpan, memberStatus){
