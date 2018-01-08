@@ -2083,13 +2083,13 @@ $Global:html += @'
 		</script>
 	</head>
 	<body>
-		<div style="position: absolute; border:1px;top:10px; left:25px;">
+		<div class="realtimestatusdiv">
 			<table>
 				<tr>
 					<td><span class="topleftheader">Status VIPs:</span></td><td><span id="realtimetestsuccess">0</span> working, <span id="realtimetestfailed">0</span> failed, <span id="realtimenotconfigured">0</span> not configured</td>
 				</tr>
 				<tr>
-					<td><span class="topleftheader">Polling state:</span></td><td><span id="ajaxqueue">0</span> queued</td>
+					<td><span class="topleftheader">Polling state:</span></td><td><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span></td>
 				</tr>
 			</table>
 		</div>
