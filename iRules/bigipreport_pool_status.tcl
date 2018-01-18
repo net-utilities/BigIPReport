@@ -5,7 +5,7 @@ when HTTP_REQUEST {
     if { [catch { 
         set poolmembers [members -list $poolname]
 
-        set returnjson "\{\n\t\"success\"\:true,\n\t\"poolname\": \"$poolname\",\n\t\"memberstatus\": \{"
+        set returnjson "\{\n\t\"success\"\:true,\n\t\"poolname\": \"$poolname\",\n\t\"memberstatuses\": \{"
 
         set membercount [llength $poolmembers]
         set i 0
