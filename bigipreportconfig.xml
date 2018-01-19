@@ -36,18 +36,30 @@
 		*	This variable contains the load balancers which configuration you want base the report on.
 		*
 		*	Example:
-		*	<Loadbalancers>
-		*		<Loadbalancer>10.1.0.20</Loadbalancer>
-		*		<Loadbalancer>192.168.1.23</Loadbalancer>	
-		*	</Loadbalancers>
+			This example configures two device groups, whereas one has a pool status VIP.
+			
+			<DeviceGroups>
+				<DeviceGroup>
+					<Loadbalancer>192.168.10.23</Loadbalancer>
+					<Loadbalancer>192.168.10.23</Loadbalancer>
+					<StatusVip>https://lb1statusvip.domain.local</StatusVip>
+				</DeviceGroup>
+				<DeviceGroup>
+					<Loadbalancer>192.168.11.55</Loadbalancer>
+					<Loadbalancer>192.168.11.56</Loadbalancer>
+					<StatusVip></StatusVip>
+				</DeviceGroup>
+			</DeviceGroups>
 		*
 		**************************************************************************************************************************************
 		-->
 		
-		<Loadbalancers>
-			<Loadbalancer></Loadbalancer>
-		</Loadbalancers>
-		
+		<DeviceGroups>
+			<DeviceGroup>
+				<Device></Device>
+				<StatusVip></StatusVip>
+			</DeviceGroup>
+		</DeviceGroups>
 		
 		<!--
 		**************************************************************************************************************************************
