@@ -88,7 +88,7 @@
 #                                     the data
 #        4.1.2        2016-06-23      Make it possible to store the report somewhere else than the site root        Patrik Jonsson  -
 #                                     Adding option to add shares if the report script is running on a separate
-#                                     server.
+#                                     server
 #                                     Adding log file pruning (max lines)
 #        4.1.3        2016-07-01      Fixed an error in the pre-execution part. Updated some log verbosermation.       Patrik Jonsson  -
 #        4.1.4        2016-07-11      Fixed a problem with the javascript files not referring the correct folder    Patrik Jonsson  -
@@ -126,39 +126,39 @@
 #        4.4.1        2017-07-05      Removing ASM, adding preferences                                              Patrik Jonsson  -
 #        4.4.2        2017-07-08      Adding new logo and version number in the footer                              Patrik Jonsson  -
 #        4.4.3        2017-07-09      Moved preferences to its own window                                           Patrik Jonsson  -
-#        4.5.0        2017-07-12      Adding column toggle. Moving iRule selector to its own window.                Patrik Jonsson  -
+#        4.5.0        2017-07-12      Adding column toggle. Moving iRule selector to its own window                 Patrik Jonsson  -
 #                                     Optimizing css
 #        4.5.1        2017-07-15      Now also fetching information about the load balancers for future use         Patrik Jonsson  -
 #        4.5.2        2017-07-16      Re-adding basic ASM support for devices running version 12 and above.         Patrik Jonsson  -
 #        4.5.3        2017-07-20      Fixing a bug when highlighting irules and the js folder is not located        Patrik Jonsson  -
-#                                     in the root folder.
+#                                     in the root folder
 #        4.5.4        2017-07-21      Replacing old Javascript loader with one that is smoother when loading        Patrik Jonsson  -
 #                                     larger sets of data
 #        4.5.5        2017-07-22      Adding a reset filters button                                                 Patrik Jonsson  -
 #        4.5.6        2017-08-04      Adding VLAN information to the virtual server object                          Patrik Jonsson  -
 #        4.5.7        2017-08-13      Adding icons                                                                  Patrik Jonsson  -
 #        4.5.8        2017-08-14      Adding filter icon                                                            Patrik Jonsson  -
-#        4.5.9        2017-08-16      Adding traffic group to the virtual server object and showing it.             Patrik Jonsson  -
+#        4.5.9        2017-08-16      Adding traffic group to the virtual server object and showing it             Patrik Jonsson  -
 #        4.6.0        2017-08-17      Adding virtual server state icons                                             Patrik Jonsson  -
 #        4.6.1        2017-08-18      Fixing bug when extracting source NAT pool                                    Patrik Jonsson  -
 #        4.6.2        2017-08-18      Fixing a bug when extracting version information                              Patrik Jonsson  -
 #        4.6.3        2017-08-19      Adding LB method, SNAT and NAT to pool details                                Patrik Jonsson  -
 #        4.6.4        2017-08-24      Adding "All" to the pagination options                                        Patrik Jonsson  -
-#        4.6.5        2017-09-08      Fixing a bug when dealing with modules that is not known.                     Patrik Jonsson  No
+#        4.6.5        2017-09-08      Fixing a bug when dealing with modules that is not known                      Patrik Jonsson  No
 #                                     Also defining iRulesLX as a known module
 #        4.6.6        2017-09-11      Adding virtual server and pool statistics                                     Patrik Jonsson  No
 #        4.6.7        2017-09-12      Small CSS fix to make the pool details prettier                               Patrik Jonsson  No
-#        4.6.8        2017-09-20      Adding fix for duplicate detected data group lists.                           Patrik Jonsson  No
-#        4.6.9        2017-09-25      Preventing caching of Json.                                                   Patrik Jonsson  No
-#        4.7.0        2017-12-20      Adding options to export to the report to CSV.                                Patrik Jonsson  Yes
-#        4.7.1        2017-12-20      Adding support for monitors using HEAD.                                       Patrik Jonsson  No
-#        4.7.2        2017-12-20      Adding support for multiple configuration files.                              Patrik Jonsson  No
+#        4.6.8        2017-09-20      Adding fix for duplicate detected data group lists                            Patrik Jonsson  No
+#        4.6.9        2017-09-25      Preventing caching of Json                                                    Patrik Jonsson  No
+#        4.7.0        2017-12-20      Adding options to export to the report to CSV                                 Patrik Jonsson  Yes
+#        4.7.1        2017-12-20      Adding support for monitors using HEAD                                        Patrik Jonsson  No
+#        4.7.2        2017-12-20      Adding support for multiple configuration files                               Patrik Jonsson  No
 #        4.7.3        2017-12-20      Adding more script pre-execution checks
 #                                     Adding javascript error handling when loading the report json files           Patrik Jonsson  No
-#        4.7.4        2017-12-27      Adding script requirement for Powershell version 4.                           Patrik Jonsson  No
-#        4.7.5        2017-12-28      Adding more verbose error messages when the json files fails to load.         Patrik Jonsson  No
-#        4.8.0        2018-01-07      The script now supports real-time member status.                              Patrik Jonssson Yes
-#                                     A lot of small fixes.
+#        4.7.4        2017-12-27      Adding script requirement for Powershell version 4                            Patrik Jonsson  No
+#        4.7.5        2017-12-28      Adding more verbose error messages when the json files fails to load          Patrik Jonsson  No
+#        4.8.0        2018-01-07      The script now supports real-time member status                               Patrik Jonssson Yes
+#                                     A lot of small fixes
 #        4.8.1       2018-01-19       Changing to device groups instead of individual load balancers                Patrik Jonsson  Yes
 #                                     Moving status VIP support to the device groups
 #
@@ -554,13 +554,9 @@ if(-not $SaneConfig){
 #
 ################################################################################################################################################
 
-
-
-
 #Declaring variables
 
 #Variables used for storing report data
-$Global:BigIPDict = @{}
 $Global:NATdict = @{}
 $Global:virtualservers = @()
 $Global:iRules = @()
@@ -683,6 +679,7 @@ Add-Type @'
 		public string category;
 		public string serial;
 		public bool active;
+		public bool isonlydevice;
 		public string color;
 		public Hashtable modules;
 		public PoolStatusVip statusvip;
@@ -825,8 +822,7 @@ function cacheLTMinformation {
 
 	Param(
 		$f5,
-		$LoadBalancer,
-		$SingleDevice
+		$LoadBalancer
 	)
 	
 	$VersionInfo = $f5.SystemSystemInfo.get_product_information()
@@ -1632,7 +1628,7 @@ Function Translate-VirtualServer-Status {
 #Region Call Cache LTM information
 Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) { 
 	
-	$SingleDevice = $DeviceGroup.Device.Count -eq 1
+	$Standalone = $DeviceGroup.Device.Count -eq 1
 	$StatusVIP = $DeviceGroup.StatusVip
 
 	Foreach($Device in $DeviceGroup.Device){
@@ -1647,7 +1643,9 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 			
 			$f5 = Get-F5.iControl
 			
-			$objLoadBalancer = New-Object -Type Loadbalancer
+			$objLoadBalancer = New-Object -TypeName "Loadbalancer"
+
+			$objLoadbalancer.isonlydevice = $Standalone
 
 			log verbose "Getting hostname"
 			
@@ -1660,11 +1658,8 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 				log error "Failed to get hostname"
 			}
 
-
+			#Get information about ip, name, model and category
 			$SystemInfo = $f5.SystemSystemInfo.get_system_information()
-
-			#Add ip and hostname to the BigIPDict to be used later
-			$BigIPDict.add($Device, $SystemInfo.host_name)
 
 			$objLoadBalancer.ip = $Device
 			$objLoadBalancer.name = $BigIPHostname
@@ -1723,12 +1718,12 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 			$Global:loadBalancers += $objLoadBalancer
 
 			#Don't continue if this loabalancer is not active
-			If(-not $objLoadBalancer.active -and -not $SingleDevice){
-				log info "This load balancer is not active, and won't be indexed"
-				Continue
-			} else {
+			If($objLoadBalancer.active -or $Standalone){
 				log verbose "Caching LTM information from $BigIPHostname"
 				cacheLTMinformation -f5 $f5 -LoadBalancer $objLoadbalancer
+			} else {
+				log info "This load balancer is not active, and won't be indexed"
+				Continue
 			}
 			
 		} else {
@@ -1761,7 +1756,7 @@ function Test-ReportData {
 				$LoadbalancerName = $Loadbalancer.name 
 
 				# Only check for load balancers that is alone in a device group, or active
-				if($Loadbalancer.active -or $DeviceGroup.Device.Count -eq 1){
+				if($Loadbalancer.active -or $Loadbalancer.isonlydevice){
 				
 					#Verify that the $Global:virtualservers contains the $LoadbalancerName
 					If ($Global:pools.Count -ne 0) {
@@ -2152,7 +2147,9 @@ if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
 }
 
-foreach($LoadbalancerName in $BigIPDict.values){
+foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonlydevice })){
+
+	$LoadbalancerName = $Loadbalancer.name
 
 	#Cache objects to make the search faster
 	$LBvirtualservers = $Global:virtualservers | Where-Object { $_.loadbalancer -eq $loadbalancerName }
