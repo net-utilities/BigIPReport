@@ -1,5 +1,5 @@
 when HTTP_REQUEST {
-
+	
     set poolname [HTTP::path]  
 
     if { [catch { 
@@ -34,4 +34,5 @@ when HTTP_REQUEST {
                         \t\}\n\
                     \}" Content-Type application/json Access-Control-Allow-Origin "*" Connection Close
     }
+	
 }
