@@ -15,156 +15,158 @@
 #		You should have received a copy of the GNU General Public License
 #		along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
-#		Version			Date			Change																	Author          Need Config update?
-#		1.0			2013-02-04		Initial version																Patrik Jonsson  -
-#		1.7			2013-06-07		Fixed a bug regarding SSL profiles											Patrik Jonsson  -
-#		1.8			2013-06-12		Removed the default pool from the pool list if it was set to "None"			Patrik Jonsson  -
-#		1.9			2013-06-12		Added a link to be able to go back to the report after showing iRules.		Patrik Jonsson  -
-#		2.0			2013-06-12		Adding more load balancers.													Patrik Jonsson  -
-#		2.1			2014-01-10		Fixing the re-initialization bug											Patrik Jonsson  -
-#		2.2			2014-02-14		Adding send strings, receive strings, interval and timeout.					Patrik Jonsson  -
-#		2.3			2014-02-19		Made the caching more efficient (100% more) and fixed gpi white spaces.		Patrik Jonsson  -
-#									Adding additional comments.													Patrik Jonsson  -
-#		2.4			2014-02-20		Adding case insensitive pool detection in irules.							Patrik Jonsson  -
-#		2.5			2014-02-21		Fixing a bug allow single iRules in $Global:bigipirules.					Patrik Jonsson  -
-#		2.6			2014-02-24		Fixing iRule table and new CSS.												Patrik Jonsson  -
-#									Adding sorting of columns.													
-#									Adding textarea for iRules.
-#		2.7			2014-02-25		Fixing prettier HTML structure
-#		2.8			2014-02-27		Fixing header filter														Patrik Jonsson  -
-#		2.9			2014-03-09		Rewriting to use node object instead of dictionary							Patrik Jonsson  -
-#									Fixing a bug that appeared when using Powershell 3.0
-#		3.0			2015-07-21		Fixing pool verification													Patrik Jonsson  -
-#		3.1			2015-07-22		Showing big monitors is easier												Patrik Jonsson  -
-#									Adding functionality to hide certain information to save space.	
-#		3.2			2015-07-23		Trying nested tables for pool member information							Patrik Jonsson  -
-#		3.3			2015-07-25		Fixed better CSS															Patrik Jonsson  -
-#									Fixed a loading screen
-#									Adding member information in the table instead of popup
-#		3.4							Add search highlighting														Patrik Jonsson  -
-#									Add more entries per page													Patrik Jonsson  -
-#		3.5			2015-07-29		Fixing the iRules syntax highlihting										Patrik Jonsson  -
-#		3.6			2015-07-30		Fixing a drop down for iRule selection										Patrik Jonsson  -
-#		3.7			2015-07-31		Added a lightbox for the iRules												Patrik Jonsson  -
-#									Adding error reporting when the report fails
-#		3.8			2015-11-11		Added TLS1.2 support														Patrik Jonsson  -
-#									Changed the javascript so the monitors would not cross the screen edge.
-#		3.9			2016-02-04		Fixed a bug when doing minimal configuration								Patrik Jonsson  -
-#									Made the Bigip target list easier to configure (exchanged BigIPdict)
-#		3.9.2		2016-02-25		Ending the version inflation. :)
-#		3.9.2		2016-02-26		Changing the iRule pool regex to cater for explicit pool selections			Patrik Jonsson  -
-#		3.9.3		2016-02-28		Fixed faster caching of monitors											Patrik Jonsson  -
-#									Added client site checking for stale data									
-#									Added member status to the report
-#		3.9.4		2016-03-01		Adding support to show virtual server details irules						Patrik Jonsson  -
-#									Adding generated strings to test the monitors
-#									Added a pool details lightbox instead of the popup
-#		3.9.5		2016-03-02		Adding support for latest jQuery											Patrik Jonsson  -
-#									Fixed UTF8 json in order to support	Firefox
-#									Cleaned CSS
-#									Cleaned the javascript
-#									Cleaned the HTML
-#		3.9.6		2016-03-04		Caching the data in temp files when writing the html and jsons				Patrik Jonsson  -
-#		3.9.7		2016-03-05		Adding a possibility to share searches										Patrik Jonsson  -
-#		4.0			2016-03-07		Fixed the pool expand function where it does not expand for column			Patrik Jonsson  -
-#									searches.
-#									Fixed syntax highlighting for column searches
-#		4.0.1		2016-03-11		Fixed an error in the javascript that used a future function not			Patrik Jonsson  -
-#									included in the current version.
-#		4.0.2		2016-03-14		Preparing for showing Virtual Server details								Patrik Jonsson  -
-#		4.0.3		2016-03-23		Making the curl links compatible with the windows binary					Patrik Jonsson  -
-#									Adding share link to show pool
-#									Fixed a bug where monitors using tags as receive string would not show.
-#		4.0.4		2016-05-13		Fixed a bug with a non-declared variable									Patrik Jonsson  -
-#		4.0.5		2016-05-23		Made the update check more aggressive by request of devcentral users		Patrik Jonsson  -
-#		4.0.6		2016-06-08		Making showing of irules easier to define									Patrik Jonsson  -
-#		4.0.7		2016-06-09		Replacing config section with a config file									Patrik Jonsson  -
-#                                   Using Powershell Strict mode to improve script quality
-#		4.0.8		2016-06-10		Adding logging options														Patrik Jonsson  -
-#									Adding checks and retries when writing the report
-#		4.0.9		2016-06-14		Changed the pool regular expression to allow tab and multiple space			Patrik Jonsson  -
-#		4.1.0		2016-06-20		Updated the report mails to be more structured (css and table)				Patrik Jonsson  -
-#		4.1.1		2016-06-21		Made the report check for missing load balancers before compiling			Patrik Jonsson  -
-#									the data
-#		4.1.2		2016-06-23		Make it possible to store the report somewhere else than the site root		Patrik Jonsson  -
-#									Adding option to add shares if the report script is running on a separate
-#									server.
-#									Adding log file pruning (max lines)
-#		4.1.3		2016-07-01		Fixed an error in the pre-execution part. Updated some log information.		Patrik Jonsson  -
-#		4.1.4		2016-07-11		Fixed a problem with the javascript files not referring the correct folder	Patrik Jonsson  -
-#		4.2.0		2016-07-18		Added support to show virtual server details								Patrik Jonsson  -
-#									Added support for showing irules
-#									Added support for scanning data group lists
-#									Changed value of irules on Virtual servers without irules to an empty 
-#									array instead of none.
-#		4.2.1		2016-07-19		Added an additional possible status to the pool details view				Patrik Jonsson  -
-#		4.2.2		2016-08-10		Fixed a bug with error reporting											Patrik Jonsson  -
-#									Made it easier to close larger irules
-#       			2016-08-19	    Cleaning up CSS
-#       			2016-08-19	    Fixed a bug in the data group list parser function
-#		4.2.3		2016-08-29		Adding data group list parsing to json files								
-#									Fixed so you can hide the compression column
-#		4.2.4		2016-08-30		Fixed a bug in the data group list parser									Patrik Jonsson  -
-#									Showing data group lists now works
-#		4.2.5		2016-08-31		Rewrote the parser to use dictionaries instead								Patrik Jonsson  -
-#									Parsing data group lists in irules now works
-#		4.2.6		2016-09-01		Fixing css for data group list lightbox to match the rest					Patrik Jonsson  -
-#		4.2.7		2016-09-06		Improving data group list parsing by skipping content in comments			Patrik Jonsson  -
-#		4.2.8		2016-09-12		Added support for showing priority groups									Patrik Jonsson  -
-#		4.2.9		2016-09-12		Showing persistence profile in virtual server details						Patrik Jonsson  -
-#		4.3.0		2016-01-10		Fixing support for partitions single configuration objects
-#		4.3.1		2017-03-02		Removing any route domain before comparing to NAT list						Patrik Jonsson  -
-#		4.3.2		2017-03-02		Making the script do recursive calls instead of per partition. Much faster  Patrik Jonsson  -
-#		4.3.3		2017-03-02		Adding basic ASM support													Patrik Jonsson  -
-#		4.3.4		2017-03-07		Fixing a mistake where the wrong column setting was referred				Patrik Jonsson  -
-#		4.3.5		2017-03-23		Improving the check for missing data										Patrik Jonsson  -
-#		4.3.6		2017-03-23		Using stream writer intead of out-file for improved performance				Patrik Jonsson  -
-#		4.3.7		2017-03-23		Removing virtual servers connected to orphaned pools from the post check.	Patrik Jonsson  -
-#		4.3.8		2017-03-24		Only using/comparing objects local to the LB currently worked on (faster)	Patrik Jonsson  -
-#		4.3.9		2017-04-06		Allowing orphaned objects in the JSON, fixing a bug when testing data		Patrik Jonsson  -
-#		4.4.0		2017-06-21		Fixing issue with the API not returning empty irules						Patrik Jonsson  -
-#		4.4.1		2017-07-05		Removing ASM, adding preferences											Patrik Jonsson  -
-#		4.4.2		2017-07-08		Adding new logo and version number in the footer							Patrik Jonsson  -
-#		4.4.3		2017-07-09		Moved preferences to its own window 										Patrik Jonsson  -
-#		4.5.0		2017-07-12		Adding column toggle. Moving iRule selector to its own window.				Patrik Jonsson  -
-#									Optimizing css
-#		4.5.1		2017-07-15		Now also fetching information about the load balancers for future use 		Patrik Jonsson  -
-#		4.5.2		2017-07-16		Re-adding basic ASM support for devices running version 12 and above.		Patrik Jonsson  -
-#       4.5.3       2017-07-20      Fixing a bug when highlighting irules and the js folder is not located      Patrik Jonsson  -
-#                                   in the root folder.
-#		4.5.4		2017-07-21		Replacing old Javascript loader with one that is smoother when loading		Patrik Jonsson  -
-#									larger sets of data
-#		4.5.5		2017-07-22		Adding a reset filters button												Patrik Jonsson  -
-#       4.5.6       2017-08-04      Adding VLAN information to the virtual server object                        Patrik Jonsson  -
-#		4.5.7		2017-08-13		Adding icons 																Patrik Jonsson  -
-#		4.5.8		2017-08-14		Adding filter icon 															Patrik Jonsson  -
-#		4.5.9		2017-08-16		Adding traffic group to the virtual server object and showing it.			Patrik Jonsson  -
-#		4.6.0		2017-08-17		Adding virtual server state icons 											Patrik Jonsson  -
-#		4.6.1		2017-08-18		Fixing bug when extracting source NAT pool 									Patrik Jonsson  -
-#		4.6.2		2017-08-18		Fixing a bug when extracting version information 							Patrik Jonsson  -
-#		4.6.3		2017-08-19		Adding LB method, SNAT and NAT to pool details 								Patrik Jonsson  -
-#		4.6.4		2017-08-24		Adding "All" to the pagination options										Patrik Jonsson  -
-#		4.6.5		2017-09-08		Fixing a bug when dealing with modules that is not known. 					Patrik Jonsson  No
-#									Also defining iRulesLX as a known module
-#		4.6.6		2017-09-11		Adding virtual server and pool statistics				 					Patrik Jonsson  No
-#		4.6.7		2017-09-12		Small CSS fix to make the pool details prettier								Patrik Jonsson  No
-#		4.6.8		2017-09-20		Adding fix for duplicate detected data group lists.							Patrik Jonsson  No
-#		4.6.9		2017-09-25		Preventing caching of Json.                         						Patrik Jonsson  No
-#		4.7.0		2017-12-20		Adding options to export to the report to CSV. 								Patrik Jonsson  Yes
-#		4.7.1		2017-12-20		Adding support for monitors using HEAD.										Patrik Jonsson  No
-#		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik Jonsson  No
-#		4.7.3		2017-12-20		Adding more script pre-execution checks
-#									Adding javascript error handling when loading the report json files			Patrik Jonsson  No
-#		4.7.4		2017-12-27		Adding script requirement for Powershell version 4.							Patrik Jonsson  No
-#		4.7.5		2017-12-28		Adding more verbose error messages when the json files fails to load.		Patrik Jonsson  No
-#		4.8.0		2018-01-07		The script now supports real-time member status.							Patrik Jonssson Yes
-#									A lot of small fixes.
+#        Version      Date            Change                                                                        Author          Need Config update?
+#        1.0          2013-02-04      Initial version                                                               Patrik Jonsson  -
+#        1.7          2013-06-07      Fixed a bug regarding SSL profiles                                            Patrik Jonsson  -
+#        1.8          2013-06-12      Removed the default pool from the pool list if it was set to "None"           Patrik Jonsson  -
+#        1.9          2013-06-12      Added a link to be able to go back to the report after showing iRules.        Patrik Jonsson  -
+#        2.0          2013-06-12      Adding more load balancers.                                                   Patrik Jonsson  -
+#        2.1          2014-01-10      Fixing the re-initialization bug                                              Patrik Jonsson  -
+#        2.2          2014-02-14      Adding send strings, receive strings, interval and timeout.                   Patrik Jonsson  -
+#        2.3          2014-02-19      Made the caching more efficient (100% more) and fixed gpi white spaces.       Patrik Jonsson  -
+#                                     Adding additional comments.                                                   Patrik Jonsson  -
+#        2.4          2014-02-20      Adding case insensitive pool detection in irules.                             Patrik Jonsson  -
+#        2.5          2014-02-21      Fixing a bug allow single iRules in $Global:bigipirules.                      Patrik Jonsson  -
+#        2.6          2014-02-24      Fixing iRule table and new CSS.                                               Patrik Jonsson  -
+#                                     Adding sorting of columns.
+#                                     Adding textarea for iRules.
+#        2.7          2014-02-25      Fixing prettier HTML structure
+#        2.8          2014-02-27      Fixing header filter                                                          Patrik Jonsson  -
+#        2.9          2014-03-09      Rewriting to use node object instead of dictionary                            Patrik Jonsson  -
+#                                     Fixing a bug that appeared when using Powershell 3.0
+#        3.0          2015-07-21      Fixing pool verification                                                      Patrik Jonsson  -
+#        3.1          2015-07-22      Showing big monitors is easier                                                Patrik Jonsson  -
+#                                     Adding functionality to hide certain information to save space.
+#        3.2          2015-07-23      Trying nested tables for pool member information                              Patrik Jonsson  -
+#        3.3          2015-07-25      Fixed better CSS                                                              Patrik Jonsson  -
+#                                     Fixed a loading screen
+#                                     Adding member information in the table instead of popup
+#        3.4                          Add search highlighting                                                       Patrik Jonsson  -
+#                                     Add more entries per page                                                     Patrik Jonsson  -
+#        3.5          2015-07-29      Fixing the iRules syntax highlihting                                          Patrik Jonsson  -
+#        3.6          2015-07-30      Fixing a drop down for iRule selection                                        Patrik Jonsson  -
+#        3.7          2015-07-31      Added a lightbox for the iRules                                               Patrik Jonsson  -
+#                                     Adding error reporting when the report fails
+#        3.8          2015-11-11      Added TLS1.2 support                                                          Patrik Jonsson  -
+#                                     Changed the javascript so the monitors would not cross the screen edge.
+#        3.9          2016-02-04      Fixed a bug when doing minimal configuration                                  Patrik Jonsson  -
+#                                     Made the Bigip target list easier to configure (exchanged BigIPdict)
+#        3.9.2        2016-02-25      Ending the version inflation. :)
+#        3.9.2        2016-02-26      Changing the iRule pool regex to cater for explicit pool selections           Patrik Jonsson  -
+#        3.9.3        2016-02-28      Fixed faster caching of monitors                                              Patrik Jonsson  -
+#                                     Added client site checking for stale data
+#                                     Added member status to the report
+#        3.9.4        2016-03-01      Adding support to show virtual server details irules                          Patrik Jonsson  -
+#                                     Adding generated strings to test the monitors
+#                                     Added a pool details lightbox instead of the popup
+#        3.9.5        2016-03-02      Adding support for latest jQuery                                              Patrik Jonsson  -
+#                                     Fixed UTF8 json in order to support    Firefox
+#                                     Cleaned CSS
+#                                     Cleaned the javascript
+#                                     Cleaned the HTML
+#        3.9.6        2016-03-04      Caching the data in temp files when writing the html and jsons                Patrik Jonsson  -
+#        3.9.7        2016-03-05      Adding a possibility to share searches                                        Patrik Jonsson  -
+#        4.0          2016-03-07      Fixed the pool expand function where it does not expand for column            Patrik Jonsson  -
+#                                     searches.
+#                                     Fixed syntax highlighting for column searches
+#        4.0.1        2016-03-11      Fixed an error in the javascript that used a future function not              Patrik Jonsson  -
+#                                     included in the current version.
+#        4.0.2        2016-03-14      Preparing for showing Virtual Server details                                  Patrik Jonsson  -
+#        4.0.3        2016-03-23      Making the curl links compatible with the windows binary                      Patrik Jonsson  -
+#                                     Adding share link to show pool
+#                                     Fixed a bug where monitors using tags as receive string would not show.
+#        4.0.4        2016-05-13      Fixed a bug with a non-declared variable                                      Patrik Jonsson  -
+#        4.0.5        2016-05-23      Made the update check more aggressive by request of devcentral users          Patrik Jonsson  -
+#        4.0.6        2016-06-08      Making showing of irules easier to define                                     Patrik Jonsson  -
+#        4.0.7        2016-06-09      Replacing config section with a config file                                   Patrik Jonsson  -
+#                                     Using Powershell Strict mode to improve script quality
+#        4.0.8        2016-06-10      Adding logging options                                                        Patrik Jonsson  -
+#                                     Adding checks and retries when writing the report
+#        4.0.9        2016-06-14      Changed the pool regular expression to allow tab and multiple space           Patrik Jonsson  -
+#        4.1.0        2016-06-20      Updated the report mails to be more structured (css and table)                Patrik Jonsson  -
+#        4.1.1        2016-06-21      Made the report check for missing load balancers before compiling             Patrik Jonsson  -
+#                                     the data
+#        4.1.2        2016-06-23      Make it possible to store the report somewhere else than the site root        Patrik Jonsson  -
+#                                     Adding option to add shares if the report script is running on a separate
+#                                     server.
+#                                     Adding log file pruning (max lines)
+#        4.1.3        2016-07-01      Fixed an error in the pre-execution part. Updated some log information.       Patrik Jonsson  -
+#        4.1.4        2016-07-11      Fixed a problem with the javascript files not referring the correct folder    Patrik Jonsson  -
+#        4.2.0        2016-07-18      Added support to show virtual server details                                  Patrik Jonsson  -
+#                                     Added support for showing irules
+#                                     Added support for scanning data group lists
+#                                     Changed value of irules on Virtual servers without irules to an empty
+#                                     array instead of none.
+#        4.2.1        2016-07-19      Added an additional possible status to the pool details view                  Patrik Jonsson  -
+#        4.2.2        2016-08-10      Fixed a bug with error reporting                                              Patrik Jonsson  -
+#                                     Made it easier to close larger irules
+#                     2016-08-19      Cleaning up CSS
+#                     2016-08-19      Fixed a bug in the data group list parser function
+#        4.2.3        2016-08-29      Adding data group list parsing to json files
+#                                     Fixed so you can hide the compression column
+#        4.2.4        2016-08-30      Fixed a bug in the data group list parser                                     Patrik Jonsson  -
+#                                     Showing data group lists now works
+#        4.2.5        2016-08-31      Rewrote the parser to use dictionaries instead                                Patrik Jonsson  -
+#                                     Parsing data group lists in irules now works
+#        4.2.6        2016-09-01      Fixing css for data group list lightbox to match the rest                     Patrik Jonsson  -
+#        4.2.7        2016-09-06      Improving data group list parsing by skipping content in comments             Patrik Jonsson  -
+#        4.2.8        2016-09-12      Added support for showing priority groups                                     Patrik Jonsson  -
+#        4.2.9        2016-09-12      Showing persistence profile in virtual server details                         Patrik Jonsson  -
+#        4.3.0        2016-01-10      Fixing support for partitions single configuration objects
+#        4.3.1        2017-03-02      Removing any route domain before comparing to NAT list                        Patrik Jonsson  -
+#        4.3.2        2017-03-02      Making the script do recursive calls instead of per partition. Much faster    Patrik Jonsson  -
+#        4.3.3        2017-03-02      Adding basic ASM support                                                      Patrik Jonsson  -
+#        4.3.4        2017-03-07      Fixing a mistake where the wrong column setting was referred                  Patrik Jonsson  -
+#        4.3.5        2017-03-23      Improving the check for missing data                                          Patrik Jonsson  -
+#        4.3.6        2017-03-23      Using stream writer intead of out-file for improved performance               Patrik Jonsson  -
+#        4.3.7        2017-03-23      Removing virtual servers connected to orphaned pools from the post check.     Patrik Jonsson  -
+#        4.3.8        2017-03-24      Only using/comparing objects local to the LB currently worked on (faster)     Patrik Jonsson  -
+#        4.3.9        2017-04-06      Allowing orphaned objects in the JSON, fixing a bug when testing data         Patrik Jonsson  -
+#        4.4.0        2017-06-21      Fixing issue with the API not returning empty irules                          Patrik Jonsson  -
+#        4.4.1        2017-07-05      Removing ASM, adding preferences                                              Patrik Jonsson  -
+#        4.4.2        2017-07-08      Adding new logo and version number in the footer                              Patrik Jonsson  -
+#        4.4.3        2017-07-09      Moved preferences to its own window                                           Patrik Jonsson  -
+#        4.5.0        2017-07-12      Adding column toggle. Moving iRule selector to its own window.                Patrik Jonsson  -
+#                                     Optimizing css
+#        4.5.1        2017-07-15      Now also fetching information about the load balancers for future use         Patrik Jonsson  -
+#        4.5.2        2017-07-16      Re-adding basic ASM support for devices running version 12 and above.         Patrik Jonsson  -
+#        4.5.3        2017-07-20      Fixing a bug when highlighting irules and the js folder is not located        Patrik Jonsson  -
+#                                     in the root folder.
+#        4.5.4        2017-07-21      Replacing old Javascript loader with one that is smoother when loading        Patrik Jonsson  -
+#                                     larger sets of data
+#        4.5.5        2017-07-22      Adding a reset filters button                                                 Patrik Jonsson  -
+#        4.5.6        2017-08-04      Adding VLAN information to the virtual server object                          Patrik Jonsson  -
+#        4.5.7        2017-08-13      Adding icons                                                                  Patrik Jonsson  -
+#        4.5.8        2017-08-14      Adding filter icon                                                            Patrik Jonsson  -
+#        4.5.9        2017-08-16      Adding traffic group to the virtual server object and showing it.             Patrik Jonsson  -
+#        4.6.0        2017-08-17      Adding virtual server state icons                                             Patrik Jonsson  -
+#        4.6.1        2017-08-18      Fixing bug when extracting source NAT pool                                    Patrik Jonsson  -
+#        4.6.2        2017-08-18      Fixing a bug when extracting version information                              Patrik Jonsson  -
+#        4.6.3        2017-08-19      Adding LB method, SNAT and NAT to pool details                                Patrik Jonsson  -
+#        4.6.4        2017-08-24      Adding "All" to the pagination options                                        Patrik Jonsson  -
+#        4.6.5        2017-09-08      Fixing a bug when dealing with modules that is not known.                     Patrik Jonsson  No
+#                                     Also defining iRulesLX as a known module
+#        4.6.6        2017-09-11      Adding virtual server and pool statistics                                     Patrik Jonsson  No
+#        4.6.7        2017-09-12      Small CSS fix to make the pool details prettier                               Patrik Jonsson  No
+#        4.6.8        2017-09-20      Adding fix for duplicate detected data group lists.                           Patrik Jonsson  No
+#        4.6.9        2017-09-25      Preventing caching of Json.                                                   Patrik Jonsson  No
+#        4.7.0        2017-12-20      Adding options to export to the report to CSV.                                Patrik Jonsson  Yes
+#        4.7.1        2017-12-20      Adding support for monitors using HEAD.                                       Patrik Jonsson  No
+#        4.7.2        2017-12-20      Adding support for multiple configuration files.                              Patrik Jonsson  No
+#        4.7.3        2017-12-20      Adding more script pre-execution checks
+#                                     Adding javascript error handling when loading the report json files           Patrik Jonsson  No
+#        4.7.4        2017-12-27      Adding script requirement for Powershell version 4.                           Patrik Jonsson  No
+#        4.7.5        2017-12-28      Adding more verbose error messages when the json files fails to load.         Patrik Jonsson  No
+#        4.8.0        2018-01-07      The script now supports real-time member status.                              Patrik Jonssson Yes
+#                                     A lot of small fixes.
+#        4.8.1       2018-01-19       Changing to device groups instead of individual load balancers                Patrik Jonsson  Yes
+#                                     Moving status VIP support to the device groups
 #
-#		This script generates a report of the LTM configuration on F5 BigIP's.
-#		It started out as pet project to help co-workers know which traffic goes where but grew.
+#        This script generates a report of the LTM configuration on F5 BigIP's.
+#        It started out as pet project to help co-workers know which traffic goes where but grew.
 #
-#		The html page uses "Data tables" to display and filter tables. It's an open source javascript project.
-#		Source: https://datatables.net/
+#        The html page uses "Data tables" to display and filter tables. It's an open source javascript project.
+#        Source: https://datatables.net/
 #
 ######################################################################################################################################
 
