@@ -558,6 +558,9 @@ if(-not $SaneConfig){
 
 #Variables used for storing report data
 $Global:NATdict = @{}
+
+$ReportObjects = @{};
+
 $Global:virtualservers = @()
 $Global:iRules = @()
 $Global:pools = @()
@@ -630,6 +633,7 @@ Add-Type @'
 		public string actiononservicedown;
 		public string allownat;
 		public string allowsnat;
+		public bool orphaned;
 		public string loadbalancer;
 	}
 
@@ -822,19 +826,14 @@ function cacheLTMinformation {
 
 	Param(
 		$f5,
-		$LoadBalancer
+		$LoadBalancerObjects
 	)
 	
 	$VersionInfo = $f5.SystemSystemInfo.get_product_information()
 
-	#Declare temporary objects for this load balancer
-	$LBVirtualservers = @()
-	$LBPools = @()
-	$LBNodes = @()
-	$LBmonitors = @()
-	$LBiRules = @()
-	$LBDataGroupLists = @()
-	$LBASMPolicies = @()
+	#Set some variables to make the code nicer to read
+	$LoadbalancerName = $LoadBalancerObjects.LoadBalancer.name
+	$LoadbalancerIP =  $LoadBalancerObjects.LoadBalancer.ip
 	
 	#Regexp for parsing monitors from iRule definitions
 	[regex]$poolregexp = "pool\s+([a-zA-Z0-9_\-\./]+)"
@@ -842,8 +841,10 @@ function cacheLTMinformation {
 	$f5.SystemSession.set_active_folder("/");
 	$f5.SystemSession.set_recursive_query_state("STATE_ENABLED");
 
-	$MajorVersion = $loadBalancer.version.Split(".")[0]
-	$Minorversion = $loadBalancer.version.Split(".")[1]
+	$MajorVersion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[0]
+	$Minorversion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[1]
+
+	$LoadBalancerObjects.ASMPolicies = @{}
 
 	If($MajorVersion -gt 11){
 
@@ -851,11 +852,11 @@ function cacheLTMinformation {
 		if($ModuleDict.Keys -contains "ASM"){
 				log verbose "Getting ASM Policy information"
 			
-			$AuthToken = Get-AuthToken -Loadbalancer $LoadBalancer.name
+			$AuthToken = Get-AuthToken -Loadbalancer $LoadbalancerName
 
 			$headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
-			$Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$loadbalancerip/mgmt/tm/asm/policies"
+			$Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$LoadbalancerIP/mgmt/tm/asm/policies"
 			$Policies = ($Response | ConvertFrom-Json).items
 
 			Foreach($Policy in $Policies){
@@ -866,16 +867,12 @@ function cacheLTMinformation {
 				$objTempPolicy.enforcementMode = $Policy.enforcementMode
 				$objTempPolicy.learningMode = $Policy.learningMode
 				$objTempPolicy.virtualServers = $Policy.virtualServers
-				$objTempPolicy.loadbalancer = $LoadBalancer.name
+				$objTempPolicy.loadbalancer = $LoadbalancerName
 
-				$LBASMpolicies += $objTempPolicy
+				$LoadBalancerObjects.ASMPolicies.Add($objTempPolicy.name, $objTempPolicy)
 			}
-
-			$Global:ASMPolicies += $LBASMPolicies
 		}
 	}
-
-	
 
 	#EndRegion
 
@@ -885,7 +882,9 @@ function cacheLTMinformation {
 	
 	
 	#Region Cache node data
-		
+	
+	$LoadBalancerObjects.Nodes = @{}
+
 	[array]$nodeaddresses = $f5.LocalLBNodeAddress.get_list()
 	[array]$nodescreennames = $f5.LocalLBNodeAddress.get_screen_name($nodeaddresses)
 	
@@ -895,19 +894,22 @@ function cacheLTMinformation {
 		
 		$objTempNode.ip = [string]$nodeaddresses[$i]
 		$objTempNode.name = [string]$nodescreennames[$i]
-		$objTempNode.loadbalancer = $LoadBalancer.name
+		$objTempNode.loadbalancer = $LoadbalancerName
 				
 		if($objTempNode.name -eq ""){
 			$objTempNode.name = "Unnamed"
 		}
 		
-		$LBNodes += $objTempNode
+		$LoadBalancerObjects.Nodes.add($objTempNode.name, $objTempNode)
 
 	}
-	
+
 	#EndRegion
 		
 	#Region Caching monitor data
+
+	$LoadBalancerObjects.Monitors = @{}
+
 	log verbose "Caching monitors"
 	
 	[array]$MonitorList = $f5.LocalLBMonitor.get_template_list()		
@@ -944,9 +946,9 @@ function cacheLTMinformation {
 		$objTempMonitor.timeout = $HttpmonitorsTimeOuts[$i].value
 		$objTempMonitor.type = $HttpMonitors[$i].template_type
 	
-		$objTempMonitor.loadbalancer = $LoadBalancer.name
+		$objTempMonitor.loadbalancer = $LoadbalancerName
 		
-		$LBMonitors += $objTempMonitor
+		$LoadBalancerObjects.Monitors.add($objTempMonitor.name, $objTempMonitor)
 	}
 	
 	For($i = 0;$i -lt $OtherMonitors.Count;$i++){
@@ -959,9 +961,9 @@ function cacheLTMinformation {
 		$objTempMonitor.interval = $OtherMonitorsIntervals[$i].value
 		$objTempMonitor.timeout = $OtherMonitorsTimeouts[$i].value
 		$objTempMonitor.type = $OtherMonitors[$i].template_type
-		$objTempMonitor.loadbalancer = $LoadBalancer.name
+		$objTempMonitor.loadbalancer = $LoadbalancerName
 		
-		$LBMonitors += $objTempMonitor
+		$LoadBalancerObjects.Monitors.add($objTempMonitor.name, $objTempMonitor)
 	}
 	
 	Foreach($monitor in $NonCompatibleMonitors){
@@ -975,17 +977,19 @@ function cacheLTMinformation {
 		$objTempMonitor.timeout = "N/A"
 		$objTempMonitor.type = $monitor.template_type
 		
-		$objTempMonitor.loadbalancer = $LoadBalancer.name
+		$objTempMonitor.loadbalancer = $LoadbalancerName
 	
-		$LBMonitors += $objTempMonitor
+		$LoadBalancerObjects.Monitors.add($objTempMonitor.name, $objTempMonitor)
 		
 	}
 	
 	#EndRegion
 	
 	#Region Cache Data group lists
-	
+
 	log verbose "Caching data group lists"
+
+	$LoadBalancerObjects.DataGroupLists = @{}
 
 	[array]$AddressClassList = $f5.LocalLBClass.get_address_class_list()
 	[array]$AddressClassKeys = $f5.LocalLBClass.get_address_class($AddressClassList)
@@ -994,9 +998,9 @@ function cacheLTMinformation {
 	#Get address type data group lists data
 	For($i = 0;$i -lt $AddressClassList.Count;$i++){
 		
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $AddressClassList[$i]
-		$ObjTempDataGroupList.type = "Address"
+		$objTempDataGroupList = New-Object -Type DataGroupList
+		$objTempDataGroupList.name = $AddressClassList[$i]
+		$objTempDataGroupList.type = "Address"
 		
 		$Dgdata = New-Object System.Collections.Hashtable
 		
@@ -1009,10 +1013,10 @@ function cacheLTMinformation {
 			
 		}
 		
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $LoadBalancer.name
+		$objTempDataGroupList.data = $Dgdata
+		$objTempDataGroupList.loadbalancer = $LoadbalancerName
 		
-		$Global:DataGroupLists += $ObjTempDataGroupList
+		$LoadBalancerObjects.DataGroupLists.Add($objTempDataGroupList.name, $objTempDataGroupList)
 		
 	}
 
@@ -1022,9 +1026,9 @@ function cacheLTMinformation {
 
 	For($i = 0;$i -lt $StringClassList.Count;$i++){
 		
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $StringClassList[$i]
-		$ObjTempDataGroupList.type = "String"
+		$objTempDataGroupList = New-Object -Type DataGroupList
+		$objTempDataGroupList.name = $StringClassList[$i]
+		$objTempDataGroupList.type = "String"
 		
 		$Dgdata = New-Object System.Collections.Hashtable
 		
@@ -1036,13 +1040,12 @@ function cacheLTMinformation {
 			$Dgdata.Add($Key, $Value)
 		}
 		
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $LoadBalancer.name
+		$objTempDataGroupList.data = $Dgdata
+		$objTempDataGroupList.loadbalancer = $LoadbalancerName
 		
-		$Global:DataGroupLists += $ObjTempDataGroupList
+		$LoadBalancerObjects.DataGroupLists.Add($objTempDataGroupList.name, $objTempDataGroupList)
 		
 	}
-
 
 	$ValueClassList = $f5.LocalLBClass.get_value_class_list()
 	$ValueClassKeys = $f5.LocalLBClass.get_value_class($ValueClassList)
@@ -1050,9 +1053,9 @@ function cacheLTMinformation {
 
 	For($i = 0;$i -lt $ValueClassList.Count;$i++){
 		
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $ValueClassList[$i]
-		$ObjTempDataGroupList.type = "String"
+		$objTempDataGroupList = New-Object -Type DataGroupList
+		$objTempDataGroupList.name = $ValueClassList[$i]
+		$objTempDataGroupList.type = "String"
 		
 		$Dgdata = New-Object System.Collections.Hashtable
 		
@@ -1064,10 +1067,10 @@ function cacheLTMinformation {
 			$Dgdata.Add($Key, $Value)
 		}
 		
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $LoadBalancer.name
+		$objTempDataGroupList.data = $Dgdata
+		$objTempDataGroupList.loadbalancer = $LoadbalancerName
 		
-		$Global:DataGroupLists += $ObjTempDataGroupList
+		$LoadBalancerObjects.DataGroupLists.Add($objTempDataGroupList.name, $objTempDataGroupList)
 		
 	}
 
@@ -1077,6 +1080,8 @@ function cacheLTMinformation {
 	#Region Caching Pool information
 	
 	log verbose "Caching Pools"
+
+	$LoadBalancerObjects.Pools = @{}
 	
 	[array]$Poollist = $f5.LocalLBPool.get_list()
 	[array]$PoolMonitors = $f5.LocalLBPool.get_monitor_association($PoolList)
@@ -1109,7 +1114,7 @@ function cacheLTMinformation {
 	    	#Populate the object
 			$objTempMember.Name = $PoolMembers[$i][$x].address
 			
-			$objTempMember.ip = ($LBNodes | Where-Object { $_.name -eq $objTempMember.Name }).ip
+			$objTempMember.ip = ($LoadBalancerObjects.Nodes[$objTempMember.Name]).ip
 			$objTempMember.Port = $PoolMembers[$i][$x].port
 			$objTempMember.Availability = $PoolMemberstatuses[$i][$x].availability_status
 			$objTempMember.Enabled = $PoolMemberstatuses[$i][$x].enabled_status
@@ -1133,9 +1138,9 @@ function cacheLTMinformation {
 		$objTempPool.actiononservicedown = $Global:ActionOnPoolFailureToString[[string]($PoolActionOnServiceDown[$i])]
 		$objTempPool.allownat = $StateToString[[string]($PoolAllowNAT[$i])]
 		$objTempPool.allowsnat = $StateToString[[string]($PoolAllowSNAT[$i])]
-		$objTempPool.loadbalancer = $LoadBalancer.name
+		$objTempPool.loadbalancer = $LoadbalancerName
 		
-		$LBPools += $objTempPool
+		$LoadBalancerObjects.Pools.Add($objTempPool.name, $objTempPool) 
 	}
 	
 	#EndRegion
@@ -1143,6 +1148,8 @@ function cacheLTMinformation {
 	#Region Cache information about irules
 			
 	log verbose "Caching iRules"
+
+	$LoadBalancerObjects.iRules = @{}
 
 	$f5.LocalLBRule.query_all_rules() | ForEach-Object {
 
@@ -1152,7 +1159,7 @@ function cacheLTMinformation {
 		
 		$partition = $objiRule.name.split("/")[1]
 		
-		$objiRule.loadbalancer = $LoadBalancer.name
+		$objiRule.loadbalancer = $LoadbalancerName
 
 		$objiRule.definition = $($_.rule_definition)
 		
@@ -1166,7 +1173,7 @@ function cacheLTMinformation {
 				$tempPool = "/$partition/$tempPool"
 			}
 			
-			if($LBPools | Where-Object { $_.name -eq $tempPool }) {								
+			if($LoadBalancerObjects.Pools.ContainsKey($tempPool)) {								
 				$tempPools += $tempPool
 			}
 							
@@ -1174,7 +1181,7 @@ function cacheLTMinformation {
 									
 		$objiRule.pools = $tempPools | Select -Unique
 			
-		$LBiRules += $objiRule
+		$LoadBalancerObjects.iRules.add($objiRule.name, $objiRule)
 	}
 	
 	#EndRegion	
@@ -1201,6 +1208,8 @@ function cacheLTMinformation {
 	
 	log verbose "Caching Virtual servers"
 	
+	$LoadBalancerObjects.VirtualServers = @{}
+
 	[array]$virtualserverlist = $f5.LocalLBVirtualServer.get_list()
 	[array]$virtualserverdestinationlist = $f5.LocalLBVirtualServer.get_destination($virtualserverlist)
 	[array]$virtualserverdefaultpoollist = $f5.LocalLBVirtualServer.get_default_pool_name($virtualserverlist)
@@ -1274,7 +1283,7 @@ function cacheLTMinformation {
 			$objTempVirtualServer.irules = @();
 		}
 		
-		$objTempVirtualServer.loadbalancer = $LoadBalancer.name
+		$objTempVirtualServer.loadbalancer = $LoadbalancerName
 		
 		#Get the persistence profile of the Virtual server
 		
@@ -1289,9 +1298,9 @@ function cacheLTMinformation {
 		
 			$vsirulename = $_
 
-			$iRule = $LBiRules | Where-Object { $_.name -eq $vsirulename}
+			$iRule = $LoadBalancerObjects.iRules[$vsirulename]
 			
-			if($iRule.Count -gt 0){
+			if($iRule){
 				if($iRule.pools.Count -gt 0){
 					$objTempVirtualServer.pools += [array]$iRule.pools | select -uniq
 				}
@@ -1328,7 +1337,7 @@ function cacheLTMinformation {
             $objTempVirtualServer.vlans = $virtualservervlans[$i].vlans
         }
 
-		$VSASMPolicies = $LBASMPolicies | Where-Object { $_.virtualServers -contains $vsname }
+		$VSASMPolicies = $LoadBalancerObjects.ASMPolicies.values | Where-Object { $_.virtualServers -contains $vsname }
 
 		if($VSASMPolicies -ne $null){
 			$objTempVirtualServer.asmPolicies = $VSASMPolicies.name
@@ -1358,24 +1367,26 @@ function cacheLTMinformation {
 			log "error" "Unable to get virtual server CPU statistics for $($objTempVirtualServer.name)"
 		}
 
-		$LBVirtualservers += $objTempVirtualServer
+		$LoadBalancerObjects.VirtualServers.add($objTempVirtualServer.name, $objTempVirtualServer)
 
 	}
 	
 	#EndRegion
-	
-	#Region Get Orphaned Pools
-	log verbose "Adding orphaned pools to the virtual server list"
-	
-	$VirtualserverPools = $LBVirtualservers.pools | select -Unique
-	
-	if($VirtualserverPools.count -gt 0){
-	
-		$OrphanedPools = $LBPools.name | Where-Object { $VirtualserverPools -notcontains $_ }
 
-		foreach($OrphanPool in $OrphanedPools){
+	#Region Get Orphaned Pools
+	log verbose "Detecting orphaned pools"
+
+	$LoadBalancerObjects.OrphanPools = @()
+	
+	$VirtualserverPools = $LoadBalancerObjects.VirtualServers.Values.Pools
+	
+	Foreach($PoolName in $LoadBalancerObjects.Pools.Keys){
 		
-			$objTempVirtualServer = New-Object VirtualServer
+		If ($VirtualServerPools -NotContains $PoolName ){
+			
+			$LoadBalancerObjects.Pools[$PoolName].orphaned = $true
+
+			$objTempVirtualServer = New-Object -TypeName "VirtualServer"
 			
 			$objTempVirtualServer.name = "N/A (Orphan pool)"
 			$objTempVirtualServer.ip = "N/A (Orphan pool)"
@@ -1383,19 +1394,14 @@ function cacheLTMinformation {
 			$objTempVirtualServer.compressionprofile = "None"
 			$objTempVirtualServer.persistence = "None"
 			$objTempVirtualServer.irules = @()
-			$objTempVirtualServer.pools = @($OrphanPool)
-			$objTempVirtualServer.loadbalancer = $LoadBalancer.name
+			$objTempVirtualServer.pools += $PoolName
+			$objTempVirtualServer.loadbalancer = $LoadbalancerName
 			
-			$Global:virtualservers += $objTempVirtualServer
+			$LoadBalancerObjects.OrphanPools += $objTempVirtualServer
+			
 		}
+
 	}
-	
-	#Adding the configuration to the the global objects
-	$Global:nodes += $LBNodes
-	$Global:monitors += $LBMonitors
-	$Global:Pools += $LBPools
-	$Global:iRules += $LBiRules
-	$Global:virtualservers += $LBVirtualservers
 
 	#EndRegion
 }
@@ -1503,11 +1509,7 @@ Function Get-DefinedRules {
 		$ruleObj += $tempRule
 	}
 
-	if($ruleObj.count -eq 0){
-		"[]"
-	} else {
-		$ruleObj | ConvertTo-Json
-	}
+	ConvertTo-Json $ruleObj
 
 }
 
@@ -1715,12 +1717,15 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 
 			$objLoadBalancer.modules = $ModuleDict
 
-			$Global:loadBalancers += $objLoadBalancer
+			$LoadBalancerObjects = @{}
+			$LoadBalancerObjects.LoadBalancer = $objLoadBalancer
 
+			$ReportObjects.Add($objLoadBalancer.ip, $LoadBalancerObjects)
+			
 			#Don't continue if this loabalancer is not active
 			If($objLoadBalancer.active -or $Standalone){
 				log verbose "Caching LTM information from $BigIPHostname"
-				cacheLTMinformation -f5 $f5 -LoadBalancer $objLoadbalancer
+				cacheLTMinformation -f5 $f5 -LoadBalancer $LoadBalancerObjects
 			} else {
 				log info "This load balancer is not active, and won't be indexed"
 				Continue
@@ -1749,61 +1754,49 @@ function Test-ReportData {
 		
 		ForEach($Device in $DeviceGroup.Device){
 	
-			$Loadbalancer = $Loadbalancers | Where-Object { $_.ip -eq $Device }
+			$LoadbalancerObjects = $ReportObjects[$Device]
 				
-			If ($Loadbalancer) {
+			If ($LoadbalancerObjects) {
 
-				$LoadbalancerName = $Loadbalancer.name 
+				$Loadbalancer = $LoadbalancerObjects.Loadbalancer
+				$LoadbalancerName = $Loadbalancer.name
 
 				# Only check for load balancers that is alone in a device group, or active
 				if($Loadbalancer.active -or $Loadbalancer.isonlydevice){
 				
 					#Verify that the $Global:virtualservers contains the $LoadbalancerName
-					If ($Global:pools.Count -ne 0) {
-						If (!$Global:pools.loadbalancer.contains($LoadbalancerName)) {
-							log error "$LoadbalancerName does not have any pool data"
-							$Nonemissing = $false
-						}
+					If ($LoadbalancerObjects.VirtualServers.Count -eq 0) {
+						log error "$LoadbalancerName does not have any Virtual Server data"
+						$Nonemissing = $false
 					}			
 					
 					#Verify that the $Global:pools contains the $LoadbalancerName
-					If (($Global:virtualservers | Where-Object { $_.name -ne "N/A (Orphan pool)" }).Count -ne 0) {
-						If (!$Global:virtualservers.loadbalancer.contains($LoadbalancerName)) {
-							log error "$LoadbalancerName does not have any virtual server data"
-							$Nonemissing = $false
-						}
+					If ($LoadBalancerObjects.Pools.Count -eq 0) {
+						log error "$LoadbalancerName does not have any Pool data"
 					}
 					
 					#Verify that the $Global:monitors contains the $LoadbalancerName
-					If ($Global:monitors.Count -ne 0){			
-						If(!$Global:monitors.loadbalancer.contains($LoadbalancerName)) {
-							log error "$LoadbalancerName does not have any monitor data"
-							$Nonemissing = $false
-						}
+					If ($LoadBalancerObjects.Monitors.Count -eq 0){			
+						log error "$LoadbalancerName does not have any Monitor data"
+						$Nonemissing = $false
 					}
 					
 					#Verify that the $Global:irules contains the $LoadbalancerName
-					If ($Global:irules.Count -ne 0) {
-						If(!$Global:irules.loadbalancer.contains($LoadbalancerName)) {
-							log error "$LoadbalancerName does not have any irules data"
-							$Nonemissing = $false
-						}
+					If ($LoadBalancerObjects.iRules.Count -eq 0) {
+						log error "$LoadbalancerName does not have any iRules data"
+						$Nonemissing = $false
 					}
 					
 					#Verify that the $Global:nodes contains the $LoadbalancerName
-					if($Global:nodes.Count -ne 0){	
-						If (!$Global:nodes.loadbalancer.contains($LoadbalancerName)) {
-							log error "$LoadbalancerName does not have any nodes data"
-							$Nonemissing = $false
-						}
+					if($LoadBalancerObjects.Nodes.Count -eq 0){	
+						log error "$LoadbalancerName does not have any Nodes data"
+						$Nonemissing = $false
 					}
 					
 					#Verify that the $Global:DataGroupLists contains the $LoadbalancerName
-					if($Global:DataGroupLists.Count -ne 0){	
-						If (!$Global:DataGroupLists.loadbalancer.contains($LoadbalancerName)) {
-							log error "$LoadbalancerName does not have any data group lists data"
-							$Nonemissing = $false
-						}
+					if($LoadBalancerObjects.DataGroupLists.Count -eq 0){	
+						log error "$LoadbalancerName does not have any Data group lists data"
+						$Nonemissing = $false
 					}
 					
 				}
@@ -1816,6 +1809,7 @@ function Test-ReportData {
 	}
 	
 	Return $Nonemissing
+
 }
 #EndRegion
 
@@ -1908,7 +1902,7 @@ Function Write-TemporaryFiles {
 	log verbose "Writing temporary pools json object to $($Global:poolsjsonpath + ".tmp")"	
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:poolsjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:pools))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.Pools.Values))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary pool json file"	
@@ -1919,7 +1913,7 @@ Function Write-TemporaryFiles {
 	
 	log verbose "Writing temporary monitor json object to $($Global:monitorsjsonpath + ".tmp")"
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:monitorsjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:monitors))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.Monitors.Values))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary monitor json file"	
@@ -1930,7 +1924,7 @@ Function Write-TemporaryFiles {
 
 	log verbose "Writing temporary loadbalancer json object to $($Global:loadbalancersjsonpath + ".tmp")"
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:loadbalancersjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:loadBalancers))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.Loadbalancer))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary load balancer json file"	
@@ -1942,7 +1936,7 @@ Function Write-TemporaryFiles {
 	log verbose "Writing temporary virtual server json object to $($Global:virtualserversjsonpath + ".tmp")"
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:virtualserversjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:virtualservers))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.VirtualServers.Values))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary virtual server json file"	
@@ -1956,7 +1950,7 @@ Function Write-TemporaryFiles {
 		log verbose "Writing temporary irules json object to $($Global:irulesjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:irulesjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:irules))
+		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.iRules.Values))
 		
 		if(!$?){ 
 			log error "Failed to update the temporary irules json file"	
@@ -1970,7 +1964,7 @@ Function Write-TemporaryFiles {
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:irulesjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 		
 		#Since rules has been disabled, only write those defined
-		$ruleScope = $Global:irules | Where-Object { $_.name -in $Bigipreportconfig.Settings.iRules.iRule.iRuleName -and $_.loadbalancer -in $Bigipreportconfig.Settings.iRules.iRule.loadbalancer }
+		$ruleScope = $ReportObjects.Values.iRules.Values | Where-Object { $_.name -in $Bigipreportconfig.Settings.iRules.iRule.iRuleName -and $_.loadbalancer -in $Bigipreportconfig.Settings.iRules.iRule.loadbalancer }
 
 		if($ruleScope.count -eq 0){
 			$StreamWriter.Write("[]")
@@ -1990,7 +1984,7 @@ Function Write-TemporaryFiles {
 		log verbose "Writing temporary data group list json object to $($Global:datagrouplistjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:datagrouplistjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $Global:DataGroupLists))
+		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.DataGroupLists.Values))
 		
 		if(!$?){ 
 			log error "Failed to update the temporary data group lists json file"	
@@ -2025,7 +2019,7 @@ if(-not (Test-ReportData)){
 
 log success "No missing loadbalancer data was detected, compiling the report"
 
-if(($virtualservers.asmPolicies | Where-Object { $_.count -gt 0 }).Count -gt 0){
+If ($ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
 	$HasASMProfiles = $true
 } else {
 	$HasASMProfiles = $false
@@ -2057,6 +2051,10 @@ $Global:html = @'
 		<script>
 '@
 		
+		# Transfer some settings from the config file onto the Javascript
+		# Todo: All global variables should be located in a single object
+		#       to minimize the polution of the global namespace.
+
 		$ruleObj = Get-DefinedRules
 		$Global:html += "`nvar definedRules = " + $ruleObj + ";`n"
 
@@ -2133,33 +2131,26 @@ $Global:html += @'
 '@
 
 #Initiate variables used for showing progress (in case the debug is set)
-$vscount = $virtualservers.Count
-$i = 0 
+$i = 0
+$vscount = $ReportObjects.Values.VirtualServers.Keys.Count + $ReportObjects.Values.OrphanPools.Count
 
 #Initiate variables to give unique id's to pools and members
 $xPool = 0
 $xMember = 0
 $xVirtual = 0
 
-$RealTimeStatusDetected = ($Loadbalancers | Where-Object { $_.statusvip -ne $null }).Count -gt 0
+$RealTimeStatusDetected = ($ReportObjects.Values.Loadbalancer | Where-Object { $_.statusvip -ne $null }).Count -gt 0
 
 if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
 }
 
-foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonlydevice })){
+ForEach($LoadbalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
 
+	$Loadbalancer = $LoadBalancerObjects.Loadbalancer
 	$LoadbalancerName = $Loadbalancer.name
 
-	#Cache objects to make the search faster
-	$LBvirtualservers = $Global:virtualservers | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBpools = $Global:pools | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBnodes = $Global:nodes | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBmonitors = $Global:monitors | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBiRules = $Global:irules | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBDataGroupLists = $Global:datagrouplists | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-
-	foreach($vs in $LBvirtualservers){
+	ForEach ($vs in ($LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools)){
 		
 		$i++
 		
@@ -2181,22 +2172,13 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 						</td>
 "@
 
-		if($vs -eq "N/A (Orphan pool)"){
-			$Global:html += @"
 
-						<td class="virtualServerCell">
-							N/A (Orphan pool)
-						</td>
-"@
-
-		} else {
-			$Global:html += @"
+		$Global:html += @"
 
 						<td class="virtualServerCell">
 							$(Translate-VirtualServer-Status -virtualserver $vs) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($vs.name)" data-loadbalancer="$($vs.loadbalancer)" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($vs.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$($vs.loadbalancer)/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($vs.name)">Edit</a></span>
 						</td>
 "@
-		}
 		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
 		$vsipexrd = $vs.ip -replace "%[0-9]+$", ""
 		
@@ -2225,13 +2207,15 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 			if($vs.asmPolicies.count -gt 0){
 				
 				for($i = 0; $i -lt $vs.asmPolicies.Count; $i++){
-					$ASMObj = $Global:ASMPolicies | Where-Object { $_.name -eq $vs.asmPolicies[$i] -and $_.loadbalancer -eq $vs.loadbalancer }
+
+					$ASMObj = $LoadBalancerObjects.ASMPolicies[$vs.asmPolicies[$i]]
 
 					if($ASMObj.enforcementMode -eq "blocking"){
 						$vs.asmPolicies[$i] = $vs.asmPolicies[$i] + " (B)"
 					} else {
 						$vs.asmPolicies[$i] = $vs.asmPolicies[$i] + " (T)"
 					}
+
 				}
 
 				$Global:html += $vs.asmPolicies -Join "<br>"
@@ -2293,8 +2277,12 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 						)
 					</td>
 "@
+		
+		#Remove exceptions from the list of virtual server pools
+		$VirtualServerPools = ($vs.pools | Where-Object { !($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -contains $_) })
 
-		if(!($vs.pools | ?{ !($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -contains $_) })){
+		#If the pool list is empty after excluding the pools in the pool exception list, enter N/A
+		if(!$VirtualServerPools){
 			$Global:html += @"
 						
 						<td>
@@ -2302,14 +2290,17 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 						</td>
 "@
 		} else {
-			$firstpool = $true
+
+			$FirstPool = $true
 			
-			foreach($vspool in $vs.pools){
-				if(!($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -Contains $vspool -or $vspool -eq "")){		
+			foreach($vspool in $VirtualServerPools){
+
+				if($vspool -ne ""){
 					
-					$pool = $LBPools | where { $_.name -eq $vspool }
+					$Pool = $LoadBalancerObjects.Pools[$vspool]
 									
-					if($firstpool){
+					if($FirstPool){
+
 						$xPool++;
 						$Global:html += @"
 											
@@ -2341,7 +2332,7 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 											<span class="adcLinkSpan"><a href="https://$($pool.loadbalancer)/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=$($pool.name)">Edit</a></span>
 									</td>
 "@
-						$firstpool = $false
+						$FirstPool = $false
 					} else {
 						$xPool++;
 						$Global:html += @"
@@ -2369,7 +2360,7 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 "@
 					}
 					
-					$firstmember = $true
+					$FirstMember = $true
 
 					foreach($Member in $pool.members){
 						
@@ -2381,7 +2372,7 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 								$MemberName = $Member.name
 							}
 							
-							if($firstmember){
+							if($FirstMember){
 								
 								$xMember++;
 								
@@ -2392,7 +2383,7 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 									</td>
 								</tr>
 "@
-								$firstmember = $false
+								$FirstMember = $false
 							} else {
 							
 								$xMember++;
@@ -2411,6 +2402,7 @@ foreach($Loadbalancer in ($Loadbalancers | Where-Object { $_.active -or $_.isonl
 					}
 				}
 			}
+
 			$Global:html += @"
 								</table>
 								</div>
