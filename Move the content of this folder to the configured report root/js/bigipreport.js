@@ -480,19 +480,27 @@
 		
 		var loadbalancers = siteData.loadbalancers;
 
-		for(var i in loadbalancers){
-			
-			var loadbalancer = loadbalancers[i];
+		//Check if there is any functioning pool status vips
+		var hasConfiguredStatusVIP = loadbalancers.some(function(e){
+			return e.statusvip.url !== "";
+		})
 
-			if(loadbalancer.statusvip.url !== null){
-				testStatusVIP(loadbalancer);
-			} else {
-				$("span#realtimenotconfigured").text(parseInt($("span#realtimenotconfigured").text()) + 1);
-				loadbalancer.statusvip.working = false;
-				loadbalancer.statusvip.reason = "None configured";
+		if(hasConfiguredStatusVIP){
+			for(var i in loadbalancers){
+				
+				var loadbalancer = loadbalancers[i];
+
+				if(loadbalancer.statusvip.url !== ""){
+					testStatusVIP(loadbalancer);
+				} else {
+					$("span#realtimenotconfigured").text(parseInt($("span#realtimenotconfigured").text()) + 1);
+					loadbalancer.statusvip.working = false;
+					loadbalancer.statusvip.reason = "None configured";
+				}
 			}
+		} else {
+			$("td#pollingstatecell").html("Disabled")
 		}
-
 	}
 
 	function testStatusVIP(loadbalancer){
@@ -529,6 +537,7 @@
 			  timeout: 2000
 			})					
 			.fail(function(jqxhr){
+				console.log("Site statusvip failed for Loadbalancer: " + loadbalancer.name + ". The url that failed was: " + loadbalancer.statusvip.url);
 				$("span#realtimetestfailed").text(parseInt($("span#realtimetestfailed").text()) + 1);
 				loadbalancer.statusvip.working = false;
 				loadbalancer.statusvip.reason = jqxhr.statusText;
@@ -536,27 +545,36 @@
 			})
 			.complete(function(){
 
-				if(siteData.memberStates.ajaxQueue === 0){
+				if(siteData.memberStates.ajaxQueue === 0 && hasWorkingStatusVIP){
 					
-					//Initiate pool status updates
-					var pollCurrentView = function(){
-						resetClock();
-						$("span#ajaxqueue").text($("table.pooltable tr td.poolname:visible").length);
-						$("table.pooltable tr td.poolname:visible").each(function(){
-							getPoolStatus(this);
-						});
-					}
+					//Check if there is any functioning pool status vips
+					var hasWorkingStatusVIP = siteData.loadbalancers.some(function(e){
+						return e.statusvip.working;
+					})
 
-					pollCurrentView()
-
-					setInterval(function(){
-						if(siteData.memberStates.ajaxQueue === 0){
-							pollCurrentView();
-						} else {
+					if(hasWorkingStatusVIP){
+						//Initiate pool status updates
+						var pollCurrentView = function(){
 							resetClock();
-							console.log("Did not finish the previous refresh in time.")
+							$("span#ajaxqueue").text($("table.pooltable tr td.poolname:visible").length);
+							$("table.pooltable tr td.poolname:visible").each(function(){
+								getPoolStatus(this);
+							});
 						}
-					}, (AJAXREFRESHRATE * 1000));
+
+						pollCurrentView()
+
+						setInterval(function(){
+							if(siteData.memberStates.ajaxQueue === 0){
+								pollCurrentView();
+							} else {
+								resetClock();
+								console.log("Did not finish the previous refresh in time.")
+							}
+						}, (AJAXREFRESHRATE * 1000));
+					} else {
+						$("td#pollingstatecell").html("Disabled")
+					}
 				}
 
 			});
