@@ -1275,6 +1275,20 @@
 				}
 			}
 
+		} else {
+			var table = `<div id="objectnotfound">
+				<h1>No matching Virtual Server was found</h1>
+
+				<h4>What happened?</h4>
+				When clicking the report it will parse the JSON data to find the matching Virtual Server and display the details. However, in this case it was not able to find any matching Virtual Server.
+				
+				<h4>Possible reason</h4>
+				This might happen if the report is being updated as you navigate to the page. If you see this page often though, please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
+
+				<h4>Possible solutions</h4>
+				Refresh the page and try again.
+
+			</div>`
 		}
 
 		$('.firstlayerdetailsfooter').html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut();">Close virtual server details</a>');
@@ -1740,6 +1754,20 @@
 			
 			$("#" + layer + "layerdetailsfooter").html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut()">Close pool details</a><a href="javascript:void(0);" onMouseClick="" onMouseOver="javascript:showPoolShareLink(\'' + pool +'@' + loadbalancer + '\')" class="sharepoollink">Share pool details<p>CTRL + C to copy<br><input id="sharepoollink" value=""></p></a>');
 
+		} else {
+			var table = `<div id="objectnotfound">
+				<h1>No matching Pool was found</h1>
+
+				<h4>What happened?</h4>
+				When clicking the report it will parse the JSON data to find the matching pool and display the details. However, in this case it was not able to find any matching pool.
+				
+				<h4>Possible reason</h4>
+				This might happen if the report is being updated as you navigate to the page. If you see this page often though, please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
+
+				<h4>Possible solutions</h4>
+				Refresh the page and try again.
+
+			</div>`
 		}
 
 		$("#" + layer + "layerdetailscontentdiv").html(table);
