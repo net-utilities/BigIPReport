@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="4.7.5">
+	<Settings version="4.8.2">
 	
 		<!-- 
 		***************************************************************************
@@ -36,18 +36,30 @@
 		*	This variable contains the load balancers which configuration you want base the report on.
 		*
 		*	Example:
-		*	<Loadbalancers>
-		*		<Loadbalancer>10.1.0.20</Loadbalancer>
-		*		<Loadbalancer>192.168.1.23</Loadbalancer>	
-		*	</Loadbalancers>
+			This example configures two device groups, whereas one has a pool status VIP.
+			
+			<DeviceGroups>
+				<DeviceGroup>
+					<Loadbalancer>192.168.10.23</Loadbalancer>
+					<Loadbalancer>192.168.10.23</Loadbalancer>
+					<StatusVip>https://lb1statusvip.domain.local</StatusVip>
+				</DeviceGroup>
+				<DeviceGroup>
+					<Loadbalancer>192.168.11.55</Loadbalancer>
+					<Loadbalancer>192.168.11.56</Loadbalancer>
+					<StatusVip></StatusVip>
+				</DeviceGroup>
+			</DeviceGroups>
 		*
 		**************************************************************************************************************************************
 		-->
 		
-		<Loadbalancers>
-			<Loadbalancer></Loadbalancer>
-		</Loadbalancers>
-		
+		<DeviceGroups>
+			<DeviceGroup>
+				<Device></Device>
+				<StatusVip></StatusVip>
+			</DeviceGroup>
+		</DeviceGroups>
 		
 		<!--
 		**************************************************************************************************************************************
@@ -299,7 +311,7 @@
 			<ErrorReporting>
 				<Enabled>false</Enabled>
 			</ErrorReporting>
-			
+						
 			
 		<!--
 			
@@ -367,7 +379,7 @@
 		-->
 		
 			<iRules>
-				<Enabled>false</Enabled>
+				<Enabled>true</Enabled>
 				<ShowiRuleLinks>true</ShowiRuleLinks>
 				<ShowDataGroupListsLinks>true</ShowDataGroupListsLinks>
 			</iRules>
@@ -394,5 +406,36 @@
 		<ExportLink>
 			<Enabled>true</Enabled>
 		</ExportLink>
+
+		<!--
+			
+			***********************************************************************************************************************************************
+			*
+			*	Realtime data
+			*
+			*	This section configures the maximum queue and the refresh rate of the report data.
+			*
+			*	Realtime data is not enabled through the configuration file, but via the BigIP configuration.
+			*	More information about this is available here:
+			*	https://loadbalancing.se/bigip-report/#Realtime_Pool_Member_State
+			* 
+			*	Update a maximum of 5 members at the same time.
+			*	<RealTimeMemberStates>
+			*		<MaxQueue>
+			*			5
+			*		</MaxQueue>
+			*		<RefreshRate>
+			*			60
+			*		</RefreshRate>
+			*	</RealTimeMemberStates>
+			*
+			************************************************************************************************************************************************
+
+		-->
+
+			<RealTimeMemberStates>
+				<MaxQueue>1</MaxQueue>
+				<RefreshRate>60</RefreshRate>
+			</RealTimeMemberStates>	
 
 	</Settings>
