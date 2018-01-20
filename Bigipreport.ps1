@@ -15,154 +15,159 @@
 #		You should have received a copy of the GNU General Public License
 #		along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
-#		Version			Date			Change																	Author          Need Config update?
-#		1.0			2013-02-04		Initial version																Patrik Jonsson  -
-#		1.7			2013-06-07		Fixed a bug regarding SSL profiles											Patrik Jonsson  -
-#		1.8			2013-06-12		Removed the default pool from the pool list if it was set to "None"			Patrik Jonsson  -
-#		1.9			2013-06-12		Added a link to be able to go back to the report after showing iRules.		Patrik Jonsson  -
-#		2.0			2013-06-12		Adding more load balancers.													Patrik Jonsson  -
-#		2.1			2014-01-10		Fixing the re-initialization bug											Patrik Jonsson  -
-#		2.2			2014-02-14		Adding send strings, receive strings, interval and timeout.					Patrik Jonsson  -
-#		2.3			2014-02-19		Made the caching more efficient (100% more) and fixed gpi white spaces.		Patrik Jonsson  -
-#									Adding additional comments.													Patrik Jonsson  -
-#		2.4			2014-02-20		Adding case insensitive pool detection in irules.							Patrik Jonsson  -
-#		2.5			2014-02-21		Fixing a bug allow single iRules in $Global:bigipirules.					Patrik Jonsson  -
-#		2.6			2014-02-24		Fixing iRule table and new CSS.												Patrik Jonsson  -
-#									Adding sorting of columns.													
-#									Adding textarea for iRules.
-#		2.7			2014-02-25		Fixing prettier HTML structure
-#		2.8			2014-02-27		Fixing header filter														Patrik Jonsson  -
-#		2.9			2014-03-09		Rewriting to use node object instead of dictionary							Patrik Jonsson  -
-#									Fixing a bug that appeared when using Powershell 3.0
-#		3.0			2015-07-21		Fixing pool verification													Patrik Jonsson  -
-#		3.1			2015-07-22		Showing big monitors is easier												Patrik Jonsson  -
-#									Adding functionality to hide certain information to save space.	
-#		3.2			2015-07-23		Trying nested tables for pool member information							Patrik Jonsson  -
-#		3.3			2015-07-25		Fixed better CSS															Patrik Jonsson  -
-#									Fixed a loading screen
-#									Adding member information in the table instead of popup
-#		3.4							Add search highlighting														Patrik Jonsson  -
-#									Add more entries per page													Patrik Jonsson  -
-#		3.5			2015-07-29		Fixing the iRules syntax highlihting										Patrik Jonsson  -
-#		3.6			2015-07-30		Fixing a drop down for iRule selection										Patrik Jonsson  -
-#		3.7			2015-07-31		Added a lightbox for the iRules												Patrik Jonsson  -
-#									Adding error reporting when the report fails
-#		3.8			2015-11-11		Added TLS1.2 support														Patrik Jonsson  -
-#									Changed the javascript so the monitors would not cross the screen edge.
-#		3.9			2016-02-04		Fixed a bug when doing minimal configuration								Patrik Jonsson  -
-#									Made the Bigip target list easier to configure (exchanged BigIPdict)
-#		3.9.2		2016-02-25		Ending the version inflation. :)
-#		3.9.2		2016-02-26		Changing the iRule pool regex to cater for explicit pool selections			Patrik Jonsson  -
-#		3.9.3		2016-02-28		Fixed faster caching of monitors											Patrik Jonsson  -
-#									Added client site checking for stale data									
-#									Added member status to the report
-#		3.9.4		2016-03-01		Adding support to show virtual server details irules						Patrik Jonsson  -
-#									Adding generated strings to test the monitors
-#									Added a pool details lightbox instead of the popup
-#		3.9.5		2016-03-02		Adding support for latest jQuery											Patrik Jonsson  -
-#									Fixed UTF8 json in order to support	Firefox
-#									Cleaned CSS
-#									Cleaned the javascript
-#									Cleaned the HTML
-#		3.9.6		2016-03-04		Caching the data in temp files when writing the html and jsons				Patrik Jonsson  -
-#		3.9.7		2016-03-05		Adding a possibility to share searches										Patrik Jonsson  -
-#		4.0			2016-03-07		Fixed the pool expand function where it does not expand for column			Patrik Jonsson  -
-#									searches.
-#									Fixed syntax highlighting for column searches
-#		4.0.1		2016-03-11		Fixed an error in the javascript that used a future function not			Patrik Jonsson  -
-#									included in the current version.
-#		4.0.2		2016-03-14		Preparing for showing Virtual Server details								Patrik Jonsson  -
-#		4.0.3		2016-03-23		Making the curl links compatible with the windows binary					Patrik Jonsson  -
-#									Adding share link to show pool
-#									Fixed a bug where monitors using tags as receive string would not show.
-#		4.0.4		2016-05-13		Fixed a bug with a non-declared variable									Patrik Jonsson  -
-#		4.0.5		2016-05-23		Made the update check more aggressive by request of devcentral users		Patrik Jonsson  -
-#		4.0.6		2016-06-08		Making showing of irules easier to define									Patrik Jonsson  -
-#		4.0.7		2016-06-09		Replacing config section with a config file									Patrik Jonsson  -
-#                                   Using Powershell Strict mode to improve script quality
-#		4.0.8		2016-06-10		Adding logging options														Patrik Jonsson  -
-#									Adding checks and retries when writing the report
-#		4.0.9		2016-06-14		Changed the pool regular expression to allow tab and multiple space			Patrik Jonsson  -
-#		4.1.0		2016-06-20		Updated the report mails to be more structured (css and table)				Patrik Jonsson  -
-#		4.1.1		2016-06-21		Made the report check for missing load balancers before compiling			Patrik Jonsson  -
-#									the data
-#		4.1.2		2016-06-23		Make it possible to store the report somewhere else than the site root		Patrik Jonsson  -
-#									Adding option to add shares if the report script is running on a separate
-#									server.
-#									Adding log file pruning (max lines)
-#		4.1.3		2016-07-01		Fixed an error in the pre-execution part. Updated some log information.		Patrik Jonsson  -
-#		4.1.4		2016-07-11		Fixed a problem with the javascript files not referring the correct folder	Patrik Jonsson  -
-#		4.2.0		2016-07-18		Added support to show virtual server details								Patrik Jonsson  -
-#									Added support for showing irules
-#									Added support for scanning data group lists
-#									Changed value of irules on Virtual servers without irules to an empty 
-#									array instead of none.
-#		4.2.1		2016-07-19		Added an additional possible status to the pool details view				Patrik Jonsson  -
-#		4.2.2		2016-08-10		Fixed a bug with error reporting											Patrik Jonsson  -
-#									Made it easier to close larger irules
-#       			2016-08-19	    Cleaning up CSS
-#       			2016-08-19	    Fixed a bug in the data group list parser function
-#		4.2.3		2016-08-29		Adding data group list parsing to json files								
-#									Fixed so you can hide the compression column
-#		4.2.4		2016-08-30		Fixed a bug in the data group list parser									Patrik Jonsson  -
-#									Showing data group lists now works
-#		4.2.5		2016-08-31		Rewrote the parser to use dictionaries instead								Patrik Jonsson  -
-#									Parsing data group lists in irules now works
-#		4.2.6		2016-09-01		Fixing css for data group list lightbox to match the rest					Patrik Jonsson  -
-#		4.2.7		2016-09-06		Improving data group list parsing by skipping content in comments			Patrik Jonsson  -
-#		4.2.8		2016-09-12		Added support for showing priority groups									Patrik Jonsson  -
-#		4.2.9		2016-09-12		Showing persistence profile in virtual server details						Patrik Jonsson  -
-#		4.3.0		2016-01-10		Fixing support for partitions single configuration objects
-#		4.3.1		2017-03-02		Removing any route domain before comparing to NAT list						Patrik Jonsson  -
-#		4.3.2		2017-03-02		Making the script do recursive calls instead of per partition. Much faster  Patrik Jonsson  -
-#		4.3.3		2017-03-02		Adding basic ASM support													Patrik Jonsson  -
-#		4.3.4		2017-03-07		Fixing a mistake where the wrong column setting was referred				Patrik Jonsson  -
-#		4.3.5		2017-03-23		Improving the check for missing data										Patrik Jonsson  -
-#		4.3.6		2017-03-23		Using stream writer intead of out-file for improved performance				Patrik Jonsson  -
-#		4.3.7		2017-03-23		Removing virtual servers connected to orphaned pools from the post check.	Patrik Jonsson  -
-#		4.3.8		2017-03-24		Only using/comparing objects local to the LB currently worked on (faster)	Patrik Jonsson  -
-#		4.3.9		2017-04-06		Allowing orphaned objects in the JSON, fixing a bug when testing data		Patrik Jonsson  -
-#		4.4.0		2017-06-21		Fixing issue with the API not returning empty irules						Patrik Jonsson  -
-#		4.4.1		2017-07-05		Removing ASM, adding preferences											Patrik Jonsson  -
-#		4.4.2		2017-07-08		Adding new logo and version number in the footer							Patrik Jonsson  -
-#		4.4.3		2017-07-09		Moved preferences to its own window 										Patrik Jonsson  -
-#		4.5.0		2017-07-12		Adding column toggle. Moving iRule selector to its own window.				Patrik Jonsson  -
-#									Optimizing css
-#		4.5.1		2017-07-15		Now also fetching information about the load balancers for future use 		Patrik Jonsson  -
-#		4.5.2		2017-07-16		Re-adding basic ASM support for devices running version 12 and above.		Patrik Jonsson  -
-#       4.5.3       2017-07-20      Fixing a bug when highlighting irules and the js folder is not located      Patrik Jonsson  -
-#                                   in the root folder.
-#		4.5.4		2017-07-21		Replacing old Javascript loader with one that is smoother when loading		Patrik Jonsson  -
-#									larger sets of data
-#		4.5.5		2017-07-22		Adding a reset filters button												Patrik Jonsson  -
-#       4.5.6       2017-08-04      Adding VLAN information to the virtual server object                        Patrik Jonsson  -
-#		4.5.7		2017-08-13		Adding icons 																Patrik Jonsson  -
-#		4.5.8		2017-08-14		Adding filter icon 															Patrik Jonsson  -
-#		4.5.9		2017-08-16		Adding traffic group to the virtual server object and showing it.			Patrik Jonsson  -
-#		4.6.0		2017-08-17		Adding virtual server state icons 											Patrik Jonsson  -
-#		4.6.1		2017-08-18		Fixing bug when extracting source NAT pool 									Patrik Jonsson  -
-#		4.6.2		2017-08-18		Fixing a bug when extracting version information 							Patrik Jonsson  -
-#		4.6.3		2017-08-19		Adding LB method, SNAT and NAT to pool details 								Patrik Jonsson  -
-#		4.6.4		2017-08-24		Adding "All" to the pagination options										Patrik Jonsson  -
-#		4.6.5		2017-09-08		Fixing a bug when dealing with modules that is not known. 					Patrik Jonsson  No
-#									Also defining iRulesLX as a known module
-#		4.6.6		2017-09-11		Adding virtual server and pool statistics				 					Patrik Jonsson  No
-#		4.6.7		2017-09-12		Small CSS fix to make the pool details prettier								Patrik Jonsson  No
-#		4.6.8		2017-09-20		Adding fix for duplicate detected data group lists.							Patrik Jonsson  No
-#		4.6.9		2017-09-25		Preventing caching of Json.                         						Patrik Jonsson  No
-#		4.7.0		2017-12-20		Adding options to export to the report to CSV. 								Patrik Jonsson  Yes
-#		4.7.1		2017-12-20		Adding support for monitors using HEAD.										Patrik Jonsson  No
-#		4.7.2		2017-12-20		Adding support for multiple configuration files.							Patrik Jonsson  No
-#		4.7.3		2017-12-20		Adding more script pre-execution checks
-#									Adding javascript error handling when loading the report json files			Patrik Jonsson  No
-#		4.7.4		2017-12-27		Adding script requirement for Powershell version 4.							Patrik Jonsson  No
-#		4.7.5		2017-12-28		Adding more verbose error messages when the json files fails to load.		Patrik Jonsson  No
+#        Version      Date            Change                                                                        Author          Need Config update?
+#        1.0          2013-02-04      Initial version                                                               Patrik Jonsson  -
+#        1.7          2013-06-07      Fixed a bug regarding SSL profiles                                            Patrik Jonsson  -
+#        1.8          2013-06-12      Removed the default pool from the pool list if it was set to "None"           Patrik Jonsson  -
+#        1.9          2013-06-12      Added a link to be able to go back to the report after showing iRules.        Patrik Jonsson  -
+#        2.0          2013-06-12      Adding more load balancers.                                                   Patrik Jonsson  -
+#        2.1          2014-01-10      Fixing the re-initialization bug                                              Patrik Jonsson  -
+#        2.2          2014-02-14      Adding send strings, receive strings, interval and timeout.                   Patrik Jonsson  -
+#        2.3          2014-02-19      Made the caching more efficient (100% more) and fixed gpi white spaces.       Patrik Jonsson  -
+#                                     Adding additional comments.                                                   Patrik Jonsson  -
+#        2.4          2014-02-20      Adding case insensitive pool detection in irules.                             Patrik Jonsson  -
+#        2.5          2014-02-21      Fixing a bug allow single iRules in $Global:bigipirules.                      Patrik Jonsson  -
+#        2.6          2014-02-24      Fixing iRule table and new CSS.                                               Patrik Jonsson  -
+#                                     Adding sorting of columns.
+#                                     Adding textarea for iRules.
+#        2.7          2014-02-25      Fixing prettier HTML structure
+#        2.8          2014-02-27      Fixing header filter                                                          Patrik Jonsson  -
+#        2.9          2014-03-09      Rewriting to use node object instead of dictionary                            Patrik Jonsson  -
+#                                     Fixing a bug that appeared when using Powershell 3.0
+#        3.0          2015-07-21      Fixing pool verification                                                      Patrik Jonsson  -
+#        3.1          2015-07-22      Showing big monitors is easier                                                Patrik Jonsson  -
+#                                     Adding functionality to hide certain information to save space.
+#        3.2          2015-07-23      Trying nested tables for pool member information                              Patrik Jonsson  -
+#        3.3          2015-07-25      Fixed better CSS                                                              Patrik Jonsson  -
+#                                     Fixed a loading screen
+#                                     Adding member information in the table instead of popup
+#        3.4                          Add search highlighting                                                       Patrik Jonsson  -
+#                                     Add more entries per page                                                     Patrik Jonsson  -
+#        3.5          2015-07-29      Fixing the iRules syntax highlihting                                          Patrik Jonsson  -
+#        3.6          2015-07-30      Fixing a drop down for iRule selection                                        Patrik Jonsson  -
+#        3.7          2015-07-31      Added a lightbox for the iRules                                               Patrik Jonsson  -
+#                                     Adding error reporting when the report fails
+#        3.8          2015-11-11      Added TLS1.2 support                                                          Patrik Jonsson  -
+#                                     Changed the javascript so the monitors would not cross the screen edge.
+#        3.9          2016-02-04      Fixed a bug when doing minimal configuration                                  Patrik Jonsson  -
+#                                     Made the Bigip target list easier to configure (exchanged BigIPdict)
+#        3.9.2        2016-02-25      Ending the version inflation. :)
+#        3.9.2        2016-02-26      Changing the iRule pool regex to cater for explicit pool selections           Patrik Jonsson  -
+#        3.9.3        2016-02-28      Fixed faster caching of monitors                                              Patrik Jonsson  -
+#                                     Added client site checking for stale data
+#                                     Added member status to the report
+#        3.9.4        2016-03-01      Adding support to show virtual server details irules                          Patrik Jonsson  -
+#                                     Adding generated strings to test the monitors
+#                                     Added a pool details lightbox instead of the popup
+#        3.9.5        2016-03-02      Adding support for latest jQuery                                              Patrik Jonsson  -
+#                                     Fixed UTF8 json in order to support    Firefox
+#                                     Cleaned CSS
+#                                     Cleaned the javascript
+#                                     Cleaned the HTML
+#        3.9.6        2016-03-04      Caching the data in temp files when writing the html and jsons                Patrik Jonsson  -
+#        3.9.7        2016-03-05      Adding a possibility to share searches                                        Patrik Jonsson  -
+#        4.0          2016-03-07      Fixed the pool expand function where it does not expand for column            Patrik Jonsson  -
+#                                     searches.
+#                                     Fixed syntax highlighting for column searches
+#        4.0.1        2016-03-11      Fixed an error in the javascript that used a future function not              Patrik Jonsson  -
+#                                     included in the current version.
+#        4.0.2        2016-03-14      Preparing for showing Virtual Server details                                  Patrik Jonsson  -
+#        4.0.3        2016-03-23      Making the curl links compatible with the windows binary                      Patrik Jonsson  -
+#                                     Adding share link to show pool
+#                                     Fixed a bug where monitors using tags as receive string would not show.
+#        4.0.4        2016-05-13      Fixed a bug with a non-declared variable                                      Patrik Jonsson  -
+#        4.0.5        2016-05-23      Made the update check more aggressive by request of devcentral users          Patrik Jonsson  -
+#        4.0.6        2016-06-08      Making showing of irules easier to define                                     Patrik Jonsson  -
+#        4.0.7        2016-06-09      Replacing config section with a config file                                   Patrik Jonsson  -
+#                                     Using Powershell Strict mode to improve script quality
+#        4.0.8        2016-06-10      Adding logging options                                                        Patrik Jonsson  -
+#                                     Adding checks and retries when writing the report
+#        4.0.9        2016-06-14      Changed the pool regular expression to allow tab and multiple space           Patrik Jonsson  -
+#        4.1.0        2016-06-20      Updated the report mails to be more structured (css and table)                Patrik Jonsson  -
+#        4.1.1        2016-06-21      Made the report check for missing load balancers before compiling             Patrik Jonsson  -
+#                                     the data
+#        4.1.2        2016-06-23      Make it possible to store the report somewhere else than the site root        Patrik Jonsson  -
+#                                     Adding option to add shares if the report script is running on a separate
+#                                     server
+#                                     Adding log file pruning (max lines)
+#        4.1.3        2016-07-01      Fixed an error in the pre-execution part. Updated some log verbosermation.       Patrik Jonsson  -
+#        4.1.4        2016-07-11      Fixed a problem with the javascript files not referring the correct folder    Patrik Jonsson  -
+#        4.2.0        2016-07-18      Added support to show virtual server details                                  Patrik Jonsson  -
+#                                     Added support for showing irules
+#                                     Added support for scanning data group lists
+#                                     Changed value of irules on Virtual servers without irules to an empty
+#                                     array instead of none.
+#        4.2.1        2016-07-19      Added an additional possible status to the pool details view                  Patrik Jonsson  -
+#        4.2.2        2016-08-10      Fixed a bug with error reporting                                              Patrik Jonsson  -
+#                                     Made it easier to close larger irules
+#                     2016-08-19      Cleaning up CSS
+#                     2016-08-19      Fixed a bug in the data group list parser function
+#        4.2.3        2016-08-29      Adding data group list parsing to json files
+#                                     Fixed so you can hide the compression column
+#        4.2.4        2016-08-30      Fixed a bug in the data group list parser                                     Patrik Jonsson  -
+#                                     Showing data group lists now works
+#        4.2.5        2016-08-31      Rewrote the parser to use dictionaries instead                                Patrik Jonsson  -
+#                                     Parsing data group lists in irules now works
+#        4.2.6        2016-09-01      Fixing css for data group list lightbox to match the rest                     Patrik Jonsson  -
+#        4.2.7        2016-09-06      Improving data group list parsing by skipping content in comments             Patrik Jonsson  -
+#        4.2.8        2016-09-12      Added support for showing priority groups                                     Patrik Jonsson  -
+#        4.2.9        2016-09-12      Showing persistence profile in virtual server details                         Patrik Jonsson  -
+#        4.3.0        2016-01-10      Fixing support for partitions single configuration objects
+#        4.3.1        2017-03-02      Removing any route domain before comparing to NAT list                        Patrik Jonsson  -
+#        4.3.2        2017-03-02      Making the script do recursive calls instead of per partition. Much faster    Patrik Jonsson  -
+#        4.3.3        2017-03-02      Adding basic ASM support                                                      Patrik Jonsson  -
+#        4.3.4        2017-03-07      Fixing a mistake where the wrong column setting was referred                  Patrik Jonsson  -
+#        4.3.5        2017-03-23      Improving the check for missing data                                          Patrik Jonsson  -
+#        4.3.6        2017-03-23      Using stream writer intead of out-file for improved performance               Patrik Jonsson  -
+#        4.3.7        2017-03-23      Removing virtual servers connected to orphaned pools from the post check.     Patrik Jonsson  -
+#        4.3.8        2017-03-24      Only using/comparing objects local to the LB currently worked on (faster)     Patrik Jonsson  -
+#        4.3.9        2017-04-06      Allowing orphaned objects in the JSON, fixing a bug when testing data         Patrik Jonsson  -
+#        4.4.0        2017-06-21      Fixing issue with the API not returning empty irules                          Patrik Jonsson  -
+#        4.4.1        2017-07-05      Removing ASM, adding preferences                                              Patrik Jonsson  -
+#        4.4.2        2017-07-08      Adding new logo and version number in the footer                              Patrik Jonsson  -
+#        4.4.3        2017-07-09      Moved preferences to its own window                                           Patrik Jonsson  -
+#        4.5.0        2017-07-12      Adding column toggle. Moving iRule selector to its own window                 Patrik Jonsson  -
+#                                     Optimizing css
+#        4.5.1        2017-07-15      Now also fetching information about the load balancers for future use         Patrik Jonsson  -
+#        4.5.2        2017-07-16      Re-adding basic ASM support for devices running version 12 and above.         Patrik Jonsson  -
+#        4.5.3        2017-07-20      Fixing a bug when highlighting irules and the js folder is not located        Patrik Jonsson  -
+#                                     in the root folder
+#        4.5.4        2017-07-21      Replacing old Javascript loader with one that is smoother when loading        Patrik Jonsson  -
+#                                     larger sets of data
+#        4.5.5        2017-07-22      Adding a reset filters button                                                 Patrik Jonsson  -
+#        4.5.6        2017-08-04      Adding VLAN information to the virtual server object                          Patrik Jonsson  -
+#        4.5.7        2017-08-13      Adding icons                                                                  Patrik Jonsson  -
+#        4.5.8        2017-08-14      Adding filter icon                                                            Patrik Jonsson  -
+#        4.5.9        2017-08-16      Adding traffic group to the virtual server object and showing it             Patrik Jonsson  -
+#        4.6.0        2017-08-17      Adding virtual server state icons                                             Patrik Jonsson  -
+#        4.6.1        2017-08-18      Fixing bug when extracting source NAT pool                                    Patrik Jonsson  -
+#        4.6.2        2017-08-18      Fixing a bug when extracting version information                              Patrik Jonsson  -
+#        4.6.3        2017-08-19      Adding LB method, SNAT and NAT to pool details                                Patrik Jonsson  -
+#        4.6.4        2017-08-24      Adding "All" to the pagination options                                        Patrik Jonsson  -
+#        4.6.5        2017-09-08      Fixing a bug when dealing with modules that is not known                      Patrik Jonsson  No
+#                                     Also defining iRulesLX as a known module
+#        4.6.6        2017-09-11      Adding virtual server and pool statistics                                     Patrik Jonsson  No
+#        4.6.7        2017-09-12      Small CSS fix to make the pool details prettier                               Patrik Jonsson  No
+#        4.6.8        2017-09-20      Adding fix for duplicate detected data group lists                            Patrik Jonsson  No
+#        4.6.9        2017-09-25      Preventing caching of Json                                                    Patrik Jonsson  No
+#        4.7.0        2017-12-20      Adding options to export to the report to CSV                                 Patrik Jonsson  Yes
+#        4.7.1        2017-12-20      Adding support for monitors using HEAD                                        Patrik Jonsson  No
+#        4.7.2        2017-12-20      Adding support for multiple configuration files                               Patrik Jonsson  No
+#        4.7.3        2017-12-20      Adding more script pre-execution checks
+#                                     Adding javascript error handling when loading the report json files           Patrik Jonsson  No
+#        4.7.4        2017-12-27      Adding script requirement for Powershell version 4                            Patrik Jonsson  No
+#        4.7.5        2017-12-28      Adding more verbose error messages when the json files fails to load          Patrik Jonsson  No
+#        4.8.0        2018-01-07      The script now supports real-time member status                               Patrik Jonssson Yes
+#                                     A lot of small fixes
+#        4.8.1        2018-01-19      Changing to device groups instead of individual load balancers                Patrik Jonsson  Yes
+#                                     Moving status VIP support to the device groups
+#        4.8.2        2018-01-20      Using dictionaries to generate the report to speed up large installations     Patrik Jonsson  No
 #
-#		This script generates a report of the LTM configuration on F5 BigIP's.
-#		It started out as pet project to help co-workers know which traffic goes where but grew.
+#        This script generates a report of the LTM configuration on F5 BigIP's.
+#        It started out as pet project to help co-workers know which traffic goes where but grew.
 #
-#		The html page uses "Data tables" to display and filter tables. It's an open source javascript project.
-#		Source: https://datatables.net/
+#        The html page uses "Data tables" to display and filter tables. It's an open source javascript project.
+#        Source: https://datatables.net/
 #
 ######################################################################################################################################
 
@@ -171,7 +176,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.7.5"
+$Global:ScriptVersion = "4.8.2"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -231,8 +236,10 @@ Function log {
 		
 		switch($logtype) { 
 	        "error" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
+	        "warning" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
+	        "info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) } }
 			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }}
-			"info" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }}
+			"verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }}
 			default { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) } }
 	    }
 	}
@@ -241,8 +248,10 @@ Function log {
 	
 	switch($logtype) { 
         "error" 	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Red" }
+		"warning" 	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Yellow" }
+		"info"		{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Gray" }  }
 		"success" 	{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Green" } }
-		"info" 		{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
+		"verbose"   { if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
 		default 	{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
     }
 }
@@ -261,7 +270,7 @@ Function Send-Errors {
 	#Check for errors when executing the script and send them
 	If($error.Count -gt 0 -or $Global:LoggedErrors -gt 0){
 		
-		log info "There were errors while generating the report"
+		log verbose "There were errors while generating the report"
 		
 		if($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true){	
 			
@@ -344,7 +353,7 @@ Function Send-Errors {
 				
 				$Errorsummary += "</tbody></table></body></html>"
 			}
-			log info "Sending report"
+			log verbose "Sending report"
 			$subject = "$(Get-Date -format d): BigIP Report generation has has failed"
 	        $body = "$errorsummary"
 	
@@ -361,7 +370,7 @@ Function Send-Errors {
 
 
 
-log info "Configuring the console window"
+log verbose "Configuring the console window"
 
 #Make the console larger and increase the buffer
 $PShost = Get-Host
@@ -381,7 +390,7 @@ $PSWindow.windowsize = $PSWindowSize
 #
 ################################################################################################################################################
 
-log info "Pre-execution checks"
+log verbose "Pre-execution checks"
 
 $SaneConfig = $true
 
@@ -395,7 +404,7 @@ if($Global:Bigipreportconfig.Settings.Credentials.Password -eq $null -or $Global
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.Loadbalancers -eq $null -or $Global:Bigipreportconfig.Settings.Loadbalancers.Loadbalancer.Count -eq 0 -or $Global:Bigipreportconfig.Settings.Loadbalancers.Loadbalancer -eq "" ){
+if($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -eq $null -or $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device.Count -eq 0 ){
 	log error "No load balancers configured"
 	$SaneConfig = $false
 }
@@ -425,7 +434,7 @@ if($Global:Bigipreportconfig.Settings.Outputlevel -eq $null -or $Global:Bigiprep
 
 Foreach($Share in $Global:Bigipreportconfig.Settings.Shares.Share){
 	
-	log info "Mounting $($Share.Path)"
+	log verbose "Mounting $($Share.Path)"
 	
 	& net use $($Share.Path) /user:$($Share.Username) $($Share.Password) | Out-Null
 	
@@ -449,6 +458,11 @@ if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $null){
 
 if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
 	log error "You can't show data group lists without showing irules in the current version."
+	$SaneConfig = $false
+}
+
+if($Global:Bigipreportconfig.Settings.RealTimeMemberStates -eq $null){
+	log error "Real time member states is missing from the configuration file. Update the the latest version of the file and try again."
 	$SaneConfig = $false
 }
 
@@ -522,14 +536,14 @@ if(Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl")
 
 
 if(-not $SaneConfig){
-	log info "There were errors during the config file sanity check"
+	log verbose "There were errors during the config file sanity check"
 	
 	if($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true){
-		log info "Attempting to sen an error report via mail"
+		log verbose "Attempting to sen an error report via mail"
 		Send-Errors
 	}
 	
-	log info "Exiting"
+	log verbose "Exiting"
 	Exit
 } else {
 	log success "Pre execution checks was successful"
@@ -541,14 +555,13 @@ if(-not $SaneConfig){
 #
 ################################################################################################################################################
 
-
-
-
 #Declaring variables
 
 #Variables used for storing report data
-$Global:BigIPDict = @{}
 $Global:NATdict = @{}
+
+$ReportObjects = @{};
+
 $Global:virtualservers = @()
 $Global:iRules = @()
 $Global:pools = @()
@@ -567,120 +580,115 @@ $Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json
 $Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\virtualservers.json"
 $Global:irulesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\irules.json"
 $Global:datagrouplistjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\datagrouplists.json"
-
+$Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loadbalancers.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
-public class VirtualServer
-{
-    public string name;
-    public string ip;
-	public string port;
-	public string defaultpool;
-	public string sslprofile;
-	public string compressionprofile;
-	public string persistence;
-	public string[] irules;
-	public string[] pools;
-    public string[] vlans;
-    public string trafficgroup;
-    public string vlanstate;
-	public string sourcexlatetype;
-	public string sourcexlatepool;
-	public string[] asmPolicies;
-	public string availability;
-	public string enabled;
-	public string currentconnections;
-	public string maximumconnections;
-	public string cpuavg5sec;
-	public string cpuavg1min;
-	public string cpuavg5min;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-
-public class Member {
-	public string name;
-	public string ip;
-	public string port;
-	public string availability;
-	public string enabled;
-	public string status;
-	public long priority;
-	public string currentconnections;
-	public string maximumconnections;
-}
-
-public class Pool {
-    public string name;
-    public string[] monitors;
-	public Member[] members;
-	public string loadbalancingmethod;
-	public string actiononservicedown;
-	public string allownat;
-	public string allowsnat;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-public class iRule {
-    public string name;
-    public string[] pools;
-	public string definition;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-public class Node {
-    public string ip;
-    public string name;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
-public class Monitor {
-    public string name;
-    public string type;
-	public string sendstring;
-	public string receivestring;
-	public string loadbalancer;
-	public string interval;
-	public string timeout;
-}
-'@
-
-
-Add-Type @'
-using System.Collections;
-
-public class Datagrouplist {
-    public string name;
-    public string type;
-	public Hashtable data;
-	public string loadbalancer;
-}
-'@
-
-Add-Type @'
+	
 	using System.Collections;
+
+	public class VirtualServer
+	{
+	    public string name;
+	    public string ip;
+		public string port;
+		public string defaultpool;
+		public string sslprofile;
+		public string compressionprofile;
+		public string persistence;
+		public string[] irules;
+		public string[] pools;
+	    public string[] vlans;
+	    public string trafficgroup;
+	    public string vlanstate;
+		public string sourcexlatetype;
+		public string sourcexlatepool;
+		public string[] asmPolicies;
+		public string availability;
+		public string enabled;
+		public string currentconnections;
+		public string maximumconnections;
+		public string cpuavg5sec;
+		public string cpuavg1min;
+		public string cpuavg5min;
+		public string loadbalancer;
+	}
+
+	public class Member {
+		public string name;
+		public string ip;
+		public string port;
+		public string availability;
+		public string enabled;
+		public string status;
+		public long priority;
+		public string currentconnections;
+		public string maximumconnections;
+	}
+
+	public class Pool {
+	    public string name;
+	    public string[] monitors;
+		public Member[] members;
+		public string loadbalancingmethod;
+		public string actiononservicedown;
+		public string allownat;
+		public string allowsnat;
+		public bool orphaned;
+		public string loadbalancer;
+	}
+
+	public class iRule {
+	    public string name;
+	    public string[] pools;
+		public string definition;
+		public string loadbalancer;
+	}
+
+	public class Node {
+	    public string ip;
+	    public string name;
+		public string loadbalancer;
+	}
+
+	public class Monitor {
+	    public string name;
+	    public string type;
+		public string sendstring;
+		public string receivestring;
+		public string loadbalancer;
+		public string interval;
+		public string timeout;
+	}
+
+	public class Datagrouplist {
+	    public string name;
+	    public string type;
+		public Hashtable data;
+		public string loadbalancer;
+	}
+
+	public class PoolStatusVip {
+		public string url;
+		public string working;
+		public string state;
+	}
 
 	public class Loadbalancer {
 		public string name;
+		public string ip;
 		public string version;
 		public string build;
 		public string baseBuild;
 		public string model;
+		public string category;
+		public string serial;
+		public bool active;
+		public bool isonlydevice;
+		public string color;
 		public Hashtable modules;
+		public PoolStatusVip statusvip;
 	}
-
-'@
-
-Add-Type @'
 
 	public class ASMPolicy {
 		public string name;
@@ -773,7 +781,7 @@ $Global:StateToString = @{
 
 #Enable of disable the use of TLS1.2
 if($Global:Bigipreportconfig.Settings.UseTLS12 -eq $true){
-	log info "Enabling TLS1.2"
+	log verbose "Enabling TLS1.2"
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
 
@@ -784,7 +792,7 @@ if($Global:Bigipreportconfig.Settings.UseTLS12 -eq $true){
 
 if($Global:Bigipreportconfig.Settings.NATFilePath -ne ""){
 	
-	log info "NAT File has been configured"
+	log verbose "NAT File has been configured"
 	
 	if(Test-Path -Path $Global:Bigipreportconfig.Settings.NATFilePath){
 		
@@ -816,22 +824,17 @@ if($Global:Bigipreportconfig.Settings.NATFilePath -ne ""){
 
 #Function used to gather data from the load balancers
 function cacheLTMinformation {
+
 	Param(
 		$f5,
-		$loadbalancername,
-		$LoadbalancerIP
+		$LoadBalancerObjects
 	)
 	
 	$VersionInfo = $f5.SystemSystemInfo.get_product_information()
 
-	#Declare temporary objects for this load balancer
-	$LBVirtualservers = @()
-	$LBPools = @()
-	$LBNodes = @()
-	$LBmonitors = @()
-	$LBiRules = @()
-	$LBDataGroupLists = @()
-	$LBASMPolicies = @()
+	#Set some variables to make the code nicer to read
+	$LoadbalancerName = $LoadBalancerObjects.LoadBalancer.name
+	$LoadbalancerIP =  $LoadBalancerObjects.LoadBalancer.ip
 	
 	#Regexp for parsing monitors from iRule definitions
 	[regex]$poolregexp = "pool\s+([a-zA-Z0-9_\-\./]+)"
@@ -839,66 +842,22 @@ function cacheLTMinformation {
 	$f5.SystemSession.set_active_folder("/");
 	$f5.SystemSession.set_recursive_query_state("STATE_ENABLED");
 
+	$MajorVersion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[0]
+	$Minorversion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[1]
 
-	#Region Cache Load balancer information
-
-	log info "Fetching information about the device"
-	$loadBalancer = New-Object -Type Loadbalancer
-
-	#Get the version information
-	$versionInformation = ($f5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
-
-	#Get provisioned modules
-	$modules = $f5.ManagementProvision.get_provisioned_list()
-
-	$loadBalancer.name = $loadbalancername
-	$loadBalancer.version = $versionInformation.version 
-	$loadBalancer.build = $versionInformation.build
-	$loadBalancer.baseBuild = $versionInformation.baseBuild
-
-	$ModuleDict = @{}
-
-	foreach($module in $modules){
-
-		$moduleCode = [string]$module
-
-		if($ModuleToShort.keys -contains $moduleCode){
-			$moduleShortName = $ModuleToShort[$moduleCode]
-		} else {
-			$moduleShortName = $moduleCode.replace("TMOS_MODULE_", "")
-		}
-		
-		if($ModuleToDescription.keys -contains $moduleShortName){
-			$moduleDescription = $ModuleToDescription[$moduleShortName]
-		} else {
-			$moduleDescription = "No description found"
-		}
-
-		if(!($ModuleDict.keys -contains $moduleShortName)){
-			$ModuleDict.add($moduleShortName, $moduleDescription)
-		}
-	}
-
-	$LoadBalancer.modules = $ModuleDict
-
-	$MajorVersion = $loadBalancer.version.Split(".")[0]
-	$Minorversion = $loadBalancer.version.Split(".")[1]
-
-
-	$Global:loadBalancers += $loadBalancer
-
+	$LoadBalancerObjects.ASMPolicies = @{}
 
 	If($MajorVersion -gt 11){
 
 		#Check if ASM is enabled
 		if($ModuleDict.Keys -contains "ASM"){
-				log info "Getting ASM Policy information"
+				log verbose "Getting ASM Policy information"
 			
-			$AuthToken = Get-AuthToken -Loadbalancer $loadbalancername
+			$AuthToken = Get-AuthToken -Loadbalancer $LoadbalancerName
 
 			$headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
-			$Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$loadbalancerip/mgmt/tm/asm/policies"
+			$Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$LoadbalancerIP/mgmt/tm/asm/policies"
 			$Policies = ($Response | ConvertFrom-Json).items
 
 			Foreach($Policy in $Policies){
@@ -909,12 +868,10 @@ function cacheLTMinformation {
 				$objTempPolicy.enforcementMode = $Policy.enforcementMode
 				$objTempPolicy.learningMode = $Policy.learningMode
 				$objTempPolicy.virtualServers = $Policy.virtualServers
-				$objTempPolicy.loadbalancer = $loadbalancername
+				$objTempPolicy.loadbalancer = $LoadbalancerName
 
-				$LBASMpolicies += $objTempPolicy
+				$LoadBalancerObjects.ASMPolicies.Add($objTempPolicy.name, $objTempPolicy)
 			}
-
-			$Global:ASMPolicies += $LBASMPolicies
 		}
 	}
 
@@ -926,7 +883,9 @@ function cacheLTMinformation {
 	
 	
 	#Region Cache node data
-		
+	
+	$LoadBalancerObjects.Nodes = @{}
+
 	[array]$nodeaddresses = $f5.LocalLBNodeAddress.get_list()
 	[array]$nodescreennames = $f5.LocalLBNodeAddress.get_screen_name($nodeaddresses)
 	
@@ -936,28 +895,23 @@ function cacheLTMinformation {
 		
 		$objTempNode.ip = [string]$nodeaddresses[$i]
 		$objTempNode.name = [string]$nodescreennames[$i]
-		$objTempNode.loadbalancer = $loadbalancername
+		$objTempNode.loadbalancer = $LoadbalancerName
 				
 		if($objTempNode.name -eq ""){
 			$objTempNode.name = "Unnamed"
 		}
 		
-		#Since the report does not fully support route domains, remove the %id.
-		if($objTempNode.ip.Contains("%")){
-			$objTempNode.ip = $objTempNode.ip.Split("%")[0]
-		}
-		
-		
-		$LBNodes += $objTempNode
+		$LoadBalancerObjects.Nodes.add($objTempNode.name, $objTempNode)
 
 	}
-	
-	$Global:nodes += $LBNodes
-	
+
 	#EndRegion
 		
 	#Region Caching monitor data
-	log info "Caching monitors"
+
+	$LoadBalancerObjects.Monitors = @{}
+
+	log verbose "Caching monitors"
 	
 	[array]$MonitorList = $f5.LocalLBMonitor.get_template_list()		
 	
@@ -993,9 +947,9 @@ function cacheLTMinformation {
 		$objTempMonitor.timeout = $HttpmonitorsTimeOuts[$i].value
 		$objTempMonitor.type = $HttpMonitors[$i].template_type
 	
-		$objTempMonitor.loadbalancer = $loadbalancername
+		$objTempMonitor.loadbalancer = $LoadbalancerName
 		
-		$LBMonitors += $objTempMonitor
+		$LoadBalancerObjects.Monitors.add($objTempMonitor.name, $objTempMonitor)
 	}
 	
 	For($i = 0;$i -lt $OtherMonitors.Count;$i++){
@@ -1008,9 +962,9 @@ function cacheLTMinformation {
 		$objTempMonitor.interval = $OtherMonitorsIntervals[$i].value
 		$objTempMonitor.timeout = $OtherMonitorsTimeouts[$i].value
 		$objTempMonitor.type = $OtherMonitors[$i].template_type
-		$objTempMonitor.loadbalancer = $loadbalancername
+		$objTempMonitor.loadbalancer = $LoadbalancerName
 		
-		$LBMonitors += $objTempMonitor
+		$LoadBalancerObjects.Monitors.add($objTempMonitor.name, $objTempMonitor)
 	}
 	
 	Foreach($monitor in $NonCompatibleMonitors){
@@ -1024,19 +978,19 @@ function cacheLTMinformation {
 		$objTempMonitor.timeout = "N/A"
 		$objTempMonitor.type = $monitor.template_type
 		
-		$objTempMonitor.loadbalancer = $loadbalancername
+		$objTempMonitor.loadbalancer = $LoadbalancerName
 	
-		$LBMonitors += $objTempMonitor
+		$LoadBalancerObjects.Monitors.add($objTempMonitor.name, $objTempMonitor)
 		
 	}
-	
-	$Global:monitors += $LBMonitors
 	
 	#EndRegion
 	
 	#Region Cache Data group lists
-	
-	log info "Caching data group lists"
+
+	log verbose "Caching data group lists"
+
+	$LoadBalancerObjects.DataGroupLists = @{}
 
 	[array]$AddressClassList = $f5.LocalLBClass.get_address_class_list()
 	[array]$AddressClassKeys = $f5.LocalLBClass.get_address_class($AddressClassList)
@@ -1045,9 +999,9 @@ function cacheLTMinformation {
 	#Get address type data group lists data
 	For($i = 0;$i -lt $AddressClassList.Count;$i++){
 		
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $AddressClassList[$i]
-		$ObjTempDataGroupList.type = "Address"
+		$objTempDataGroupList = New-Object -Type DataGroupList
+		$objTempDataGroupList.name = $AddressClassList[$i]
+		$objTempDataGroupList.type = "Address"
 		
 		$Dgdata = New-Object System.Collections.Hashtable
 		
@@ -1060,10 +1014,10 @@ function cacheLTMinformation {
 			
 		}
 		
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $loadbalancername
+		$objTempDataGroupList.data = $Dgdata
+		$objTempDataGroupList.loadbalancer = $LoadbalancerName
 		
-		$Global:DataGroupLists += $ObjTempDataGroupList
+		$LoadBalancerObjects.DataGroupLists.Add($objTempDataGroupList.name, $objTempDataGroupList)
 		
 	}
 
@@ -1073,9 +1027,9 @@ function cacheLTMinformation {
 
 	For($i = 0;$i -lt $StringClassList.Count;$i++){
 		
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $StringClassList[$i]
-		$ObjTempDataGroupList.type = "String"
+		$objTempDataGroupList = New-Object -Type DataGroupList
+		$objTempDataGroupList.name = $StringClassList[$i]
+		$objTempDataGroupList.type = "String"
 		
 		$Dgdata = New-Object System.Collections.Hashtable
 		
@@ -1087,13 +1041,12 @@ function cacheLTMinformation {
 			$Dgdata.Add($Key, $Value)
 		}
 		
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $loadbalancername
+		$objTempDataGroupList.data = $Dgdata
+		$objTempDataGroupList.loadbalancer = $LoadbalancerName
 		
-		$Global:DataGroupLists += $ObjTempDataGroupList
+		$LoadBalancerObjects.DataGroupLists.Add($objTempDataGroupList.name, $objTempDataGroupList)
 		
 	}
-
 
 	$ValueClassList = $f5.LocalLBClass.get_value_class_list()
 	$ValueClassKeys = $f5.LocalLBClass.get_value_class($ValueClassList)
@@ -1101,9 +1054,9 @@ function cacheLTMinformation {
 
 	For($i = 0;$i -lt $ValueClassList.Count;$i++){
 		
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $ValueClassList[$i]
-		$ObjTempDataGroupList.type = "String"
+		$objTempDataGroupList = New-Object -Type DataGroupList
+		$objTempDataGroupList.name = $ValueClassList[$i]
+		$objTempDataGroupList.type = "String"
 		
 		$Dgdata = New-Object System.Collections.Hashtable
 		
@@ -1115,10 +1068,10 @@ function cacheLTMinformation {
 			$Dgdata.Add($Key, $Value)
 		}
 		
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $loadbalancername
+		$objTempDataGroupList.data = $Dgdata
+		$objTempDataGroupList.loadbalancer = $LoadbalancerName
 		
-		$Global:DataGroupLists += $ObjTempDataGroupList
+		$LoadBalancerObjects.DataGroupLists.Add($objTempDataGroupList.name, $objTempDataGroupList)
 		
 	}
 
@@ -1127,7 +1080,9 @@ function cacheLTMinformation {
 	
 	#Region Caching Pool information
 	
-	log info "Caching Pools"
+	log verbose "Caching Pools"
+
+	$LoadBalancerObjects.Pools = @{}
 	
 	[array]$Poollist = $f5.LocalLBPool.get_list()
 	[array]$PoolMonitors = $f5.LocalLBPool.get_monitor_association($PoolList)
@@ -1160,17 +1115,12 @@ function cacheLTMinformation {
 	    	#Populate the object
 			$objTempMember.Name = $PoolMembers[$i][$x].address
 			
-			$objTempMember.ip = ($LBNodes | Where-Object { $_.name -eq $objTempMember.Name }).ip
+			$objTempMember.ip = ($LoadBalancerObjects.Nodes[$objTempMember.Name]).ip
 			$objTempMember.Port = $PoolMembers[$i][$x].port
 			$objTempMember.Availability = $PoolMemberstatuses[$i][$x].availability_status
 			$objTempMember.Enabled = $PoolMemberstatuses[$i][$x].enabled_status
 			$objTempMember.Status = $PoolMemberstatuses[$i][$x].status_description
 			$objTempMember.Priority = $PoolMemberpriorities[$i][$x]
-			
-			#Remove the route domain id if it exists
-			if($objTempMember.ip.contains("%")){
-				$objTempMember.ip = $objTempMember.ip.Split("%")[0]
-			}
 
 			Try { 
 				$Statistics = $PoolMemberStatisticsDict[$objTempMember.Name + ":" + [string]$objTempMember.port]
@@ -1179,7 +1129,7 @@ function cacheLTMinformation {
 			} Catch {
 				log "error" "Unable to get statistics for member $(objTempMember.Name):$(objTempMember.Port) in pool $($objTempPool.name)"
 			}
-			
+
 			#Add the object to a list
 			$objTempPool.members += $objTempMember
 			
@@ -1189,18 +1139,18 @@ function cacheLTMinformation {
 		$objTempPool.actiononservicedown = $Global:ActionOnPoolFailureToString[[string]($PoolActionOnServiceDown[$i])]
 		$objTempPool.allownat = $StateToString[[string]($PoolAllowNAT[$i])]
 		$objTempPool.allowsnat = $StateToString[[string]($PoolAllowSNAT[$i])]
-		$objTempPool.loadbalancer = $loadbalancername
+		$objTempPool.loadbalancer = $LoadbalancerName
 		
-		$LBPools += $objTempPool
+		$LoadBalancerObjects.Pools.Add($objTempPool.name, $objTempPool) 
 	}
-	
-	$Global:Pools += $LBPools
 	
 	#EndRegion
 	
 	#Region Cache information about irules
 			
-	log info "Caching iRules"
+	log verbose "Caching iRules"
+
+	$LoadBalancerObjects.iRules = @{}
 
 	$f5.LocalLBRule.query_all_rules() | ForEach-Object {
 
@@ -1210,7 +1160,7 @@ function cacheLTMinformation {
 		
 		$partition = $objiRule.name.split("/")[1]
 		
-		$objiRule.loadbalancer = $loadbalancername
+		$objiRule.loadbalancer = $LoadbalancerName
 
 		$objiRule.definition = $($_.rule_definition)
 		
@@ -1224,7 +1174,7 @@ function cacheLTMinformation {
 				$tempPool = "/$partition/$tempPool"
 			}
 			
-			if($LBPools | Where-Object { $_.name -eq $tempPool }) {								
+			if($LoadBalancerObjects.Pools.ContainsKey($tempPool)) {								
 				$tempPools += $tempPool
 			}
 							
@@ -1232,10 +1182,8 @@ function cacheLTMinformation {
 									
 		$objiRule.pools = $tempPools | Select -Unique
 			
-		$LBiRules += $objiRule
+		$LoadBalancerObjects.iRules.add($objiRule.name, $objiRule)
 	}
-	
-	$Global:iRules += $LBiRules
 	
 	#EndRegion	
 
@@ -1259,8 +1207,10 @@ function cacheLTMinformation {
 	
 	#Region Cache Virtual Server information
 	
-	log info "Caching Virtual servers"
+	log verbose "Caching Virtual servers"
 	
+	$LoadBalancerObjects.VirtualServers = @{}
+
 	[array]$virtualserverlist = $f5.LocalLBVirtualServer.get_list()
 	[array]$virtualserverdestinationlist = $f5.LocalLBVirtualServer.get_destination($virtualserverlist)
 	[array]$virtualserverdefaultpoollist = $f5.LocalLBVirtualServer.get_default_pool_name($virtualserverlist)
@@ -1278,7 +1228,7 @@ function cacheLTMinformation {
 		$virtualserversourceaddresstranslationtypelist = $f5.LocalLBVirtualServer.get_source_address_translation_type($virtualserverlist)
 		$virtualserversourceaddresssnatpool = $f5.LocalLBVirtualServer.get_source_address_translation_snat_pool($virtualserverlist)
 	} Catch {
-		log info "Unable to get address translationlist"
+		log verbose "Unable to get address translationlist"
 	}
 	
 	for($i=0;$i -lt ($virtualserverlist.Count);$i++){
@@ -1334,7 +1284,7 @@ function cacheLTMinformation {
 			$objTempVirtualServer.irules = @();
 		}
 		
-		$objTempVirtualServer.loadbalancer = $loadbalancername
+		$objTempVirtualServer.loadbalancer = $LoadbalancerName
 		
 		#Get the persistence profile of the Virtual server
 		
@@ -1349,9 +1299,9 @@ function cacheLTMinformation {
 		
 			$vsirulename = $_
 
-			$iRule = $LBiRules | Where-Object { $_.name -eq $vsirulename}
+			$iRule = $LoadBalancerObjects.iRules[$vsirulename]
 			
-			if($iRule.Count -gt 0){
+			if($iRule){
 				if($iRule.pools.Count -gt 0){
 					$objTempVirtualServer.pools += [array]$iRule.pools | select -uniq
 				}
@@ -1388,7 +1338,7 @@ function cacheLTMinformation {
             $objTempVirtualServer.vlans = $virtualservervlans[$i].vlans
         }
 
-		$VSASMPolicies = $LBASMPolicies | Where-Object { $_.virtualServers -contains $vsname }
+		$VSASMPolicies = $LoadBalancerObjects.ASMPolicies.values | Where-Object { $_.virtualServers -contains $vsname }
 
 		if($VSASMPolicies -ne $null){
 			$objTempVirtualServer.asmPolicies = $VSASMPolicies.name
@@ -1418,26 +1368,26 @@ function cacheLTMinformation {
 			log "error" "Unable to get virtual server CPU statistics for $($objTempVirtualServer.name)"
 		}
 
-		$LBVirtualservers += $objTempVirtualServer
+		$LoadBalancerObjects.VirtualServers.add($objTempVirtualServer.name, $objTempVirtualServer)
 
 	}
 	
-	$Global:virtualservers += $LBVirtualservers
-	
 	#EndRegion
-	
-	#Region Get Orphaned Pools
-	log info "Adding orphaned pools to the virtual server list"
-	
-	$VirtualserverPools = $LBVirtualservers.pools | select -Unique
-	
-	if($VirtualserverPools.count -gt 0){
-	
-		$OrphanedPools = $LBPools.name | Where-Object { $VirtualserverPools -notcontains $_ }
 
-		foreach($OrphanPool in $OrphanedPools){
+	#Region Get Orphaned Pools
+	log verbose "Detecting orphaned pools"
+
+	$LoadBalancerObjects.OrphanPools = @()
+	
+	$VirtualserverPools = $LoadBalancerObjects.VirtualServers.Values.Pools
+	
+	Foreach($PoolName in $LoadBalancerObjects.Pools.Keys){
 		
-			$objTempVirtualServer = New-Object VirtualServer
+		If ($VirtualServerPools -NotContains $PoolName ){
+			
+			$LoadBalancerObjects.Pools[$PoolName].orphaned = $true
+
+			$objTempVirtualServer = New-Object -TypeName "VirtualServer"
 			
 			$objTempVirtualServer.name = "N/A (Orphan pool)"
 			$objTempVirtualServer.ip = "N/A (Orphan pool)"
@@ -1445,13 +1395,15 @@ function cacheLTMinformation {
 			$objTempVirtualServer.compressionprofile = "None"
 			$objTempVirtualServer.persistence = "None"
 			$objTempVirtualServer.irules = @()
-			$objTempVirtualServer.pools = @($OrphanPool)
-			$objTempVirtualServer.loadbalancer = $loadbalancername
+			$objTempVirtualServer.pools += $PoolName
+			$objTempVirtualServer.loadbalancer = $LoadbalancerName
 			
-			$Global:virtualservers += $objTempVirtualServer
+			$LoadBalancerObjects.OrphanPools += $objTempVirtualServer
+			
 		}
+
 	}
-	
+
 	#EndRegion
 }
 
@@ -1558,11 +1510,7 @@ Function Get-DefinedRules {
 		$ruleObj += $tempRule
 	}
 
-	if($ruleObj.count -eq 0){
-		"[]"
-	} else {
-		$ruleObj | ConvertTo-Json
-	}
+	ConvertTo-Json $ruleObj
 
 }
 
@@ -1572,29 +1520,81 @@ Function Get-DefinedRules {
 #Region Function Translate-status
 Function Translate-Member-Status {
 
-	Param($Member)
+	Param($Member, $RealTimeStatus)
 
-	if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-		Return '<span class="statusicon"><img src="./images/green-circle-checkmark.png" title="Pool member is up"/></span> <span class="textstatus">UP</span>'
-	} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT" -and $Member.Status -eq "Pool member is available"){
-		Return '<span class="statusicon"><img src="./images/black-circle-checkmark.png" title="Member available, but disabled by parent"/></span> <span class="textstatus">DISABLED</span>'
-	} elseif ($Member.Status.contains("unable to connect") -or $Member.Status.contains("Could not connect")) {
-		Return  '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Could not connect, member down"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status.contains("Failed to succeed before deadline")) {
-		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Failed to succed before deadline"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status -eq "Pool member is available, user disabled"){
-		Return '<span class="statusicon"><img src="./images/black-circle-checkmark.png" title="Member is available, but disabled"/></span> <span class="textstatus">DISABLED</span>'
-	} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Member is marked down by a monitor"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status -eq "Parent down"){
-		Return '<span class="statusicon"><img src="./images/red-circle-cross.png" title="Parent monitor failed"/></span> <span class="textstatus">DOWN</span>'
-	} elseif ($Member.Status -eq "Pool member does not have service checking enabled"){
-		Return '<span class="statusicon"><img src="./images/blue-square-questionmark.png" title="Member has no monitor assigned"/></span> <span class="textstatus">UNKNOWN</span>'
-	} elseif ($Member.Status -eq "Forced down"){
-		Return '<span class="statusicon"><img src="./images/black-diamond-exclamationmark.png" tile="Member is forced down"/></span> <span class="textstatus">DISABLED</span>'
+	if($RealTimeStatus){
+		if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$class = "memberup"
+			$icon = "green-circle-checkmark.png"
+			$title = "Pool member is able to pass traffic"
+			$textStatus = "UP"
+		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED"){
+			$icon = "red-circle-cross.png"
+			$title = "Pool member is unable to pass traffic"
+			$textStatus = "DOWN"
+		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_BLUE" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$icon = "green-circle-checkmark.png"
+			$title = "Pool member is able to pass traffic"
+			$textStatus = "UP"
+		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED" -or $Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT"){
+			$icon = "black-circle-checkmark.png"
+			$title = "Member is available, but disabled"
+			$textStatus = "DISABLED"
+		} else {
+			$icon = "blue-square-questionmark.png"
+			$title = "Unknown status"
+			$textStatus = "UNKNOWN"
+		}
 	} else {
-		Return '<span class="statusicon"><img src="./images/blue-square-questionmark.png" title="Unknown status"/></span> <span class="textstatus">UNKNOWN</span>'
+		if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$class = "memberup"
+			$icon = "green-circle-checkmark.png"
+			$title = "Pool member is up"
+			$textStatus = "UP"
+		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT" -and $Member.Status -eq "Pool member is available"){
+			$icon = "black-circle-checkmark.png"
+			$title = "Member available, but disabled by parent"
+			$textStatus = "DISABLED"
+		} elseif ($Member.Status.contains("unable to connect") -or $Member.Status.contains("Could not connect")) {
+			$icon = "red-circle-cross.png"
+			$title = "Could not connect, member down"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status.contains("Failed to succeed before deadline")) {
+			$icon = "red-circle-cross.png"
+			$title = "Failed to succed before deadline"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status -eq "Pool member is available, user disabled"){
+			$icon = "black-circle-checkmark.png"
+			$title = "Member is available, but disabled"
+			$textStatus = "DISABLED"
+		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
+			$icon = "red-circle-cross.png"
+			$title = "Member is marked down by a monitor"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status -eq "Parent down"){
+			$icon = "red-circle-cross.png"
+			$title = "Parent monitor failed"
+			$textStatus = "DOWN"
+		} elseif ($Member.Status -eq "Pool member does not have service checking enabled"){
+			$icon = "blue-square-questionmark.png"
+			$title = "Member has no monitor assigned"
+			$textStatus = "UNKNOWN"
+		} elseif ($Member.Status -eq "Forced down"){
+			$icon = "black-diamond-exclamationmark.png"
+			$title = "Member is forced down"
+			$textStatus = "DISABLED"
+		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED" -and $Member.Availability -eq "AVAILABILITY_STATUS_RED"){
+			$icon = "black-circle-cross.png"
+			$title = "Member is disabled and marked as down by a monitor"
+			$textStatus = "DISABLED"
+		} else {
+			$icon = "blue-square-questionmark.png"
+			$title = "Unknown status"
+			$textStatus = "UNKNOWN"
+		}
 	}
+
+	Return '<span class="statusicon"><img src="./images/' + $icon + '" title="' + $title + '"/></span> <span class="textstatus">' + $textStatus + '</span>'
 }
 #Endregion
 
@@ -1621,7 +1621,7 @@ Function Translate-VirtualServer-Status {
 	
 	} elseif($virtualserver.enabled -eq "ENABLED_STATUS_DISABLED" -and $virtualserver.availability -eq "AVAILABILITY_STATUS_RED"){
 	
-		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-checkmark.png`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
+		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-cross.png`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
 	
 	}
 
@@ -1629,34 +1629,112 @@ Function Translate-VirtualServer-Status {
 #Endregion
 
 #Region Call Cache LTM information
-foreach($LoadbalancerIP in $Global:Bigipreportconfig.Settings.Loadbalancers.Loadbalancer) { 
+Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) { 
 	
-	log info "Getting data from $LoadbalancerIP"
-	
-	$success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $LoadbalancerIP
+	$Standalone = $DeviceGroup.Device.Count -eq 1
+	$StatusVIP = $DeviceGroup.StatusVip
+
+	Foreach($Device in $DeviceGroup.Device){
+
+		log verbose "Getting data from $Device"
 		
-	if($?){
-	
-		log success "iControl session successfully established"
-		
-		$f5 = Get-F5.iControl
-	
-		log info "Getting hostname"
-		
-		$BigIPHostname = $F5.SystemInet.get_hostname()
-		
+		$success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
+			
 		if($?){
-			log info "Hostname is $BigipHostname"		
-			$BigIPDict.add($LoadbalancerIP, $Bigiphostname)
-		} else {
-			log error "Failed to get hostname"
-		}
-	
-		log info "Caching LTM information from $BigIPHostname"
-		cacheLTMinformation -f5 $f5 -loadbalancername $BigIPHostname -LoadbalancerIP $LoadbalancerIP
 		
-	} else {
-		log error "Failed to connect to $LoadbalancerIP"
+			log success "iControl session successfully established"
+			
+			$f5 = Get-F5.iControl
+			
+			$objLoadBalancer = New-Object -TypeName "Loadbalancer"
+
+			$objLoadbalancer.isonlydevice = $Standalone
+
+			log verbose "Getting hostname"
+			
+			$BigIPHostname = $F5.SystemInet.get_hostname()
+			
+			if($?){
+				log verbose "Hostname is $BigipHostname"		
+				
+			} else {
+				log error "Failed to get hostname"
+			}
+
+			#Get information about ip, name, model and category
+			$SystemInfo = $f5.SystemSystemInfo.get_system_information()
+
+			$objLoadBalancer.ip = $Device
+			$objLoadBalancer.name = $BigIPHostname
+			$objLoadbalancer.model = $SystemInfo.platform
+			$objLoadbalancer.serial = $SystemInfo.serial
+			$objLoadbalancer.category = $SystemInfo.product_category
+
+			$objStatusVIP = New-Object -TypeName "PoolStatusVip"
+			$objStatusVIP.url = $StatusVIP
+			$objLoadBalancer.statusvip = $objStatusVIP
+
+			#Region Cache Load balancer information
+			log verbose "Fetching information about the device"
+
+			#Get the version information
+			$versionInformation = ($f5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
+
+			#Get provisioned modules
+			$modules = $f5.ManagementProvision.get_provisioned_list()
+
+			$objLoadBalancer.version = $versionInformation.version 
+			$objLoadBalancer.build = $versionInformation.build
+			$objLoadBalancer.baseBuild = $versionInformation.baseBuild
+
+			#Get failover status to determine if the load balancer is active
+			$failoverStatus = $f5.ManagementDeviceGroup.get_failover_status()
+
+			$objLoadBalancer.active = $failoverStatus.status -eq "ACTIVE"
+			$objLoadBalancer.color = $failoverStatus.color -replace "COLOR_", ""
+
+			$ModuleDict = @{}
+
+			foreach($module in $modules){
+
+				$moduleCode = [string]$module
+
+				if($ModuleToShort.keys -contains $moduleCode){
+					$moduleShortName = $ModuleToShort[$moduleCode]
+				} else {
+					$moduleShortName = $moduleCode.replace("TMOS_MODULE_", "")
+				}
+				
+				if($ModuleToDescription.keys -contains $moduleShortName){
+					$moduleDescription = $ModuleToDescription[$moduleShortName]
+				} else {
+					$moduleDescription = "No description found"
+				}
+
+				if(!($ModuleDict.keys -contains $moduleShortName)){
+					$ModuleDict.add($moduleShortName, $moduleDescription)
+				}
+			}
+
+			$objLoadBalancer.modules = $ModuleDict
+
+			$LoadBalancerObjects = @{}
+			$LoadBalancerObjects.LoadBalancer = $objLoadBalancer
+
+			$ReportObjects.Add($objLoadBalancer.ip, $LoadBalancerObjects)
+			
+			#Don't continue if this loabalancer is not active
+			If($objLoadBalancer.active -or $Standalone){
+				log verbose "Caching LTM information from $BigIPHostname"
+				cacheLTMinformation -f5 $f5 -LoadBalancer $LoadBalancerObjects
+			} else {
+				log info "This load balancer is not active, and won't be indexed"
+				Continue
+			}
+			
+		} else {
+			log error "Failed to connect to $Device"
+		}
 	}
 }
 
@@ -1670,71 +1748,69 @@ function Test-ReportData {
 	
 	$Nonemissing = $true
 	
-	log info "Verifying load balancer data to make sure that no load balancer is missing"
+	log verbose "Verifying load balancer data to make sure that no load balancer is missing"
 	
 	#For every load balancer IP we will check that no pools or virtual servers are missing
-	Foreach($LoadbalancerIP in $Global:Bigipreportconfig.Settings.Loadbalancers.Loadbalancer) {
+	Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
 		
-		#Check if the BigipDict contains an value for the key IP
-		if($BigIPDict.ContainsKey($LoadbalancerIP)){
+		ForEach($Device in $DeviceGroup.Device){
+	
+			$LoadbalancerObjects = $ReportObjects[$Device]
+				
+			If ($LoadbalancerObjects) {
 
-			$LoadbalancerName = $BigIPDict[$LoadbalancerIP]
-			
-			#Verify that the $Global:virtualservers contains the $LoadbalancerName
-			if($Global:pools.Count -ne 0){
-				if(!$Global:pools.loadbalancer.contains($LoadbalancerName)){
-					log error "$LoadbalancerName does not have any pool data"
-					$Nonemissing = $false
+				$Loadbalancer = $LoadbalancerObjects.Loadbalancer
+				$LoadbalancerName = $Loadbalancer.name
+
+				# Only check for load balancers that is alone in a device group, or active
+				if($Loadbalancer.active -or $Loadbalancer.isonlydevice){
+				
+					#Verify that the $Global:virtualservers contains the $LoadbalancerName
+					If ($LoadbalancerObjects.VirtualServers.Count -eq 0) {
+						log error "$LoadbalancerName does not have any Virtual Server data"
+						$Nonemissing = $false
+					}			
+					
+					#Verify that the $Global:pools contains the $LoadbalancerName
+					If ($LoadBalancerObjects.Pools.Count -eq 0) {
+						log error "$LoadbalancerName does not have any Pool data"
+					}
+					
+					#Verify that the $Global:monitors contains the $LoadbalancerName
+					If ($LoadBalancerObjects.Monitors.Count -eq 0){			
+						log error "$LoadbalancerName does not have any Monitor data"
+						$Nonemissing = $false
+					}
+					
+					#Verify that the $Global:irules contains the $LoadbalancerName
+					If ($LoadBalancerObjects.iRules.Count -eq 0) {
+						log error "$LoadbalancerName does not have any iRules data"
+						$Nonemissing = $false
+					}
+					
+					#Verify that the $Global:nodes contains the $LoadbalancerName
+					if($LoadBalancerObjects.Nodes.Count -eq 0){	
+						log error "$LoadbalancerName does not have any Nodes data"
+						$Nonemissing = $false
+					}
+					
+					#Verify that the $Global:DataGroupLists contains the $LoadbalancerName
+					if($LoadBalancerObjects.DataGroupLists.Count -eq 0){	
+						log error "$LoadbalancerName does not have any Data group lists data"
+						$Nonemissing = $false
+					}
+					
 				}
-			}			
-			
-			#Verify that the $Global:pools contains the $LoadbalancerName
-			if(($Global:virtualservers | Where-Object { $_.name -ne "N/A (Orphan pool)" }).Count -ne 0){
-				if(!$Global:virtualservers.loadbalancer.contains($LoadbalancerName)){
-					log error "$LoadbalancerName does not have any virtual server data"
-					$Nonemissing = $false
-				}
+					
+			} Else {
+				log error "$Device does not seem to have been indexed"
+				$Nonemissing = $false
 			}
-			
-			#Verify that the $Global:monitors contains the $LoadbalancerName
-			if($Global:monitors.Count -ne 0){			
-				if(!$Global:monitors.loadbalancer.contains($LoadbalancerName)){
-					log error "$LoadbalancerName does not have any monitor data"
-					$Nonemissing = $false
-				}
-			}
-			
-			#Verify that the $Global:irules contains the $LoadbalancerName
-			if($Global:irules.Count -ne 0){	
-				if(!$Global:irules.loadbalancer.contains($LoadbalancerName)){
-					log error "$LoadbalancerName does not have any irules data"
-					$Nonemissing = $false
-				}
-			}
-			
-			#Verify that the $Global:nodes contains the $LoadbalancerName
-			if($Global:nodes.Count -ne 0){	
-				if(!$Global:nodes.loadbalancer.contains($LoadbalancerName)){
-					log error "$LoadbalancerName does not have any nodes data"
-					$Nonemissing = $false
-				}
-			}
-			
-			#Verify that the $Global:DataGroupLists contains the $LoadbalancerName
-			if($Global:DataGroupLists.Count -ne 0){	
-				if(!$Global:DataGroupLists.loadbalancer.contains($LoadbalancerName)){
-					log error "$LoadbalancerName does not have any data group lists data"
-					$Nonemissing = $false
-				}
-			}
-			
-		} else {
-			log error "$LoadbalancerIP does not seem to have been indexed"
-			$Nonemissing = $false
 		}
 	}
 	
 	Return $Nonemissing
+
 }
 #EndRegion
 
@@ -1744,7 +1820,7 @@ Function Update-ReportData {
 	[bool]$Status = $true
 	
 	#Move the temp files to the actual report files
-	log info "Updating the report with the new data"
+	log verbose "Updating the report with the new data"
 	
 	Move-Item -Force $($Global:reportpath + ".tmp") $Global:reportpath
 	
@@ -1756,21 +1832,21 @@ Function Update-ReportData {
 	Move-Item -Force $($Global:poolsjsonpath + ".tmp") $Global:poolsjsonpath
 	
 	if(!$?){
-		log error "Failed to update the temporary pools json file"
+		log error "Failed to update the pools json file"
 		$Status  = $false
 	}
 	
 	Move-Item -Force $($Global:monitorsjsonpath + ".tmp") $Global:monitorsjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary monitor json file"
+		log error "Failed to update the monitor json file"
 		$Status  = $false
 	}
 
 	Move-Item -Force $($Global:virtualserversjsonpath + ".tmp") $Global:virtualserversjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary virtual server json file"
+		log error "Failed to update the virtual server json file"
 		$Status  = $false
 	}
 
@@ -1778,14 +1854,21 @@ Function Update-ReportData {
 	Move-Item -Force $($Global:irulesjsonpath + ".tmp") $Global:irulesjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary irules json file"
+		log error "Failed to update the irules json file"
 		$Status  = $false
 	}
 	
 	Move-Item -Force $($Global:datagrouplistjsonpath + ".tmp") $Global:datagrouplistjsonpath
 	
 	if(!$?){ 
-		log error "Failed to update the temporary data group lists json file"
+		log error "Failed to update the data group lists json file"
+		$Status  = $false
+	}
+
+	Move-Item -Force $($Global:loadbalancersjsonpath + ".tmp") $Global:loadbalancersjsonpath
+	
+	if(!$?){ 
+		log error "Failed to update the data group lists json file"
 		$Status  = $false
 	}
 	
@@ -1805,7 +1888,7 @@ Function Write-TemporaryFiles {
 	
 	$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
     
-	log info "Writing report temporary file to $($Global:reportpath + ".tmp")"
+	log verbose "Writing report temporary file to $($Global:reportpath + ".tmp")"
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:reportpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 	$StreamWriter.Write($Global:html)
@@ -1817,10 +1900,10 @@ Function Write-TemporaryFiles {
 	
 	$StreamWriter.dispose()
 	
-	log info "Writing temporary pools json object to $($Global:poolsjsonpath + ".tmp")"	
+	log verbose "Writing temporary pools json object to $($Global:poolsjsonpath + ".tmp")"	
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:poolsjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($($Global:pools | ConvertTo-Json -Compress -Depth 5))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.Pools.Values))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary pool json file"	
@@ -1829,9 +1912,9 @@ Function Write-TemporaryFiles {
 	
 	$StreamWriter.dispose()
 	
-	log info "Writing temporary monitor json object to $($Global:monitorsjsonpath + ".tmp")"
+	log verbose "Writing temporary monitor json object to $($Global:monitorsjsonpath + ".tmp")"
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:monitorsjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($($Global:monitors | ConvertTo-Json -Compress -Depth 5))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.Monitors.Values))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary monitor json file"	
@@ -1839,11 +1922,22 @@ Function Write-TemporaryFiles {
 	}
 
 	$StreamWriter.dispose()
+
+	log verbose "Writing temporary loadbalancer json object to $($Global:loadbalancersjsonpath + ".tmp")"
+	$StreamWriter = New-Object System.IO.StreamWriter($($Global:loadbalancersjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.Loadbalancer))
 	
-	log info "Writing temporary virtual server json object to $($Global:virtualserversjsonpath + ".tmp")"
+	if(!$?){ 
+		log error "Failed to update the temporary load balancer json file"	
+		$Status  = $false
+	}
+
+	$StreamWriter.dispose()
+	
+	log verbose "Writing temporary virtual server json object to $($Global:virtualserversjsonpath + ".tmp")"
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:virtualserversjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-	$StreamWriter.Write($($Global:virtualservers | ConvertTo-Json -Compress -Depth 5))
+	$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.VirtualServers.Values))
 	
 	if(!$?){ 
 		log error "Failed to update the temporary virtual server json file"	
@@ -1854,10 +1948,10 @@ Function Write-TemporaryFiles {
 	
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
 		
-		log info "Writing temporary irules json object to $($Global:irulesjsonpath + ".tmp")"
+		log verbose "Writing temporary irules json object to $($Global:irulesjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:irulesjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-		$StreamWriter.Write($($Global:irules | ConvertTo-Json -Compress -Depth 5))
+		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.iRules.Values))
 		
 		if(!$?){ 
 			log error "Failed to update the temporary irules json file"	
@@ -1866,17 +1960,17 @@ Function Write-TemporaryFiles {
 		
 	} else {
 		
-		log info "iRule links disabled in config. Writing empty json object to $($Global:irulesjsonpath + ".tmp")"
+		log verbose "iRule links disabled in config. Writing empty json object to $($Global:irulesjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:irulesjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 		
 		#Since rules has been disabled, only write those defined
-		$ruleScope = $Global:irules | Where-Object { $_.name -in $Bigipreportconfig.Settings.iRules.iRule.iRuleName -and $_.loadbalancer -in $Bigipreportconfig.Settings.iRules.iRule.loadbalancer }
+		$ruleScope = $ReportObjects.Values.iRules.Values | Where-Object { $_.name -in $Bigipreportconfig.Settings.iRules.iRule.iRuleName -and $_.loadbalancer -in $Bigipreportconfig.Settings.iRules.iRule.loadbalancer }
 
 		if($ruleScope.count -eq 0){
 			$StreamWriter.Write("[]")
 		} else {
-			$StreamWriter.Write($($ruleScope | ConvertTo-Json -Compress -Depth 5))
+			$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ruleScope))
 		}
 		if(!$?){ 
 			log error "Failed to update the temporary irules json file"	
@@ -1888,10 +1982,10 @@ Function Write-TemporaryFiles {
 	
 	if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
 		
-		log info "Writing temporary data group list json object to $($Global:datagrouplistjsonpath + ".tmp")"
+		log verbose "Writing temporary data group list json object to $($Global:datagrouplistjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:datagrouplistjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-		$StreamWriter.Write($($Global:DataGroupLists | ConvertTo-Json -Compress -Depth 5))
+		$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 $ReportObjects.Values.DataGroupLists.Values))
 		
 		if(!$?){ 
 			log error "Failed to update the temporary data group lists json file"	
@@ -1899,7 +1993,7 @@ Function Write-TemporaryFiles {
 		}
 	} else {
 		
-		log info "Data group list links disabled in config. Writing empty json object to $($Global:datagrouplistjsonpath + ".tmp")"
+		log verbose "Data group list links disabled in config. Writing empty json object to $($Global:datagrouplistjsonpath + ".tmp")"
 		
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:datagrouplistjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 		$StreamWriter.Write("[]")
@@ -1926,7 +2020,7 @@ if(-not (Test-ReportData)){
 
 log success "No missing loadbalancer data was detected, compiling the report"
 
-if(($virtualservers.asmPolicies | Where-Object { $_.count -gt 0 }).Count -gt 0){
+If ($ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
 	$HasASMProfiles = $true
 } else {
 	$HasASMProfiles = $false
@@ -1942,7 +2036,7 @@ $Global:html = @'
 <html>
 	<head>
 
-		<script type="text/javascript" language="javascript" src="./js/pace.js"></script>
+		<script type="text/javascript" language="javascript" src="./js/pace.js" data-pace-options='{ "restartOnRequestAfter": false }'></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.min.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.dataTables.min.js"></script>
 		
@@ -1958,6 +2052,10 @@ $Global:html = @'
 		<script>
 '@
 		
+		# Transfer some settings from the config file onto the Javascript
+		# Todo: All global variables should be located in a single object
+		#       to minimize the polution of the global namespace.
+
 		$ruleObj = Get-DefinedRules
 		$Global:html += "`nvar definedRules = " + $ruleObj + ";`n"
 
@@ -1983,13 +2081,25 @@ $Global:html = @'
 			$Global:html += "var ShowExportLink = true;"
 		} else {
 			$Global:html += "var ShowExportLink = false;"
-		}		
+		}
 
+		$Global:html += "const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";"
+		$Global:html += "const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";"
 
 $Global:html += @'		
 		</script>
 	</head>
 	<body>
+		<div class="realtimestatusdiv">
+			<table>
+				<tr>
+					<td><span class="topleftheader">Status VIPs:</span></td><td><span id="realtimetestsuccess">0</span> working, <span id="realtimetestfailed">0</span> failed, <span id="realtimenotconfigured">0</span> not configured</td>
+				</tr>
+				<tr>
+					<td><span class="topleftheader">Polling state:</span></td><td id="pollingstatecell"><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span></td>
+				</tr>
+			</table>
+		</div>
 		<div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
 '@
 
@@ -2022,26 +2132,26 @@ $Global:html += @'
 '@
 
 #Initiate variables used for showing progress (in case the debug is set)
-$vscount = $virtualservers.Count
-$i = 0 
+$i = 0
+$vscount = $ReportObjects.Values.VirtualServers.Keys.Count + $ReportObjects.Values.OrphanPools.Count
 
 #Initiate variables to give unique id's to pools and members
 $xPool = 0
 $xMember = 0
 $xVirtual = 0
 
-foreach($LoadbalancerName in $BigIPDict.values){
+$RealTimeStatusDetected = ($ReportObjects.Values.Loadbalancer | Where-Object { $_.statusvip -ne $null }).Count -gt 0
 
-	#Cache objects to make the search faster
-	$LBvirtualservers = $Global:virtualservers | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBpools = $Global:pools | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBnodes = $Global:nodes | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBmonitors = $Global:monitors | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBiRules = $Global:irules | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	$LBDataGroupLists = $Global:datagrouplists | Where-Object { $_.loadbalancer -eq $loadbalancerName }
-	
-	foreach($vs in $LBvirtualservers
-	){
+if($RealTimeStatusDetected){
+	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
+}
+
+ForEach($LoadbalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
+
+	$Loadbalancer = $LoadBalancerObjects.Loadbalancer
+	$LoadbalancerName = $Loadbalancer.name
+
+	ForEach ($vs in ($LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools)){
 		
 		$i++
 		
@@ -2063,22 +2173,13 @@ foreach($LoadbalancerName in $BigIPDict.values){
 						</td>
 "@
 
-		if($vs.name -eq "N/A (Orphan pool)"){
-			$Global:html += @"
 
-						<td class="virtualServerCell">
-							N/A (Orphan pool)
-						</td>
-"@
-
-		} else {
-			$Global:html += @"
+		$Global:html += @"
 
 						<td class="virtualServerCell">
 							$(Translate-VirtualServer-Status -virtualserver $vs) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($vs.name)" data-loadbalancer="$($vs.loadbalancer)" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($vs.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$($vs.loadbalancer)/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($vs.name)">Edit</a></span>
 						</td>
 "@
-		}
 		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
 		$vsipexrd = $vs.ip -replace "%[0-9]+$", ""
 		
@@ -2107,13 +2208,15 @@ foreach($LoadbalancerName in $BigIPDict.values){
 			if($vs.asmPolicies.count -gt 0){
 				
 				for($i = 0; $i -lt $vs.asmPolicies.Count; $i++){
-					$ASMObj = $Global:ASMPolicies | Where-Object { $_.name -eq $vs.asmPolicies[$i] -and $_.loadbalancer -eq $vs.loadbalancer }
+
+					$ASMObj = $LoadBalancerObjects.ASMPolicies[$vs.asmPolicies[$i]]
 
 					if($ASMObj.enforcementMode -eq "blocking"){
 						$vs.asmPolicies[$i] = $vs.asmPolicies[$i] + " (B)"
 					} else {
 						$vs.asmPolicies[$i] = $vs.asmPolicies[$i] + " (T)"
 					}
+
 				}
 
 				$Global:html += $vs.asmPolicies -Join "<br>"
@@ -2175,8 +2278,12 @@ foreach($LoadbalancerName in $BigIPDict.values){
 						)
 					</td>
 "@
+		
+		#Remove exceptions from the list of virtual server pools
+		$VirtualServerPools = ($vs.pools | Where-Object { !($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -contains $_) })
 
-		if(!($vs.pools | ?{ !($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -contains $_) })){
+		#If the pool list is empty after excluding the pools in the pool exception list, enter N/A
+		if(!$VirtualServerPools){
 			$Global:html += @"
 						
 						<td>
@@ -2184,14 +2291,17 @@ foreach($LoadbalancerName in $BigIPDict.values){
 						</td>
 "@
 		} else {
-			$firstpool = $true
+
+			$FirstPool = $true
 			
-			foreach($vspool in $vs.pools){
-				if(!($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -Contains $vspool -or $vspool -eq "")){		
+			foreach($vspool in $VirtualServerPools){
+
+				if($vspool -ne ""){
 					
-					$pool = $LBPools | where { $_.name -eq $vspool }
+					$Pool = $LoadBalancerObjects.Pools[$vspool]
 									
-					if($firstpool){
+					if($FirstPool){
+
 						$xPool++;
 						$Global:html += @"
 											
@@ -2223,7 +2333,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 											<span class="adcLinkSpan"><a href="https://$($pool.loadbalancer)/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=$($pool.name)">Edit</a></span>
 									</td>
 "@
-						$firstpool = $false
+						$FirstPool = $false
 					} else {
 						$xPool++;
 						$Global:html += @"
@@ -2251,7 +2361,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 "@
 					}
 					
-					$firstmember = $true
+					$FirstMember = $true
 
 					foreach($Member in $pool.members){
 						
@@ -2263,18 +2373,18 @@ foreach($LoadbalancerName in $BigIPDict.values){
 								$MemberName = $Member.name
 							}
 							
-							if($firstmember){
+							if($FirstMember){
 								
 								$xMember++;
 								
 								$Global:html += @"
 								
-									<td class="PoolMember" id="Poolmember$xMember">
-										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Member-Status -Member $Member)
+									<td class="PoolMember" data-pool="Pool$xPool">
+										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - <span data-member="$($Member.ip + ":" + $Member.port)">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</div>
 									</td>
 								</tr>
 "@
-								$firstmember = $false
+								$FirstMember = $false
 							} else {
 							
 								$xMember++;
@@ -2282,8 +2392,8 @@ foreach($LoadbalancerName in $BigIPDict.values){
 								$Global:html += @"
 								
 								<tr class="$pool-$xPool">
-									<td class="PoolMember" id="Poolmember$xMember">
-										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - $(Translate-Member-Status -Member $Member)
+									<td class="PoolMember" data-pool="Pool$xPool">
+										$($MemberName + ":" + $Member.port) - $($Member.ip + ":" + $Member.port) - <span data-member="$($Member.ip + ":" + $Member.port)">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</span>
 									</td>
 								</tr>
 "@
@@ -2293,6 +2403,7 @@ foreach($LoadbalancerName in $BigIPDict.values){
 					}
 				}
 			}
+
 			$Global:html += @"
 								</table>
 								</div>
@@ -2401,7 +2512,7 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
     $LogFile = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
     
     if(Test-Path $LogFile){
-         log info "Pruning logfile"
+         log verbose "Pruning logfile"
         
         $MaximumLines = $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines
 
