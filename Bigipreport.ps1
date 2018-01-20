@@ -688,6 +688,7 @@ Add-Type @'
 		public string color;
 		public Hashtable modules;
 		public PoolStatusVip statusvip;
+        public bool success = true;
 	}
 
 	public class ASMPolicy {
@@ -1631,110 +1632,131 @@ Function Translate-VirtualServer-Status {
 #Region Call Cache LTM information
 Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) { 
 	
-	$Standalone = $DeviceGroup.Device.Count -eq 1
+	$isOnlyDevice = $DeviceGroup.Device.Count -eq 1
 	$StatusVIP = $DeviceGroup.StatusVip
 
 	Foreach($Device in $DeviceGroup.Device){
 
 		log verbose "Getting data from $Device"
 		
-		$success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
-			
+        $ErrorActionPreference = "SilentlyContinue"
+
+        $success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
+
 		if($?){
+
+            log success "iControl session successfully established"
+            $ErrorActionPreference = "Continue"
+
+        } Else {
+
+            log error "Failed to connect to $Device, run the report manually to determine if this was due to a timeout of bad credentials"
+
+            $objLoadBalancer = New-Object -TypeName "Loadbalancer"
+
+            $objLoadBalancer.ip = $Device
+            $objLoadBalancer.success = $false
+
+            $objStatusVIP = New-Object -TypeName "PoolStatusVip"
+            $objLoadBalancer.statusvip = $objStatusVIP
+            
+            $LoadBalancerObjects = @{}
+            $LoadBalancerObjects.LoadBalancer = $objLoadBalancer
+
+            $ReportObjects.Add($objLoadBalancer.ip, $LoadBalancerObjects)
+
+            Continue
+        }
+
+		$f5 = Get-F5.iControl
 		
-			log success "iControl session successfully established"
-			
-			$f5 = Get-F5.iControl
-			
-			$objLoadBalancer = New-Object -TypeName "Loadbalancer"
+		$objLoadBalancer = New-Object -TypeName "Loadbalancer"
 
-			$objLoadbalancer.isonlydevice = $Standalone
+		$objLoadbalancer.isonlydevice = $isOnlyDevice
 
-			log verbose "Getting hostname"
-			
-			$BigIPHostname = $F5.SystemInet.get_hostname()
-			
-			if($?){
-				log verbose "Hostname is $BigipHostname"		
-				
-			} else {
-				log error "Failed to get hostname"
-			}
-
-			#Get information about ip, name, model and category
-			$SystemInfo = $f5.SystemSystemInfo.get_system_information()
-
-			$objLoadBalancer.ip = $Device
-			$objLoadBalancer.name = $BigIPHostname
-			$objLoadbalancer.model = $SystemInfo.platform
-			$objLoadbalancer.serial = $SystemInfo.serial
-			$objLoadbalancer.category = $SystemInfo.product_category
-
-			$objStatusVIP = New-Object -TypeName "PoolStatusVip"
-			$objStatusVIP.url = $StatusVIP
-			$objLoadBalancer.statusvip = $objStatusVIP
-
-			#Region Cache Load balancer information
-			log verbose "Fetching information about the device"
-
-			#Get the version information
-			$versionInformation = ($f5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
-
-			#Get provisioned modules
-			$modules = $f5.ManagementProvision.get_provisioned_list()
-
-			$objLoadBalancer.version = $versionInformation.version 
-			$objLoadBalancer.build = $versionInformation.build
-			$objLoadBalancer.baseBuild = $versionInformation.baseBuild
-
-			#Get failover status to determine if the load balancer is active
-			$failoverStatus = $f5.ManagementDeviceGroup.get_failover_status()
-
-			$objLoadBalancer.active = $failoverStatus.status -eq "ACTIVE"
-			$objLoadBalancer.color = $failoverStatus.color -replace "COLOR_", ""
-
-			$ModuleDict = @{}
-
-			foreach($module in $modules){
-
-				$moduleCode = [string]$module
-
-				if($ModuleToShort.keys -contains $moduleCode){
-					$moduleShortName = $ModuleToShort[$moduleCode]
-				} else {
-					$moduleShortName = $moduleCode.replace("TMOS_MODULE_", "")
-				}
-				
-				if($ModuleToDescription.keys -contains $moduleShortName){
-					$moduleDescription = $ModuleToDescription[$moduleShortName]
-				} else {
-					$moduleDescription = "No description found"
-				}
-
-				if(!($ModuleDict.keys -contains $moduleShortName)){
-					$ModuleDict.add($moduleShortName, $moduleDescription)
-				}
-			}
-
-			$objLoadBalancer.modules = $ModuleDict
-
-			$LoadBalancerObjects = @{}
-			$LoadBalancerObjects.LoadBalancer = $objLoadBalancer
-
-			$ReportObjects.Add($objLoadBalancer.ip, $LoadBalancerObjects)
-			
-			#Don't continue if this loabalancer is not active
-			If($objLoadBalancer.active -or $Standalone){
-				log verbose "Caching LTM information from $BigIPHostname"
-				cacheLTMinformation -f5 $f5 -LoadBalancer $LoadBalancerObjects
-			} else {
-				log info "This load balancer is not active, and won't be indexed"
-				Continue
-			}
-			
+		log verbose "Getting hostname"
+		
+		$BigIPHostname = $F5.SystemInet.get_hostname()
+		
+		if($?){
+			log verbose "Hostname is $BigipHostname"
 		} else {
-			log error "Failed to connect to $Device"
+			log error "Failed to get hostname"
 		}
+
+		#Get information about ip, name, model and category
+		$SystemInfo = $f5.SystemSystemInfo.get_system_information()
+
+		$objLoadBalancer.ip = $Device
+		$objLoadBalancer.name = $BigIPHostname
+		$objLoadbalancer.model = $SystemInfo.platform
+		$objLoadbalancer.serial = $SystemInfo.serial
+		$objLoadbalancer.category = $SystemInfo.product_category
+
+		$objStatusVIP = New-Object -TypeName "PoolStatusVip"
+		$objStatusVIP.url = $StatusVIP
+		$objLoadBalancer.statusvip = $objStatusVIP
+
+		#Region Cache Load balancer information
+		log verbose "Fetching information about the device"
+
+		#Get the version information
+		$versionInformation = ($f5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
+
+		#Get provisioned modules
+		$modules = $f5.ManagementProvision.get_provisioned_list()
+
+		$objLoadBalancer.version = $versionInformation.version 
+		$objLoadBalancer.build = $versionInformation.build
+		$objLoadBalancer.baseBuild = $versionInformation.baseBuild
+
+		#Get failover status to determine if the load balancer is active
+		$failoverStatus = $f5.ManagementDeviceGroup.get_failover_status()
+
+		$objLoadBalancer.active = $failoverStatus.status -eq "ACTIVE"
+		$objLoadBalancer.color = $failoverStatus.color -replace "COLOR_", ""
+
+		$ModuleDict = @{}
+
+		foreach($module in $modules){
+
+			$moduleCode = [string]$module
+
+			if($ModuleToShort.keys -contains $moduleCode){
+				$moduleShortName = $ModuleToShort[$moduleCode]
+			} else {
+				$moduleShortName = $moduleCode.replace("TMOS_MODULE_", "")
+			}
+			
+			if($ModuleToDescription.keys -contains $moduleShortName){
+				$moduleDescription = $ModuleToDescription[$moduleShortName]
+			} else {
+				$moduleDescription = "No description found"
+			}
+
+			if(!($ModuleDict.keys -contains $moduleShortName)){
+				$ModuleDict.add($moduleShortName, $moduleDescription)
+			}
+		}
+
+		$objLoadBalancer.modules = $ModuleDict
+
+        $objLoadBalancer.success = $true
+
+		$LoadBalancerObjects = @{}
+		$LoadBalancerObjects.LoadBalancer = $objLoadBalancer
+
+		$ReportObjects.Add($objLoadBalancer.ip, $LoadBalancerObjects)
+		
+		#Don't continue if this loabalancer is not active
+		If($objLoadBalancer.active -or $isOnlyDevice){
+			log verbose "Caching LTM information from $BigIPHostname"
+			cacheLTMinformation -f5 $f5 -LoadBalancer $LoadBalancerObjects
+		} else {
+			log info "This load balancer is not active, and won't be indexed"
+			Continue
+		}
+		
 	}
 }
 
@@ -1753,6 +1775,8 @@ function Test-ReportData {
 	#For every load balancer IP we will check that no pools or virtual servers are missing
 	Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
 		
+        $DeviceGroupHasData = $False
+
 		ForEach($Device in $DeviceGroup.Device){
 	
 			$LoadbalancerObjects = $ReportObjects[$Device]
@@ -1764,7 +1788,9 @@ function Test-ReportData {
 
 				# Only check for load balancers that is alone in a device group, or active
 				if($Loadbalancer.active -or $Loadbalancer.isonlydevice){
-				
+
+                    $DeviceGroupHasData = $True
+
 					#Verify that the $Global:virtualservers contains the $LoadbalancerName
 					If ($LoadbalancerObjects.VirtualServers.Count -eq 0) {
 						log error "$LoadbalancerName does not have any Virtual Server data"
@@ -1799,14 +1825,20 @@ function Test-ReportData {
 						log error "$LoadbalancerName does not have any Data group lists data"
 						$Nonemissing = $false
 					}
-					
+
 				}
-					
+
 			} Else {
 				log error "$Device does not seem to have been indexed"
 				$Nonemissing = $false
 			}
-		}
+        }
+
+        If (-Not $DeviceGroupHasData){
+            log error "Missing data from device group containing $($DeviceGroup.Device -Join ", ")."
+            $NoneMissing = $false
+        }
+
 	}
 	
 	Return $Nonemissing
@@ -2424,7 +2456,8 @@ $Global:html += @"
 			<br>
 			<font size=-1>
 				<i>
-					The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion). Script started at <span id="Generationtime">$starttime</span> and took $([int]($(Get-Date)-$starttime).totalminutes) minutes to finish. 
+					The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion). Script started at <span id="Generationtime">$starttime</span> and took $([int]($(Get-Date)-$starttime).totalminutes) minutes to finish.<br>
+                    Written by <a href="https://www.linkedin.com/in/patrik-jonsson/">Patrik Jonsson</a>.
 				</i>
 			</font>
 
