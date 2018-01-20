@@ -562,7 +562,7 @@ span.textstatus {
 	font-size:24px;
 	text-align: center;
 	color:#ffffff;
-	margin-top:70px;
+	margin-top:65px;
 }
 
 
@@ -621,6 +621,28 @@ div.webconfig {
 	background-color: #eff0f1;
 	color: black;
 }
+
+/****************************************************************************************************************************
+	This section contains the style for object not found
+*****************************************************************************************************************************/
+
+
+div#objectnotfound {
+	display: table;
+	margin: 0 auto;
+	max-width: 80%;
+}
+
+div#objectnotfound h1 {
+	color:#800000;
+	text-align:center;
+}
+
+div#objectnotfound h4 {
+	margin-bottom: 1px;
+}
+
+
 
 /****************************************************************************************************************************
 	This section contains the style for the irule details lightbox content
@@ -918,7 +940,7 @@ a:hover.tooltip p {
 	background:#fff;
 	display: inline-block;
 	text-align:left;
-	max-height: 80%;
+	max-height: 75%;
 	max-width: 90%;
 	margin-top:20px;
 	overflow-y: scroll;
