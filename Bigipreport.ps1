@@ -159,8 +159,9 @@
 #        4.7.5        2017-12-28      Adding more verbose error messages when the json files fails to load          Patrik Jonsson  No
 #        4.8.0        2018-01-07      The script now supports real-time member status                               Patrik Jonssson Yes
 #                                     A lot of small fixes
-#        4.8.1       2018-01-19       Changing to device groups instead of individual load balancers                Patrik Jonsson  Yes
+#        4.8.1        2018-01-19      Changing to device groups instead of individual load balancers                Patrik Jonsson  Yes
 #                                     Moving status VIP support to the device groups
+#        4.8.2        2018-01-20      Using dictionaries to generate the report to speed up large installations     Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -175,7 +176,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.8.1"
+$Global:ScriptVersion = "4.8.2"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
