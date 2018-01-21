@@ -16,7 +16,7 @@ Foreach($DeviceRow in $F5HardwareMatrix.div.table.tbody.tr){
         $TypeDict = @{}
         $TypeDict.add("softwareVersion", @())
         $TypeDict.softwareVersion += $SoftwareVersion -Split ", "
-        $TypeDict.icon = ""
+        $TypeDict.icon = "./images/deviceicons/"
         
         #We're only interested in version 11
         if(($TypeDict.softwareVersion -Match "(^11\.|- 11\.)").Count -gt 0){
@@ -42,7 +42,7 @@ Foreach($DeviceRow in $F5HardwareMatrix.div.table.tbody.tr){
 
     $TypeDict = @{}
     $TypeDict.add("softwareVersion", @())
-    $TypeDict.icon = ""
+    $TypeDict.icon = "./images/deviceicons/"
    
     If(-not $DeviceJSON.ContainsKey($Type)){
         $DeviceJSON.add($Type, $TypeDict)
