@@ -578,7 +578,7 @@
 			})
 			.complete(function(){
 
-				if(siteData.memberStates.ajaxQueue === 0 && hasWorkingStatusVIP){
+				if(siteData.memberStates.ajaxQueue === 0){
 					
 					//Check if there is any functioning pool status vips
 					var hasWorkingStatusVIP = siteData.loadbalancers.some(function(e){
@@ -1836,31 +1836,20 @@
 
 	}
 
-
 	function getPool(pool, loadbalancer){
 
-		var pools = siteData.pools;
+		return siteData.pools.find(function(){
+			return o.name === pool && o.loadbalancer === loadbalancer;
+		}) || false;
 
-		for(var i in pools){
-			if(pools[i].name === pool && pools[i].loadbalancer === loadbalancer){
-				return pools[i];
-			}
-		}
-
-		return false;
 	}
 
 	function getVirtualServer(vs, loadbalancer){
 
-		var virtualservers = siteData.virtualservers;
+		return siteData.pools.find(function(){
+			return o.name === vs && o.loadbalancer === loadbalancer;
+		}) || false;
 
-		for(var i in virtualservers){
-			if(virtualservers[i].name === vs && virtualservers[i].loadbalancer === loadbalancer){
-				return virtualservers[i];
-			}
-		}
-
-		return false;
 	}
 
 	function generateCSV(){
