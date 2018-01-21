@@ -147,6 +147,7 @@
 				"oLanguage": {
 					"sSearch": "Search all columns:"
 				},
+				"searchDelay": 600,
 				"dom": '<"top">frt<"bottom"ilp><"clear">',
 				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 			} );
