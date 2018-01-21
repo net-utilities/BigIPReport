@@ -2134,8 +2134,6 @@ $Global:HTML += @'
 '@
 
 #Initiate variables used for showing progress (in case the debug is set)
-$i = 0
-$VirtualServerCount = $ReportObjects.Values.VirtualServers.Keys.Count + $ReportObjects.Values.OrphanPools.Count
 
 #Initiate variables to give unique id's to pools and members
 $xPool = 0
@@ -2151,7 +2149,12 @@ ForEach($LoadBalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadB
 	$LoadBalancer = $LoadBalancerObjects.Loadbalancer
 	$LoadBalancerName = $LoadBalancer.name
 
-	ForEach ($ObjVirtualServer in ($LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools)){
+    $i = 0
+
+    $VirtualServers = $LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools
+    $VirtualServerCount = $VirtualServers.Count
+
+	ForEach ($ObjVirtualServer in $VirtualServers){
 		
 		$i++
 		
@@ -2233,50 +2236,46 @@ ForEach($LoadBalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadB
 
 		}
 		
-		if($ObjVirtualServer.sslprofile -ne "None"){
-			$Global:HTML += @"
-				
-						<td class="centeredCell">
-							Yes
-						</td>
+        $Global:HTML += @"
+                        <td class="centeredCell">
+                            $(
+                                If ($ObjVirtualServer.sslprofile -ne "None") {
+                                    "Yes"
+                                } Else {
+                                    "No"
+                                }
+                            )
+                        </td>
 "@
-		} else {
-			$Global:HTML += @"
-					
-						<td class="centeredCell">
-							No
-						</td>
-"@
-		}
-		
+        
 
-		if($ObjVirtualServer.compressionprofile -ne "None"){
-			$Global:HTML += @"
-			
-						<td class="centeredCell">
-							Yes
-						</td>
+
+
+        $Global:HTML += @"
+                        <td class="centeredCell">
+                             $(
+                                If ($ObjVirtualServer.compressionprofile -ne "None") {
+                                    "Yes"
+                                } Else {
+                                    "No"
+                                }
+
+                             )
+                        </td>
 "@
-		} else {
-			$Global:HTML += @"
-						
-						<td class="centeredCell">
-							No
-						</td>
-"@
-			}
-		
-		$Global:HTML += @"
-					
-					<td class="centeredCell">
-						$(
-							if($ObjVirtualServer.persistence -eq "None" ){
-								"No"
-							} else {
-								"Yes"
-							}
-						)
-					</td>
+
+        
+        $Global:HTML += @"
+                    
+                    <td class="centeredCell">
+                        $(
+                            If($ObjVirtualServer.persistence -eq "None" ) {
+                                "No"
+                            } else {
+                                "Yes"
+                            }
+                        )
+                    </td>
 "@
 		
 		#Remove exceptions from the list of virtual server pools
