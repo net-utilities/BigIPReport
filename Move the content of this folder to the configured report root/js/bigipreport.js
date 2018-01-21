@@ -237,7 +237,7 @@
 			**************************************************************************************************************/	
 			
 			if(definedRules.length > 0){
-				$("#allbigips_filter").append("<a id=\"irulesButton\" class=\"irulesButton\" href=\"javascript:void(0);\">Show defined iRules</a>")
+				$("#allbigips_filter").append("<a id=\"irulesButton\" class=\"irulesButton\" href=\"javascript:void(0);\">Defined iRules</a>")
 
 				$("#irulesButton").on("click", function(){
 
@@ -313,7 +313,7 @@
 			
 			**************************************************************************************************************/	
 			
-			$("#allbigips_filter").append("<a id=\"preferencesButton\" class=\"preferencesButton\" href=\"javascript:void(0);\">Site preferences</a>")
+			$("#allbigips_filter").append("<a id=\"preferencesButton\" class=\"preferencesButton\" href=\"javascript:void(0);\">Preferences</a>")
 
 			$("#preferencesButton").on("click", showPreferences);
 
