@@ -147,11 +147,10 @@
 				"oLanguage": {
 					"sSearch": "Search all columns:"
 				},
-				"searchDelay": 600,
 				"dom": '<"top">frt<"bottom"ilp><"clear">',
 				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 			} );
-			
+
 			
 			/*************************************************************************************************************
 			
@@ -443,18 +442,51 @@
 				setPoolTableCellWidth();
 						
 			} );
-			
-			//Filter columns on key update
+
+
+			// Set-up search delays
+
+			var delay = (function(){
+			  
+			  var timer = 0;
+
+			  return function(callback, ms){
+			    clearTimeout (timer);
+			    timer = setTimeout(callback, ms);
+			  };
+			})();
+
+			//This section handles the global search
+			$('div.dataTables_filter input').off('keyup.DT input.DT');
+ 
+			var searchDelay = null;
+			 
+			$('div.dataTables_filter input').on('keyup', function() {
+
+				var search = $('div.dataTables_filter input').val();
+				delay(function(){
+			        if (search != null) {
+			            oTable.search(search).draw();
+			        }
+			    }, 700);
+			});
+
+
+			//Filter columns on key update and adding search delay
 			oTable.columns().every( function () {
 				
 				var that = this;
 				
 				$( 'input', this.header() ).on( 'keyup change', function () {
-					that
-						.search( this.value )
-						.draw();
-						expandPoolMatches($( oTable.table().body()), this.value)
-						highlightAll(oTable);
+					
+					var search = this.value
+					delay(function(){
+						that
+							.search(search)
+							.draw();
+							expandPoolMatches($( oTable.table().body()), search)
+							highlightAll(oTable);
+					}, 700);
 				} );		
 				
 			} );
