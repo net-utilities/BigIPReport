@@ -19,7 +19,7 @@ Foreach($DeviceRow in $F5HardwareMatrix.div.table.tbody.tr){
         $TypeDict.icon = "./images/deviceicons/"
         
         #We're only interested in version 11
-        if(($TypeDict.softwareVersion -Match "(^11\.|- 11\.)").Count -gt 0){
+        if(($TypeDict.softwareVersion[0] -Match "12")){
             $DeviceJSON.add($Type, $TypeDict)
         }
 
@@ -29,6 +29,7 @@ Foreach($DeviceRow in $F5HardwareMatrix.div.table.tbody.tr){
 
 $F5HardwareMatrix = [xml](Get-Content C:\Temp\vpr.xml)
 
+<#
 Foreach($DeviceRow in $F5HardwareMatrix.div.table.tbody.tr){
     
     $DeviceCells = $DeviceRow.td
@@ -45,9 +46,10 @@ Foreach($DeviceRow in $F5HardwareMatrix.div.table.tbody.tr){
     $TypeDict.icon = "./images/deviceicons/"
    
     If(-not $DeviceJSON.ContainsKey($Type)){
-        $DeviceJSON.add($Type, $TypeDict)
+        #$DeviceJSON.add($Type, $TypeDict)
     }
 }
+#>
 
-
-ConvertTo-Json -Depth 5 $DeviceJSON | Out-File "C:\BigIPReport\Move the content of this folder to the configured report root\json\knowndevices.json"
+ConvertTo-Json -Depth 5 $DeviceJSON
+#| Out-File "C:\BigIPReport\Move the content of this folder to the configured report root\json\knowndevices.json"
