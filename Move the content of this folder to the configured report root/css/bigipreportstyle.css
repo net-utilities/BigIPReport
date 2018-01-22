@@ -2,7 +2,14 @@
 
 	BigIP Report css styles
 
+/****************************************************************************************************************************
+	Declare color variables to make it easier to change the color scheme of the report
 *****************************************************************************************************************************/
+:root {
+  --alternatetablecolor:#f9f9f9;
+  --headingcolor:#f9f9f9;
+  --bordercolor:#DDDDDD;
+}
 
 /****************************************************************************************************************************
 	The style for the preloader layer (spinning symbol when loading the page
@@ -24,9 +31,8 @@
 
 /* This style controls the column search */
 .search_init {
-	background:#295B85;
+	background:var(--headingcolor);
 	border:none;
-	color: #fff;
 	font-weight: bold;
 	font-size:14px;
 	width:100%;
@@ -34,6 +40,7 @@
 	background-image: url(../images/filter.png);
 	background-repeat: no-repeat;
 	background-position: right;
+	color: #333;
 }
 
 /* This style controls how the search results should be highlighted */
@@ -48,10 +55,11 @@
 	border-collapse: collapse;
 	font-family: Calibri;
 	padding:10px;
+	color: #333;
 }
 
 .bigiptable tbody > tr > td {
-	border: 1px solid #CBCBCB;
+	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 	min-width: 45px;
@@ -59,13 +67,14 @@
 
 .bigiptable thead > tr > th {
 	text-align: center;
-	background-color:#295B85;
-	color:white;
+	background-color:var(--headingcolor);
+	color:#333;
 	white-space: nowrap;
+	border: 1px solid var(--headingcolor);
 }
 
-.bigiptable tbody > tr:nth-child(odd) > td {
-	background-color:#EEF5FB;
+.bigiptable tbody > tr:nth-child(even) > td {
+	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
@@ -102,19 +111,19 @@
 	width:100%;
 }
 
-.pooltable tbody > tr:nth-child(even) > td {
+.pooltable tbody > tr:nth-child(odd) > td {
 	background:transparent !important;
 	border-bottom:none;
 	border-left:none;
 	border-right:none;
 	border-collapse: collapse;
 }
-.pooltable tbody > tr:nth-child(odd) > td {
+.pooltable tbody > tr:nth-child(even) > td {
 	background:transparent !important;
 	border-bottom:none;
 	border-left:none;
 	border-right:none;
-	border-top:border: 1px solid #EA6903;
+	border-top:border: 1px solid var(--bordercolor);;
 	border-collapse: collapse;
 }
 
@@ -191,18 +200,56 @@ span#refreshcountdown {
 	border-collapse: collapse;
 	padding:5px;
 	text-align:center;
-	border:1px solid #CBCBCB;
+	border:1px solid var(--bordercolor);
 }
 .virtualserverdetailstable tbody > tr > th {
 	text-align: center;
-	background-color:#295B85;
-	border:1px solid #CBCBCB;
+	background-color:var(--headingcolor);
+	border:1px solid var(--bordercolor);
 	color:white;
 	white-space:nowrap;
 }
 
-.virtualserverdetailstable tbody > tr:nth-child(odd) > td {     background-
-color:#6890B2;     border-collapse: collapse;     border:1px solid #CBCBCB; }
+.virtualserverdetailstable tbody > tr:nth-child(even) > td {     background-
+color:#6890B2;     border-collapse: collapse;     border:1px solid var(--bordercolor); }
+
+
+/****************************************************************************************************************************
+	This section contains the style for the device overview
+*****************************************************************************************************************************/
+
+
+/* Contains the pool details table (the one with members and status) */
+
+.deviceoverviewtable  {
+	border-collapse: collapse;
+	font-family: Calibri;
+	margin: 0 auto;
+	width:100%;
+}
+
+.deviceoverviewtable tbody > tr > td {
+	border-collapse: collapse;
+	padding:5px;
+	text-align:center;
+	border:1px solid var(--bordercolor);
+}
+.deviceoverviewtable thead > tr > th {
+	text-align: center;
+	background-color:var(--headingcolor);
+	border:1px solid var(--bordercolor);
+	color:white;
+	white-space:nowrap;
+}
+
+.deviceoverviewtable tbody > tr:nth-child(even) > td {     background-
+color:#6890B2;     border-collapse: collapse;     border:1px solid var(--bordercolor); }
+
+td img.deviceicon {
+	max-height: 50px;
+	max-width: 150px;
+}
+
 
 /****************************************************************************************************************************     
 				This section contains the  style for the pool details lightbox div 
@@ -224,11 +271,12 @@ color:#6890B2;     border-collapse: collapse;     border:1px solid #CBCBCB; }
 	font-family: Calibri;
 	margin: 0 auto;
 	width:100%;
+	color: #333;
 }
 
 .pooldetailstable tbody > tr > td {
 	border-collapse: collapse;
-	border:1px solid #CBCBCB;
+	border:1px solid var(--bordercolor);
 	padding:5px;
 	text-align:center;
 }
@@ -246,15 +294,15 @@ color:#6890B2;     border-collapse: collapse;     border:1px solid #CBCBCB; }
 
 .pooldetailstable thead > tr > th {
 	text-align: center;
-	background-color:#295B85;
+	background-color:var(--headingcolor);
 	color:white;
 	white-space:nowrap;
 }
 
-.pooldetailstable tbody > tr:nth-child(odd) > td {
-	background-color:#EEF5FB;
+.pooldetailstable tbody > tr:nth-child(even) > td {
+	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
-	border:1px solid #CBCBCB;
+	border:1px solid var(--bordercolor);
 }
 
 td.ASMBlockingMode {
@@ -280,7 +328,7 @@ td.ASMBlockingMode {
 
 .monitordetailstable tbody > tr > td {
 	border-collapse: collapse;
-	border:1px solid #CBCBCB;
+	border:1px solid var(--bordercolor);
 	padding:5px;
 }
 .monitordetailstablerowheader {
@@ -289,16 +337,16 @@ td.ASMBlockingMode {
 }
 .monitordetailstable thead > tr > th {
 	text-align: center;
-	background-color:#295B85;
+	background-color:var(--headingcolor);
 	color:white;
 	white-space: nowrap;
 }
 
-.monitordetailstable tbody > tr:nth-child(odd) > td {
-	background-color:#EEF5FB;
+.monitordetailstable tbody > tr:nth-child(even) > td {
+	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
-	border:1px solid #CBCBCB;
+	border:1px solid var(--bordercolor);
 }
 
 /*The table containing information about the monitors and test links per member (just underneath the monitor information*/
@@ -312,7 +360,7 @@ td.ASMBlockingMode {
 
 .membermonitortable tbody > tr > td {
 	border-collapse: collapse;
-	border:1px solid #CBCBCB;
+	border:1px solid var(--bordercolor);
 	padding:5px;
 	text-align:center;
 }
@@ -323,15 +371,15 @@ td.ASMBlockingMode {
 
 .membermonitortable thead > tr > th {
 	text-align: center;
-	background-color:#295B85;
+	background-color:var(--headingcolor);
 	color:white;
 	white-space:nowrap;
 }
 
-.membermonitortable tbody > tr:nth-child(odd) > td {
-	background-color:#EEF5FB;
+.membermonitortable tbody > tr:nth-child(even) > td {
+	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
-	border:1px solid #CBCBCB;
+	border:1px solid var(--bordercolor);
 }
 
 
@@ -390,11 +438,11 @@ a:hover.monitortest p {
 /* The style for the button that closes the pool details */
 .lightboxbutton {
 	background: #3498db;
-	background-image: -webkit-linear-gradient(top, #3498db, #295B85);
-	background-image: -moz-linear-gradient(top, #3498db, #295B85);
-	background-image: -ms-linear-gradient(top, #3498db, #295B85);
-	background-image: -o-linear-gradient(top, #3498db, #295B85);
-	background-image: linear-gradient(to bottom, #3498db, #295B85);
+	background-image: -webkit-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: -moz-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: -ms-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: -o-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: linear-gradient(to bottom, #3498db, var(--headingcolor));
 	-webkit-border-radius: 10;
 	-moz-border-radius: 10;
 	border-radius: 10px;
@@ -420,11 +468,11 @@ a.sharepoollink {
 	position: relative;
 	display: inline;
 	background: #3498db;
-	background-image: -webkit-linear-gradient(top, #3498db, #295B85);
-	background-image: -moz-linear-gradient(top, #3498db, #295B85);
-	background-image: -ms-linear-gradient(top, #3498db, #295B85);
-	background-image: -o-linear-gradient(top, #3498db, #295B85);
-	background-image: linear-gradient(to bottom, #3498db, #295B85);
+	background-image: -webkit-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: -moz-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: -ms-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: -o-linear-gradient(top, #3498db, var(--headingcolor));
+	background-image: linear-gradient(to bottom, #3498db, var(--headingcolor));
 	-webkit-border-radius: 10;
 	-moz-border-radius: 10;
 	border-radius: 10px;
@@ -691,7 +739,7 @@ div#objectnotfound h4 {
 }
 
 .datagrouplisttable td,th {
-	border: 1px solid #000;
+	/*border: 1px solid #000;*/
 	padding:10px;
 }
 
@@ -702,21 +750,21 @@ div#objectnotfound h4 {
 }
 
 .datagrouplisttable tbody > tr > td {
-	border: 1px solid #CBCBCB;
+	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
 
 .datagrouplisttable thead > tr > th {
 	text-align: center;
-	background-color:#295B85;
+	background-color:var(--headingcolor);
 	width:70px;
 	color:white;
 	white-space: nowrap;
 }
 
-.datagrouplisttable tbody > tr:nth-child(odd) > td {
-	background-color:#EEF5FB;
+.datagrouplisttable tbody > tr:nth-child(even) > td {
+	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
@@ -826,8 +874,8 @@ table.settingsTable thead tr th, tbody td {
 	font-family: "Calibri";
 }
 
-table.settingsTable tbody tr:nth-child(odd) td {
-	background-color: #EEF5FB;
+table.settingsTable tbody tr:nth-child(even) td {
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
@@ -844,7 +892,7 @@ table.settingsTable tbody tr:nth-child(odd) td {
 }
 
 .definedRulesTable tbody > tr > td {
-	border: 1px solid #CBCBCB;
+	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 	text-align: center;
@@ -853,14 +901,14 @@ table.settingsTable tbody tr:nth-child(odd) td {
 
 .definedRulesTable thead > tr > th {
 	text-align: center;
-	background-color:#295B85;
+	background-color:var(--headingcolor);
 	color:white;
 	white-space: nowrap;
 	padding: 10px;
 }
 
-.definedRulesTable tbody > tr:nth-child(odd) > td {
-	background-color:#EEF5FB;
+.definedRulesTable tbody > tr:nth-child(even) > td {
+	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
@@ -874,7 +922,7 @@ a.tooltip {
   position: relative;
   display: inline;
   text-decoration:none;
-  color:#000000;
+  color:#333;
 }
 
 a.tooltip p {
@@ -1074,11 +1122,11 @@ span.adcLinkSpan a:hover {
 
 .visibleColumnButton {
   background: #3498db;
-  background-image: -webkit-linear-gradient(top, #347502, #347502);
-  background-image: -moz-linear-gradient(top, #347502, #347502);
-  background-image: -ms-linear-gradient(top, #347502, #347502);
-  background-image: -o-linear-gradient(top, #347502, #347502);
-  background-image: linear-gradient(to bottom, #347502, #347502);
+  background-image: -webkit-linear-gradient(top, #99cb66, #99cb66);
+  background-image: -moz-linear-gradient(top, #99cb66, #99cb66);
+  background-image: -ms-linear-gradient(top, #99cb66, #99cb66);
+  background-image: -o-linear-gradient(top, #99cb66, #99cb66);
+  background-image: linear-gradient(to bottom, #99cb66, #99cb66);
   /*-webkit-border-radius: 28;
   -moz-border-radius: 28;
   border-radius: 28px;

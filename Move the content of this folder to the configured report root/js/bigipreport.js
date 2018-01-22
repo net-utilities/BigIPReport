@@ -88,6 +88,9 @@
 			}).fail(addJSONLoadingFailure),
 			$.getJSON("./json/defaultpreferences.json", function(result){
 				siteData.defaultPreferences = result;
+			}).fail(addJSONLoadingFailure),
+			$.getJSON("./json/knowndevices.json", function(result){
+				siteData.knownDevices = result;
 			}).fail(addJSONLoadingFailure)
 		).then(function() {
 
@@ -747,19 +750,6 @@
 
 	}
 
-	function getLoadbalancer(loadbalancer){
-
-		var loadbalancers = siteData.loadbalancers;
-
-		for(var i in loadbalancers){
-			if(loadbalancers[i].name === loadbalancer){
-				return loadbalancers[i];
-			}
-		}
-
-		return false;
-	}
-
 	/********************************************************************************************************************************************************************************************
 
 		Functions used by the main data table
@@ -910,6 +900,45 @@
 		});
 
 		//Show the first light box layer
+		$("#firstlayerdiv").fadeIn();
+
+	}
+
+	function showDeviceOverview(){
+
+		var loadbalancers = siteData.loadbalancers
+
+		var html = `
+				<table class="deviceoverviewtable">
+					<thead>
+						<tr>
+							<th></th><th>Name</th><th>Model<t/h><th>Type</th><th>Serial</th><th>Management IP</th>
+						</tr>
+					</thead>
+					<tbody>`;
+
+		for(var i in loadbalancers){
+
+			loadbalancer = loadbalancers[i];
+
+			deviceData = siteData.knownDevices[loadbalancer.model] || false;
+
+			if (deviceData){
+				var icon = deviceData.icon;
+			} else {
+				var icon = "./images/deviceicons/unknowndevice.png";
+			}
+			
+			html += "<tr><td><img class=\"deviceicon\" src=\"" + icon + "\"/></td><td>" + loadbalancer.name + "</td><td>" + loadbalancer.category + "</td><td>" + loadbalancer.model + "</td><td>" + "N/A" + "</td><td>" + loadbalancer.ip + "</td></tr>";
+
+		}
+
+		html += `
+					</tbody>
+				</table>`
+
+		$("#firstlayerdetailscontentdiv").html(html);
+		$("#firstlayerdetailsfooter").html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut()">Close error details</a>');
 		$("#firstlayerdiv").fadeIn();
 
 	}
@@ -1838,7 +1867,7 @@
 
 	function getPool(pool, loadbalancer){
 
-		return siteData.pools.find(function(){
+		return siteData.pools.find(function(o){
 			return o.name === pool && o.loadbalancer === loadbalancer;
 		}) || false;
 
@@ -1846,11 +1875,21 @@
 
 	function getVirtualServer(vs, loadbalancer){
 
-		return siteData.pools.find(function(){
+		return siteData.pools.find(function(o){
 			return o.name === vs && o.loadbalancer === loadbalancer;
 		}) || false;
 
 	}
+
+	function getLoadbalancer(loadbalancer){
+
+		return siteData.loadbalancers.find(function(o){
+			return o.name === loadbalancer;
+		}) || false;
+
+	}
+
+
 
 	function generateCSV(){
 
