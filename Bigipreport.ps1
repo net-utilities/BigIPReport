@@ -168,6 +168,7 @@
 #        4.8.4        2018-01-22      Changing the style of the report to something more bright                     Patrik Jonsson  No
 #        4.8.5        2018-01-23      Fixing the bug with the chevrons not expanding/collapsing                     Patrik Jonsson  No
 #                                     Fixed a bug with the CSV export function                                      Patrik Jonsson  No
+#                                     Fixed a bug with the member status endpoints                                  Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -182,7 +183,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.8.3"
+$Global:ScriptVersion = "4.8.5"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
