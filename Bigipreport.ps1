@@ -2141,7 +2141,7 @@ $Global:HTML += @'
 #Initiate variables to give unique id's to pools and members
 $xPool = 0
 
-$RealTimeStatusDetected = ($ReportObjects.Values.Loadbalancer | Where-Object { $_.statusvip -ne $null }).Count -gt 0
+$RealTimeStatusDetected = ($ReportObjects.Values.Loadbalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
 
 if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
