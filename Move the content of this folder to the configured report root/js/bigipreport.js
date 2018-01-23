@@ -124,13 +124,11 @@
 				
 			**************************************************************************************************************/
 			
-			
-			$(".PoolInformation").click(function(e) {
+			$("td.PoolInformation").click(function(e) {
 				if($(e.target).attr("class") != "tooltip"){
 					togglePool(e.target);
 				}
-			})
-			
+			});
 			
 			
 			/*************************************************************************************************************
@@ -1057,7 +1055,7 @@
 
 	function togglePool(e){
 		
-		id = $(e).attr('data-vsid');
+		var id = $(e).attr('data-vsid');
 		
 		//Store the current window selection
 		var selection = window.getSelection();
@@ -1145,27 +1143,27 @@
 		
 		switch(member.availability){
 			case "AVAILABILITY_STATUS_GREEN":
-				translatedstatus['availability'] = "UP";
+				translatedstatus['availability'] = "<span class=\"memberup\">UP</span>";
 				break;
 			case "AVAILABILITY_STATUS_BLUE":
-				translatedstatus['availability'] = "UNKNOWN";
+				translatedstatus['availability'] = "<span class=\"memberunknown\">UNKNOWN</span>";
 				break;
 			default:
-				translatedstatus['availability'] = "DOWN";		
+				translatedstatus['availability'] = "<span class=\"memberdown\">DOWN</span>";
 		}
 		
 		switch(member.enabled){
 			case "ENABLED_STATUS_ENABLED":
-				translatedstatus['enabled'] = "Enabled";
+				translatedstatus['enabled'] = "<span class=\"memberenabled\">Enabled</span>";
 				break;
 			case "ENABLED_STATUS_DISABLED_BY_PARENT":
-				translatedstatus['enabled'] = "Disabled by parent";
+				translatedstatus['enabled'] = "<span class=\"memberdisabled\">Disabled by parent</span>";
 				break;
 			case "ENABLED_STATUS_DISABLED":
-				translatedstatus['enabled'] = "Member disabled";
+				translatedstatus['enabled'] = "<span class=\"memberdisabled\">Member disabled</span>";
 				break;
 			default:  
-				translatedstatus['enabled'] = "Unknown";
+				translatedstatus['enabled'] = "<span class=\"memberunknown\">Unknown</span>";
 		}
 		
 		return translatedstatus;

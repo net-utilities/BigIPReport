@@ -157,14 +157,16 @@
 #                                     Adding javascript error handling when loading the report json files           Patrik Jonsson  No
 #        4.7.4        2017-12-27      Adding script requirement for Powershell version 4                            Patrik Jonsson  No
 #        4.7.5        2017-12-28      Adding more verbose error messages when the json files fails to load          Patrik Jonsson  No
-#        4.8.0        2018-01-07      The script now supports real-time member status                               Patrik Jonssson Yes
+#        4.8.0        2018-01-07      The script now supports real-time member status                               Patrik Jonsson  Yes
 #                                     A lot of small fixes
 #        4.8.1        2018-01-19      Changing to device groups instead of individual load balancers                Patrik Jonsson  Yes
 #                                     Moving status VIP support to the device groups
 #        4.8.2        2018-01-20      Using dictionaries to generate the report to speed up large installations     Patrik Jonsson  No
-#        4.8.3        2018-01-21      Introducing slight delay when searching to make searches in larger            Patrik Jonssson No
+#        4.8.3        2018-01-21      Introducing slight delay when searching to make searches in larger            Patrik Jonsson  No
 #                                     instalations more performant
 #                                     Alot of Powershell code cleaning and optimizing
+#        4.8.4        2018-01-22      Changing the style of the report to something more bright                     Patrik Jonsson  No
+#        4.8.5        2018-01-23      Fixing the bug with the chevrons not expanding/collapsing                     Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -2034,7 +2036,7 @@ If ($ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
 #Add links to style sheets, jquery and datatables and some embedded javascripts
 
 $Global:HTML = @'
-
+<!DOCTYPE html>
 <html>
 	<head>
 
@@ -2112,7 +2114,7 @@ $Global:HTML += @'
 		<table id="allbigips" class="bigiptable">
 			<thead>
 				<tr>
-					<th><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
+					<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
 					<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
 					<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
 '@
@@ -2124,7 +2126,7 @@ $Global:HTML += @'
 	}
 
 		$Global:HTML += @'
-					<th class="sslProfileProfileHeaderCell"><input type="text" name="sslProfile" size=6 value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
+					<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size=6 value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
 					<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size=6 value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
 					<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size=6 value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
 					<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
@@ -2293,7 +2295,7 @@ ForEach($LoadBalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadB
 
 			$FirstPool = $true
 			
-			foreach($PoolName in $VirtualServerPools){
+			Foreach($PoolName in $VirtualServerPools){
 
 				if($PoolName -ne ""){
 					
@@ -2302,14 +2304,15 @@ ForEach($LoadBalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadB
 					if($FirstPool){
 
 						$xPool++;
+                        
 						$Global:HTML += @"
 											
-						<td class="PoolInformation" data-vsid=$i>
+						<td class="PoolInformation" data-vsid="$i">
 							<div class="expand" id="expand-$i">
-								<a href="javascript:void(0);"><img src="./images/chevron-down.png"/></a>
+								<a href="javascript:void(0);"><img src="./images/chevron-down.png" data-vsid="$i"/></a>
 							</div>
 							<div class="collapse" id="collapse-$i">
-								<a href="javascript:void(0);"><img src="./images/chevron-up.png"/></a>
+								<a href="javascript:void(0);"><img src="./images/chevron-up.png" data-vsid="$i"/></a>
 							</div>
 							<div class="AssociatedPoolsInfo" data-vsid=$i id="AssociatedPoolsInfo-$i"> Click here to show $($ObjVirtualServer.pools.Count) associated pools</div>
 							<div id="PoolInformation-$i" class="pooltablediv">
@@ -2374,7 +2377,7 @@ ForEach($LoadBalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadB
 							}
 							
                             $MemberPort = $Member.port
-                            $MemberIPPort = $MemberName + ":" + $MemberPort
+                            $MemberIPPort = $Member.ip + ":" + $MemberPort
                             $MemberNamePort = $MemberName + ":" + $MemberPort
 
 							if($FirstMember){
