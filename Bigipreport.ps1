@@ -167,6 +167,7 @@
 #                                     Alot of Powershell code cleaning and optimizing
 #        4.8.4        2018-01-22      Changing the style of the report to something more bright                     Patrik Jonsson  No
 #        4.8.5        2018-01-23      Fixing the bug with the chevrons not expanding/collapsing                     Patrik Jonsson  No
+#                                     Fixed a bug with the CSV export function                                      Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -2429,7 +2430,7 @@ $Global:HTML += @"
 			<font size=-1>
 				<i>
 					The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion). Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-                    Written by <a href="https://www.linkedin.com/in/patrik-jonsson/">Patrik Jonsson</a>.
+                    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
 				</i>
 			</font>
 
@@ -2439,28 +2440,43 @@ $Global:HTML += @"
 
 $Global:HTML += @"
 
-	<div class="lightbox" id="firstlayerdiv">
-		<div id="firstlayerdetailsheader" class="firstlayerdetailsheader"></div>
-		<div class="innerLightbox">
-			<div class="firstlayerdetailscontent" id="firstlayerdetailscontentdiv">
-				
-			</div>
-		</div>
-		<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"></div>
-	</div>
-	
-	<div class="lightbox" id="secondlayerdiv">
-		<div class="secondlayerdetailsheader"></div>
-		<div class="innerLightbox">
-			<div class="secondlayerdetailscontent" id="secondlayerdetailscontentdiv">
-				
-			</div>
-			
-		</div>
-		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"></div>
-	</div>
-	
-	
+    	<div class="lightbox" id="firstlayerdiv">
+    		<div id="firstlayerdetailsheader" class="firstlayerdetailsheader"></div>
+    		<div class="innerLightbox">
+    			<div class="firstlayerdetailscontent" id="firstlayerdetailscontentdiv">
+    				
+    			</div>
+    		</div>
+    		<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"></div>
+    	</div>
+    	
+    	<div class="lightbox" id="secondlayerdiv">
+    		<div class="secondlayerdetailsheader"></div>
+    		<div class="innerLightbox">
+    			<div class="secondlayerdetailscontent" id="secondlayerdetailscontentdiv">
+    				
+    			</div>
+    			
+    		</div>
+    		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"></div>
+    	</div>	
+
+        <div class="lightbox" id="preferencesdiv">
+
+
+                <div id="preferencescontent">
+                    <div class="sidemenu">
+                        <div class="menuitem">Preferences</div>
+                        <div class="menuitem">Device overview</div>
+                        <div class="menuitem">Defined iRules</div>
+                        <div class="menuitem">Device overview</div>
+                        <div class="menuitem">Console</div>
+                    </div>
+                    <div id="consolecontent"></div>
+                </div>
+
+        </div>
+
 	</body>
 </html>
 "@
