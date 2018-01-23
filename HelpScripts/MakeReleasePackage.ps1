@@ -34,7 +34,7 @@ if(-not (Test-Path "$ScriptFolder\Releases\BigipReport-$Version.zip")){
     Move-Item "$ScriptFolder\bigipreport.ps1" "$ScriptFolder\bigipreport-$version.ps1"
     
     #Zip the release and put it in .\Releases
-    & $7ZipPath a -tzip $PSScriptRoot\Releases\BigipReport-$Version.zip "$ScriptFolder\bigipreport-$Version.ps1" "$PSScriptRoot\bigipreportconfig.xml" "`"$PSScriptRoot\Move the content of this folder to the configured report root`"" "`"$PSScriptRoot\iRules`""
+    & $7ZipPath a -tzip $ScriptFolder\Releases\BigipReport-$Version.zip "$ScriptFolder\bigipreport-$Version.ps1" "$ScriptFolder\bigipreportconfig.xml" "`"$ScriptFolder\Move the content of this folder to the configured report root`"" "`"$ScriptFolder\iRules`""
     
     #Restore the file name
     Move-Item "$ScriptFolder\bigipreport-$version.ps1" "$ScriptFolder\bigipreport.ps1"
@@ -44,3 +44,5 @@ if(-not (Test-Path "$ScriptFolder\Releases\BigipReport-$Version.zip")){
 
 #Halt before exit to show that everything has gone OK
 $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
+cd $PSScriptRoot
