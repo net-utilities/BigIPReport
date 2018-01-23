@@ -35,6 +35,7 @@
 .search_init {
 	background:var(--headerbackgroundcolor);
 	border:none;
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-weight: bold;
 	font-size:14px;
 	width:100%;
@@ -305,6 +306,7 @@ td img.deviceicon {
 .pooldetailstable thead > tr > th {
 	text-align: center;
 	background-color:var(--headerbackgroundcolor);
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	color:var(--headerfontcolor);
 	white-space:nowrap;
 }
@@ -744,7 +746,7 @@ div#objectnotfound h4 {
 	text-align: center;
 	background-color:var(--headerbackgroundcolor);
 	width:70px;
-	color:white;
+	color:var(--headerfontcolor);
 	white-space: nowrap;
 }
 
@@ -753,7 +755,6 @@ div#objectnotfound h4 {
 	border-collapse: collapse;
 	white-space: nowrap;
 }
-
 
 /**********************************************************************************************************************************
 	Styles for the share link
@@ -877,6 +878,7 @@ table.settingsTable tbody tr:nth-child(even) td {
 }
 
 .definedRulesTable tbody > tr > td {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
@@ -887,7 +889,7 @@ table.settingsTable tbody tr:nth-child(even) td {
 .definedRulesTable thead > tr > th {
 	text-align: center;
 	background-color:var(--headerbackgroundcolor);
-	color:white;
+	color:var(--headerfontcolor);
 	white-space: nowrap;
 	padding: 10px;
 }
@@ -969,13 +971,12 @@ a:hover.tooltip p {
 	text-align: center;
 }
 
-.innerLightbox {
+div.innerLightbox, div#preferencescontent {
 	background:#fff;
 	display: inline-block;
 	text-align:left;
 	max-height: 75%;
 	max-width: 90%;
-	margin-top:20px;
 	overflow-y: scroll;
 	padding:20px;
 	top:100px;
@@ -983,6 +984,46 @@ a:hover.tooltip p {
 	-webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
 	-moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
 	box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+}
+
+div.innerLightbox {
+	margin-top:20px;
+}
+
+div#preferencescontent {
+	margin-top:100px;
+	padding:0px;
+	min-width:900px;
+	min-height:700px;
+}
+
+
+/**********************************************************************************************************************************
+	Side menu
+***********************************************************************************************************************************/
+
+div.sidemenu {
+	float:left;
+	top:0px;
+	left:0px;
+	max-width: 140px;
+	min-height:700px;
+	background-color: var(--headerbackgroundcolor);
+}
+
+div.sidemenu div.menuitem {
+	border: 1px solid var(--bordercolor);
+	padding: 10px;
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+div.menuitem:hover {
+	background-color:#d0d0d0;
+	cursor:pointer;
+}
+
+div#consolecontent {
+	float:left;
 }
 
 /* The buttons telling the user that there is a new version available */

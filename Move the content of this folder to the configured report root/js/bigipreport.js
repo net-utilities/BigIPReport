@@ -288,7 +288,7 @@
 					$("#firstlayerdetailsheader").html("Pre-defined iRules")
 
 					//Set the footer
-					$('.firstlayerdetailsfooter').html("<a class=\"lightboxbutton\" href=\"javascript:void(0);\" onClick=\"javascript:$('.lightbox').fadeOut();\">Close preferences</a>");
+					$('.firstlayerdetailsfooter').html("<a class=\"lightboxbutton\" href=\"javascript:void(0);\" onClick=\"javascript:$('.lightbox').fadeOut();\">Close defined rules</a>");
 
 					//Inject the html
 					$("#firstlayerdetailscontentdiv").html(ruleTable);
@@ -310,7 +310,7 @@
 
 			/*************************************************************************************************************
 			
-				This section inserts a preferences button and attaches even handlers to it
+				This section inserts the column toggle buttons and attaches even handlers to it
 			
 			**************************************************************************************************************/	
 			
@@ -613,6 +613,7 @@
 
 			});
 		}
+		
 	}
 
 
@@ -843,6 +844,17 @@
 		}
 	}
 
+	function showConsole(){
+
+		var html = showDeviceOverview();
+
+		$("div#consolecontent").html(html);
+
+		$("#preferencesdiv").fadeIn();
+
+	}
+
+
 	function showPreferences(){
 
 		//Prepare the header
@@ -852,20 +864,21 @@
 		$('.firstlayerdetailsfooter').html("<a class=\"lightboxbutton\" href=\"javascript:void(0);\" onClick=\"javascript:$('.lightbox').fadeOut();\">Close preferences</a>");
 
 		//Prepare the content
-		var settingsContent = "<table class=\"settingsTable\">";
+		var settingsContent = `
+							<table class="settingsTable">
 
-		settingsContent += "<thead>";
-		settingsContent += "<tr><th colspan=2>Generic settings</th>";
-		settingsContent += "</thead>";
+								<thead>
+								<tr>
+									<th colspan=2>Generic settings</th>
+								</thead>
 		
-		settingsContent += "<tbody>";
-		settingsContent += "<tr><td>Expand all pool members</td><td><input type=\"checkbox\" id=\"autoExpandPools\"></td></tr>";
-		settingsContent += "<tr><td>Direct links to Big-IP objects</td><td><input type=\"checkbox\" id=\"adcLinks\"></td></tr>";
-		settingsContent += "</tbody>";
+								<tbody>
+									<tr><td>Expand all pool members</td><td><input type="checkbox" id="autoExpandPools"></td></tr>
+									<tr><td>Direct links to Big-IP objects</td><td><input type="checkbox" id="adcLinks"></td></tr>
+								</tbody>
 
-		settingsContent += "</table>";
-
-		settingsContent += "</div>";
+							</table>
+`
 
 		//Populate the content
 		$("#firstlayerdetailscontentdiv").html(settingsContent);
@@ -935,9 +948,7 @@
 					</tbody>
 				</table>`
 
-		$("#firstlayerdetailscontentdiv").html(html);
-		$("#firstlayerdetailsfooter").html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut()">Close error details</a>');
-		$("#firstlayerdiv").fadeIn();
+		return html
 
 	}
 
@@ -1729,8 +1740,8 @@
 			
 			for(var i in members){
 				
-				member = members[i];
-				memberstatus = translateStatus(member);
+				var member = members[i];
+				var memberstatus = translateStatus(member);
 				
 				table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + member.priority + "</td><td>" + member.currentconnections + "</td><td>" + member.maximumconnections + "</td><td>" + memberstatus["availability"] + "</td><td>" + memberstatus["enabled"] + "</td><td>" + member.status + "</td><td>" + (member.realtimestatus || "N/A").toUpperCase() + "</td></tr>";
 			
@@ -1873,7 +1884,7 @@
 
 	function getVirtualServer(vs, loadbalancer){
 
-		return siteData.pools.find(function(o){
+		return siteData.virtualservers.find(function(o){
 			return o.name === vs && o.loadbalancer === loadbalancer;
 		}) || false;
 
@@ -1893,6 +1904,24 @@
 
 		var csv = "name;ip;port;sslprofile;compressionprofile;persistenceprofile;availability;enabled;currentconnections;cpuavg5sec;cpuavg1min;cpuavg5min;defaultpool;associated-pools;loadbalancer\n";
 
+
+		var getMembers = function(pool){
+
+			var returnStr = ""
+
+			var first = true;
+			var firstmember = true;
+
+			for(var m in pool.members){
+			    if(!firstmember){ returnStr += ", "} else { firstmember = false;}
+				var member = pool.members[m]
+				returnStr += member.name + ":" + member.port + " (" + member.ip + ":" + member.port + ")";
+			}
+
+			return returnStr;
+		}
+
+
 		$("#allbigips tbody tr.virtualserverrow").each(function(){
 			
 			var line = "";
@@ -1903,44 +1932,37 @@
 
 				var loadbalancer = $(this).find("td.virtualServerCell a").attr("data-loadbalancer");
 
-				vs = getVirtualServer(vsname, loadbalancer)
+				var vs = getVirtualServer(vsname, loadbalancer)
 
 				var line = vs.name + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofile || "None") + ";" + (vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" + vs.cpuavg5sec + ";" + vs.cpuavg1min + ";" + vs.cpuavg5min + ";" + (vs.defaultpool || "None") + ";";
 
 				var firstpool = true;
 
 				for(var p in vs.pools){
-				
+					
 					if(!firstpool){ line += "|"} else { firstpool = false }
 					
-					pool = getPool(vs.pools[p], vs.loadbalancer);
+					var pool = getPool(vs.pools[p], vs.loadbalancer);
+					line += pool.name + ": ";
 					
+					line += getMembers(pool);
 				}
+
+				line += ";" + vs.loadbalancer;
 				
 				
 			} else {
 
 				var poolname = $(this).find("td.poolname a").attr("data-originalpoolname");
 				var loadbalancer = $(this).find("td.poolname a").attr("data-loadbalancer");
-				
+
 				line = "N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);";
 
 				pool = getPool(poolname, loadbalancer);
 
+				line += pool.name + ": ";
+				line += getMembers(pool);
 			}
-
-			line += pool.name + ": "
-
-			var first = true;
-			var firstmember = true;
-
-			for(var m in pool.members){
-			    if(!firstmember){ line += ", "} else { firstmember = false;}
-				var member = pool.members[m]
-				line += member.name + ":" + member.port + " (" + member.name + ":" + member.port + ")";
-			}
-
-			line += ";" + pool.loadbalancer;
 
 			csv += line + "\n";
 
