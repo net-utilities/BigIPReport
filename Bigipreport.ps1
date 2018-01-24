@@ -169,6 +169,7 @@
 #        4.8.5        2018-01-23      Fixing the bug with the chevrons not expanding/collapsing                     Patrik Jonsson  No
 #                                     Fixed a bug with the CSV export function                                      Patrik Jonsson  No
 #                                     Fixed a bug with the member status endpoints                                  Patrik Jonsson  No
+#        4.8.6        2018-01-24      Adding virtual server, pool and node description to the json data             Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -183,7 +184,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.8.5"
+$Global:ScriptVersion = "4.8.6"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -588,6 +589,7 @@ Add-Type @'
 	public class VirtualServer
 	{
 	    public string name;
+        public string description;
 	    public string ip;
 		public string port;
 		public string defaultpool;
@@ -626,6 +628,7 @@ Add-Type @'
 
 	public class Pool {
 	    public string name;
+        public string description;
 	    public string[] monitors;
 		public Member[] members;
 		public string loadbalancingmethod;
@@ -646,6 +649,7 @@ Add-Type @'
 	public class Node {
 	    public string ip;
 	    public string name;
+        public string description;
 		public string loadbalancer;
 	}
 
@@ -885,15 +889,19 @@ function Cache-LTMInformation {
 	
 	$LoadBalancerObjects.Nodes = @{}
 
-	[array]$NodeAddresses = $F5.LocalLBNodeAddress.get_list()
-	[array]$NodeScreenNames = $F5.LocalLBNodeAddress.get_screen_name($NodeAddresses)
+	
+	[array]$NodeNames = $F5.LocalLBNodeAddressV2.get_list()
+    [array]$NodeAddresses = $F5.LocalLBNodeAddressV2.get_address($NodeNames)
+    [array]$NodeDescriptions = $F5.LocalLBNodeAddressV2.get_description($NodeNames)
+
 	
 	for($i=0;$i -lt ($NodeAddresses.Count);$i++){
 		
 		$ObjTempNode = New-Object Node
 		
 		$ObjTempNode.ip = [string]$NodeAddresses[$i]
-		$ObjTempNode.name = [string]$NodeScreenNames[$i]
+		$ObjTempNode.name = [string]$NodeNames[$i]
+        $ObjTempNode.description = [string]$NodeDescriptions[$i]
 		$ObjTempNode.loadbalancer = $LoadBalancerName
 				
 		if($ObjTempNode.name -eq ""){
@@ -1093,6 +1101,7 @@ function Cache-LTMInformation {
 	[array]$PoolAllowNAT = $F5.LocalLBPool.get_allow_nat_state($PoolList)
 	[array]$PoolAllowSNAT = $F5.LocalLBPool.get_allow_snat_state($PoolList)
 	[array]$PoolMemberStatistics = $F5.LocalLBPool.get_all_member_statistics($PoolList)
+    [array]$PoolDescriptions = $F5.LocalLBPool.get_description($PoolList)
 	
 	for($i=0;$i -lt ($PoolList.Count);$i++){
 	
@@ -1137,6 +1146,7 @@ function Cache-LTMInformation {
 		$ObjTempPool.actiononservicedown = $Global:ActionOnPoolFailureToString[[string]($PoolActionOnServiceDown[$i])]
 		$ObjTempPool.allownat = $StateToString[[string]($PoolAllowNAT[$i])]
 		$ObjTempPool.allowsnat = $StateToString[[string]($PoolAllowSNAT[$i])]
+        $ObjTempPool.description = $PoolDescriptions[$i]
 		$ObjTempPool.loadbalancer = $LoadBalancerName
 		
 		$LoadBalancerObjects.Pools.add($ObjTempPool.name, $ObjTempPool) 
@@ -1218,7 +1228,7 @@ function Cache-LTMInformation {
     [array]$VirtualServerVlans = $F5.LocalLBVirtualServer.get_vlan($VirtualServers);
 	[array]$VirtualServerStates = $F5.LocalLBVirtualServer.get_object_status($VirtualServers)
 	[array]$VirtualServerStatistics = $F5.LocalLBVirtualServer.get_statistics($VirtualServers)
-
+    [array]$VirtualServerDescriptions = $F5.LocalLBVirtualServer.get_description($VirtualServers)
 
 	#Only supported since version 11.3
 	Try {
@@ -1236,6 +1246,9 @@ function Cache-LTMInformation {
 		
 		#Set the name of the Virtual server
 		$ObjTempVirtualServer.name = $VirtualServerName
+
+        #Set the description
+        $ObjTempVirtualServer.description = $VirtualServerDescriptions[$i]
 		
 		#Get the IP and port of the destination
 		$VirtualServerDestination = $VirtualServerDestinations[$i]
