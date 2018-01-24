@@ -1264,6 +1264,7 @@
 			
 			var trafficGroup = matchingvirtualserver.trafficgroup || "N/A"
 			var defaultPool = matchingvirtualserver.defaultpool || "N/A"
+			var description = matchingvirtualserver.description || ""
 
 			//Build the table and headers
 			$(".firstlayerdetailsheader").html(matchingvirtualserver.name);
@@ -1281,6 +1282,7 @@
 			table += '					<tr><th>IP:Port</th><td>' + matchingvirtualserver.ip + ':' + matchingvirtualserver.port + '</td></tr>';
 			table += '					<tr><th>Default pool</th><td>' + defaultPool + '</td></tr>';
 			table += '					<tr><th>Traffic Group</th><td>' + trafficGroup + '</td></tr>';
+			table += '					<tr><th>Description</th><td>' + description + '</td></tr>';
 			table += '				</table>';
 			table += '			</td>';
 			
