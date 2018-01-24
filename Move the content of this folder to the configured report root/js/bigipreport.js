@@ -1149,7 +1149,8 @@
 		
 		translatedstatus = {
 			availability: "",
-			enabled: ""
+			enabled: "",
+			realtime: ""
 		};
 		
 		switch(member.availability){
@@ -1175,6 +1176,20 @@
 				break;
 			default:  
 				translatedstatus['enabled'] = "<span class=\"memberunknown\">Unknown</span>";
+		}
+		console.log(member.realtimestatus)
+		switch(member.realtimestatus){
+			case "up":
+				translatedstatus["realtime"] = "<span class=\"memberup\">UP</span>";
+				break;
+			case "down":
+				translatedstatus["realtime"] = "<span class=\"memberdown\">DOWN</span>";
+				break;
+			case "session_disabled":
+				translatedstatus["realtime"] = "<span class=\"memberdisabled\">DISABLED</span>";
+				break;
+			default:
+				translatedstatus["realtime"] = (member.realtimestatus || "N/A").toUpperCase();
 		}
 		
 		return translatedstatus;
@@ -1710,18 +1725,19 @@
 			//Build the table and headers
 			$("." + layer + "layerdetailsheader").html(matchingpool.name);
 			
-			var table = '<table class="pooldetailstable">';
-			table += '<thead><tr><th>Description</th><th>Load Balancing Method</th><th>Action On Service Down</th><th>Allow NAT</th><th>Allow SNAT</th></tr></thead>';
-			table += '<tbody>';
-			table += '<tr><td>' + (matchingpool.description || "") + '</td><td>' + matchingpool.loadbalancingmethod + '</td><td>' + matchingpool.actiononservicedown + '</td><td>' + matchingpool.allownat + '</td><td>' + matchingpool.allowsnat + '</td></tr>';
-			table += '</tbody>';
-			table += '</table>';
-
-			table += '<br>'
-
-			table += '<div class="monitordetailsheader">Member details</div>'
-			table += '<table class="pooldetailstable">';
-			table += '	<thead><tr><th>Member Name</th><th>Member IP</th><th>Port</th><th>Priority Group</th><th>Connections</th><th>Max Connections</th><th>Member Availability</th><th>Enabled</th><th>Member Status Description</th><th>Realtime Availability</th></tr></thead><tbody>';
+			var table = `
+			<table class="pooldetailstable">
+				<thead>
+					<tr><th>Description</th><th>Load Balancing Method</th><th>Action On Service Down</th><th>Allow NAT</th><th>Allow SNAT</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>` + (matchingpool.description || "") + "</td><td>" + matchingpool.loadbalancingmethod + "</td><td>" + matchingpool.actiononservicedown + "</td><td>" + matchingpool.allownat + "</td><td>" + matchingpool.allowsnat + `</td></tr>
+				</tbody>
+				</table>
+				<br>
+				<div class="monitordetailsheader">Member details</div>
+					<table class="pooldetailstable">
+					<thead><tr><th>Member Name</th><th>Member IP</th><th>Port</th><th>Priority Group</th><th>Connections</th><th>Max Connections</th><th>Member Availability</th><th>Enabled</th><th>Member Status Description</th><th>Realtime Availability</th></tr></thead><tbody>`
 			
 			poolmonitors = matchingpool.monitors
 
@@ -1745,16 +1761,16 @@
 				var member = members[i];
 				var memberstatus = translateStatus(member);
 				
-				table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + member.priority + "</td><td>" + member.currentconnections + "</td><td>" + member.maximumconnections + "</td><td>" + memberstatus["availability"] + "</td><td>" + memberstatus["enabled"] + "</td><td>" + member.status + "</td><td>" + (member.realtimestatus || "N/A").toUpperCase() + "</td></tr>";
+				table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + member.priority + "</td><td>" + member.currentconnections + "</td><td>" + member.maximumconnections + "</td><td>" + memberstatus["availability"] + "</td><td>" + memberstatus["enabled"] + "</td><td>" + member.status + "</td><td>" + memberstatus.realtime + "</td></tr>";
 			
 			}
 			
-			table += '</tbody></table>';
-			table += '<br>';
+			table += `</tbody></table>
+					  <br>`
 			
 			if(matchingmonitors.length > 0){
 				
-				table += '<div class="monitordetailsheader">Assigned monitors</div>'
+				table += "<div class=\"monitordetailsheader\">Assigned monitors</div>";
 				
 				for(var i in matchingmonitors){
 					
@@ -1762,60 +1778,64 @@
 					
 					matchingmonitor.receivestring = matchingmonitor.receivestring.replace('<', '&lt;').replace('>', '&gt;');
 					
-					table += '	<table class="monitordetailstable">';
-					table += '	<thead><tr><th colspan=2>' + matchingmonitor.name + '</th></thead><tbody>';
-					table += '	<tr><td class="monitordetailstablerowheader"><b>Type</td><td>' + matchingmonitor.type + '</b></td></tr>'
-					table += '	<tr><td class="monitordetailstablerowheader"><b>Send string</td><td>' + matchingmonitor.sendstring + '</b></td></tr>'
-					table += '	<tr><td class="monitordetailstablerowheader"><b>Receive string</b></td><td>' + matchingmonitor.receivestring + '</td></tr>'
-					table += '	<tr><td class="monitordetailstablerowheader"><b>Interval</b></td><td>' + matchingmonitor.interval + '</td></tr>'
-					table += '	<tr><td class="monitordetailstablerowheader"><b>Timeout</b></td><td>' + matchingmonitor.timeout + '</td></tr>'
-					table += '	</table>';
+					table += `
+							<table class="monitordetailstable">
+								<thead><tr><th colspan=2>` + matchingmonitor.name + `</th></thead>
+								<tbody>
+									<tr><td class="monitordetailstablerowheader"><b>Type</td><td>` + matchingmonitor.type + `</b></td></tr>
+									<tr><td class="monitordetailstablerowheader"><b>Send string</td><td>` + matchingmonitor.sendstring + `</b></td></tr>
+									<tr><td class="monitordetailstablerowheader"><b>Receive string</b></td><td>` + matchingmonitor.receivestring + `</td></tr>
+									<tr><td class="monitordetailstablerowheader"><b>Interval</b></td><td>` + matchingmonitor.interval + `</td></tr>
+									<tr><td class="monitordetailstablerowheader"><b>Timeout</b></td><td>` + matchingmonitor.timeout + `</td></tr>
+								</table>
 					
-					
-					table += '	<table class="membermonitortable">';
-					table += '	<thead><tr><th>Member Name</th><th>Member ip</th><th>Member Port</th><th>HTTP Link</th><th>Curl Link</th><th>Netcat Link</th></thead><tbody>';
+					<table class="membermonitortable">
+						<thead>
+							<tr><th>Member Name</th><th>Member ip</th><th>Member Port</th><th>HTTP Link</th><th>Curl Link</th><th>Netcat Link</th>
+						</thead>
+						<tbody>`
 				
 					for(var x in members){
 					
 						member = members[x];
 						memberstatus = translateStatus(member);
 															
-						var protocol = '';
+						var protocol = "";
 						
 						if(matchingmonitors[i].type.indexOf("HTTPS") >=0){
-							protocol = 'https';
+							protocol = "https";
 						} else if(matchingmonitors[i].type.indexOf("HTTP") >=0){
-							protocol = 'http';
+							protocol = "http";
 						}
 						
-						if(protocol != ''){
+						if(protocol != ""){
 							
 							sendstring = matchingmonitors[i].sendstring;
 							
 							requestparameters = getMonitorRequestParameters(sendstring)
 							globheader = requestparameters;
-							if(requestparameters['verb'] === "GET" || requestparameters['verb'] === "HEAD"){
+							if(requestparameters["verb"] === "GET" || requestparameters["verb"] === "HEAD"){
 														
-								var curlcommand = 'curl';
+								var curlcommand = "curl";
 
-								if (requestparameters['verb'] === "HEAD"){
+								if (requestparameters["verb"] === "HEAD"){
 						            curlcommand += " -I"
 						        }
 								
-								for(var x in requestparameters['headers']){
-									header = requestparameters['headers'][x];
+								for(var x in requestparameters["headers"]){
+									header = requestparameters["headers"][x];
 									headerarr = header.split(":");
 									headername = headerarr[0].trim();
 									headervalue = headerarr[1].trim();
 									
-									curlcommand += ' --header &quot;' + headername + ': ' + headervalue + '&quot;';
+									curlcommand += " --header &quot;" + headername + ": " + headervalue + "&quot;";
 								}
 								
-								curlcommand += ' ' + protocol + '://' + member.ip + ':' + member.port + requestparameters['uri'];
+								curlcommand += " " + protocol + "://" + member.ip + ":" + member.port + requestparameters["uri"];
 													
 								var netcatcommand = "echo -ne \"" + sendstring + "\" | nc " + member.ip + " " + member.port;
 								
-								var url = protocol + '://' + member.ip + ':' + member.port + requestparameters['uri'];
+								var url = protocol + "://" + member.ip + ":" + member.port + requestparameters["uri"];
 								
 								var httplink = '<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)" data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="' + url +'"></p></a>';
 								
@@ -1823,18 +1843,19 @@
 								
 								var netcatlink = '<a href="javascript:void(0); target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)" data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'' + netcatcommand +'\'></p></a>';
 								
-								table += '<tr><td>' + member.name + '</td><td>' + member.ip + '</td><td>' + member.port + '</td><td>' + httplink + '</td><td>' + curllink + '</td><td>' + netcatlink + '</td></tr>';
+								table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + httplink + "</td><td>" + curllink + "</td><td>" + netcatlink + "</td></tr>";
 								
 							} else {
-								table += '<tr><td>' + member.name +'</td><td>' + member.ip  + '</td><td>' + member.port + '</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>';
+								table += "<tr><td>" + member.name +"</td><td>" + member.ip  + "</td><td>" + member.port + "</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>";
 							}
 						} else {
-							table += '<tr><td>' + member.name +'</td><td>' + member.ip  + '</td><td>' + member.port + '</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>';
+							table += "<tr><td>" + member.name +"</td><td>" + member.ip  + "</td><td>" + member.port + "</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>";
 						}
 					}
 					
-					table += '	</table>';
-					table += '	<br>';
+					table += `
+							</table>
+							<br>`
 					
 				}
 			
