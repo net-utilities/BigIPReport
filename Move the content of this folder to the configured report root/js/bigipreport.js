@@ -1711,9 +1711,9 @@
 			$("." + layer + "layerdetailsheader").html(matchingpool.name);
 			
 			var table = '<table class="pooldetailstable">';
-			table += '<thead><tr><th>Load Balancing Method</th><th>Action On Service Down</th><th>Allow NAT</th><th>Allow SNAT</th></tr></thead>';
+			table += '<thead><tr><th>Description</th><th>Load Balancing Method</th><th>Action On Service Down</th><th>Allow NAT</th><th>Allow SNAT</th></tr></thead>';
 			table += '<tbody>';
-			table += '<tr><td>' + matchingpool.loadbalancingmethod + '</td><td>' + matchingpool.actiononservicedown + '</td><td>' + matchingpool.allownat + '</td><td>' + matchingpool.allowsnat + '</td></tr>';
+			table += '<tr><td>' + (matchingpool.description || "") + '</td><td>' + matchingpool.loadbalancingmethod + '</td><td>' + matchingpool.actiononservicedown + '</td><td>' + matchingpool.allownat + '</td><td>' + matchingpool.allowsnat + '</td></tr>';
 			table += '</tbody>';
 			table += '</table>';
 
