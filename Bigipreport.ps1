@@ -170,6 +170,7 @@
 #                                     Fixed a bug with the CSV export function                                      Patrik Jonsson  No
 #                                     Fixed a bug with the member status endpoints                                  Patrik Jonsson  No
 #        4.8.6        2018-01-24      Adding virtual server, pool and node description to the json data             Patrik Jonsson  No
+#        4.8.7        2018-01-26      Adding pre-execution check for the iControl version                           Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -528,15 +529,25 @@ if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigiprepo
 
 #Initialize iControlSnapin
 if(Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl") }){
-	if ( (Get-PSSnapin | Where-Object { $_.Name -eq "iControlSnapIn"}) -eq $null ){
-		Add-PSSnapIn iControlSnapIn
-		if($?){
-			log success "Loaded F5 iControl snapin"
-		} else {
-			log error "Failed to load F5 iControl, aborting"
-			$SaneConfig = $false
-		}
-	}
+	
+    $SnapInInfo = Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl") }
+
+    if($SnapInInfo.Version.Major -lt 13 -or ($SnapInInfo.Version.Major -eq 13 -and $SnapInInfo.Version.Minor -lt 1) ){
+        log error "The detected iControl SnapIn running on version $([string]$SnapInInfo.Version.Major + "." + [string]$SnapInInfo.Version.Minor) while the one required by this script is 13.1"
+        log error "Follow the steps to upgrade: https://loadbalancing.se/bigip-report/#Upgrading_the_iControl_Snap-in"
+        log error "If you have any issues, please report is in the BigIPReport thread on Devcentral"
+        $SaneConfig = $false
+    } else {
+
+    	Add-PSSnapIn iControlSnapIn
+    	if($?){
+    		log success "Loaded F5 iControl snapin"
+    	} else {
+    		log error "Failed to load F5 iControl, aborting"
+    		$SaneConfig = $false
+    	}
+
+    }
 } else {
 	log error "iControl Snapin could not be found, aborting"
 	$SaneConfig = $false
