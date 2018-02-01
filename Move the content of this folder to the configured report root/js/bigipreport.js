@@ -7,7 +7,7 @@
 	var asInitVals = new Array();
 
 	var siteData = {};
-	var oTable;
+	var bigipTable;
 
 	/*************************************************************************************************************************************************************************************
 
@@ -46,7 +46,6 @@
 		);
 
 		$("#firstlayerdetailsfooter").html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut()">Close error details</a>');
-
 
 		let addJSONLoadingFailure = function(jqxhr){
 			
@@ -91,6 +90,9 @@
 			}).fail(addJSONLoadingFailure),
 			$.getJSON("./json/knowndevices.json", function(result){
 				siteData.knownDevices = result;
+			}).fail(addJSONLoadingFailure),
+			$.getJSON("./json/certificates.json", function(result){
+				siteData.certificates = result;
 			}).fail(addJSONLoadingFailure)
 		).then(function() {
 
@@ -142,7 +144,7 @@
 			} );
 			
 			
-			oTable = $('#allbigips').DataTable( {
+			bigipTable = $('table#allbigips').DataTable( {
 
 				"iDisplayLength": 15,
 				"oLanguage": {
@@ -206,7 +208,7 @@
 					this.value = asInitVals[$("thead input").index(this)];
 				});
 
-	 			oTable.search('')
+	 			bigipTable.search('')
 	 				.columns().search('')
 	 				.draw();
 			});
@@ -233,90 +235,13 @@
 
 			/*************************************************************************************************************
 			
-				This section inserts the iRules button if any rules are defined
-			
-			**************************************************************************************************************/	
-			
-			if(definedRules.length > 0){
-				$("#allbigips_filter").append("<a id=\"irulesButton\" class=\"irulesButton\" href=\"javascript:void(0);\">Defined iRules</a>")
-
-				$("#irulesButton").on("click", function(){
-
-					var ruleTable = "";
-
-					ruleTable += "<table class=\"definedRulesTable\"><thead>";
-					ruleTable += "<tr><th>Load balancer</th><th>Name</th><th>Associated Pools</th><th>&nbsp;</th>";
-					ruleTable += "</thead>";
-					ruleTable += "<tbody>";
-
-					for(i in definedRules){
-
-						var loadBalancer = definedRules[i].loadBalancer;
-						var iRuleName = definedRules[i].iRuleName;
-
-						iRule = getiRule(iRuleName, loadBalancer);
-
-						//Test for missing rule by testing for an empty object ("{}")
-						if(Object.keys(iRule).length === 0 && iRule.constructor === Object){
-							ruleTable += "<tr class=\"missingRule\"><td>" + loadBalancer + "</td><td>" + iRuleName + "</td><td>This rule was defined but not found.<br>Make sure the configuration is correct.<br>Please note that it's case sensitive.</td><td>N/A</td></tr>"
-						} else {
-
-							ruleTable += "<tr class=\"definedRuleRow\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\"><td>" + iRule.loadbalancer + "</td><td>" + iRule.name + "</td><td>"
-
-							if(iRule.pools !== null){
-								
-								for(x in iRule.pools){
-									
-									if(x !== 0){
-										ruleTable += "<br>"
-									}
-
-									ruleTable += "<a href=\"javascript:showPoolDetails('" + iRule.pools[x] + "', '" + loadBalancer + "', 'second')\">" + iRule.pools[x] + "</a>"							}
-
-							} else {
-								ruleTable += "N/A";
-							}
-
-							ruleTable += "</td><td><a href=\"javascript:void(0);\" class=\"definedRuleButton\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\">Show definition</a></td></tr>";
-						}
-						
-					}
-
-					ruleTable += "</tbody></table>";
-
-					//Prepare the header
-					$("#firstlayerdetailsheader").html("Pre-defined iRules")
-
-					//Set the footer
-					$('.firstlayerdetailsfooter').html("<a class=\"lightboxbutton\" href=\"javascript:void(0);\" onClick=\"javascript:$('.lightbox').fadeOut();\">Close defined rules</a>");
-
-					//Inject the html
-					$("#firstlayerdetailscontentdiv").html(ruleTable);
-
-					//Attach event handlers
-					$(".definedRuleButton").on("click", function(){
-
-						var iRuleName = $(this).attr("data-rule-name");
-						var loadBalancer = $(this).attr("data-rule-loadbalancer");
-						showiRuleDetails(iRuleName, loadBalancer);
-
-					});
-
-					//Show the first light box layer
-					$("#firstlayerdiv").fadeIn();
-
-				})
-			}
-
-			/*************************************************************************************************************
-			
 				This section inserts the column toggle buttons and attaches even handlers to it
 			
 			**************************************************************************************************************/	
 			
-			$("#allbigips_filter").append("<a id=\"preferencesButton\" class=\"preferencesButton\" href=\"javascript:void(0);\">Preferences</a>")
+			$("#allbigips_filter").append("<a id=\"showConsoleButton\" class=\"showConsoleButton\" href=\"javascript:void(0);\">Show Console</a>")
 
-			$("#preferencesButton").on("click", showPreferences);
+			$("a#showConsoleButton").on("click", showConsole);
 
 			$("#allbigips_filter").append("<div style=\"float:right\"><span id=\"toggleHeader\">Toggle columns:<span><span id=\"columnToggleButtons\"></span></div>")
 
@@ -420,11 +345,11 @@
 
 			
 			//Expand pool matches  and hightlight them
-			oTable.on( 'draw', function () {
+			bigipTable.on( 'draw', function () {
 
-				var body = $( oTable.table().body() );
+				var body = $( bigipTable.table().body() );
 
-				highlightAll(oTable);
+				highlightAll(bigipTable);
 				
 				
 				hidePools();
@@ -436,14 +361,20 @@
 					$(".adcLinkSpan").show();
 				}
 
-				if(oTable.search() != ""){
-					expandPoolMatches(body, oTable.search());
+				if(bigipTable.search() != ""){
+					expandPoolMatches(body, bigipTable.search());
 				}
 
 				setPoolTableCellWidth();
 						
 			} );
 
+			$("div#preferencesbutton").on("click", showPreferences);
+			$("div#deviceoverviewbutton").on("click", showDeviceOverview);
+			$("div#irulesbutton").on("click", showDefinediRules);
+			$("div#certificatebutton").on("click", showCertificateDetails);
+			$("div#logsbutton").on("click", showLogs);
+			$("div#helpbutton").on("click", showHelp);
 
 			// Set-up search delays
 
@@ -467,14 +398,13 @@
 				var search = $('div.dataTables_filter input').val();
 				delay(function(){
 			        if (search != null) {
-			            oTable.search(search).draw();
+			            bigipTable.search(search).draw();
 			        }
 			    }, 700);
 			});
 
-
 			//Filter columns on key update and adding search delay
-			oTable.columns().every( function () {
+			bigipTable.columns().every( function () {
 				
 				var that = this;
 				
@@ -485,8 +415,8 @@
 						that
 							.search(search)
 							.draw();
-							expandPoolMatches($( oTable.table().body()), search)
-							highlightAll(oTable);
+							expandPoolMatches($( bigipTable.table().body()), search)
+							highlightAll(bigipTable);
 					}, 700);
 				} );		
 				
@@ -499,10 +429,11 @@
 			**************************************************************************************************************/	
 					
 			//Make sure that all pools are hidden 
-			populateSearchParameters(oTable);
-			oTable.draw();
+			populateSearchParameters(bigipTable);
+			bigipTable.draw();
 
 		});
+
 	});
 
 	function initializeStatusVIPs(){
@@ -533,6 +464,7 @@
 				}
 			}
 		} else {
+			log("No status VIPs has been configured", "INFO");
 			$("td#pollingstatecell").html("Disabled")
 		}
 	}
@@ -553,15 +485,20 @@
 		}
 
 		if(!pool){
+
 			loadbalancer.statusvip.working = false;
 			loadbalancer.statusvip.reason = "No pools with members found";
+			log("No pools with members to test the status vip with on loadbalancer " + name + ", marking it as failed", "ERROR")
+
 		} else {
 			
 			siteData.memberStates.ajaxQueue++;
 
+			var testURL = loadbalancer.statusvip.url + pool.name;
+
 			$.ajax({
 			  dataType: "json",
-			  url: loadbalancer.statusvip.url + pool.name,
+			  url: testURL,
 			  success: function(lb){
 			  	$("span#realtimetestsuccess").text(parseInt($("span#realtimetestsuccess").text()) + 1);
 			  	loadbalancer.statusvip.working = true;
@@ -571,7 +508,7 @@
 			  timeout: 2000
 			})					
 			.fail(function(jqxhr){
-				console.log("Site statusvip failed for Loadbalancer: " + loadbalancer.name + ". The url that failed was: " + loadbalancer.statusvip.url);
+				log("Site statusvip <a href=\"" + testURL + "\">" + testURL + "</a> failed on loadbalancer: <b>" + loadbalancer.name + "</b><br>Information about troubleshooting status VIPs is available <a href=\"https://loadbalancing.se/bigip-report/#One_or_more_status_endpoints_has_been_marked_as_failed\">here</a>" , "ERROR");
 				$("span#realtimetestfailed").text(parseInt($("span#realtimetestfailed").text()) + 1);
 				loadbalancer.statusvip.working = false;
 				loadbalancer.statusvip.reason = jqxhr.statusText;
@@ -587,6 +524,9 @@
 					})
 
 					if(hasWorkingStatusVIP){
+
+						log("Status VIPs tested, starting the polling functions", "INFO");
+
 						//Initiate pool status updates
 						var pollCurrentView = function(){
 							resetClock();
@@ -603,10 +543,11 @@
 								pollCurrentView();
 							} else {
 								resetClock();
-								console.log("Did not finish the previous refresh in time.")
+								log("Did not finish the polling in time, consider increasing the polling interval, or increase the max queue in the configuration file", "WARNING")
 							}
 						}, (AJAXREFRESHRATE * 1000));
 					} else {
+						log("No functioning status VIPs detected, scanning disabled<br>More information about why this happens is available <a href=\"https://loadbalancing.se/bigip-report/#The_member_status_polling_says_it8217s_disabled\">here</a>", "ERROR");
 						$("td#pollingstatecell").html("Disabled")
 					}
 				}
@@ -616,6 +557,64 @@
 		
 	}
 
+	function showDefinediRules(){
+
+		var ruleTable = "";
+
+		ruleTable += "<table class=\"definedRulesTable\"><thead>";
+		ruleTable += "<tr><th>Load balancer</th><th>Name</th><th>Associated Pools</th><th>&nbsp;</th>";
+		ruleTable += "</thead>";
+		ruleTable += "<tbody>";
+
+		for(i in definedRules){
+
+			var loadBalancer = definedRules[i].loadBalancer;
+			var iRuleName = definedRules[i].iRuleName;
+
+			iRule = getiRule(iRuleName, loadBalancer);
+
+			//Test for missing rule by testing for an empty object ("{}")
+			if(Object.keys(iRule).length === 0 && iRule.constructor === Object){
+				ruleTable += "<tr class=\"missingRule\"><td>" + loadBalancer + "</td><td>" + iRuleName + "</td><td>This rule was defined but not found.<br>Make sure the configuration is correct.<br>Please note that it's case sensitive.</td><td>N/A</td></tr>"
+			} else {
+
+				ruleTable += "<tr class=\"definedRuleRow\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\"><td>" + iRule.loadbalancer + "</td><td>" + iRule.name + "</td><td>"
+
+				if(iRule.pools !== null){
+					
+					for(x in iRule.pools){
+						
+						if(x !== 0){
+							ruleTable += "<br>"
+						}
+
+						ruleTable += "<a href=\"javascript:showPoolDetails('" + iRule.pools[x] + "', '" + loadBalancer + "', 'second')\">" + iRule.pools[x] + "</a>"							}
+
+				} else {
+					ruleTable += "N/A";
+				}
+
+				ruleTable += "</td><td><a href=\"javascript:void(0);\" class=\"definedRuleButton\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\">Show definition</a></td></tr>";
+			}
+			
+		}
+
+		ruleTable += "</tbody></table>";
+
+		//Inject the html
+		$("div#definedirules").html(ruleTable);
+
+		//Attach event handlers
+		$(".definedRuleButton").on("click", function(){
+
+			var iRuleName = $(this).attr("data-rule-name");
+			var loadBalancer = $(this).attr("data-rule-loadbalancer");
+			showiRuleDetails(iRuleName, loadBalancer);
+
+		});
+
+		showConsoleSection("definedirules");
+	}
 
 	function resetClock(){
 
@@ -760,14 +759,14 @@
 		Highlight all matches
 	******************************************************************************************************************************/
 
-	function highlightAll(oTable){
+	function highlightAll(bigipTable){
 		
-		var body = $( oTable.table().body() );
+		var body = $( bigipTable.table().body() );
 		
 		body.unhighlight();
-		body.highlight( oTable.search() );  
+		body.highlight( bigipTable.search() );  
 			
-		oTable.columns().every( function () {
+		bigipTable.columns().every( function () {
 		
 			var that = this;
 			
@@ -783,7 +782,7 @@
 		Gets the query strings and populate the table
 	******************************************************************************************************************************/
 
-	function populateSearchParameters(oTable){
+	function populateSearchParameters(bigipTable){
 		
 		var vars = {};
 		var hash;
@@ -807,8 +806,8 @@
 				if(key == "global_search"){
 					if($('#allbigips_filter input[type="search"]')){
 						$('#allbigips_filter input[type="search"]').val(vars[key]);
-						oTable.search(vars[key]);
-						oTable.draw();
+						bigipTable.search(vars[key]);
+						bigipTable.draw();
 					}
 				} else {
 					//Validate that the key is a column filter and populate it
@@ -819,7 +818,7 @@
 			}
 			
 			//Filter the table according to the column filters
-			oTable.columns().every( function () {
+			bigipTable.columns().every( function () {
 		
 				var that = this;
 				
@@ -829,8 +828,8 @@
 					$('input', this.header()).addClass('search_entered').removeClass('search_init');
 					this.search(columnvalue);
 					this.draw();
-					expandPoolMatches($(oTable.table().body()), columnvalue)
-					highlightAll(oTable);
+					expandPoolMatches($(bigipTable.table().body()), columnvalue)
+					highlightAll(bigipTable);
 				}
 			});
 			
@@ -846,10 +845,7 @@
 
 	function showConsole(){
 
-		var html = showDeviceOverview();
-
-		$("div#consolecontent").html(html);
-
+		showDeviceOverview();
 		$("#preferencesdiv").fadeIn();
 
 	}
@@ -857,19 +853,14 @@
 
 	function showPreferences(){
 
-		//Prepare the header
-		$("#firstlayerdetailsheader").html("BigIP Report Preferences")
-
-		//Set the footer
-		$('.firstlayerdetailsfooter').html("<a class=\"lightboxbutton\" href=\"javascript:void(0);\" onClick=\"javascript:$('.lightbox').fadeOut();\">Close preferences</a>");
-
 		//Prepare the content
 		var settingsContent = `
-							<table class="settingsTable">
+							<table id="preferencestable" class="bigiptable">
 
 								<thead>
-								<tr>
-									<th colspan=2>Generic settings</th>
+									<tr>
+										<th colspan=2>Generic settings</th>
+									</tr>
 								</thead>
 		
 								<tbody>
@@ -881,7 +872,7 @@
 `
 
 		//Populate the content
-		$("#firstlayerdetailscontentdiv").html(settingsContent);
+		$("div#preferences").html(settingsContent);
 
 		//Populate the settings according to the local storage or default settings of none exist
 		$("#autoExpandPools").prop("checked", localStorage.getItem("autoExpandPools") === "true");
@@ -890,13 +881,13 @@
 		//Event handler for auto expand pools
 		$("#autoExpandPools").on("click", function(){
 				localStorage.setItem("autoExpandPools", this.checked);
-				oTable.draw();
+				bigipTable.draw();
 		});
 
 		//Event handler for showing ADC edit links
 		$("#adcLinks").on("click", function(){
 				localStorage.setItem("showAdcLinks", this.checked);
-				oTable.draw();
+				bigipTable.draw();
 		});
 
 		//Make sure that the check boxes are checked according to the settings
@@ -910,8 +901,74 @@
 			toggleColumns();
 		});
 
-		//Show the first light box layer
-		$("#firstlayerdiv").fadeIn();
+		showConsoleSection("preferences");
+
+	}
+
+	function showCertificateDetails(){
+
+		var certificates = siteData.certificates;
+
+		var html = `
+				<table id="certificatedetailstable" class="bigiptable">
+					<thead>
+						<tr>
+							<th>Load Balancer</th><th>Name</th><th>Common Name</th><th>Country Name</th><th>State Name</th><th>Organization Name</th><th>Expiring</th>
+						</tr>
+					</thead>
+					<tbody>`;
+
+		for (var c in certificates) {
+
+			var certificate = certificates[c];
+			var certificateSubject = certificate.subject
+
+			// Get the expiration date of the certificate and format it in readable ISO format
+			var certificateDate = new Date(0);
+			certificateDate.setUTCSeconds(certificate.expirationDate)
+			dateString = certificateDate.toISOString().replace("T", " ").replace(/\.[0-9]{3}Z/, "");
+
+			// Get the days left
+			var now = new Date();
+			var daysLeft = dateDiffInDays(now, certificateDate);
+
+			if (daysLeft < 14){
+				var rowClass = "certificateExpiringIn14";
+			} else if (daysLeft < 30) {
+				var rowClass = "certificateExpiringIn30";
+			} else if (daysLeft < 60){
+				var rowClass = "certificateExpiringIn60"
+			} else {
+				var rowClass = "certificateExpiringInMoreThan60"
+			}
+
+			var countryIcon = "";
+
+			if(certificateSubject.countryName){
+				countryIcon = "<img class=\"flagicon\" src=\"./images/flags/" + certificateSubject.countryName.toLowerCase() + ".png\"/> ";
+			}
+
+			html += "<tr class=\"" + rowClass + "\"><td class=\"certificateloadbalancer\">" + certificate.loadbalancer + "</td><td>" + certificate.fileName + "</td><td>" + certificateSubject.commonName + "</td><td class=\"certificatecountryname\">" + countryIcon + certificateSubject.countryName + "</td><td>" + certificateSubject.stateName + "</td><td>" + certificateSubject.organizationName + "</td><td class=\"certificateexpiredate\">" + dateString + "</td>";
+
+		}
+
+		html += `
+					</tbody>
+				</table>`
+
+
+		$("div#certificatedetails").html(html);
+
+		var certificateTable = $("div#consolecontent table#certificatedetailstable").DataTable( {
+				"iDisplayLength": 15,
+				"oLanguage": {
+					"sSearch": "Search all columns:"
+				},
+				"dom": '<"top">frt<"bottom"ilp><"clear">',
+				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+			} );
+
+		showConsoleSection("certificatedetails");
 
 	}
 
@@ -920,10 +977,10 @@
 		var loadbalancers = siteData.loadbalancers
 
 		var html = `
-				<table class="deviceoverviewtable">
+				<table id="deviceoverviewtable" class="bigiptable">
 					<thead>
 						<tr>
-							<th></th><th>Name</th><th>Model<t/h><th>Type</th><th>Serial</th><th>Management IP</th>
+							<th></th><th>Name</th><th>Model</th><th>Type</th><th>Serial</th><th>Management IP</th>
 						</tr>
 					</thead>
 					<tbody>`;
@@ -948,7 +1005,37 @@
 					</tbody>
 				</table>`
 
-		return html
+		$("div#deviceoverview").html(html);
+		showConsoleSection("deviceoverview");
+
+	}
+
+	function showConsoleSection(section){
+		$("div.consolesection").hide();
+		$("div#" + section).show();
+	}
+
+	function showLogs(){
+		showConsoleSection("reportlogs");
+	}
+
+	function showHelp(){
+		showConsoleSection("helpcontent")
+	}
+
+
+	function log(message, severity){
+
+		var now = new Date();
+
+		var dateArr = now.toISOString().split("T")
+		
+		var date = dateArr[0];
+		var time = dateArr[1].replace(/\.[0-9]+Z$/, "");
+
+		$("table#reportlogstable tbody").append(
+			"<tr><td class=reportlogdate>" + date + "</td><td>" + time + "</td><td>" + severity + "</td><td>" + message + "</td></tr>"
+		);
 
 	}
 
@@ -1177,7 +1264,7 @@
 			default:  
 				translatedstatus['enabled'] = "<span class=\"memberunknown\">Unknown</span>";
 		}
-		console.log(member.realtimestatus)
+		
 		switch(member.realtimestatus){
 			case "up":
 				translatedstatus["realtime"] = "<span class=\"memberup\">UP</span>";
@@ -1922,6 +2009,17 @@
 	}
 
 
+
+	// a and b are javascript Date objects
+	function dateDiffInDays(a, b) {
+
+		var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+		// Discard the time and time-zone information.
+		var utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+		var utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+		return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+	}
 
 	function generateCSV(){
 
