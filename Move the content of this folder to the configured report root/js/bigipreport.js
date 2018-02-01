@@ -93,6 +93,9 @@
 			}).fail(addJSONLoadingFailure),
 			$.getJSON("./json/certificates.json", function(result){
 				siteData.certificates = result;
+			}).fail(addJSONLoadingFailure),
+			$.getJSON("./json/devicegroups.json", function(result){
+				siteData.devicegroups = result;
 			}).fail(addJSONLoadingFailure)
 		).then(function() {
 
@@ -959,7 +962,7 @@
 
 		$("div#certificatedetails").html(html);
 
-		var certificateTable = $("div#consolecontent table#certificatedetailstable").DataTable( {
+		var certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable( {
 				"iDisplayLength": 15,
 				"oLanguage": {
 					"sSearch": "Search all columns:"
@@ -1034,7 +1037,7 @@
 		var time = dateArr[1].replace(/\.[0-9]+Z$/, "");
 
 		$("table#reportlogstable tbody").append(
-			"<tr><td class=reportlogdate>" + date + "</td><td>" + time + "</td><td>" + severity + "</td><td>" + message + "</td></tr>"
+			"<tr><td class=\"reportlogdate\">" + date + "</td><td class=\"reportlogtime\">" + time + "</td><td class=\"\">" + severity + "</td><td>" + message + "</td></tr>"
 		);
 
 	}
