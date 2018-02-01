@@ -1769,8 +1769,6 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 
             $Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
 
-            $Global:DeviceGroups += $ObjDeviceGroup
-
             Continue
         }
 
