@@ -980,8 +980,21 @@ table#deviceoverviewtable  {
 	width:95%;
 }
 
+table#deviceoverviewtable tbody tr td {
+	padding: 5px;
+}
+
+table#deviceoverviewtable tbody tr td.deviceiconcell {
+	text-align: center;
+	border-right: 0px;
+}
+
+table#deviceoverviewtable tbody tr td.devicenamecell {
+	border-left: 0px;
+}
+
 table#deviceoverviewtable tbody tr td img.deviceicon {
-	max-height: 50px;
+	max-height: 45px;
 	max-width: 150px;
 }
 

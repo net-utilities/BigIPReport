@@ -95,7 +95,7 @@
 				siteData.certificates = result;
 			}).fail(addJSONLoadingFailure),
 			$.getJSON("./json/devicegroups.json", function(result){
-				siteData.devicegroups = result;
+				siteData.deviceGroups = result;
 			}).fail(addJSONLoadingFailure)
 		).then(function() {
 
@@ -977,30 +977,49 @@
 
 	function showDeviceOverview(){
 
+		var deviceGroups = siteData.deviceGroups
 		var loadbalancers = siteData.loadbalancers
 
 		var html = `
 				<table id="deviceoverviewtable" class="bigiptable">
 					<thead>
 						<tr>
-							<th></th><th>Name</th><th>Model</th><th>Type</th><th>Serial</th><th>Management IP</th>
+							<th>Device Group</th><th colspan="2">Name</th><th>Model</th><th>Type</th><th>Serial</th><th>Management IP</th>
 						</tr>
 					</thead>
 					<tbody>`;
 
-		for(var i in loadbalancers){
+		for (var d in deviceGroups){
 
-			loadbalancer = loadbalancers[i];
+			var firstDevice = true;
+			var deviceGroup = deviceGroups[d];
 
-			deviceData = siteData.knownDevices[loadbalancer.model] || false;
+			for(var l in deviceGroup.ips){
 
-			if (deviceData){
-				var icon = deviceData.icon;
-			} else {
-				var icon = "./images/deviceicons/unknowndevice.png";
+				var loadbalancer = loadbalancers[l];
+
+				if(loadbalancer.success){
+					var deviceData = siteData.knownDevices[loadbalancer.model] || false;
+
+					if (deviceData){
+						var icon = deviceData.icon;
+					} else {
+						var icon = "./images/deviceicons/unknowndevice.png";
+					}
+				} else {
+					var icon = "./images/faileddevice.png"
+				}
+
+				if (firstDevice){
+					html += "<tr><td rowspan=\"" + deviceGroup.ips.length + "\">" + deviceGroup.name + "</td>";
+					firstDevice = false;
+				} else {
+					html += "<tr>";
+				}
+				
+				html += "<td class=\"deviceiconcell\"><img class=\"deviceicon\" src=\"" + icon + "\"/></td><td class=\"devicenamecell\">" + (loadbalancer.name || "N/A") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + "N/A" + "</td><td>" + loadbalancer.ip + "</td></tr>";
+
 			}
-			
-			html += "<tr><td><img class=\"deviceicon\" src=\"" + icon + "\"/></td><td>" + loadbalancer.name + "</td><td>" + loadbalancer.category + "</td><td>" + loadbalancer.model + "</td><td>" + "N/A" + "</td><td>" + loadbalancer.ip + "</td></tr>";
 
 		}
 
