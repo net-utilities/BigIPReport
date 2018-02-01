@@ -528,6 +528,20 @@ if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigiprepo
 
 }
 
+Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup){
+
+    If ($DeviceGroup.name -eq $null -or $DeviceGroup.name -eq "") {
+        log error "A device group does not have any name. Please check the latest version of the configuration file."
+        $SaneConfig = $false
+    }
+
+    If ($DeviceGroup.Device -eq $null -or ($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
+        log error "A device group does not have any devices, please re-check your configuration"
+        $SaneConfig = $false
+    }
+
+}
+
 #Initialize iControlSnapin
 if(Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl") }){
 	
@@ -580,7 +594,8 @@ if(-not $SaneConfig){
 #Variables used for storing report data
 $Global:NATdict = @{}
 
-$ReportObjects = @{};
+$Global:ReportObjects = @{};
+$Global:DeviceGroups = @();
 
 #Build the path to the default document
 $Global:reportpath = $Global:bigipreportconfig.Settings.ReportRoot + $Global:bigipreportconfig.Settings.Defaultdocument
@@ -591,6 +606,7 @@ $Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json
 $Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\virtualservers.json"
 $Global:irulesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\irules.json"
 $Global:datagrouplistjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\datagrouplists.json"
+$Global:devicegroupsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\devicegroups.json"
 $Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loadbalancers.json"
 $Global:certificatesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\certificates.json"
 
@@ -687,6 +703,11 @@ Add-Type @'
 		public string working;
 		public string state;
 	}
+
+    public class DeviceGroup {
+        public string name;
+        public string[] ips;
+    }
 
 	public class Loadbalancer {
 		public string name;
@@ -1713,10 +1734,15 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 	$IsOnlyDevice = $DeviceGroup.Device.Count -eq 1
 	$StatusVIP = $DeviceGroup.StatusVip
 
+    $ObjDeviceGroup = New-Object -TypeName "DeviceGroup"
+    $ObjDeviceGroup.name = $DeviceGroup.name
+
 	Foreach($Device in $DeviceGroup.Device){
 
 		log verbose "Getting data from $Device"
 		
+        $ObjDeviceGroup.ips += $Device
+
         $ErrorActionPreference = "SilentlyContinue"
 
         $success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
@@ -1741,7 +1767,9 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
             $LoadBalancerObjects = @{}
             $LoadBalancerObjects.LoadBalancer = $ObjLoadBalancer
 
-            $ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
+            $Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
+
+            $Global:DeviceGroups += $ObjDeviceGroup
 
             Continue
         }
@@ -1824,7 +1852,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		$LoadBalancerObjects = @{}
 		$LoadBalancerObjects.LoadBalancer = $ObjLoadBalancer
 
-		$ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
+		$Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
 		
 		#Don't continue if this loabalancer is not active
 		If($ObjLoadBalancer.active -or $IsOnlyDevice){
@@ -1836,6 +1864,9 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		}
 		
 	}
+
+    $Global:DeviceGroups += $ObjDeviceGroup
+
 }
 
 #EndRegion
@@ -1857,7 +1888,7 @@ function Test-ReportData {
 
 		ForEach($Device in $DeviceGroup.Device){
 	
-			$LoadBalancerObjects = $ReportObjects[$Device]
+			$LoadBalancerObjects = $Global:ReportObjects[$Device]
 				
 			If ($LoadBalancerObjects) {
 
@@ -1995,6 +2026,13 @@ Function Update-ReportData {
         $Status  = $false
     }
 
+    Move-Item -Force $($Global:devicegroupsjsonpath + ".tmp") $Global:devicegroupsjsonpath
+    
+    if(!$?){ 
+        log error "Failed to update the device groups json file"
+        $Status  = $false
+    }
+
 	Return $Status
 	
 }
@@ -2067,16 +2105,16 @@ Function Write-TemporaryFiles {
 	
 	$StreamWriter.dispose()
 	
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data $ReportObjects.Values.Pools.Values
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data $ReportObjects.Values.Monitors.Values
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data $ReportObjects.Values.Loadbalancer
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data $ReportObjects.Values.VirtualServers.Values
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $ReportObjects.Values.Certificates.Values
-    
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data $Global:ReportObjects.Values.Pools.Values
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data $Global:ReportObjects.Values.Monitors.Values
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data $Global:ReportObjects.Values.Loadbalancer
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data $Global:ReportObjects.Values.VirtualServers.Values
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $Global:ReportObjects.Values.Certificates.Values
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data $Global:DeviceGroups
 	
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
 		
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data $ReportObjects.Values.iRules.Values
+        $WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data $Global:ReportObjects.Values.iRules.Values
 		
 	} else {
 		
@@ -2085,7 +2123,7 @@ Function Write-TemporaryFiles {
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:irulesjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 		
 		#Since rules has been disabled, only write those defined
-		$RuleScope = $ReportObjects.Values.iRules.Values | Where-Object { $_.name -in $Bigipreportconfig.Settings.iRules.iRule.iRuleName -and $_.loadbalancer -in $Bigipreportconfig.Settings.iRules.iRule.loadbalancer }
+		$RuleScope = $Global:ReportObjects.Values.iRules.Values | Where-Object { $_.name -in $Bigipreportconfig.Settings.iRules.iRule.iRuleName -and $_.loadbalancer -in $Bigipreportconfig.Settings.iRules.iRule.loadbalancer }
 
 		if($RuleScope.count -eq 0){
 			$StreamWriter.Write("[]")
@@ -2103,14 +2141,14 @@ Function Write-TemporaryFiles {
 	$StreamWriter.dispose()
 	
 	if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data $ReportObjects.Values.DataGroupLists.Values
+        $WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data $Global:ReportObjects.Values.DataGroupLists.Values
 	} else {
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data @()
 	}
 	
 	$StreamWriter.dispose()	
-	
-    Return $true
+
+    Return -not $( $WriteStatuses -Contains $false)
 
 }
 
@@ -2125,7 +2163,7 @@ if(-not (Test-ReportData)){
 
 log success "No missing loadbalancer data was detected, compiling the report"
 
-If ($ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
+If ($Global:ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
 	$HasASMProfiles = $true
 } else {
 	$HasASMProfiles = $false
@@ -2241,13 +2279,13 @@ $Global:HTML += @'
 #Initiate variables to give unique id's to pools and members
 $xPool = 0
 
-$RealTimeStatusDetected = ($ReportObjects.Values.Loadbalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
+$RealTimeStatusDetected = ($Global:ReportObjects.Values.Loadbalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
 
 if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
 }
 
-ForEach($LoadBalancerObjects in ($ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
+ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
 
 	$LoadBalancer = $LoadBalancerObjects.Loadbalancer
 	$LoadBalancerName = $LoadBalancer.name
@@ -2571,55 +2609,40 @@ $Global:HTML += @"
                         <div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div>
                         <div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
                     </div>
-                    <div id="consolecontent">
 
-                        <div class="consolesection" id="deviceoverview"></div>
-                        <div class="consolesection" id="definedirules"></div>
-                        <div class="consolesection" id="certificatedetails"></div>
-                        <div class="consolesection" id="preferences"></div>
+                    <div class="consolesection" id="deviceoverview"></div>
+                    <div class="consolesection" id="definedirules"></div>
+                    <div class="consolesection" id="certificatedetails"></div>
+                    <div class="consolesection" id="preferences"></div>
 
-                        <div class="consolesection" id="reportlogs">
-                            <table id="reportlogstable" class="bigiptable">
-                                <thead>
-                                    <tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="consolesection" id="helpcontent">
-                            <h2>Tips and tricks</h2>
-                            <h3>Filtering for pool members being down</h3>
-                            <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "DOWN", "UP" and "DISABLED".</p>
-                            <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
-                            <h3>Column filtering</h3>
-                            <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
-                            <h3>Pool member tests</h3>
-                            <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
-                            <h3>Feature requests</h3>
-                            <p>Please add any feature requests or suggestions here.</p>
-                            <p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
-                            <h3>Troubleshooting</h3>
-                            <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
-                            <h3>Contact</h3>
-                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                            <h3>Contact</h3>
-                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                            <h3>Contact</h3>
-                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                            <h3>Contact</h3>
-                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                            <h3>Contact</h3>
-                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                            <h3>Contact</h3>
-                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                            <h3>Contact</h3>
-                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                                                
-                        </div>
-
+                    <div class="consolesection" id="reportlogs">
+                        <table id="reportlogstable" class="bigiptable">
+                            <thead>
+                                <tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
                     </div>
+                    
+                    <div class="consolesection" id="helpcontent">
+                        <h2>Tips and tricks</h2>
+                        <h3>Filtering for pool members being down</h3>
+                        <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "DOWN", "UP" and "DISABLED".</p>
+                        <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
+                        <h3>Column filtering</h3>
+                        <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
+                        <h3>Pool member tests</h3>
+                        <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
+                        <h3>Feature requests</h3>
+                        <p>Please add any feature requests or suggestions here.</p>
+                        <p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
+                        <h3>Troubleshooting</h3>
+                        <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
+                        <h3>Contact</h3>
+                        <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                    </div>
+
                 </div>
         </div>
 

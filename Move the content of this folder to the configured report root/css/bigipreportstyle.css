@@ -671,68 +671,6 @@ div#objectnotfound h4 {
 	margin-top:40px;
 }
 
-/****************************************************************************************************************************
-	This section contains the style for the certificate details
-*****************************************************************************************************************************/
-
-table#certificatedetailstable {
-	font-family: Calibri;
-	margin: 0 auto;
-	width:95%;
-}
-
-table#certificatedetailstable tbody tr td.certificatecountryname, table#certificatedetailstable tbody tr td.certificateloadbalancer {
-	text-align: center;
-}
-
-table#certificatedetailstable tbody tr td.certificateexpiredate {
-	white-space: nowrap;
-}
-
-img.flagicon {
-	max-width: 20px;
-}
-
-tr#certificateExpiringIn60, tr.certificateExpiringIn30, tr.certificateExpiringIn14 {
-	font-weight: bold;
-}
-
-tr.certificateExpiringIn30 {
-	color:#cc9900;
-}
-
-tr.certificateExpiringIn14 {
-	color:red;
-}
-
-/****************************************************************************************************************************
-	This section contains the style for the log content
-*****************************************************************************************************************************/
-
-div#reportlogs {
-	display: none;
-}
-
-table#reportlogstable {
-	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	margin: 0 auto;
-	width:95%;
-	white-space: wrap;
-}
-
-table#reportlogstable.reportlogdate {
-	white-space: no-wrap;
-}
-
-/****************************************************************************************************************************
-	This section contains the style for the help content
-*****************************************************************************************************************************/
-
-div#helpcontent {
-	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	width: 800px;
-    margin: 0 auto;
-}
 
 /****************************************************************************************************************************
 	This section contains the style for the data group list details lightbox content
@@ -877,39 +815,7 @@ a:hover.sharelink p input {
 }
 
 
-/**********************************************************************************************************************************
-	CSS related to defined iRules
-***********************************************************************************************************************************/
 
-.definedRulesTable  {
-	border-collapse: collapse;
-	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	margin: 0 auto;
-	width: 95%;
-}
-
-.definedRulesTable tbody > tr > td {
-	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	border: 1px solid var(--bordercolor);
-	border-collapse: collapse;
-	white-space: nowrap;
-	text-align: center;
-	padding: 10px;
-}
-
-.definedRulesTable thead > tr > th {
-	text-align: center;
-	background-color:var(--headerbackgroundcolor);
-	color:var(--headerfontcolor);
-	white-space: nowrap;
-	padding: 10px;
-}
-
-.definedRulesTable tbody > tr:nth-child(even) > td {
-	background-color:var(--alternatetablecolor);
-	border-collapse: collapse;
-	white-space: nowrap;
-}
 
 /**********************************************************************************************************************************
 	Styles for generic objects
@@ -968,6 +874,7 @@ a:hover.tooltip p {
   left: 40%;
   margin-left: -76px;
   z-index: 999;
+  white-space: nowrap;
 }
 
 /* Generic class for the lightbox divs that contains detailed information about the pools, virtual servers and irules etc. */
@@ -1011,7 +918,6 @@ div#consoleholder {
   display: inline-block;
   text-align: left;
   max-width: 80%;
-  max-height:80%;
   padding: 0px;
   border: 1px #000 solid;
   -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
@@ -1020,13 +926,11 @@ div#consoleholder {
   margin-top: 2%;
 }
 
-div#consolecontent {
-  max-height: inherit;
-}
-
 div.consolesection {
-	max-height: inherit;
-	overflow:scroll;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding: 10px;
+	max-height: 700px;
 }
 
 div.sidemenu {
@@ -1039,7 +943,7 @@ div.sidemenu div.menuitem {
   padding: 10px;
   font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: inline-block;
-  padding: 10px 20px 10px 10px;
+  padding: 10px 30px 10px 20px;
 }
 
 div.sidemenu div.menuitem img {
@@ -1052,12 +956,21 @@ div.menuitem:hover {
   cursor: pointer;
 }
 
+/****************************************************************************************************************************
+	This section contains the style for the help content
+*****************************************************************************************************************************/
+
+div#helpcontent {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0 auto;
+    max-width: 970px;
+    padding: 0px 40px 20px 40px;
+}
 
 
 /****************************************************************************************************************************
 	This section contains the style for the device overview
 *****************************************************************************************************************************/
-
 
 /* Contains the pool details table (the one with members and status) */
 
@@ -1076,6 +989,10 @@ table#deviceoverviewtable tbody tr td img.deviceicon {
 	This section contains the style for the preferences
 *****************************************************************************************************************************/
 
+div#preferences {
+	padding: 20px 30px 20px 30px;
+}
+
 table#preferencestable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 0 auto;
@@ -1083,7 +1000,113 @@ table#preferencestable {
 }
 
 table#preferencestable tbody tr td {
+	padding: 5px;
+}
+
+/****************************************************************************************************************************
+	This section contains the style for the certificate details
+*****************************************************************************************************************************/
+
+div#certificatedetails {
+	padding: 20px 30px 20px 30px;
+}
+
+table#certificatedetailstable {
+	font-family: Calibri;
+	margin: 0 auto;
+	width:95%;
+}
+
+table#certificatedetailstable tbody tr td.certificatecountryname, table#certificatedetailstable tbody tr td.certificateloadbalancer {
+	text-align: center;
+}
+
+table#certificatedetailstable tbody tr td.certificateexpiredate {
+	white-space: nowrap;
+}
+
+img.flagicon {
+	max-width: 20px;
+}
+
+tr#certificateExpiringIn60, tr.certificateExpiringIn30, tr.certificateExpiringIn14 {
+	font-weight: bold;
+}
+
+tr.certificateExpiringIn30 {
+	color:#cc9900;
+}
+
+tr.certificateExpiringIn14 {
+	color:red;
+}
+
+/****************************************************************************************************************************
+	This section contains the style for the log content
+*****************************************************************************************************************************/
+
+div#reportlogs {
+	padding: 20px 30px 20px 30px;
+}
+
+table#reportlogstable {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0 auto;
+	width:95%;
+	white-space: wrap;
+}
+
+table#reportlogstable tbody tr td {
+	font-size: 14px;
+	padding: 5px;
+}
+
+table#reportlogstable tbody tr td.reportlogdate,
+table#reportlogstable tbody tr td.reportlogtime,
+table#reportlogstable tbody tr td.logseverity {
+	text-align: center;
+}
+
+table#reportlogstable.reportlogdate {
+	white-space: no-wrap;
+}
+
+/**********************************************************************************************************************************
+	CSS related to defined iRules
+***********************************************************************************************************************************/
+
+div#definedirules {
+	padding: 20px 30px 20px 30px;
+}
+
+.definedRulesTable  {
+	border-collapse: collapse;
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0 auto;
+	width: 95%;
+}
+
+.definedRulesTable tbody > tr > td {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	border: 1px solid var(--bordercolor);
+	border-collapse: collapse;
+	white-space: nowrap;
+	text-align: center;
 	padding: 10px;
+}
+
+.definedRulesTable thead > tr > th {
+	text-align: center;
+	background-color:var(--headerbackgroundcolor);
+	color:var(--headerfontcolor);
+	white-space: nowrap;
+	padding: 10px;
+}
+
+.definedRulesTable tbody > tr:nth-child(even) > td {
+	background-color:var(--alternatetablecolor);
+	border-collapse: collapse;
+	white-space: nowrap;
 }
 
 /* The buttons telling the user that there is a new version available */
