@@ -171,6 +171,7 @@
 #                                     Fixed a bug with the member status endpoints                                  Patrik Jonsson  No
 #        4.8.6        2018-01-24      Adding virtual server, pool and node description to the json data             Patrik Jonsson  No
 #        4.8.7        2018-01-26      Adding pre-execution check for the iControl version                           Patrik Jonsson  No
+#        4.8.8        2018-01-30      Adding the device overview                                                    Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -591,12 +592,12 @@ $Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot +
 $Global:irulesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\irules.json"
 $Global:datagrouplistjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\datagrouplists.json"
 $Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loadbalancers.json"
+$Global:certificatesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\certificates.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
 	
 	using System.Collections;
-
 	public class VirtualServer
 	{
 	    public string name;
@@ -711,6 +712,23 @@ Add-Type @'
 		public string[] virtualServers;
 		public string loadbalancer;
 	}
+
+    public class CertificateDetails {
+        public string commonName;
+        public string countryName;
+        public string stateName;
+        public string localityName;
+        public string organizationName;
+        public string divisionName;
+    }
+
+    public class Certificate {
+        public string fileName;
+        public long expirationDate;
+        public CertificateDetails subject;
+        public CertificateDetails issuer;
+        public string loadbalancer;
+    }
 
 '@
 
@@ -859,15 +877,19 @@ function Cache-LTMInformation {
 	$MajorVersion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[0]
 	$Minorversion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[1]
 
+    If($MajorVersion -gt 11){
+        log info "Version 12 or higher detected. Getting authentication token for the REST API"
+        $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerName
+    }
+
 	$LoadBalancerObjects.ASMPolicies = @{}
 
 	If($MajorVersion -gt 11){
 
 		#Check if ASM is enabled
 		if($ModuleDict.Keys -contains "ASM"){
-				log verbose "Getting ASM Policy information"
 			
-			$AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerName
+            log verbose "Getting ASM Policy information"
 
 			$Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
@@ -895,12 +917,50 @@ function Cache-LTMInformation {
 	
 	#Cache information about iRules, nodes and monitors
 	
-	
+	#Region Cache certificate information
+
+    log verbose "Caching certificates"
+
+    $LoadBalancerObjects.Certificates = @{}
+
+    $Certificates = $F5.ManagementKeyCertificate.get_certificate_list(0)
+
+    Foreach($Certificate in $Certificates){
+
+        $ObjSubject = New-Object -TypeName "CertificateDetails"
+
+        $ObjSubject.commonName = $Certificate.certificate.subject.common_name
+        $ObjSubject.countryName = $Certificate.certificate.subject.country_name
+        $ObjSubject.stateName = $Certificate.certificate.subject.state_name
+        $ObjSubject.localityName = $Certificate.certificate.subject.locality_name
+        $ObjSubject.organizationName = $Certificate.certificate.subject.organization_name
+        $ObjSubject.divisionName = $Certificate.certificate.subject.division_name
+        
+        $ObjIssuer = New-Object -TypeName "CertificateDetails"
+
+        $ObjIssuer.commonName = $Certificate.certificate.issuer.common_name
+        $ObjIssuer.countryName = $Certificate.certificate.issuer.country_name
+        $ObjIssuer.stateName = $Certificate.certificate.issuer.state_name
+        $ObjIssuer.localityName = $Certificate.certificate.issuer.locality_name
+        $ObjIssuer.organizationName = $Certificate.certificate.issuer.organization_name
+        $ObjIssuer.divisionName = $Certificate.certificate.issuer.division_name
+
+        $ObjCertificate = New-Object -TypeName "Certificate"
+
+        $ObjCertificate.fileName = $Certificate.file_name
+        $ObjCertificate.expirationDate = $Certificate.certificate.expiration_date
+        $ObjCertificate.subject = $ObjSubject
+        $ObjCertificate.issuer = $ObjIssuer
+        $ObjCertificate.loadbalancer = $LoadbalancerName
+
+        $LoadBalancerObjects.Certificates.add($ObjCertificate.fileName, $ObjCertificate)
+
+    }
+
 	#Region Cache node data
 	
 	$LoadBalancerObjects.Nodes = @{}
 
-	
 	[array]$NodeNames = $F5.LocalLBNodeAddressV2.get_list()
     [array]$NodeAddresses = $F5.LocalLBNodeAddressV2.get_address($NodeNames)
     [array]$NodeDescriptions = $F5.LocalLBNodeAddressV2.get_description($NodeNames)
@@ -1844,6 +1904,12 @@ function Test-ReportData {
 						$NoneMissing = $false
 					}
 
+                    #Verify that the $Global:DataGroupLists contains the $LoadBalancerName
+                    if($LoadBalancerObjects.Certificates.Count -eq 0){    
+                        log error "$LoadBalancerName does not have any Certificates data"
+                        $NoneMissing = $false
+                    }
+
 				}
 
 			} Else {
@@ -1921,7 +1987,14 @@ Function Update-ReportData {
 		log error "Failed to update the data group lists json file"
 		$Status  = $false
 	}
-	
+
+    Move-Item -Force $($Global:certificatesjsonpath + ".tmp") $Global:certificatesjsonpath
+    
+    if(!$?){ 
+        log error "Failed to update the certificates json file"
+        $Status  = $false
+    }
+
 	Return $Status
 	
 }
@@ -1998,6 +2071,8 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data $ReportObjects.Values.Monitors.Values
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data $ReportObjects.Values.Loadbalancer
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data $ReportObjects.Values.VirtualServers.Values
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $ReportObjects.Values.Certificates.Values
+    
 	
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
 		
@@ -2487,21 +2562,68 @@ $Global:HTML += @"
     	</div>	
 
         <div class="lightbox" id="preferencesdiv">
-
-
-                <div id="preferencescontent">
+                <div id="consoleholder">
                     <div class="sidemenu">
-                        <div class="menuitem">Preferences</div>
-                        <div class="menuitem">Device overview</div>
-                        <div class="menuitem">Defined iRules</div>
-                        <div class="menuitem">Device overview</div>
-                        <div class="menuitem">Console</div>
+                        <div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div>
+                        <div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div>
+                        <div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates</div>
+                        <div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div>
+                        <div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div>
+                        <div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
                     </div>
-                    <div id="consolecontent"></div>
-                </div>
+                    <div id="consolecontent">
 
+                        <div class="consolesection" id="deviceoverview"></div>
+                        <div class="consolesection" id="definedirules"></div>
+                        <div class="consolesection" id="certificatedetails"></div>
+                        <div class="consolesection" id="preferences"></div>
+
+                        <div class="consolesection" id="reportlogs">
+                            <table id="reportlogstable" class="bigiptable">
+                                <thead>
+                                    <tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="consolesection" id="helpcontent">
+                            <h2>Tips and tricks</h2>
+                            <h3>Filtering for pool members being down</h3>
+                            <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "DOWN", "UP" and "DISABLED".</p>
+                            <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
+                            <h3>Column filtering</h3>
+                            <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
+                            <h3>Pool member tests</h3>
+                            <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
+                            <h3>Feature requests</h3>
+                            <p>Please add any feature requests or suggestions here.</p>
+                            <p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
+                            <h3>Troubleshooting</h3>
+                            <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
+                            <h3>Contact</h3>
+                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                            <h3>Contact</h3>
+                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                            <h3>Contact</h3>
+                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                            <h3>Contact</h3>
+                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                            <h3>Contact</h3>
+                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                            <h3>Contact</h3>
+                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                            <h3>Contact</h3>
+                            <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+                                                
+                        </div>
+
+                    </div>
+                </div>
         </div>
 
+        
 	</body>
 </html>
 "@

@@ -64,7 +64,6 @@
 .bigiptable tbody > tr > td {
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
-	white-space: nowrap;
 	min-width: 45px;
 }
 
@@ -72,8 +71,15 @@
 	text-align: center;
 	background-color:var(--headerbackgroundcolor);
 	color: var(--headerfontcolor);
-	white-space: nowrap;
 	border-top: 1px solid var(--bordercolor);
+}
+
+#allbigips thead > tr > th {
+	white-space: nowrap;
+}
+
+#bigiptable tbody > tr > td {
+	white-space: nowrap;
 }
 
 .bigiptable thead > tr > th:first-child {
@@ -87,7 +93,6 @@
 .bigiptable tbody > tr:nth-child(even) > td {
 	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
-	white-space: nowrap;
 }
 
 .loadbalancerHeaderCell {
@@ -224,42 +229,6 @@ div.expand, div.collapse {
 
 .virtualserverdetailstable tbody > tr:nth-child(even) > td {     background-
 color:#6890B2;     border-collapse: collapse;     border:1px solid var(--bordercolor); }
-
-/****************************************************************************************************************************
-	This section contains the style for the device overview
-*****************************************************************************************************************************/
-
-
-/* Contains the pool details table (the one with members and status) */
-
-.deviceoverviewtable  {
-	border-collapse: collapse;
-	font-family: Calibri;
-	margin: 0 auto;
-	width:100%;
-}
-
-.deviceoverviewtable tbody > tr > td {
-	border-collapse: collapse;
-	padding:5px;
-	text-align:center;
-	border:1px solid var(--bordercolor);
-}
-.deviceoverviewtable thead > tr > th {
-	text-align: center;
-	background-color:var(--headerbackgroundcolor);
-	border:1px solid var(--bordercolor);
-	color:white;
-	white-space:nowrap;
-}
-
-.deviceoverviewtable tbody > tr:nth-child(even) > td {     background-
-color:#6890B2;     border-collapse: collapse;     border:1px solid var(--bordercolor); }
-
-td img.deviceicon {
-	max-height: 50px;
-	max-width: 150px;
-}
 
 
 /****************************************************************************************************************************     
@@ -527,7 +496,7 @@ a:hover.sharepoollink p input {
 }
 
 
-a.preferencesButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton, a.sharepoollink {
+a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton, a.sharepoollink {
 	position: relative;
 	display: inline;
 	background: #33699d;
@@ -545,7 +514,7 @@ a.preferencesButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.l
 	text-decoration: none;
 }
 
-a.preferencesButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
+a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
 	font-size: 12px;
 	padding: 5px 20px 5px 20px;
 }
@@ -555,7 +524,7 @@ a.lightboxbutton, a.sharepoollink {
 	padding: 7px 20px 7px 20px;
 }
 
-a.preferencesButton:hover, a.irulesButton:hover, a.definedRuleButton:hover, a.exportCSVButton:hover, a.lightboxbutton:hover {
+a.showConsoleButton:hover, a.irulesButton:hover, a.definedRuleButton:hover, a.exportCSVButton:hover, a.lightboxbutton:hover {
 	background: #3a79b5;
 	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
 	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
@@ -702,6 +671,68 @@ div#objectnotfound h4 {
 	margin-top:40px;
 }
 
+/****************************************************************************************************************************
+	This section contains the style for the certificate details
+*****************************************************************************************************************************/
+
+table#certificatedetailstable {
+	font-family: Calibri;
+	margin: 0 auto;
+	width:95%;
+}
+
+table#certificatedetailstable tbody tr td.certificatecountryname, table#certificatedetailstable tbody tr td.certificateloadbalancer {
+	text-align: center;
+}
+
+table#certificatedetailstable tbody tr td.certificateexpiredate {
+	white-space: nowrap;
+}
+
+img.flagicon {
+	max-width: 20px;
+}
+
+tr#certificateExpiringIn60, tr.certificateExpiringIn30, tr.certificateExpiringIn14 {
+	font-weight: bold;
+}
+
+tr.certificateExpiringIn30 {
+	color:#cc9900;
+}
+
+tr.certificateExpiringIn14 {
+	color:red;
+}
+
+/****************************************************************************************************************************
+	This section contains the style for the log content
+*****************************************************************************************************************************/
+
+div#reportlogs {
+	display: none;
+}
+
+table#reportlogstable {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0 auto;
+	width:95%;
+	white-space: wrap;
+}
+
+table#reportlogstable.reportlogdate {
+	white-space: no-wrap;
+}
+
+/****************************************************************************************************************************
+	This section contains the style for the help content
+*****************************************************************************************************************************/
+
+div#helpcontent {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	width: 800px;
+    margin: 0 auto;
+}
 
 /****************************************************************************************************************************
 	This section contains the style for the data group list details lightbox content
@@ -845,26 +876,6 @@ a:hover.sharelink p input {
 	margin-left:0px;
 }
 
-/**********************************************************************************************************************************
-	CSS related to settings
-***********************************************************************************************************************************/
-
-
-table.settingsTable {
-	margin: 0 auto;
-	width: 50%;
-}
-
-table.settingsTable thead tr th, tbody td {
-	border:0px;
-	font-family: "Calibri";
-}
-
-table.settingsTable tbody tr:nth-child(even) td {
-	background-color: var(--alternatetablecolor);
-	border-collapse: collapse;
-	white-space: nowrap;
-}
 
 /**********************************************************************************************************************************
 	CSS related to defined iRules
@@ -872,9 +883,9 @@ table.settingsTable tbody tr:nth-child(even) td {
 
 .definedRulesTable  {
 	border-collapse: collapse;
-	font-family: Calibri;
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 0 auto;
-	width: 100%;
+	width: 95%;
 }
 
 .definedRulesTable tbody > tr > td {
@@ -971,7 +982,7 @@ a:hover.tooltip p {
 	text-align: center;
 }
 
-div.innerLightbox, div#preferencescontent {
+div.innerLightbox {
 	background:#fff;
 	display: inline-block;
 	text-align:left;
@@ -990,40 +1001,89 @@ div.innerLightbox {
 	margin-top:20px;
 }
 
-div#preferencescontent {
-	margin-top:100px;
-	padding:0px;
-	min-width:900px;
-	min-height:700px;
-}
-
 
 /**********************************************************************************************************************************
 	Side menu
 ***********************************************************************************************************************************/
 
-div.sidemenu {
-	float:left;
-	top:0px;
-	left:0px;
-	max-width: 140px;
-	min-height:700px;
-	background-color: var(--headerbackgroundcolor);
-}
-
-div.sidemenu div.menuitem {
-	border: 1px solid var(--bordercolor);
-	padding: 10px;
-	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-div.menuitem:hover {
-	background-color:#d0d0d0;
-	cursor:pointer;
+div#consoleholder {
+  background: #fff;
+  display: inline-block;
+  text-align: left;
+  max-width: 80%;
+  max-height:80%;
+  padding: 0px;
+  border: 1px #000 solid;
+  -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+  -moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+  box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+  margin-top: 2%;
 }
 
 div#consolecontent {
-	float:left;
+  max-height: inherit;
+}
+
+div.consolesection {
+	max-height: inherit;
+	overflow:scroll;
+}
+
+div.sidemenu {
+  background-color: var(--headerbackgroundcolor);
+  width: 100%;
+  text-align: center;
+}
+
+div.sidemenu div.menuitem {
+  padding: 10px;
+  font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  display: inline-block;
+  padding: 10px 20px 10px 10px;
+}
+
+div.sidemenu div.menuitem img {
+  max-height: 30px;
+  vertical-align: middle;
+}
+
+div.menuitem:hover {
+  background-color: #d0d0d0;
+  cursor: pointer;
+}
+
+
+
+/****************************************************************************************************************************
+	This section contains the style for the device overview
+*****************************************************************************************************************************/
+
+
+/* Contains the pool details table (the one with members and status) */
+
+table#deviceoverviewtable  {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0 auto;
+	width:95%;
+}
+
+table#deviceoverviewtable tbody tr td img.deviceicon {
+	max-height: 50px;
+	max-width: 150px;
+}
+
+/****************************************************************************************************************************
+	This section contains the style for the preferences
+*****************************************************************************************************************************/
+
+table#preferencestable {
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0 auto;
+	width: 800px;
+}
+
+table#preferencestable tbody tr td {
+	padding: 10px;
 }
 
 /* The buttons telling the user that there is a new version available */
