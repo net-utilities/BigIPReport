@@ -172,6 +172,8 @@
 #        4.8.6        2018-01-24      Adding virtual server, pool and node description to the json data             Patrik Jonsson  No
 #        4.8.7        2018-01-26      Adding pre-execution check for the iControl version                           Patrik Jonsson  No
 #        4.8.8        2018-01-30      Adding the device overview                                                    Patrik Jonsson  No
+#        5.0.0        2018-02-02      Adding a console containing different sections like certificate expiration,   Patrik Jonsson  No
+#                                     logs, and help. Moving device overview and the defined iRules to it.
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -2671,7 +2673,7 @@ $Global:HTML += @"
                         <h3>Contact</h3>
                         <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
                     </div>
-                    
+
                 </div>
                 <div id="consoledivfooter"><a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:`$('div#consolediv').fadeOut()">Close console</a></div>
         </div>
