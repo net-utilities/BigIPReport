@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="4.8.7">
+	<Settings version="4.8.0">
 	
 		<!-- 
 		***************************************************************************
@@ -33,21 +33,21 @@
 		<!--
 		**************************************************************************************************************************************
 		*
-		*	This variable contains the load balancers which configuration you want base the report on.
+		*	This section contains the load balancers which configuration you want base the report on.
 		*
 		*	Example:
-			This example configures two device groups, whereas one has a pool status VIP.
-			
 			<DeviceGroups>
 				<DeviceGroup>
+					<Name>Stockholm QA</Name>
 					<Loadbalancer>192.168.10.23</Loadbalancer>
 					<Loadbalancer>192.168.10.23</Loadbalancer>
 					<StatusVip>https://lb1statusvip.domain.local</StatusVip>
 				</DeviceGroup>
 				<DeviceGroup>
+					<Name>London Cluster</Name>
 					<Loadbalancer>192.168.11.55</Loadbalancer>
 					<Loadbalancer>192.168.11.56</Loadbalancer>
-					<StatusVip></StatusVip>
+					<StatusVip>https://lb2statusvip.domain.local</StatusVip>
 				</DeviceGroup>
 			</DeviceGroups>
 		*
@@ -56,6 +56,8 @@
 		
 		<DeviceGroups>
 			<DeviceGroup>
+				<Name></Name>
+				<Device></Device>
 				<Device></Device>
 				<StatusVip></StatusVip>
 			</DeviceGroup>
@@ -404,7 +406,7 @@
 		-->
 
 		<ExportLink>
-			<Enabled>true</Enabled>
+			<Enabled>false</Enabled>
 		</ExportLink>
 
 		<!--
@@ -435,7 +437,7 @@
 
 			<RealTimeMemberStates>
 				<MaxQueue>1</MaxQueue>
-				<RefreshRate>60</RefreshRate>
+				<RefreshRate>10</RefreshRate>
 			</RealTimeMemberStates>	
 
 	</Settings>

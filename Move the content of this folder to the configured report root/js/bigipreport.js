@@ -96,6 +96,9 @@
 			}).fail(addJSONLoadingFailure),
 			$.getJSON("./json/devicegroups.json", function(result){
 				siteData.deviceGroups = result;
+			}).fail(addJSONLoadingFailure),
+			$.getJSON("./json/loggederrors.json", function(result){
+				siteData.loggedErrors = result;
 			}).fail(addJSONLoadingFailure)
 		).then(function() {
 
@@ -424,6 +427,11 @@
 				} );		
 				
 			} );
+
+			for(var i in siteData.loggedErrors){
+				var logLine = siteData.loggedErrors[i];
+				log(logLine.message, logLine.severity, logLine.date, logLine.time)
+			}
 			
 			/*************************************************************************************************************
 			
@@ -454,16 +462,20 @@
 		})
 
 		if(hasConfiguredStatusVIP){
+
 			for(var i in loadbalancers){
 				
 				var loadbalancer = loadbalancers[i];
 
-				if(loadbalancer.statusvip.url !== ""){
+				if(loadbalancer.statusvip.url !== "" && loadbalancer.success){
 					testStatusVIP(loadbalancer);
 				} else {
-					$("span#realtimenotconfigured").text(parseInt($("span#realtimenotconfigured").text()) + 1);
-					loadbalancer.statusvip.working = false;
-					loadbalancer.statusvip.reason = "None configured";
+					if(loadbalancer.success){
+						log("Loadbalancer " + loadbalancer.name + " does not have any status VIP configured", "INFO");
+						$("span#realtimenotconfigured").text(parseInt($("span#realtimenotconfigured").text()) + 1);
+						loadbalancer.statusvip.working = false;
+						loadbalancer.statusvip.reason = "None configured";
+					}
 				}
 			}
 		} else {
@@ -511,7 +523,7 @@
 			  timeout: 2000
 			})					
 			.fail(function(jqxhr){
-				log("Site statusvip <a href=\"" + testURL + "\">" + testURL + "</a> failed on loadbalancer: <b>" + loadbalancer.name + "</b><br>Information about troubleshooting status VIPs is available <a href=\"https://loadbalancing.se/bigip-report/#One_or_more_status_endpoints_has_been_marked_as_failed\">here</a>" , "ERROR");
+				log("Statusvip test <a href=\"" + testURL + "\">" + testURL + "</a> failed on loadbalancer: <b>" + loadbalancer.name + "</b><br>Information about troubleshooting status VIPs is available <a href=\"https://loadbalancing.se/bigip-report/#One_or_more_status_endpoints_has_been_marked_as_failed\">here</a>" , "ERROR");
 				$("span#realtimetestfailed").text(parseInt($("span#realtimetestfailed").text()) + 1);
 				loadbalancer.statusvip.working = false;
 				loadbalancer.statusvip.reason = jqxhr.statusText;
@@ -849,7 +861,7 @@
 	function showConsole(){
 
 		showDeviceOverview();
-		$("#preferencesdiv").fadeIn();
+		$("div#consolediv").fadeIn();
 
 	}
 
@@ -984,7 +996,7 @@
 				<table id="deviceoverviewtable" class="bigiptable">
 					<thead>
 						<tr>
-							<th>Device Group</th><th colspan="2">Name</th><th>Model</th><th>Type</th><th>Serial</th><th>Management IP</th>
+							<th></th><th>Device Group</th><th>Name</th><th>Model</th><th>Type</th><th>Serial</th><th>Management IP</th>
 						</tr>
 					</thead>
 					<tbody>`;
@@ -994,30 +1006,57 @@
 			var firstDevice = true;
 			var deviceGroup = deviceGroups[d];
 
-			for(var l in deviceGroup.ips){
+			// Get an icon from a functioning device, if any
 
-				var loadbalancer = loadbalancers[l];
+			var icon = "";
+
+			for(var i in deviceGroup.ips){
+
+				var loadbalancer = siteData.loadbalancers.find(function(o){
+										return o.ip === deviceGroup.ips[i];
+									}) || false;
 
 				if(loadbalancer.success){
-					var deviceData = siteData.knownDevices[loadbalancer.model] || false;
+
+					var model = loadbalancer.model.toUpperCase();
+					var deviceData = siteData.knownDevices[model] || false;
 
 					if (deviceData){
-						var icon = deviceData.icon;
-					} else {
-						var icon = "./images/deviceicons/unknowndevice.png";
+						icon = deviceData.icon;
+						break;
 					}
+				}
+
+			}
+
+			if(icon === ""){
+				var icon = "./images/deviceicons/unknowndevice.png";
+			}
+
+			for(var i in deviceGroup.ips){
+
+				var loadbalancer = siteData.loadbalancers.find(function(o){
+										return o.ip === deviceGroup.ips[i];
+									}) || false;
+
+				if(loadbalancer.success){
+
+					var deviceData = siteData.knownDevices[loadbalancer.model] || false;
+
+
+
 				} else {
 					var icon = "./images/faileddevice.png"
 				}
 
 				if (firstDevice){
-					html += "<tr><td rowspan=\"" + deviceGroup.ips.length + "\">" + deviceGroup.name + "</td>";
+					html += "<tr><td rowspan=\"" + deviceGroup.ips.length + "\" class=\"deviceiconcell\"><img class=\"deviceicon\" src=\"" + icon + "\"/></td><td class=\"devicenamecell\" rowspan=\"" + deviceGroup.ips.length + "\">" + deviceGroup.name + "</td>";
 					firstDevice = false;
 				} else {
 					html += "<tr>";
 				}
 				
-				html += "<td class=\"deviceiconcell\"><img class=\"deviceicon\" src=\"" + icon + "\"/></td><td class=\"devicenamecell\">" + (loadbalancer.name || "N/A") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + "N/A" + "</td><td>" + loadbalancer.ip + "</td></tr>";
+				html += "<td class=\"devicenamecell\">" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td></tr>";
 
 			}
 
@@ -1046,17 +1085,33 @@
 	}
 
 
-	function log(message, severity){
+	function log(message, severity=null, date = null, time=null){
 
-		var now = new Date();
+		if(!date || !time){
+			var now = new Date();
+			var dateArr = now.toISOString().split("T")
+			
+			if(!date){
+				date = dateArr[0];
+			}
+			
+			if(!time){
+				time = dateArr[1].replace(/\.[0-9]+Z$/, "");
+			}
+		}
 
-		var dateArr = now.toISOString().split("T")
-		
-		var date = dateArr[0];
-		var time = dateArr[1].replace(/\.[0-9]+Z$/, "");
+		var severityClass;
 
-		$("table#reportlogstable tbody").append(
-			"<tr><td class=\"reportlogdate\">" + date + "</td><td class=\"reportlogtime\">" + time + "</td><td class=\"\">" + severity + "</td><td>" + message + "</td></tr>"
+		switch(severity){
+			case "ERROR": 
+				severityClass="logseverityerror";
+				break;
+			default:
+				severityClass="logseverityinfo";
+		}
+
+		$("table#reportlogstable tbody").prepend(
+			"<tr><td class=\"reportlogdate\">" + date + "</td><td class=\"reportlogtime\">" + time + "</td><td class=\"" + severityClass + "\">" + severity + "</td><td>" + message + "</td></tr>"
 		);
 
 	}

@@ -235,6 +235,17 @@ color:#6890B2;     border-collapse: collapse;     border:1px solid var(--borderc
 				This section contains the  style for the pool details lightbox div 
 *****************************************************************************************************************************/
 
+div#firstlayerdiv {
+	z-index: 1;
+}
+
+div#secondlayerdiv {
+	z-index: 2;
+}
+
+div#consolediv {
+	z-index: 1;
+}
 /*Header with the pool name */
 
 .pooldetailsheader {
@@ -917,7 +928,7 @@ div#consoleholder {
   background: #fff;
   display: inline-block;
   text-align: left;
-  max-width: 80%;
+  max-width: 90%;
   padding: 0px;
   border: 1px #000 solid;
   -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
@@ -947,7 +958,7 @@ div.sidemenu div.menuitem {
 }
 
 div.sidemenu div.menuitem img {
-  max-height: 30px;
+  max-height: 35px;
   vertical-align: middle;
 }
 
@@ -955,6 +966,12 @@ div.menuitem:hover {
   background-color: #d0d0d0;
   cursor: pointer;
 }
+
+div#consoledivfooter {
+	margin-top: 15px;
+	text-align: center;
+}
+
 
 /****************************************************************************************************************************
 	This section contains the style for the help content
@@ -976,26 +993,30 @@ div#helpcontent {
 
 table#deviceoverviewtable  {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size:16px;
 	margin: 0 auto;
 	width:95%;
+}
+
+table#deviceoverviewtable tbody tr td {
+	height: 35px;
 }
 
 table#deviceoverviewtable tbody tr td {
 	padding: 5px;
 }
 
-table#deviceoverviewtable tbody tr td.deviceiconcell {
+table#deviceoverviewtable tbody tr td {
 	text-align: center;
-	border-right: 0px;
-}
-
-table#deviceoverviewtable tbody tr td.devicenamecell {
-	border-left: 0px;
 }
 
 table#deviceoverviewtable tbody tr td img.deviceicon {
 	max-height: 45px;
-	max-width: 150px;
+	max-width: 180px;
+}
+
+table#deviceoverviewtable tbody tr td span.devicefailed {
+	color: red;
 }
 
 /****************************************************************************************************************************
@@ -1008,6 +1029,7 @@ div#preferences {
 
 table#preferencestable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 16px;
 	margin: 0 auto;
 	width: 800px;
 }
@@ -1025,7 +1047,8 @@ div#certificatedetails {
 }
 
 table#certificatedetailstable {
-	font-family: Calibri;
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size:16px;
 	margin: 0 auto;
 	width:95%;
 }
@@ -1070,14 +1093,21 @@ table#reportlogstable {
 }
 
 table#reportlogstable tbody tr td {
-	font-size: 14px;
+	font-size: 16px;
 	padding: 5px;
 }
 
 table#reportlogstable tbody tr td.reportlogdate,
 table#reportlogstable tbody tr td.reportlogtime,
-table#reportlogstable tbody tr td.logseverity {
+table#reportlogstable tbody tr td.logseverityerror,
+table#reportlogstable tbody tr td.logseverityinfo {
 	text-align: center;
+	white-space: nowrap;
+}
+
+table#reportlogstable tbody tr td.logseverityerror {
+	color: red;
+	font-weight: bold;
 }
 
 table#reportlogstable.reportlogdate {
@@ -1101,6 +1131,7 @@ div#definedirules {
 
 .definedRulesTable tbody > tr > td {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 16px;
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
