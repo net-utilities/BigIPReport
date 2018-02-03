@@ -475,11 +475,6 @@ a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
 	padding: 5px 20px 5px 20px;
 }
 
-a.exportCSVButton {
-	margin-left:10px;
-}
-
-
 a.lightboxbutton {
 	font-size: 14px;
 	padding: 7px 20px 7px 20px;
@@ -1196,6 +1191,7 @@ span.adcLinkSpan a:hover {
 	font-size: 12px;
 	padding: 4px 8px 4px 8px;
 	margin-left: 5px;
+	margin-right: 10px;
 	text-decoration: none;
 }
 
