@@ -2123,7 +2123,7 @@ Function Write-TemporaryFiles {
 	
 	$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
     
-	log verbose "Writing report temporary report file to $($Global:reportpath + ".tmp")"
+	log verbose "Writing temporary report file to $($Global:reportpath + ".tmp")"
 	
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:reportpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 	$StreamWriter.Write($Global:HTML)
