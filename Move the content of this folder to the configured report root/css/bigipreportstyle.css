@@ -572,30 +572,28 @@ div#firstlayerdetailscontent {
 
 /*Header with the pool name */
 
-.firstlayerdetailsheader {
+div.virtualserverdetailsheader, div.iruledetailsheader, div.datagrouplistdetailsheader {
 	font-family:Cambria;
 	font-size:24px;
+	font-weight: bold;
 	text-align: center;
-	color:#ffffff;
-	margin-top:65px;
+	color:var(--defaultfontcolor);
+	margin-bottom: 10px
 }
 
+div.pooldetailsheader {
+	font-family:Cambria;
+	font-size:30px;
+	font-weight: bold;
+	text-align: center;
+	color:var(--defaultfontcolor);
+	margin-bottom: 10px
+}
 
 .bigipreportheader {
 	padding-top:5px;
 	padding-bottom:10px;
 	text-align: center;
-}
-
-
-/*Header with the pool name */
-
-.secondlayerdetailsheader {
-	font-family:Cambria;
-	font-size:24px;
-	text-align: center;
-	color:#ffffff;
-	margin-top:40px;
 }
 
 /****************************************************************************************************************************
@@ -687,11 +685,6 @@ div#secondlayerdetailscontent {
 	This section contains the style for the data group list details lightbox content
 *****************************************************************************************************************************/
 
-.datagrouplistcontentdiv {
-	display: table;
-	margin: 0 auto;
-}
-
 .dgtype {
 	font-family:Cambria;
 	font-size:20px;
@@ -705,14 +698,15 @@ div#secondlayerdetailscontent {
 	color:red;
 }
 
-.datagrouplisttable td,th {
-	/*border: 1px solid #000;*/
-	padding:10px;
-}
-
 .datagrouplisttable  {
 	border-collapse: collapse;
 	font-family: Calibri;
+	padding:10px;
+	width: 100%;
+}
+
+.datagrouplisttable td,th {
+	/*border: 1px solid #000;*/
 	padding:10px;
 }
 
@@ -720,6 +714,7 @@ div#secondlayerdetailscontent {
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
+	text-align: center;
 }
 
 .datagrouplisttable thead > tr > th {
@@ -904,7 +899,7 @@ div.innerLightbox {
 	max-height: 75%;
 	max-width: 90%;
 	overflow-y: scroll;
-	padding:20px;
+	padding: 10px 20px 20px 20px;
 	top:100px;
 	border: 1px #000 solid;
 	-webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
@@ -913,7 +908,7 @@ div.innerLightbox {
 }
 
 div.innerLightbox {
-	margin-top:20px;
+	margin-top:40px;
 }
 
 
