@@ -45,7 +45,7 @@
 			</div>`
 		);
 
-		$("#firstlayerdetailsfooter").html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut()">Close error details</a>');
+		$("a#closefirstlayerbutton").text("Close error details");
 
 		let addJSONLoadingFailure = function(jqxhr){
 			
@@ -218,15 +218,6 @@
 	 				.columns().search('')
 	 				.draw();
 			});
-
-
-			/*************************************************************************************************************
-			
-				This section inserts a share link
-			
-			**************************************************************************************************************/	
-			
-			$("#allbigips_filter").append('<a href="javascript:void(0);" onMouseClick="" onMouseOver="javascript:showShareLink()" class="sharelink">Share search<p>CTRL + C to copy<br><input id="sharelink" value=""></p></a>');
 			
 			/*************************************************************************************************************
 			
@@ -292,7 +283,7 @@
 			**************************************************************************************************************/	
 			
 			//Add the div containing the update available button
-			$("#preferencesButton").after($('<span id="updateavailablespan"></span>'));
+			$("a#showConsoleButton").after($('<span id="updateavailablespan"></span>'));
 			
 			//Check if there's a new update every 30 minutes
 			setInterval(function(){
@@ -304,22 +295,21 @@
 						var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
 						var currenttime  = new Date();
 
-						timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
+						// The time since this report was generated (in minutes)
+						//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
+						
+						// If there's been a new report, how long ago (in minutes)
 						timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
 
-						if( timesincerefresh > 240){
-							if(timesincelatestgeneration > 5){
-								$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
-							}
-						} else if ( timesincerefresh != 0){
-							if(timesincelatestgeneration > 5){
-								$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
-							}
+						if( timesincerefresh > 10){
+							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
+						} else if ( timesincerefresh > 60){
+							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
 						}
 
 					}
 					}); 
-			},1800000 );
+			},3000 );
 			
 			/****************************************************************************************************************************** 
 			
@@ -327,11 +317,11 @@
 			
 			******************************************************************************************************************************/
 			
-			
 			/* Hide the lightbox if clicking outside the information box*/
 			$('body').on('click', function(e){
 				if(e.target.className == "lightbox"){
-					$('.lightbox').hide();
+					$("div#" + e.target.id).hide();
+					updateLocationHash();
 				}
 			});
 			
@@ -379,8 +369,17 @@
 			$("div#deviceoverviewbutton").on("click", showDeviceOverview);
 			$("div#irulesbutton").on("click", showDefinediRules);
 			$("div#certificatebutton").on("click", showCertificateDetails);
-			$("div#logsbutton").on("click", showLogs);
+			$("div#logsbutton").on("click", showReportLogs);
 			$("div#helpbutton").on("click", showHelp);
+			$("a#closeconsolebutton").on("click", function(){
+				$("div#consolediv").trigger("click");
+			});
+			$("a#closefirstlayerbutton").on("click", function(){
+				$("div#firstlayerdiv").trigger("click");
+			});
+			$("a#closesecondlayerbutton").on("click", function(){
+				$("div#secondlayerdiv").trigger("click");
+			});
 
 			// Set-up search delays
 
@@ -400,10 +399,10 @@
 			var searchDelay = null;
 			 
 			$('div.dataTables_filter input').on('keyup', function() {
-
 				var search = $('div.dataTables_filter input').val();
 				delay(function(){
 			        if (search != null) {
+			        	updateLocationHash();
 			            bigipTable.search(search).draw();
 			        }
 			    }, 700);
@@ -418,10 +417,11 @@
 					
 					var search = this.value
 					delay(function(){
+						updateLocationHash();
 						that
 							.search(search)
 							.draw();
-							expandPoolMatches($( bigipTable.table().body()), search)
+							expandPoolMatches($( bigipTable.table().body()), search);
 							highlightAll(bigipTable);
 					}, 700);
 				} );		
@@ -573,6 +573,9 @@
 	}
 
 	function showDefinediRules(){
+
+		$("div#consoleholder").attr("data-activesection", "definedirules");
+		updateLocationHash();
 
 		var ruleTable = "";
 
@@ -802,10 +805,10 @@
 		var vars = {};
 		var hash;
 		
-		if(window.location.href.indexOf('?') >= 0){
+		if(window.location.href.indexOf('#') >= 0){
 			
-			//Split the query string and create a dictionary with the parameters
-			var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+			//Split the hash query string and create a dictionary with the parameters
+			var hashes = window.location.href.slice(window.location.href.indexOf('#') + 1).split('&');
 			
 			for(var i = 0; i < hashes.length; i++){
 				hash = hashes[i].split('=');
@@ -848,25 +851,90 @@
 				}
 			});
 			
-			if(vars['showpool']){
-				poolname = vars['showpool'].split('@')[0];
-				loadbalancer = vars['showpool'].split('@')[1];
+			if(vars['pool']){
+				var poolName = vars['pool'].split('@')[0];
+				var loadBalancer = vars['pool'].split('@')[1];
 				
-				showPoolDetails(poolname, loadbalancer);
+				showPoolDetails(poolName, loadBalancer);
+			}
+
+			if(vars['virtualserver']){
+				var virtualServerName = vars['virtualserver'].split('@')[0];
+				var loadBalancer = vars['virtualserver'].split('@')[1];
+				
+				showVirtualServerDetails(virtualServerName, loadBalancer);
+			}
+
+			if(vars['datagrouplist']){
+				var dataGroupListName = vars['datagrouplist'].split('@')[0];
+				var loadBalancer = vars['datagrouplist'].split('@')[1];
+				
+				showDataGroupListDetails(dataGroupListName, loadBalancer);
+			}
+
+
+			if(vars['irule']){
+				var iruleName = vars['irule'].split('@')[0];
+				var loadBalancer = vars['irule'].split('@')[1];
+				
+				showiRuleDetails(iruleName, loadBalancer);
+			}
+
+			if(vars['consolesection']){
+
+				var activeSection = vars['consolesection'];
+
+				console.log(activeSection);
+
+				switch(activeSection){
+					case "preferences":
+						showPreferences();
+						break;
+					case "reportlogs":
+						showReportLogs();
+						break;
+					case "deviceoverview":
+						showDeviceOverview();
+						break;
+					case "certificatedetails":
+						showCertificateDetails();
+						break;
+					case "help":
+						showHelp();
+						break;
+					case "definedirules":
+						showDefinediRules();
+						break;
+				}
+
+				$("div#consolediv").fadeIn();
+				updateLocationHash();
 			}
 			
+
 		}
 	}
 
 	function showConsole(){
 
-		showDeviceOverview();
-		$("div#consolediv").fadeIn();
+		var currentSection = $("div#consoleholder").attr("data-activesection");
+		
+		if(currentSection === undefined){
+			showDeviceOverview();
+			$("div#consolediv").fadeIn();
+			updateLocationHash();
+		} else {
+			$("div#consolediv").fadeIn();
+		}
 
 	}
 
 
 	function showPreferences(){
+
+		activateMenuButton($("div#preferencesbutton"));
+		$("div#consoleholder").attr("data-activesection", "preferences");
+		updateLocationHash();
 
 		//Prepare the content
 		var settingsContent = `
@@ -921,6 +989,10 @@
 	}
 
 	function showCertificateDetails(){
+
+		activateMenuButton("div#certificatebutton");
+		$("div#consoleholder").attr("data-activesection", "certificatedetails");
+		updateLocationHash();
 
 		var certificates = siteData.certificates;
 
@@ -988,6 +1060,10 @@
 	}
 
 	function showDeviceOverview(){
+
+		activateMenuButton("div#deviceoverviewbutton");
+		$("div#consoleholder").attr("data-activesection", "deviceoverview");
+		updateLocationHash();
 
 		var deviceGroups = siteData.deviceGroups
 		var loadbalancers = siteData.loadbalancers
@@ -1076,12 +1152,25 @@
 		$("div#" + section).show();
 	}
 
-	function showLogs(){
+	function showReportLogs(){
+		
+		activateMenuButton($("div#logsbutton"));
+		$("div#consoleholder").attr("data-activesection", "reportlogs");
+
+		updateLocationHash();
+
 		showConsoleSection("reportlogs");
+
 	}
 
 	function showHelp(){
+		
+		activateMenuButton("div#helpbutton");
+		$("div#consoleholder").attr("data-activesection", "help");
+		updateLocationHash();
+		
 		showConsoleSection("helpcontent")
+	
 	}
 
 
@@ -1136,59 +1225,38 @@
 	}
 
 
-	function generateShareLink(){
-		
-		var base = window.location.origin + window.location.pathname;
-		
-		var sharequery = '?';
-		var first = true;
-		
+	function updateLocationHash(pool = null, virtualServer = null){
+
+		var parameters = [];
+
 		$('.search_entered').each(function(){
 			if(asInitVals.indexOf(this.value) == -1){
-				if(first){
-					sharequery += this.name + '=' + this.value;
-					first = false
-				} else {
-					sharequery += '&' + this.name + '=' + this.value;
-				}
+					parameters.push(this.name + "=" + this.value);
 			}
 		});
 		
 		if($('#allbigips_filter label input').val() != ""){
-			if(first){
-				sharequery += "global_search" + '=' + $('#allbigips_filter label input').val();
-				first = false
-			} else {
-				sharequery += '&' + "global_search" + '=' + $('#allbigips_filter label input').val();
-			}
+			parameters.push("global_search" + '=' + $('#allbigips_filter label input').val())
 		}
-		
-		return(base + sharequery);
-		
 
-	}
+		$("div.lightboxcontent:visible").each(function(i, e){
+			var type = $(this).attr("data-type");
+			var objectName = $(this).attr("data-objectname");
+			var loadbalancer = $(this).attr("data-loadbalancer");
 
-	function showShareLink(){
-		
-		var link = generateShareLink();
-		$('#sharelink').val(link);
-		$('#sharelink').focus();
-		$('#sharelink').select();
-		
-	}
+			parameters.push(type + "=" + objectName + "@" + loadbalancer);
+		});
 
-	function showPoolShareLink(pool){
+		if($("div#consolediv").is(":visible")){
 
-		var link = generateShareLink();
-		
-		link += "&showpool=" + pool;
-		
-		$('#sharepoollink').val(link);
-		$('#sharepoollink').focus();
-		$('#sharepoollink').select();
+			var activeSection = $("div#consoleholder").attr("data-activesection");
+			parameters.push("consolesection=" + activeSection);
+
+		}
+
+		window.location.hash = parameters.join("&");
 		
 	}
-
 
 	/****************************************************************************************************************************** 
 		Expands all pool matches in the main table when searching
@@ -1423,7 +1491,13 @@
 		
 		//If a pool was found, populate the pool details table and display it on the page
 		if(matchingvirtualserver != ""){
-					
+
+			var html = "<div class=\"virtualserverdetailsheader\"><span>Virtual Server: " + matchingvirtualserver.name + "</span></div>";
+
+			$("div#firstlayerdetailscontentdiv").attr("data-type", "virtualserver");
+			$("div#firstlayerdetailscontentdiv").attr("data-objectname", matchingvirtualserver.name);
+			$("div#firstlayerdetailscontentdiv").attr("data-loadbalancer", matchingvirtualserver.loadbalancer);
+
 			switch(matchingvirtualserver.sourcexlatetype){
 				case "SRC_TRANS_NONE":
 					var xlate = "None";		
@@ -1446,8 +1520,6 @@
 			var description = matchingvirtualserver.description || ""
 
 			//Build the table and headers
-			$(".firstlayerdetailsheader").html(matchingvirtualserver.name);
-
 			var table = '<table width="100%">';
 			table += '	<tbody>';
 			
@@ -1545,8 +1617,10 @@
 				}
 			}
 
+			html += table;
+
 		} else {
-			var table = `<div id="objectnotfound">
+			var html = `<div id="objectnotfound">
 				<h1>No matching Virtual Server was found</h1>
 
 				<h4>What happened?</h4>
@@ -1561,9 +1635,10 @@
 			</div>`
 		}
 
-		$('.firstlayerdetailsfooter').html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut();">Close virtual server details</a>');
-		$("#firstlayerdetailscontentdiv").html(table);
+		$('a#closefirstlayerbutton').text("Close virtual server details");
+		$("#firstlayerdetailscontentdiv").html(html);
 		$("#firstlayerdiv").fadeIn();
+		updateLocationHash();
 
 	}
 
@@ -1597,9 +1672,14 @@
 		
 		//If an irule was found, prepare the data to show it
 		if(matchingirule != ""){
+
 			//Populate the header
-			$(".secondlayerdetailsheader").html(matchingirule.name);
-			
+			var html = "<div class=\"iruledetailsheader\"><span>iRule: " + matchingirule.name + "</span></div>";
+
+			$("div#secondlayerdetailscontentdiv").attr("data-type", "irule");
+			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingirule.name);
+			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingirule.loadbalancer);
+
 			//Save the definition to a variable for some classic string mangling
 			var definition = matchingirule.definition
 			
@@ -1627,22 +1707,26 @@
 			}
 			
 			//Prepare the div content
-			divcontent = '\
-			<div class="iRulesContent">\
-					<pre class="sh_tcl">' + definition + '</pre>\
-				</div>\
-			</div>';
+			html += `<table class="bigiptable">
+						<thead>
+							<tr><th>iRule definiton</th></tr>
+						</thead>
+						<tbody>
+						<tr><td><pre class="sh_tcl">` + definition + `</pre></td></tr>
+						</tbody>
+					</table>`
+
 		}
 		
 		//Add the close button to the footer
-		$('.secondlayerdetailsfooter').html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'#secondlayerdiv\').fadeOut()">Close irule details</a>');
+		$("a#closesecondlayerbutton").text("Close irule details");
 		//Add the div content to the page
-		$("#secondlayerdetailscontentdiv").html(divcontent);
+		$("#secondlayerdetailscontentdiv").html(html);
 		//Add syntax highlighting
 		sh_highlightDocument('./js/', '.js');
 		//Show the div
 		$("#secondlayerdiv").fadeIn();
-
+		updateLocationHash();
 	}
 
 
@@ -1834,35 +1918,36 @@
 		//If a pool was found, populate the pool details table and display it on the page
 		if(matchingdatagrouplist != ""){
 			
-			$(".secondlayerdetailsheader").html(matchingdatagrouplist.name);
+			var html = "<div class=\"datagrouplistdetailsheader\"><span>Data group list: " + matchingdatagrouplist.name + "</span></div>";
+			$("div#secondlayerdetailscontentdiv").attr("data-type", "datagrouplist");
+			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingdatagrouplist.name);
+			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingdatagrouplist.loadbalancer);
 			
-			divcontent = "<div class=datagrouplistcontentdiv>" +
-							"<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
-							"<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
+			html += "<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
+					"<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
 			
-			divcontent += "<table class=\"datagrouplisttable\">\
+			html += "<table class=\"datagrouplisttable\">\
 								<thead>\
 									<tr><th class=\"keyheader\">Key</th><th class=\"valueheader\">Value</th></tr>\
 								</thead>\
 								<tbody>"
 			
 			if(Object.keys(matchingdatagrouplist).length == 0){
-				divcontent += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group list</td></tr>"
+				html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group list</td></tr>"
 			} else {
 				for(var i in matchingdatagrouplist.data){
-					divcontent += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagrouplist.data[i] + "</td></tr>";
+					html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagrouplist.data[i] + "</td></tr>";
 				}
 			}
 			
-			divcontent += "</tbody></table\">"
-			
-			divcontent += '</div>';
+			html += "</tbody></table\">"
 
 		}
 		
-		$('#secondlayerdetailsfooter').html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'#secondlayerdiv\').fadeOut()">Close data group list details</a>');
-		$("#secondlayerdetailscontentdiv").html(divcontent);
+		$("a#closesecondlayerbutton").text("Close data group list details");
+		$("#secondlayerdetailscontentdiv").html(html);
 		$("#secondlayerdiv").fadeIn();
+		updateLocationHash();
 
 	}
 
@@ -1876,19 +1961,25 @@
 		var pools = siteData.pools;
 		var matchingpool = "";
 		
+		updateLocationHash(pool + "@loadbalancer", null)
+
 		//Find the matching pool from the JSON object
 		for(var i in pools){
 			if(pools[i].name == pool && pools[i].loadbalancer == loadbalancer) {
 				matchingpool = pools[i]
-			}		
+			}
 		}
 		
 		//If a pool was found, populate the pool details table and display it on the page
 		if(matchingpool != ""){
 			
 			//Build the table and headers
-			$("." + layer + "layerdetailsheader").html(matchingpool.name);
-			
+			$("#" + layer + "layerdetailscontentdiv").attr("data-type", "pool");
+			$("#" + layer + "layerdetailscontentdiv").attr("data-objectname", matchingpool.name);
+			$("#" + layer + "layerdetailscontentdiv").attr("data-loadbalancer", matchingpool.loadbalancer);
+
+			var html = "<div class=\"pooldetailsheader\"><span>Pool: " + matchingpool.name + "</span></div>";
+
 			var table = `
 			<table class="pooldetailstable">
 				<thead>
@@ -2027,8 +2118,7 @@
 				table += '</tbody></table>';
 			}
 			
-			
-			$("#" + layer + "layerdetailsfooter").html('<a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:$(\'.lightbox\').fadeOut()">Close pool details</a><a href="javascript:void(0);" onMouseClick="" onMouseOver="javascript:showPoolShareLink(\'' + pool +'@' + loadbalancer + '\')" class="sharepoollink">Share pool details<p>CTRL + C to copy<br><input id="sharepoollink" value=""></p></a>');
+			html += table;	
 
 		} else {
 			var table = `<div id="objectnotfound">
@@ -2046,8 +2136,10 @@
 			</div>`
 		}
 
-		$("#" + layer + "layerdetailscontentdiv").html(table);
+		$("a#close" + layer + "layerbutton").text("Close pool details");
+		$("#" + layer + "layerdetailscontentdiv").html(html);
 		$("#" + layer + "layerdiv").fadeIn();
+		updateLocationHash();
 
 	}
 
@@ -2085,8 +2177,6 @@
 
 	}
 
-
-
 	// a and b are javascript Date objects
 	function dateDiffInDays(a, b) {
 
@@ -2096,6 +2186,11 @@
 		var utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
 
 		return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+	}
+
+	function activateMenuButton(b){
+		$("div.menuitem").removeClass("menuitemactive");
+		$(b).addClass("menuitemactive");
 	}
 
 	function generateCSV(){

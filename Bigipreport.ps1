@@ -372,7 +372,7 @@ Function Send-Errors {
 				$Errorsummary += "</tbody></table></body></html>"
 			}
 			log verbose "Sending report"
-			$Subject = "$(Get-Date -format d): BigIP Report generation has has failed"
+			$Subject = "$(Get-Date -format d): BigIP Report generation encountered errors"
 	        $Body = "$errorsummary"
 	
 	        Foreach($Recipient in $Global:Bigipreportconfig.Settings.ErrorReporting.Recipients.Recipient){
@@ -2610,35 +2610,31 @@ $Global:HTML += @"
 $Global:HTML += @"
 
     	<div class="lightbox" id="firstlayerdiv">
-    		<div id="firstlayerdetailsheader" class="firstlayerdetailsheader"></div>
     		<div class="innerLightbox">
-    			<div class="firstlayerdetailscontent" id="firstlayerdetailscontentdiv">
+    			<div class="lightboxcontent" id="firstlayerdetailscontentdiv">
     				
     			</div>
     		</div>
-    		<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"></div>
+    		<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"><a class="lightboxbutton" id="closefirstlayerbutton" href="javascript:void(0);">Close div</a></div>
     	</div>
     	
     	<div class="lightbox" id="secondlayerdiv">
-    		<div class="secondlayerdetailsheader"></div>
     		<div class="innerLightbox">
-    			<div class="secondlayerdetailscontent" id="secondlayerdetailscontentdiv">
-    				
+    			<div class="lightboxcontent" id="secondlayerdetailscontentdiv">
     			</div>
-    			
     		</div>
-    		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"></div>
-    	</div>	
+    		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton" id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>
+    	</div>
 
         <div class="lightbox" id="consolediv">
                 <div id="consoleholder">
                     <div class="sidemenu">
-                        <div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div>
-                        <div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div>
-                        <div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates</div>
-                        <div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div>
-                        <div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div>
-                        <div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
+                        <div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
+                     --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div><!--                                  Weird solution. But it works.
+                     --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates</div><!--
+                     --><div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div><!--
+                     --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div><!--
+                     --><div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
                     </div>
 
                     <div class="consolesection" id="deviceoverview"></div>
@@ -2657,7 +2653,6 @@ $Global:HTML += @"
                     </div>
                     
                     <div class="consolesection" id="helpcontent">
-                        <h2>Tips and tricks</h2>
                         <h3>Filtering for pool members being down</h3>
                         <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b>"</font>, <font color="green"><b>"UP"</b></font> and <b>"DISABLED"</b>.</p>
                         <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
@@ -2666,16 +2661,16 @@ $Global:HTML += @"
                         <h3>Pool member tests</h3>
                         <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
                         <h3>Feature requests</h3>
-                        <p>Please add any feature requests or suggestions here.</p>
+                        <p>Please add any feature requests or suggestions here:</p>
                         <p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
+                        <p>And if you like the project, please set aside some of your time to leave a <a href=\"https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
                         <h3>Troubleshooting</h3>
                         <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
                         <h3>Contact</h3>
                         <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
                     </div>
-
                 </div>
-                <div id="consoledivfooter"><a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:`$('div#consolediv').fadeOut()">Close console</a></div>
+                <div id="consoledivfooter"><a class="lightboxbutton" id="closeconsolebutton" href="javascript:void(0);">Close console</a></div>
         </div>
 
         

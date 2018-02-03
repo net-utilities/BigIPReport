@@ -452,62 +452,7 @@ a:hover.monitortest p {
 	text-decoration: none;
 }
 
-a.sharepoollink p {
-	position: absolute;
-	color: #000;
-	top:-55px;
-	left:40%;
-	background: #fff;
-	border: 1px solid #000;
-	padding-left:5px;
-	padding-right:5px;
-	height: 36px;
-	width:150px;
-	line-height: 14px;
-	text-align: center;
-	visibility: hidden;
-	border-radius: 6px;
-}
-a.sharepoollink p:before {
-	content: '';
-	position: absolute;
-	top: 100%;
-	left: 40%;
-	margin-left: 2px;
-	width: 0; height: 0;
-	border-top: 9px solid #000;
-	border-right: 9px solid transparent;
-	border-left: 9px solid transparent;
-}
-a.sharepoollink p:after {
-	content: '';
-	position: absolute;
-	top: 100%;
-	left: 40%;
-	margin-left: 3px;
-	width: 0; height: 0;
-	border-top: 8px solid #fff;
-	border-right: 8px solid transparent;
-	border-left: 8px solid transparent;
-}
-
-a:hover.sharepoollink p {
-	visibility: visible;
-	bottom: 30px;
-	left: 40%;
-	margin-left: -65px;
-	z-index: 999;
-	font-size:10px;
-	font-weight:bold;
-}
-
-a:hover.sharepoollink p input {
-	font-size:12px;
-	margin-left:0px;
-}
-
-
-a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton, a.sharepoollink {
+a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton {
 	position: relative;
 	display: inline;
 	background: #33699d;
@@ -530,7 +475,12 @@ a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
 	padding: 5px 20px 5px 20px;
 }
 
-a.lightboxbutton, a.sharepoollink {
+a.exportCSVButton {
+	margin-left:10px;
+}
+
+
+a.lightboxbutton {
 	font-size: 14px;
 	padding: 7px 20px 7px 20px;
 }
@@ -563,7 +513,7 @@ span.textstatus {
 
 /* The outer div containing irule details */
 
-.firstlayerdetailscontent {
+div#firstlayerdetailscontent {
 	display: table;
 	margin: 0 auto;
 	max-width: 95%;
@@ -572,30 +522,28 @@ span.textstatus {
 
 /*Header with the pool name */
 
-.firstlayerdetailsheader {
+div.virtualserverdetailsheader, div.iruledetailsheader, div.datagrouplistdetailsheader {
 	font-family:Cambria;
 	font-size:24px;
+	font-weight: bold;
 	text-align: center;
-	color:#ffffff;
-	margin-top:65px;
+	color:var(--defaultfontcolor);
+	margin-bottom: 10px
 }
 
+div.pooldetailsheader {
+	font-family:Cambria;
+	font-size:30px;
+	font-weight: bold;
+	text-align: center;
+	color:var(--defaultfontcolor);
+	margin-bottom: 10px
+}
 
 .bigipreportheader {
 	padding-top:5px;
 	padding-bottom:10px;
 	text-align: center;
-}
-
-
-/*Header with the pool name */
-
-.secondlayerdetailsheader {
-	font-family:Cambria;
-	font-size:24px;
-	text-align: center;
-	color:#ffffff;
-	margin-top:40px;
 }
 
 /****************************************************************************************************************************
@@ -667,7 +615,7 @@ div#objectnotfound h4 {
 	display: table;
 	margin: 0 auto;
 }
-.secondlayerdetailscontent {
+div#secondlayerdetailscontent {
 	display: table;
 	margin: 0 auto;
 	max-width: 95%;
@@ -687,11 +635,6 @@ div#objectnotfound h4 {
 	This section contains the style for the data group list details lightbox content
 *****************************************************************************************************************************/
 
-.datagrouplistcontentdiv {
-	display: table;
-	margin: 0 auto;
-}
-
 .dgtype {
 	font-family:Cambria;
 	font-size:20px;
@@ -705,14 +648,15 @@ div#objectnotfound h4 {
 	color:red;
 }
 
-.datagrouplisttable td,th {
-	/*border: 1px solid #000;*/
-	padding:10px;
-}
-
 .datagrouplisttable  {
 	border-collapse: collapse;
 	font-family: Calibri;
+	padding:10px;
+	width: 100%;
+}
+
+.datagrouplisttable td,th {
+	/*border: 1px solid #000;*/
 	padding:10px;
 }
 
@@ -720,6 +664,7 @@ div#objectnotfound h4 {
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
+	text-align: center;
 }
 
 .datagrouplisttable thead > tr > th {
@@ -737,155 +682,63 @@ div#objectnotfound h4 {
 }
 
 /**********************************************************************************************************************************
-	Styles for the share link
+	Styles for generic objects
 ***********************************************************************************************************************************/
 
 /* Generic tooltip for showing information above links */
-a.sharelink {
+a.tooltip {
 	position: relative;
 	display: inline;
-	background: #33699d;
-	background-image: -webkit-linear-gradient(top, #33699d, #33699d);
-	background-image: -moz-linear-gradient(top, #33699d, #33699d);
-	background-image: -ms-linear-gradient(top, #33699d, #33699d);
-	background-image: -o-linear-gradient(top, #33699d, #33699d);
-	background-image: linear-gradient(to bottom, #33699d, #33699d);
-	-webkit-border-radius: 8;
-	-moz-border-radius: 8;
-	border-radius: 8px;
-	font-family: Arial;
-	color: #ffffff;
-	font-size: 12px;
-	padding: 5px 20px 5px 20px;
-	text-decoration: none;
-	margin-left:10px;
-	margin-right:5px;
-}
-a.sharelink:hover {
-	background: #3cb0fd;
-	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: -ms-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: -o-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: linear-gradient(to bottom, #3a79b5, #3a79b5);
-	text-decoration: none;
+	text-decoration:none;
+	color:var(--defaultfontcolor);
 }
 
-a.sharelink p {
+a.tooltip p {
 	position: absolute;
 	color: #000;
 	top:-55px;
 	left:40%;
 	background: #fff;
 	border: 1px solid #000;
-	padding-left:5px;
-	padding-right:5px;
-	height: 36px;
-	width:150px;
-	line-height: 14px;
+	padding-left:10px;
+	padding-right:10px;
+	height: 29px;
+	line-height: 29px;
 	text-align: center;
 	visibility: hidden;
 	border-radius: 6px;
 }
-a.sharelink p:before {
+
+a.tooltip p:before {
 	content: '';
 	position: absolute;
 	top: 100%;
 	left: 40%;
-	margin-left: 2px;
+	margin-left: -9px;
 	width: 0; height: 0;
 	border-top: 9px solid #000;
 	border-right: 9px solid transparent;
 	border-left: 9px solid transparent;
 }
-a.sharelink p:after {
+a.tooltip p:after {
 	content: '';
 	position: absolute;
 	top: 100%;
 	left: 40%;
-	margin-left: 3px;
+	margin-left: -8px;
 	width: 0; height: 0;
 	border-top: 8px solid #fff;
 	border-right: 8px solid transparent;
 	border-left: 8px solid transparent;
 }
 
-a:hover.sharelink p {
+a:hover.tooltip p {
 	visibility: visible;
 	bottom: 30px;
 	left: 40%;
-	margin-left: -65px;
+	margin-left: -76px;
 	z-index: 999;
-	font-size:10px;
-	font-weight:bold;
-}
-
-a:hover.sharelink p input {
-	font-size:12px;
-	margin-left:0px;
-}
-
-
-
-
-/**********************************************************************************************************************************
-	Styles for generic objects
-***********************************************************************************************************************************/
-
-/* Generic tooltip for showing information above links */
-a.tooltip {
-  position: relative;
-  display: inline;
-  text-decoration:none;
-  color:var(--defaultfontcolor);
-}
-
-a.tooltip p {
-  position: absolute;
-  color: #000;
-  top:-55px;
-  left:40%;
-  background: #fff;
-  border: 1px solid #000;
-  padding-left:10px;
-  padding-right:10px;
-  height: 29px;
-  line-height: 29px;
-  text-align: center;
-  visibility: hidden;
-  border-radius: 6px;
-}
-
-a.tooltip p:before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 40%;
-  margin-left: -9px;
-  width: 0; height: 0;
-  border-top: 9px solid #000;
-  border-right: 9px solid transparent;
-  border-left: 9px solid transparent;
-}
-a.tooltip p:after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 40%;
-  margin-left: -8px;
-  width: 0; height: 0;
-  border-top: 8px solid #fff;
-  border-right: 8px solid transparent;
-  border-left: 8px solid transparent;
-}
-
-a:hover.tooltip p {
-  visibility: visible;
-  bottom: 30px;
-  left: 40%;
-  margin-left: -76px;
-  z-index: 999;
-  white-space: nowrap;
+	white-space: nowrap;
 }
 
 /* Generic class for the lightbox divs that contains detailed information about the pools, virtual servers and irules etc. */
@@ -907,7 +760,7 @@ div.innerLightbox {
 	max-height: 75%;
 	max-width: 90%;
 	overflow-y: scroll;
-	padding:20px;
+	padding: 10px 20px 20px 20px;
 	top:100px;
 	border: 1px #000 solid;
 	-webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
@@ -916,7 +769,7 @@ div.innerLightbox {
 }
 
 div.innerLightbox {
-	margin-top:20px;
+	margin-top:40px;
 }
 
 
@@ -925,16 +778,16 @@ div.innerLightbox {
 ***********************************************************************************************************************************/
 
 div#consoleholder {
-  background: #fff;
-  display: inline-block;
-  text-align: left;
-  max-width: 90%;
-  padding: 0px;
-  border: 1px #000 solid;
-  -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  -moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  margin-top: 2%;
+	background: #fff;
+	display: inline-block;
+	text-align: left;
+	max-width: 90%;
+	padding: 0px;
+	border: 1px #000 solid;
+	-webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+	box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+	margin-top: 2%;
 }
 
 div.consolesection {
@@ -945,26 +798,30 @@ div.consolesection {
 }
 
 div.sidemenu {
-  background-color: var(--headerbackgroundcolor);
-  width: 100%;
-  text-align: center;
+	background-color: var(--headerbackgroundcolor);
+	width: 100%;
+	text-align: center;
 }
 
 div.sidemenu div.menuitem {
-  padding: 10px;
-  font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  display: inline-block;
-  padding: 10px 30px 10px 20px;
+	padding: 10px;
+	font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	display: inline-block;
+	padding: 10px 30px 10px 20px;
 }
 
 div.sidemenu div.menuitem img {
-  max-height: 35px;
-  vertical-align: middle;
+	max-height: 35px;
+	vertical-align: middle;
 }
 
 div.menuitem:hover {
-  background-color: #d0d0d0;
-  cursor: pointer;
+	background-color: #d0d0d0;
+	cursor: pointer;
+}
+
+div.menuitemactive {
+	background-color: #c0c0c0;
 }
 
 div#consoledivfooter {
@@ -1247,109 +1104,109 @@ div#definedirules {
 }
 
 span.adcLinkSpan a {
-  background: #da212f;
-  background-image: -webkit-linear-gradient(top, #99173C, #B93057);
-  background-image: -moz-linear-gradient(top, #99173C, #B93057);
-  background-image: -ms-linear-gradient(top, #99173C, #B93057);
-  background-image: -o-linear-gradient(top, #99173C, #B93057);
-  background-image: linear-gradient(to bottom, #99173C, #B93057);
-  -webkit-border-radius: 28;
-  -moz-border-radius: 28;
-  border-radius: 28px;
-  font-family: Arial;
-  color: #ffffff;
-  font-size: 12px;
-  padding: 2.5px 5px 2.5px 5px;
-  text-decoration: none;
+	background: #da212f;
+	background-image: -webkit-linear-gradient(top, #99173C, #B93057);
+	background-image: -moz-linear-gradient(top, #99173C, #B93057);
+	background-image: -ms-linear-gradient(top, #99173C, #B93057);
+	background-image: -o-linear-gradient(top, #99173C, #B93057);
+	background-image: linear-gradient(to bottom, #99173C, #B93057);
+	-webkit-border-radius: 28;
+	-moz-border-radius: 28;
+	border-radius: 28px;
+	font-family: Arial;
+	color: #ffffff;
+	font-size: 12px;
+	padding: 2.5px 5px 2.5px 5px;
+	text-decoration: none;
 }
 
 span.adcLinkSpan a:hover {
-  background: #c92330;
-  background-image: -webkit-linear-gradient(top, #B93057, #D05276);
-  background-image: -moz-linear-gradient(top, #B93057, #D05276);
-  background-image: -ms-linear-gradient(top, #B93057, #D05276);
-  background-image: -o-linear-gradient(top, #B93057, #D05276);
-  background-image: linear-gradient(to bottom, #B93057, #D05276);
-  text-decoration: none;
+	background: #c92330;
+	background-image: -webkit-linear-gradient(top, #B93057, #D05276);
+	background-image: -moz-linear-gradient(top, #B93057, #D05276);
+	background-image: -ms-linear-gradient(top, #B93057, #D05276);
+	background-image: -o-linear-gradient(top, #B93057, #D05276);
+	background-image: linear-gradient(to bottom, #B93057, #D05276);
+	text-decoration: none;
 }
 
 .visibleColumnButton {
-  background: #3498db;
-  background-image: -webkit-linear-gradient(top, #4F9717, #4F9717);
-  background-image: -moz-linear-gradient(top, #4F9717, #4F9717);
-  background-image: -ms-linear-gradient(top, #4F9717, #4F9717);
-  background-image: -o-linear-gradient(top, #4F9717, #4F9717);
-  background-image: linear-gradient(to bottom, #4F9717, #4F9717);
-  /*-webkit-border-radius: 28;
-  -moz-border-radius: 28;
-  border-radius: 28px;
-  */
-  font-family: Arial;
-  color: #fff;
-  font-size: 12px;
-  padding: 4px 8px 4px 8px;
-  margin-left: 5px;
-  text-decoration: none;
+	background: #3498db;
+	background-image: -webkit-linear-gradient(top, #4F9717, #4F9717);
+	background-image: -moz-linear-gradient(top, #4F9717, #4F9717);
+	background-image: -ms-linear-gradient(top, #4F9717, #4F9717);
+	background-image: -o-linear-gradient(top, #4F9717, #4F9717);
+	background-image: linear-gradient(to bottom, #4F9717, #4F9717);
+	/*-webkit-border-radius: 28;
+	-moz-border-radius: 28;
+	border-radius: 28px;
+	*/
+	font-family: Arial;
+	color: #fff;
+	font-size: 12px;
+	padding: 4px 8px 4px 8px;
+	margin-left: 5px;
+	text-decoration: none;
 }
 
 .visibleColumnButton:hover {
-  background: #3cb0fd;
-  background-image: -webkit-linear-gradient(top, #71b62c, #71b62c);
-  background-image: -moz-linear-gradient(top, #71b62c, #71b62c);
-  background-image: -ms-linear-gradient(top, #71b62c, #71b62c);
-  background-image: -o-linear-gradient(top, #71b62c, #71b62c);
-  background-image: linear-gradient(to bottom, #71b62c, #71b62c);
-  text-decoration: none;
+	background: #3cb0fd;
+	background-image: -webkit-linear-gradient(top, #71b62c, #71b62c);
+	background-image: -moz-linear-gradient(top, #71b62c, #71b62c);
+	background-image: -ms-linear-gradient(top, #71b62c, #71b62c);
+	background-image: -o-linear-gradient(top, #71b62c, #71b62c);
+	background-image: linear-gradient(to bottom, #71b62c, #71b62c);
+	text-decoration: none;
 }
 
 .hiddenColumnButton {
-  background: #f5f5f5;
-  background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
-  font-family: Arial;
-  color: #383838;
-  font-size: 12px;
-  padding: 4px 8px 4px 8px;
-  margin-left: 5px;
-  text-decoration: none;
+	background: #f5f5f5;
+	background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+	font-family: Arial;
+	color: #383838;
+	font-size: 12px;
+	padding: 4px 8px 4px 8px;
+	margin-left: 5px;
+	text-decoration: none;
 }
 
 .hiddenColumnButton:hover {
-  background: #ebebeb;
-  background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
-  text-decoration: none;
+	background: #ebebeb;
+	background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
+	text-decoration: none;
 }
 
 .resetFiltersButton {
-  background: #f5f5f5;
-  background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
-  font-family: Arial;
-  color: #383838;
-  font-size: 12px;
-  padding: 4px 8px 4px 8px;
-  margin-left: 5px;
-  text-decoration: none;
+	background: #f5f5f5;
+	background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+	font-family: Arial;
+	color: #383838;
+	font-size: 12px;
+	padding: 4px 8px 4px 8px;
+	margin-left: 5px;
+	text-decoration: none;
 }
 
 .resetFiltersButton:hover {
-  background: #ebebeb;
-  background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
-  text-decoration: none;
+	background: #ebebeb;
+	background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
+	text-decoration: none;
 }
 
 #toggleHeader {
