@@ -1801,8 +1801,19 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		$ObjLoadBalancer.ip = $Device
 		$ObjLoadBalancer.name = $BigIPHostname
 		$ObjLoadBalancer.model = $SystemInfo.platform
-		$ObjLoadBalancer.serial = $SystemInfo.chassis_serial
-		$ObjLoadBalancer.category = $SystemInfo.product_category
+        $ObjLoadBalancer.category = $SystemInfo.product_category
+
+        If($ObjLoadBalancer.category -eq "Virtual Edition"){
+            # Virtual Editions is using the base registration keys as serial numbers
+            $RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
+            $BaseRegistrationKey = $RegistrationKeys[0]
+
+            $Serial = $BaseRegistrationKey.split("-")[-1]
+        } else {
+            $Serial = $SystemInfo.chassis_serial
+        }
+
+		$ObjLoadBalancer.serial = $Serial		
 
         If($ObjLoadBalancer.category -eq "VCMP"){
 
