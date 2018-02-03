@@ -283,7 +283,7 @@
 			**************************************************************************************************************/	
 			
 			//Add the div containing the update available button
-			$("#preferencesButton").after($('<span id="updateavailablespan"></span>'));
+			$("a#showConsoleButton").after($('<span id="updateavailablespan"></span>'));
 			
 			//Check if there's a new update every 30 minutes
 			setInterval(function(){
@@ -295,22 +295,21 @@
 						var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
 						var currenttime  = new Date();
 
-						timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
+						// The time since this report was generated (in minutes)
+						//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
+						
+						// If there's been a new report, how long ago (in minutes)
 						timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
 
-						if( timesincerefresh > 240){
-							if(timesincelatestgeneration > 5){
-								$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
-							}
-						} else if ( timesincerefresh != 0){
-							if(timesincelatestgeneration > 5){
-								$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
-							}
+						if( timesincerefresh > 10){
+							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
+						} else if ( timesincerefresh > 60){
+							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
 						}
 
 					}
 					}); 
-			},1800000 );
+			},3000 );
 			
 			/****************************************************************************************************************************** 
 			
