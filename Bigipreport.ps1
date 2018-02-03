@@ -2612,33 +2612,32 @@ $Global:HTML += @"
     	<div class="lightbox" id="firstlayerdiv">
     		<div id="firstlayerdetailsheader" class="firstlayerdetailsheader"></div>
     		<div class="innerLightbox">
-    			<div class="firstlayerdetailscontent" id="firstlayerdetailscontentdiv">
+    			<div class="lightboxcontent" id="firstlayerdetailscontentdiv">
     				
     			</div>
     		</div>
-    		<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"></div>
+    		<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"><a class="lightboxbutton" id="closefirstlayerbutton" href="javascript:void(0);">Close div</a></div>
     	</div>
     	
     	<div class="lightbox" id="secondlayerdiv">
     		<div class="secondlayerdetailsheader"></div>
     		<div class="innerLightbox">
-    			<div class="secondlayerdetailscontent" id="secondlayerdetailscontentdiv">
+    			<div class="lightboxcontent" id="secondlayerdetailscontentdiv">
     				
     			</div>
-    			
     		</div>
-    		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"></div>
-    	</div>	
+    		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton" id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>
+    	</div>
 
         <div class="lightbox" id="consolediv">
                 <div id="consoleholder">
                     <div class="sidemenu">
-                        <div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div>
-                        <div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div>
-                        <div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates</div>
-                        <div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div>
-                        <div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div>
-                        <div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
+                        <div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
+                     --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div><!--                                  Weird solution. But it works.
+                     --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates</div><!--
+                     --><div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div><!--
+                     --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div><!--
+                     --><div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
                     </div>
 
                     <div class="consolesection" id="deviceoverview"></div>
@@ -2673,9 +2672,8 @@ $Global:HTML += @"
                         <h3>Contact</h3>
                         <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
                     </div>
-
                 </div>
-                <div id="consoledivfooter"><a class="lightboxbutton" href="javascript:void(0);" onClick="javascript:`$('div#consolediv').fadeOut()">Close console</a></div>
+                <div id="consoledivfooter"><a class="lightboxbutton" id="closeconsolebutton" href="javascript:void(0);">Close console</a></div>
         </div>
 
         

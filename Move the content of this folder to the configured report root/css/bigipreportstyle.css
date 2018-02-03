@@ -563,7 +563,7 @@ span.textstatus {
 
 /* The outer div containing irule details */
 
-.firstlayerdetailscontent {
+div#firstlayerdetailscontent {
 	display: table;
 	margin: 0 auto;
 	max-width: 95%;
@@ -667,7 +667,7 @@ div#objectnotfound h4 {
 	display: table;
 	margin: 0 auto;
 }
-.secondlayerdetailscontent {
+div#secondlayerdetailscontent {
 	display: table;
 	margin: 0 auto;
 	max-width: 95%;
@@ -825,67 +825,64 @@ a:hover.sharelink p input {
 	margin-left:0px;
 }
 
-
-
-
 /**********************************************************************************************************************************
 	Styles for generic objects
 ***********************************************************************************************************************************/
 
 /* Generic tooltip for showing information above links */
 a.tooltip {
-  position: relative;
-  display: inline;
-  text-decoration:none;
-  color:var(--defaultfontcolor);
+	position: relative;
+	display: inline;
+	text-decoration:none;
+	color:var(--defaultfontcolor);
 }
 
 a.tooltip p {
-  position: absolute;
-  color: #000;
-  top:-55px;
-  left:40%;
-  background: #fff;
-  border: 1px solid #000;
-  padding-left:10px;
-  padding-right:10px;
-  height: 29px;
-  line-height: 29px;
-  text-align: center;
-  visibility: hidden;
-  border-radius: 6px;
+	position: absolute;
+	color: #000;
+	top:-55px;
+	left:40%;
+	background: #fff;
+	border: 1px solid #000;
+	padding-left:10px;
+	padding-right:10px;
+	height: 29px;
+	line-height: 29px;
+	text-align: center;
+	visibility: hidden;
+	border-radius: 6px;
 }
 
 a.tooltip p:before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 40%;
-  margin-left: -9px;
-  width: 0; height: 0;
-  border-top: 9px solid #000;
-  border-right: 9px solid transparent;
-  border-left: 9px solid transparent;
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 40%;
+	margin-left: -9px;
+	width: 0; height: 0;
+	border-top: 9px solid #000;
+	border-right: 9px solid transparent;
+	border-left: 9px solid transparent;
 }
 a.tooltip p:after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 40%;
-  margin-left: -8px;
-  width: 0; height: 0;
-  border-top: 8px solid #fff;
-  border-right: 8px solid transparent;
-  border-left: 8px solid transparent;
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 40%;
+	margin-left: -8px;
+	width: 0; height: 0;
+	border-top: 8px solid #fff;
+	border-right: 8px solid transparent;
+	border-left: 8px solid transparent;
 }
 
 a:hover.tooltip p {
-  visibility: visible;
-  bottom: 30px;
-  left: 40%;
-  margin-left: -76px;
-  z-index: 999;
-  white-space: nowrap;
+	visibility: visible;
+	bottom: 30px;
+	left: 40%;
+	margin-left: -76px;
+	z-index: 999;
+	white-space: nowrap;
 }
 
 /* Generic class for the lightbox divs that contains detailed information about the pools, virtual servers and irules etc. */
@@ -925,16 +922,16 @@ div.innerLightbox {
 ***********************************************************************************************************************************/
 
 div#consoleholder {
-  background: #fff;
-  display: inline-block;
-  text-align: left;
-  max-width: 90%;
-  padding: 0px;
-  border: 1px #000 solid;
-  -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  -moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  margin-top: 2%;
+	background: #fff;
+	display: inline-block;
+	text-align: left;
+	max-width: 90%;
+	padding: 0px;
+	border: 1px #000 solid;
+	-webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+	box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+	margin-top: 2%;
 }
 
 div.consolesection {
@@ -945,26 +942,30 @@ div.consolesection {
 }
 
 div.sidemenu {
-  background-color: var(--headerbackgroundcolor);
-  width: 100%;
-  text-align: center;
+	background-color: var(--headerbackgroundcolor);
+	width: 100%;
+	text-align: center;
 }
 
 div.sidemenu div.menuitem {
-  padding: 10px;
-  font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  display: inline-block;
-  padding: 10px 30px 10px 20px;
+	padding: 10px;
+	font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	display: inline-block;
+	padding: 10px 30px 10px 20px;
 }
 
 div.sidemenu div.menuitem img {
-  max-height: 35px;
-  vertical-align: middle;
+	max-height: 35px;
+	vertical-align: middle;
 }
 
 div.menuitem:hover {
-  background-color: #d0d0d0;
-  cursor: pointer;
+	background-color: #d0d0d0;
+	cursor: pointer;
+}
+
+div.menuitemactive {
+	background-color: #c0c0c0;
 }
 
 div#consoledivfooter {
@@ -1247,109 +1248,109 @@ div#definedirules {
 }
 
 span.adcLinkSpan a {
-  background: #da212f;
-  background-image: -webkit-linear-gradient(top, #99173C, #B93057);
-  background-image: -moz-linear-gradient(top, #99173C, #B93057);
-  background-image: -ms-linear-gradient(top, #99173C, #B93057);
-  background-image: -o-linear-gradient(top, #99173C, #B93057);
-  background-image: linear-gradient(to bottom, #99173C, #B93057);
-  -webkit-border-radius: 28;
-  -moz-border-radius: 28;
-  border-radius: 28px;
-  font-family: Arial;
-  color: #ffffff;
-  font-size: 12px;
-  padding: 2.5px 5px 2.5px 5px;
-  text-decoration: none;
+	background: #da212f;
+	background-image: -webkit-linear-gradient(top, #99173C, #B93057);
+	background-image: -moz-linear-gradient(top, #99173C, #B93057);
+	background-image: -ms-linear-gradient(top, #99173C, #B93057);
+	background-image: -o-linear-gradient(top, #99173C, #B93057);
+	background-image: linear-gradient(to bottom, #99173C, #B93057);
+	-webkit-border-radius: 28;
+	-moz-border-radius: 28;
+	border-radius: 28px;
+	font-family: Arial;
+	color: #ffffff;
+	font-size: 12px;
+	padding: 2.5px 5px 2.5px 5px;
+	text-decoration: none;
 }
 
 span.adcLinkSpan a:hover {
-  background: #c92330;
-  background-image: -webkit-linear-gradient(top, #B93057, #D05276);
-  background-image: -moz-linear-gradient(top, #B93057, #D05276);
-  background-image: -ms-linear-gradient(top, #B93057, #D05276);
-  background-image: -o-linear-gradient(top, #B93057, #D05276);
-  background-image: linear-gradient(to bottom, #B93057, #D05276);
-  text-decoration: none;
+	background: #c92330;
+	background-image: -webkit-linear-gradient(top, #B93057, #D05276);
+	background-image: -moz-linear-gradient(top, #B93057, #D05276);
+	background-image: -ms-linear-gradient(top, #B93057, #D05276);
+	background-image: -o-linear-gradient(top, #B93057, #D05276);
+	background-image: linear-gradient(to bottom, #B93057, #D05276);
+	text-decoration: none;
 }
 
 .visibleColumnButton {
-  background: #3498db;
-  background-image: -webkit-linear-gradient(top, #4F9717, #4F9717);
-  background-image: -moz-linear-gradient(top, #4F9717, #4F9717);
-  background-image: -ms-linear-gradient(top, #4F9717, #4F9717);
-  background-image: -o-linear-gradient(top, #4F9717, #4F9717);
-  background-image: linear-gradient(to bottom, #4F9717, #4F9717);
-  /*-webkit-border-radius: 28;
-  -moz-border-radius: 28;
-  border-radius: 28px;
-  */
-  font-family: Arial;
-  color: #fff;
-  font-size: 12px;
-  padding: 4px 8px 4px 8px;
-  margin-left: 5px;
-  text-decoration: none;
+	background: #3498db;
+	background-image: -webkit-linear-gradient(top, #4F9717, #4F9717);
+	background-image: -moz-linear-gradient(top, #4F9717, #4F9717);
+	background-image: -ms-linear-gradient(top, #4F9717, #4F9717);
+	background-image: -o-linear-gradient(top, #4F9717, #4F9717);
+	background-image: linear-gradient(to bottom, #4F9717, #4F9717);
+	/*-webkit-border-radius: 28;
+	-moz-border-radius: 28;
+	border-radius: 28px;
+	*/
+	font-family: Arial;
+	color: #fff;
+	font-size: 12px;
+	padding: 4px 8px 4px 8px;
+	margin-left: 5px;
+	text-decoration: none;
 }
 
 .visibleColumnButton:hover {
-  background: #3cb0fd;
-  background-image: -webkit-linear-gradient(top, #71b62c, #71b62c);
-  background-image: -moz-linear-gradient(top, #71b62c, #71b62c);
-  background-image: -ms-linear-gradient(top, #71b62c, #71b62c);
-  background-image: -o-linear-gradient(top, #71b62c, #71b62c);
-  background-image: linear-gradient(to bottom, #71b62c, #71b62c);
-  text-decoration: none;
+	background: #3cb0fd;
+	background-image: -webkit-linear-gradient(top, #71b62c, #71b62c);
+	background-image: -moz-linear-gradient(top, #71b62c, #71b62c);
+	background-image: -ms-linear-gradient(top, #71b62c, #71b62c);
+	background-image: -o-linear-gradient(top, #71b62c, #71b62c);
+	background-image: linear-gradient(to bottom, #71b62c, #71b62c);
+	text-decoration: none;
 }
 
 .hiddenColumnButton {
-  background: #f5f5f5;
-  background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
-  font-family: Arial;
-  color: #383838;
-  font-size: 12px;
-  padding: 4px 8px 4px 8px;
-  margin-left: 5px;
-  text-decoration: none;
+	background: #f5f5f5;
+	background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+	font-family: Arial;
+	color: #383838;
+	font-size: 12px;
+	padding: 4px 8px 4px 8px;
+	margin-left: 5px;
+	text-decoration: none;
 }
 
 .hiddenColumnButton:hover {
-  background: #ebebeb;
-  background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
-  text-decoration: none;
+	background: #ebebeb;
+	background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
+	text-decoration: none;
 }
 
 .resetFiltersButton {
-  background: #f5f5f5;
-  background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
-  background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
-  font-family: Arial;
-  color: #383838;
-  font-size: 12px;
-  padding: 4px 8px 4px 8px;
-  margin-left: 5px;
-  text-decoration: none;
+	background: #f5f5f5;
+	background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
+	background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+	font-family: Arial;
+	color: #383838;
+	font-size: 12px;
+	padding: 4px 8px 4px 8px;
+	margin-left: 5px;
+	text-decoration: none;
 }
 
 .resetFiltersButton:hover {
-  background: #ebebeb;
-  background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
-  background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
-  text-decoration: none;
+	background: #ebebeb;
+	background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
+	background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
+	text-decoration: none;
 }
 
 #toggleHeader {
