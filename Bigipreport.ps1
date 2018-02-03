@@ -372,7 +372,7 @@ Function Send-Errors {
 				$Errorsummary += "</tbody></table></body></html>"
 			}
 			log verbose "Sending report"
-			$Subject = "$(Get-Date -format d): BigIP Report generation has has failed"
+			$Subject = "$(Get-Date -format d): BigIP Report generation encountered errors"
 	        $Body = "$errorsummary"
 	
 	        Foreach($Recipient in $Global:Bigipreportconfig.Settings.ErrorReporting.Recipients.Recipient){
