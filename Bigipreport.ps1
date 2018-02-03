@@ -2610,7 +2610,6 @@ $Global:HTML += @"
 $Global:HTML += @"
 
     	<div class="lightbox" id="firstlayerdiv">
-    		<div id="firstlayerdetailsheader" class="firstlayerdetailsheader"></div>
     		<div class="innerLightbox">
     			<div class="lightboxcontent" id="firstlayerdetailscontentdiv">
     				
@@ -2620,10 +2619,8 @@ $Global:HTML += @"
     	</div>
     	
     	<div class="lightbox" id="secondlayerdiv">
-    		<div class="secondlayerdetailsheader"></div>
     		<div class="innerLightbox">
     			<div class="lightboxcontent" id="secondlayerdetailscontentdiv">
-    				
     			</div>
     		</div>
     		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton" id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>

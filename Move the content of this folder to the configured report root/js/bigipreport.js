@@ -1493,7 +1493,8 @@
 		//If a pool was found, populate the pool details table and display it on the page
 		if(matchingvirtualserver != ""){
 
-			$(".firstlayerdetailsheader").html(matchingvirtualserver.name);
+			var html = "<div class=\"virtualserverdetailsheader\"><span>Virtual Server: " + matchingvirtualserver.name + "</span></div>";
+
 			$("div#firstlayerdetailscontentdiv").attr("data-type", "virtualserver");
 			$("div#firstlayerdetailscontentdiv").attr("data-objectname", matchingvirtualserver.name);
 			$("div#firstlayerdetailscontentdiv").attr("data-loadbalancer", matchingvirtualserver.loadbalancer);
@@ -1617,8 +1618,10 @@
 				}
 			}
 
+			html += table;
+
 		} else {
-			var table = `<div id="objectnotfound">
+			var html = `<div id="objectnotfound">
 				<h1>No matching Virtual Server was found</h1>
 
 				<h4>What happened?</h4>
@@ -1634,7 +1637,7 @@
 		}
 
 		$('a#closefirstlayerbutton').text("Close virtual server details");
-		$("#firstlayerdetailscontentdiv").html(table);
+		$("#firstlayerdetailscontentdiv").html(html);
 		$("#firstlayerdiv").fadeIn();
 		updateLocationHash();
 
@@ -1672,7 +1675,8 @@
 		if(matchingirule != ""){
 
 			//Populate the header
-			$(".secondlayerdetailsheader").html(matchingirule.name);
+			var html = "<div class=\"iruledetailsheader\"><span>iRule: " + matchingirule.name + "</span></div>";
+
 			$("div#secondlayerdetailscontentdiv").attr("data-type", "irule");
 			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingirule.name);
 			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingirule.loadbalancer);
@@ -1704,17 +1708,21 @@
 			}
 			
 			//Prepare the div content
-			divcontent = '\
-			<div class="iRulesContent">\
-					<pre class="sh_tcl">' + definition + '</pre>\
-				</div>\
-			</div>';
+			html += `<table class="bigiptable">
+						<thead>
+							<tr><th>iRule definiton</th></tr>
+						</thead>
+						<tbody>
+						<tr><td><pre class="sh_tcl">` + definition + `</pre></td></tr>
+						</tbody>
+					</table>`
+
 		}
 		
 		//Add the close button to the footer
 		$("a#closesecondlayerbutton").text("Close irule details");
 		//Add the div content to the page
-		$("#secondlayerdetailscontentdiv").html(divcontent);
+		$("#secondlayerdetailscontentdiv").html(html);
 		//Add syntax highlighting
 		sh_highlightDocument('./js/', '.js');
 		//Show the div
@@ -1911,37 +1919,34 @@
 		//If a pool was found, populate the pool details table and display it on the page
 		if(matchingdatagrouplist != ""){
 			
-			$(".secondlayerdetailsheader").html(matchingdatagrouplist.name);
+			var html = "<div class=\"datagrouplistdetailsheader\"><span>Data group list: " + matchingdatagrouplist.name + "</span></div>";
 			$("div#secondlayerdetailscontentdiv").attr("data-type", "datagrouplist");
 			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingdatagrouplist.name);
 			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingdatagrouplist.loadbalancer);
 			
-			divcontent = "<div class=datagrouplistcontentdiv>" +
-							"<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
-							"<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
+			html += "<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
+					"<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
 			
-			divcontent += "<table class=\"datagrouplisttable\">\
+			html += "<table class=\"datagrouplisttable\">\
 								<thead>\
 									<tr><th class=\"keyheader\">Key</th><th class=\"valueheader\">Value</th></tr>\
 								</thead>\
 								<tbody>"
 			
 			if(Object.keys(matchingdatagrouplist).length == 0){
-				divcontent += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group list</td></tr>"
+				html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group list</td></tr>"
 			} else {
 				for(var i in matchingdatagrouplist.data){
-					divcontent += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagrouplist.data[i] + "</td></tr>";
+					html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagrouplist.data[i] + "</td></tr>";
 				}
 			}
 			
-			divcontent += "</tbody></table\">"
-			
-			divcontent += '</div>';
+			html += "</tbody></table\">"
 
 		}
 		
 		$("a#closesecondlayerbutton").text("Close data group list details");
-		$("#secondlayerdetailscontentdiv").html(divcontent);
+		$("#secondlayerdetailscontentdiv").html(html);
 		$("#secondlayerdiv").fadeIn();
 		updateLocationHash();
 
@@ -1970,10 +1975,11 @@
 		if(matchingpool != ""){
 			
 			//Build the table and headers
-			$("." + layer + "layerdetailsheader").html(matchingpool.name);
 			$("#" + layer + "layerdetailscontentdiv").attr("data-type", "pool");
 			$("#" + layer + "layerdetailscontentdiv").attr("data-objectname", matchingpool.name);
 			$("#" + layer + "layerdetailscontentdiv").attr("data-loadbalancer", matchingpool.loadbalancer);
+
+			var html = "<div class=\"pooldetailsheader\"><span>Pool: " + matchingpool.name + "</span></div>";
 
 			var table = `
 			<table class="pooldetailstable">
@@ -2113,7 +2119,7 @@
 				table += '</tbody></table>';
 			}
 			
-			$("a#close" + layer + "layerbutton").text("Close pool details");
+			html += table;	
 
 		} else {
 			var table = `<div id="objectnotfound">
@@ -2131,7 +2137,8 @@
 			</div>`
 		}
 
-		$("#" + layer + "layerdetailscontentdiv").html(table);
+		$("a#close" + layer + "layerbutton").text("Close pool details");
+		$("#" + layer + "layerdetailscontentdiv").html(html);
 		$("#" + layer + "layerdiv").fadeIn();
 		updateLocationHash();
 
