@@ -2653,7 +2653,6 @@ $Global:HTML += @"
                     </div>
                     
                     <div class="consolesection" id="helpcontent">
-                        <h2>Tips and tricks</h2>
                         <h3>Filtering for pool members being down</h3>
                         <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b>"</font>, <font color="green"><b>"UP"</b></font> and <b>"DISABLED"</b>.</p>
                         <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
@@ -2662,8 +2661,9 @@ $Global:HTML += @"
                         <h3>Pool member tests</h3>
                         <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
                         <h3>Feature requests</h3>
-                        <p>Please add any feature requests or suggestions here.</p>
+                        <p>Please add any feature requests or suggestions here:</p>
                         <p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
+                        <p>And if you like the project, please set aside some of your time to leave a <a href=\"https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
                         <h3>Troubleshooting</h3>
                         <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
                         <h3>Contact</h3>

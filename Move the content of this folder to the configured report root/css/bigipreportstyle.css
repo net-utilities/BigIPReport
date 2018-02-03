@@ -452,62 +452,7 @@ a:hover.monitortest p {
 	text-decoration: none;
 }
 
-a.sharepoollink p {
-	position: absolute;
-	color: #000;
-	top:-55px;
-	left:40%;
-	background: #fff;
-	border: 1px solid #000;
-	padding-left:5px;
-	padding-right:5px;
-	height: 36px;
-	width:150px;
-	line-height: 14px;
-	text-align: center;
-	visibility: hidden;
-	border-radius: 6px;
-}
-a.sharepoollink p:before {
-	content: '';
-	position: absolute;
-	top: 100%;
-	left: 40%;
-	margin-left: 2px;
-	width: 0; height: 0;
-	border-top: 9px solid #000;
-	border-right: 9px solid transparent;
-	border-left: 9px solid transparent;
-}
-a.sharepoollink p:after {
-	content: '';
-	position: absolute;
-	top: 100%;
-	left: 40%;
-	margin-left: 3px;
-	width: 0; height: 0;
-	border-top: 8px solid #fff;
-	border-right: 8px solid transparent;
-	border-left: 8px solid transparent;
-}
-
-a:hover.sharepoollink p {
-	visibility: visible;
-	bottom: 30px;
-	left: 40%;
-	margin-left: -65px;
-	z-index: 999;
-	font-size:10px;
-	font-weight:bold;
-}
-
-a:hover.sharepoollink p input {
-	font-size:12px;
-	margin-left:0px;
-}
-
-
-a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton, a.sharepoollink {
+a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton {
 	position: relative;
 	display: inline;
 	background: #33699d;
@@ -530,7 +475,12 @@ a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
 	padding: 5px 20px 5px 20px;
 }
 
-a.lightboxbutton, a.sharepoollink {
+a.exportCSVButton {
+	margin-left:10px;
+}
+
+
+a.lightboxbutton {
 	font-size: 14px;
 	padding: 7px 20px 7px 20px;
 }
@@ -729,95 +679,6 @@ div#secondlayerdetailscontent {
 	background-color:var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
-}
-
-/**********************************************************************************************************************************
-	Styles for the share link
-***********************************************************************************************************************************/
-
-/* Generic tooltip for showing information above links */
-a.sharelink {
-	position: relative;
-	display: inline;
-	background: #33699d;
-	background-image: -webkit-linear-gradient(top, #33699d, #33699d);
-	background-image: -moz-linear-gradient(top, #33699d, #33699d);
-	background-image: -ms-linear-gradient(top, #33699d, #33699d);
-	background-image: -o-linear-gradient(top, #33699d, #33699d);
-	background-image: linear-gradient(to bottom, #33699d, #33699d);
-	-webkit-border-radius: 8;
-	-moz-border-radius: 8;
-	border-radius: 8px;
-	font-family: Arial;
-	color: #ffffff;
-	font-size: 12px;
-	padding: 5px 20px 5px 20px;
-	text-decoration: none;
-	margin-left:10px;
-	margin-right:5px;
-}
-a.sharelink:hover {
-	background: #3cb0fd;
-	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: -ms-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: -o-linear-gradient(top, #3a79b5, #3a79b5);
-	background-image: linear-gradient(to bottom, #3a79b5, #3a79b5);
-	text-decoration: none;
-}
-
-a.sharelink p {
-	position: absolute;
-	color: #000;
-	top:-55px;
-	left:40%;
-	background: #fff;
-	border: 1px solid #000;
-	padding-left:5px;
-	padding-right:5px;
-	height: 36px;
-	width:150px;
-	line-height: 14px;
-	text-align: center;
-	visibility: hidden;
-	border-radius: 6px;
-}
-a.sharelink p:before {
-	content: '';
-	position: absolute;
-	top: 100%;
-	left: 40%;
-	margin-left: 2px;
-	width: 0; height: 0;
-	border-top: 9px solid #000;
-	border-right: 9px solid transparent;
-	border-left: 9px solid transparent;
-}
-a.sharelink p:after {
-	content: '';
-	position: absolute;
-	top: 100%;
-	left: 40%;
-	margin-left: 3px;
-	width: 0; height: 0;
-	border-top: 8px solid #fff;
-	border-right: 8px solid transparent;
-	border-left: 8px solid transparent;
-}
-
-a:hover.sharelink p {
-	visibility: visible;
-	bottom: 30px;
-	left: 40%;
-	margin-left: -65px;
-	z-index: 999;
-	font-size:10px;
-	font-weight:bold;
-}
-
-a:hover.sharelink p input {
-	font-size:12px;
-	margin-left:0px;
 }
 
 /**********************************************************************************************************************************
