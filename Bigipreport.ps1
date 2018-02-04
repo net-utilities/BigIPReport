@@ -188,7 +188,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "4.8.6"
+$Global:ScriptVersion = "5.0.0"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -1854,7 +1854,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		$FailoverStatus = $F5.ManagementDeviceGroup.get_failover_status()
 
 		$ObjLoadBalancer.active = $FailoverStatus.status -eq "ACTIVE"
-		$ObjLoadBalancer.color = $FailoverStatus.color -replace "COLOR_", ""
+		$ObjLoadBalancer.color = ($FailoverStatus.color -replace "COLOR_", "").toLower()
 
 		$ModuleDict = c@{}
 
@@ -2275,6 +2275,8 @@ $Global:HTML += @'
 		</script>
 	</head>
 	<body>
+        <div class="beforedocumentready"></div>
+        <div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
 		<div class="realtimestatusdiv">
 			<table>
 				<tr>
@@ -2285,7 +2287,6 @@ $Global:HTML += @'
 				</tr>
 			</table>
 		</div>
-		<div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
 '@
 
 	#Show the div used to contain information generating by clicking at pool members
@@ -2642,7 +2643,7 @@ $Global:HTML += @"
                     <div class="sidemenu">
                         <div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
                      --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div><!--                                  Weird solution. But it works.
-                     --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates</div><!--
+                     --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates <span id="certificatenotification"></span></div><!--
                      --><div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div><!--
                      --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div><!--
                      --><div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
