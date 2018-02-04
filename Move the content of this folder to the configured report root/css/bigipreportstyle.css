@@ -903,11 +903,15 @@ table#preferencestable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-size: 16px;
 	margin: 0 auto;
-	width: 800px;
+	width: 95%;
 }
 
 table#preferencestable tbody tr td {
 	padding: 5px;
+}
+
+table#preferencestable tbody tr td.preferencescheckbox {
+	text-align: center;
 }
 
 /****************************************************************************************************************************
@@ -977,7 +981,7 @@ div#reportlogs {
 table#reportlogstable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 0 auto;
-	width:95%;
+	/*width:95%;*/
 	white-space: wrap;
 }
 
