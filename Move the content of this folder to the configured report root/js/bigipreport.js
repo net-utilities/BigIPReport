@@ -467,15 +467,16 @@
 				
 				var loadbalancer = loadbalancers[i];
 
-				if(loadbalancer.statusvip.url !== "" && loadbalancer.success){
+				// Increase the not configured span for loadbalancers that is eligible for polling but has none configured
+				if(loadbalancer.statusvip.url === "" && (loadbalancer.active || loadbalancer.isonlydevice)){
+					
+					log("Loadbalancer " + loadbalancer.name + " does not have any status VIP configured", "INFO");
+					$("span#realtimenotconfigured").text(parseInt($("span#realtimenotconfigured").text()) + 1);
+					loadbalancer.statusvip.working = false;
+					loadbalancer.statusvip.reason = "None configured";
+
+				} else if (loadbalancer.statusvip.url !== "" && (loadbalancer.active || loadbalancer.isonlydevice)){
 					testStatusVIP(loadbalancer);
-				} else {
-					if(loadbalancer.success){
-						log("Loadbalancer " + loadbalancer.name + " does not have any status VIP configured", "INFO");
-						$("span#realtimenotconfigured").text(parseInt($("span#realtimenotconfigured").text()) + 1);
-						loadbalancer.statusvip.working = false;
-						loadbalancer.statusvip.reason = "None configured";
-					}
 				}
 			}
 		} else {
@@ -500,7 +501,6 @@
 		}
 
 		if(!pool){
-
 			loadbalancer.statusvip.working = false;
 			loadbalancer.statusvip.reason = "No pools with members found";
 			log("No pools with members to test the status vip with on loadbalancer " + name + ", marking it as failed", "ERROR")
@@ -570,10 +570,13 @@
 			});
 		}
 		
+		$("div.beforedocumentready").fadeOut(1500);
+
 	}
 
 	function showDefinediRules(){
 
+		activateMenuButton("div#irulesbutton");
 		$("div#consoleholder").attr("data-activesection", "definedirules");
 		updateLocationHash();
 
@@ -1119,8 +1122,6 @@
 
 					var deviceData = siteData.knownDevices[loadbalancer.model] || false;
 
-
-
 				} else {
 					var icon = "./images/faileddevice.png"
 				}
@@ -1131,8 +1132,8 @@
 				} else {
 					html += "<tr>";
 				}
-				
-				html += "<td class=\"devicenamecell\">" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td></tr>";
+
+				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"../images/devicestatus" + loadbalancer.color + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td></tr>";
 
 			}
 
