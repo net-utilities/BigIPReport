@@ -320,8 +320,9 @@
 			/* Hide the lightbox if clicking outside the information box*/
 			$('body').on('click', function(e){
 				if(e.target.className == "lightbox"){
-					$("div#" + e.target.id).hide();
-					updateLocationHash();
+					$("div#" + e.target.id).fadeOut(function(){
+						updateLocationHash();
+					});
 				}
 			});
 			
@@ -516,6 +517,7 @@
 			  url: testURL,
 			  success: function(lb){
 			  	$("span#realtimetestsuccess").text(parseInt($("span#realtimetestsuccess").text()) + 1);
+			  	log("Statusvip test <a href=\"" + testURL + "\">" + testURL + "</a> was successful on loadbalancer: <b>" + loadbalancer.name + "</b>" , "INFO");
 			  	loadbalancer.statusvip.working = true;
 				loadbalancer.statusvip.reason = "";
 				siteData.memberStates.ajaxQueue--;
@@ -910,8 +912,7 @@
 						break;
 				}
 
-				$("div#consolediv").fadeIn();
-				updateLocationHash();
+				$("div#consolediv").fadeIn(updateLocationHash);
 			}
 			
 
@@ -924,10 +925,9 @@
 		
 		if(currentSection === undefined){
 			showDeviceOverview();
-			$("div#consolediv").fadeIn();
-			updateLocationHash();
+			$("div#consolediv").fadeIn(updateLocationHash);
 		} else {
-			$("div#consolediv").fadeIn();
+			$("div#consolediv").fadeIn(updateLocationHash);
 		}
 
 	}
@@ -950,8 +950,8 @@
 								</thead>
 		
 								<tbody>
-									<tr><td>Expand all pool members</td><td><input type="checkbox" id="autoExpandPools"></td></tr>
-									<tr><td>Direct links to Big-IP objects</td><td><input type="checkbox" id="adcLinks"></td></tr>
+									<tr><td>Expand all pool members</td><td class="preferencescheckbox"><input type="checkbox" id="autoExpandPools"></td></tr>
+									<tr><td>Direct links to Big-IP objects</td><td class="preferencescheckbox"><input type="checkbox" id="adcLinks"></td></tr>
 								</tbody>
 
 							</table>
@@ -1150,7 +1150,7 @@
 
 	function showConsoleSection(section){
 		$("div.consolesection").hide();
-		$("div#" + section).show();
+		$("div#" + section).fadeIn(updateLocationHash);
 	}
 
 	function showReportLogs(){
@@ -1310,12 +1310,12 @@
 				$('#AssociatedPoolsInfo-' + id).show();
 				$('#expand-' + id).show();
 				$('#collapse-' + id).hide();
-				$('#PoolInformation-' + id).hide()
+				$('#PoolInformation-' + id).hide();
 			} else {
 				$('#AssociatedPoolsInfo-' + id).hide();
 				$('#expand-' + id).hide();
 				$('#collapse-' + id).show();
-				$('#PoolInformation-' + id).show()
+				$('#PoolInformation-' + id).fadeIn(300);
 			}
 		}
 
@@ -1638,8 +1638,7 @@
 
 		$('a#closefirstlayerbutton').text("Close virtual server details");
 		$("#firstlayerdetailscontentdiv").html(html);
-		$("#firstlayerdiv").fadeIn();
-		updateLocationHash();
+		$("#firstlayerdiv").fadeIn(updateLocationHash);
 
 	}
 
@@ -1726,8 +1725,7 @@
 		//Add syntax highlighting
 		sh_highlightDocument('./js/', '.js');
 		//Show the div
-		$("#secondlayerdiv").fadeIn();
-		updateLocationHash();
+		$("#secondlayerdiv").fadeIn(updateLocationHash);
 	}
 
 
@@ -1947,8 +1945,7 @@
 		
 		$("a#closesecondlayerbutton").text("Close data group list details");
 		$("#secondlayerdetailscontentdiv").html(html);
-		$("#secondlayerdiv").fadeIn();
-		updateLocationHash();
+		$("#secondlayerdiv").fadeIn(updateLocationHash);
 
 	}
 
@@ -2139,9 +2136,7 @@
 
 		$("a#close" + layer + "layerbutton").text("Close pool details");
 		$("#" + layer + "layerdetailscontentdiv").html(html);
-		$("#" + layer + "layerdiv").fadeIn();
-		updateLocationHash();
-
+		$("#" + layer + "layerdiv").fadeIn(updateLocationHash);
 	}
 
 	function loadPreferences(){
