@@ -892,8 +892,6 @@
 
 				var activeSection = vars['consolesection'];
 
-				console.log(activeSection);
-
 				switch(activeSection){
 					case "preferences":
 						showPreferences();
@@ -1091,6 +1089,7 @@
 			// Get an icon from a functioning device, if any
 
 			var icon = "";
+			var successFound = false;
 
 			for(var i in deviceGroup.ips){
 
@@ -1102,6 +1101,7 @@
 
 					var model = loadbalancer.model.toUpperCase();
 					var deviceData = siteData.knownDevices[model] || false;
+					successFound = true;
 
 					if (deviceData){
 						icon = deviceData.icon;
@@ -1111,8 +1111,10 @@
 
 			}
 
-			if(icon === ""){
-				var icon = "./images/deviceicons/unknowndevice.png";
+			if(icon === "" && successFound){
+				icon = "./images/deviceicons/unknowndevice.png";
+			} else if (icon === "") {
+				icon = "./images/faileddevice.png";
 			}
 
 			for(var i in deviceGroup.ips){
@@ -1140,8 +1142,6 @@
 						pollingStatus = "N/A (passive device)"
 					}
 
-				} else {
-					var icon = "./images/faileddevice.png"
 				}
 
 				if (firstDevice){
@@ -1151,7 +1151,7 @@
 					html += "<tr>";
 				}
 
-				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"../images/devicestatus" + loadbalancer.color.toLowerCase() + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
+				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"../images/devicestatus" + (loadbalancer.color || "red") + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
 
 			}
 
