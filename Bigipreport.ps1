@@ -174,6 +174,8 @@
 #        4.8.8        2018-01-30      Adding the device overview                                                    Patrik Jonsson  No
 #        5.0.0        2018-02-02      Adding a console containing different sections like certificate expiration,   Patrik Jonsson  Yes
 #                                     logs, and help. Moving device overview and the defined iRules to it.
+#        5.0.1        2018-02-05      Changing character encoding of knowndevices.json and making sure that the     Patrik Jonsson  No
+#                                     error handling when loading json files works as expected. 
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -188,7 +190,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.0.0"
+$Global:ScriptVersion = "5.0.1"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()

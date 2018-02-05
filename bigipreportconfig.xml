@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="5.0.0">
+	<Settings version="5.0.1">
 	
 		<!-- 
 		***************************************************************************
@@ -437,7 +437,7 @@
 
 			<RealTimeMemberStates>
 				<MaxQueue>1</MaxQueue>
-				<RefreshRate>10</RefreshRate>
+				<RefreshRate>60</RefreshRate>
 			</RealTimeMemberStates>	
 
 	</Settings>
