@@ -57,7 +57,7 @@
 					<br><span class="error">Status code:</span><span class="errordetails"> ` + jqxhr.status + `</span>
 					<br><span class="error">Reason:</span><span class="errordetails"> ` + jqxhr.statusText + "</div>"
 			)
-
+			$("div.beforedocumentready").hide();
 			$("#firstlayerdiv").fadeIn();
 		}
 
@@ -1151,7 +1151,7 @@
 					html += "<tr>";
 				}
 
-				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"../images/devicestatus" + (loadbalancer.color || "red") + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
+				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"./images/devicestatus" + (loadbalancer.color || "red") + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
 
 			}
 
