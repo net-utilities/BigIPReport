@@ -301,9 +301,9 @@
 						// If there's been a new report, how long ago (in minutes)
 						timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
 
-						if( timesincerefresh > 10){
+						if( timesincerefresh > 60){
 							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
-						} else if ( timesincerefresh > 60){
+						} else if ( timesincerefresh > 10){
 							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
 						}
 
@@ -440,8 +440,6 @@
 			
 			**************************************************************************************************************/	
 					
-			//Make sure that all pools are hidden 
-			populateSearchParameters(bigipTable);
 			bigipTable.draw();
 
 		});
@@ -483,6 +481,8 @@
 		} else {
 			log("No status VIPs has been configured", "INFO");
 			$("td#pollingstatecell").html("Disabled")
+			//Make sure that all pools are hidden 
+			populateSearchParameters();
 		}
 	}
 
@@ -535,6 +535,9 @@
 
 				if(siteData.memberStates.ajaxQueue === 0){
 					
+					//Tests done, restore the view of the original URL
+					populateSearchParameters();
+
 					//Check if there is any functioning pool status vips
 					var hasWorkingStatusVIP = siteData.loadbalancers.some(function(e){
 						return e.statusvip.working;
@@ -805,7 +808,7 @@
 		Gets the query strings and populate the table
 	******************************************************************************************************************************/
 
-	function populateSearchParameters(bigipTable){
+	function populateSearchParameters(){
 		
 		var vars = {};
 		var hash;
@@ -1075,7 +1078,7 @@
 				<table id="deviceoverviewtable" class="bigiptable">
 					<thead>
 						<tr>
-							<th></th><th>Device Group</th><th>Name</th><th>Model</th><th>Type</th><th>Serial</th><th>Management IP</th>
+							<th></th><th>Device Group</th><th>Name</th><th>Model</th><th>Type</th><th>Version</th><th>Serial</th><th>Management IP</th><th>Polling</th>
 						</tr>
 					</thead>
 					<tbody>`;
@@ -1118,9 +1121,24 @@
 										return o.ip === deviceGroup.ips[i];
 									}) || false;
 
+				var pollingStatus = "N/A";
+
 				if(loadbalancer.success){
 
 					var deviceData = siteData.knownDevices[loadbalancer.model] || false;
+
+					if(loadbalancer.active || loadbalancer.isonlydevice){
+
+						if(loadbalancer.statusvip.url === ""){
+							pollingStatus = "<span class=\"devicepollingnotconfigured\">Not configured</span>";
+						} else if (loadbalancer.statusvip.working){
+							pollingStatus = "<span class=\"devicepollingsuccess\">Working</span>";
+						} else {
+							pollingStatus = "<span class=\"devicepollingfailed\">Failed</span>";;
+						}
+					} else {
+						pollingStatus = "N/A (passive device)"
+					}
 
 				} else {
 					var icon = "./images/faileddevice.png"
@@ -1133,7 +1151,7 @@
 					html += "<tr>";
 				}
 
-				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"../images/devicestatus" + loadbalancer.color + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td></tr>";
+				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"../images/devicestatus" + loadbalancer.color.toLowerCase() + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
 
 			}
 
