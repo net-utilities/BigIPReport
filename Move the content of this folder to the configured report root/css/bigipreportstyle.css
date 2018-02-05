@@ -860,6 +860,10 @@ div#helpcontent {
 
 /* Contains the pool details table (the one with members and status) */
 
+div#deviceoverview {
+	min-width: 1300px;
+}
+
 table#deviceoverviewtable  {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-size:16px;
@@ -872,6 +876,7 @@ table#deviceoverviewtable tbody tr td {
 	padding: 5px;
 	text-align: center;
 	vertical-align: middle;
+	white-space:nowrap;
 }
 
 table#deviceoverviewtable tbody tr td img.deviceicon {
@@ -879,15 +884,30 @@ table#deviceoverviewtable tbody tr td img.deviceicon {
 	max-width: 180px;
 }
 
-table#deviceoverviewtable tbody tr td span.devicefailed {
-	color: red;
-}
-
-img.devicestatusicon {
+table#deviceoverviewtable tbody tr td img.devicestatusicon {
    max-height: 23px;
    vertical-align: middle;
    margin-right:5px;
    margin-bottom:2px;
+}
+
+table#deviceoverviewtable tbody tr td span.devicefailed {
+	color: red;
+}
+
+span.devicepollingsuccess {
+	font-weight: bold;
+	color:green;
+}
+
+span.devicepollingfailed {
+	font-weight: bold;
+	color:red;
+}
+
+span.devicepollingnotconfigured {
+	font-weight: bold;
+	color:#cc9900;
 }
 
 
