@@ -191,7 +191,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.0.0"
+$Global:ScriptVersion = "5.0.2"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
