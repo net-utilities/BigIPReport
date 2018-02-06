@@ -481,8 +481,9 @@
 		} else {
 			log("No status VIPs has been configured", "INFO");
 			$("td#pollingstatecell").html("Disabled")
-			//Make sure that all pools are hidden 
+			//Make sure that all pools are hidden
 			populateSearchParameters();
+			$("div.beforedocumentready").fadeOut(1500);
 		}
 	}
 
