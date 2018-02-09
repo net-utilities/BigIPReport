@@ -178,6 +178,8 @@
 #                                     error handling when loading json files works as expected.
 #        5.0.2        2018-02-06      Fixed a bug affecting those that does not have polling endpoints configured.  Patrik Jonsson  No
 #        5.0.3        2018-02-09      Adding a function to export anonymized device data.                           Patrik Jonsson  No
+#        5.0.4        2018-02-09      Completing the knowndevices.json file with blades. Adding icon for unknown    Patrik Jonsson  No
+#                                     devices
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -192,7 +194,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.0.3"
+$Global:ScriptVersion = "5.0.4"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
