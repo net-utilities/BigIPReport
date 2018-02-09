@@ -2158,6 +2158,77 @@
 		$("#" + layer + "layerdiv").fadeIn(updateLocationHash);
 	}
 
+	function exportDeviceData() {
+
+		var loadbalancers = siteData.loadbalancers;
+		var loadbalancersForExport = [];
+
+
+		// Loop through the load balancers while anonymizing the data
+		for (var i in loadbalancers) {
+
+			loadbalancer = loadbalancers[i];
+			var newLB = {};
+
+			for (p in loadbalancer) {
+
+				switch(p){
+					case "name":
+						newLB.name = "LB" + i;
+						break;
+					case "serial":
+						newLB.serial = "XXXX-YYYY";
+						break;
+					case "ip":
+						newLB.ip = "10.0.0." + i;
+						break;
+					case "statusvip":
+
+						var statusvip = {}
+						statusvip.url = "";
+						statusvip.working = null;
+						statusvip.state = null;
+
+						newLB.statusvip = statusvip;
+
+					default:
+						newLB[p] = loadbalancer[p];
+				}
+			}
+
+			loadbalancersForExport.push(newLB);
+		}
+
+		downLoadTextFile(JSON.stringify(loadbalancersForExport, null, 4), "loadbalancers.json");
+
+		// Loop through the device groups while anonymizing the data
+		var deviceGroups = siteData.deviceGroups;
+		var deviceGroupsForExport = [];
+
+		for(var d in deviceGroups){
+
+			deviceGroup = deviceGroups[d];
+			var newDeviceGroup = {};
+
+			newDeviceGroup.name = "DG" + d;
+			newDeviceGroup.ips = [];
+
+			for(i in deviceGroup.ips){
+				newDeviceGroup.ips.push("10.0.0." + i);
+			}
+
+			newDeviceGroup.statusvip;
+
+		}
+
+		deviceGroupsForExport.push(newDeviceGroup);
+
+		console.log();
+
+		downLoadTextFile(JSON.stringify(deviceGroupsForExport, null, 4), "devicegroups.json");
+	}
+
+
 	function loadPreferences(){
 		
 		var defaultPreferences = siteData.defaultPreferences;
@@ -2279,6 +2350,21 @@
 		return(csv);
 	}
 
+	function downLoadTextFile(data, fileName){
+
+		var element = document.createElement('a');
+		element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
+		element.setAttribute('download', fileName);
+
+		element.style.display = 'none';
+		document.body.appendChild(element);
+
+		element.click();
+
+		document.body.removeChild(element);
+
+	}
+
 	function downloadCSV() {
 	  	
 	  	var text = generateCSV();
@@ -2292,17 +2378,8 @@
 	  	if(month < 10){ month = "0" + month }
 	  	if(day < 10){ day = "0" + day }
 
-	  	var filename =  year + "-" + month + "-" + day + "-bigipreportexport.csv";
+	  	var fileName =  year + "-" + month + "-" + day + "-bigipreportexport.csv";
 
-		var element = document.createElement('a');
-		element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-		element.setAttribute('download', filename);
-
-		element.style.display = 'none';
-		document.body.appendChild(element);
-
-		element.click();
-
-		document.body.removeChild(element);
+		downLoadTextFile(text, fileName);
 
 	}

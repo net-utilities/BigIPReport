@@ -177,6 +177,7 @@
 #        5.0.1        2018-02-05      Changing character encoding of knowndevices.json and making sure that the     Patrik Jonsson  No
 #                                     error handling when loading json files works as expected.
 #        5.0.2        2018-02-06      Fixed a bug affecting those that does not have polling endpoints configured.  Patrik Jonsson  No
+#        5.0.3        2018-02-09      Adding a function to export anonymized device data.                           Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -191,7 +192,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.0.2"
+$Global:ScriptVersion = "5.0.3"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -2681,14 +2682,13 @@ $Global:HTML += @"
                         <p>And if you like the project, please set aside some of your time to leave a <a href=\"https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
                         <h3>Troubleshooting</h3>
                         <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
+                        <p>To collect and download anonymized data for submitting a device overview bug report, click <a href="javascript:exportDeviceData()">here</a>.</p>
                         <h3>Contact</h3>
                         <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
                     </div>
                 </div>
                 <div id="consoledivfooter"><a class="lightboxbutton" id="closeconsolebutton" href="javascript:void(0);">Close console</a></div>
         </div>
-
-        
 	</body>
 </html>
 "@
