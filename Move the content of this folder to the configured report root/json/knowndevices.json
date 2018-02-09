@@ -154,6 +154,13 @@
                                      ],
                  "hardwareType": "chassis"
              },
+    "A114":  {
+                 "icon":  "./images/deviceicons/viprion_c4800.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "blade"
+             },
     "E101":  {
                  "icon":  "./images/deviceicons/11x00.png",
                  "softwareVersions":  [
@@ -181,6 +188,34 @@
                                      ],
                  "hardwareType": "chassis"
              },
+    "A100":  {
+                 "icon":  "./images/deviceicons/viprion_4400.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "blade"
+             },
+    "A107":  {
+                 "icon":  "./images/deviceicons/viprion_4400.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "blade"
+             },
+    "A108":  {
+                 "icon":  "./images/deviceicons/viprion_4400.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "blade"
+             },
+    "A110":  {
+                 "icon":  "./images/deviceicons/viprion_4400.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "blade"
+             },
     "C109":  {
                  "icon":  "./images/deviceicons/5000.png",
                  "softwareVersions":  [
@@ -201,6 +236,27 @@
 
                                      ],
                  "hardwareType": "chassis"
+             },
+    "A109":  {
+                 "icon":  "./images/deviceicons/viprion_c2400.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "blade"
+             },
+    "A112":  {
+                 "icon":  "./images/deviceicons/viprion_c2400.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "chassis"
+             },
+    "A113":  {
+                 "icon":  "./images/deviceicons/viprion_c2400.png",
+                 "softwareVersions":  [
+
+                                     ],
+                 "hardwareType": "blade"
              },
     "C112":  {
                  "icon":  "./images/deviceicons/2x00.png",
