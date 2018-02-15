@@ -58,12 +58,12 @@
     	"timeZone": 8
     };
 
-    var url = "https://linuxworker.j.local/newstyle/json/loadbalancers.json";
+    var bigipReportURL = "https://linuxworker.j.local/json/loadbalancers.json";
 
     // Get the load balancer objects from BigIP Report
     GM_xmlhttpRequest({
         method: "GET",
-        url: url,
+        url: bigipReportURL,
         onload: function (response) {
 
             if (response.status == 200) {
@@ -83,14 +83,16 @@
 
                 var secondPageTimer = setInterval(function(){
 
-                	if($("input#serialNumberInput:visible").length >= 1){
+                	var serialNumberInput = $("input#serialNumberInput");
+                	if(serialNumberInput.is(":visible")){
 
-                		$("input#serialNumberInput").css("display", "inline").css("width", "20%");
-                		$("input#serialNumberInput").after(deviceToSerialSelectionHTML);
+                		serialNumberInput.css("display", "inline").css("width", "20%");
+                		serialNumberInput.after(deviceToSerialSelectionHTML);
 
-                		$("select#deviceToSerial").on("change", function(){
+                		var deviceDropDown = $("select#deviceToSerial");
+                		deviceDropDown.on("change", function(){
 
-                			$("input#serialNumberInput").val($("select#deviceToSerial").val());
+                			serialNumberInput.val(deviceDropDown.val());
 
                 			// Somehow jQuery binds the objects to this when declaring them.
                 			// Native JS was the only thing working for some reason.
@@ -140,9 +142,11 @@
 
 function triggerEvent(e, s){
 	"use strict";
+
 	var event = document.createEvent('HTMLEvents');
 	event.initEvent(e, true, true);
 	document.querySelector(s).dispatchEvent(event);
+
 }
 
 
@@ -150,17 +154,19 @@ function filterModuleSelection(configuredModules){
 	"use strict";
 	var moduleFilterInterval = setInterval(function(){
 		
-		if($("select#productSelect option").length > 10){
+		var productSelect = $("select#productSelect");
 
-			$("select#productSelect option:not(:selected)").each(function(){
+		if(productSelect.find("option").length > 10){
+
+			productSelect.find("option:not(:selected)").each(function(){
 				if(configuredModules.indexOf($(this).attr("label")) === -1){
 					$(this).hide();
 				}
 			});
 
-			$("select#productSelect").after("<a href=\"javascript:void(0);\" id=\"showAllModules\">Show all modules</a>");
+			productSelect.after("<a href=\"javascript:void(0);\" id=\"showAllModules\">Show all modules</a>");
 			$("a#showAllModules").on("click", function(){
-				$("select#productSelect option:hidden").show();
+				productSelect.find("option:hidden").show();
 			});
 
 			clearInterval(moduleFilterInterval);
@@ -171,21 +177,28 @@ function filterModuleSelection(configuredModules){
 
 function filterVersionSelection(availableVersions){
 	"use strict";
+
+	var versionSelect = $("select#versionSelect");
+
 	var filterVersionInterval = setInterval(function(){
 
-		if($("select#versionSelect option").length > 2){
+		if(versionSelect.find("option").length > 2){
 
-			$("select#versionSelect option:hidden").show();
-			$("select#versionSelect option:not(:selected)").each(function(){
+			versionSelect.find("option:hidden").show();
+
+			versionSelect.find("option:not(:selected)").each(function(){
 				if(availableVersions.indexOf($(this).attr("label")) === -1){
 					$(this).hide();
 				}
 			});
 
-			if($("a#showAllVersions").length === 0){
-				$("select#versionSelect").after("<a href=\"javascript:void(0);\" id=\"showAllVersions\">Show all versions</a>");
-				$("a#showAllVersions").on("click", function(){
-					$("select#versionSelect option:hidden").show();
+			var showAllVersions = $("a#showAllVersions")
+
+			if(showAllVersions.length === 0){
+
+				versionSelect.after("<a href=\"javascript:void(0);\" id=\"showAllVersions\">Show all versions</a>");
+				showAllVersions.on("click", function(){
+					versionSelect.find("option:hidden").show();
 				});
 
 				$("select#productSelect").on("change", function(){
@@ -202,6 +215,7 @@ function filterVersionSelection(availableVersions){
 // Get's a list of all configured modules from your load balancers
 function getModules(devices){
 	"use strict";
+
 	var prefix = "BIG-IP ";
 	var veSuffix = " VE";
 
