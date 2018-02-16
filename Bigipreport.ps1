@@ -180,6 +180,7 @@
 #        5.0.3        2018-02-09      Adding a function to export anonymized device data.                           Patrik Jonsson  No
 #        5.0.4        2018-02-09      Completing the knowndevices.json file with blades. Adding icon for unknown    Patrik Jonsson  No
 #                                     devices
+#        5.0.5        2018-02-16      Specifying encoding in the script log file                                    Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -201,6 +202,9 @@ $Global:LoggedErrors = @()
 
 #Variable used to calculate the time used to generate the report.
 $StartTime = Get-Date
+
+#No BOM Encoding in the log file
+$Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
 ################################################################################################################################################
 #
@@ -241,7 +245,7 @@ Function log {
 	
 	#Initiate the log header with date and time
 	$CurrentTime =  $(Get-Date -UFormat "%Y-%m-%d") + "`t" + $(Get-Date -Uformat "%H:%M:%S")
-	$LogHeader = $CurrentTime+ "`t$LogType"
+	$LogHeader = $CurrentTime+ "`t$($LogType.toUpper())"
 	
 	if($LogType -eq "error"){
 		$Global:LoggedErrors  += $Message
@@ -255,10 +259,10 @@ Function log {
 		switch($Logtype) { 
 	        "error" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
 	        "warning" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
-	        "info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) } }
-			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }}
-			"verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }}
-			default { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) } }
+	        "info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
+			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
+			"verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
+			default { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
 	    }
 	}
 	
