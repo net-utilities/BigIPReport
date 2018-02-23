@@ -275,7 +275,9 @@ function getDeviceSelectionDropDown(devices){
 	var deviceDict = {};
 
 	devices.map(function(d){
-		deviceDict[d.name.toUpperCase()] = d.serial;
+        if(d.name){
+            deviceDict[d.name.toUpperCase()] = d.serial;
+        }
 	});
 
 	var deviceNames = [];
