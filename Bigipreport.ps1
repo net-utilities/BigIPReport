@@ -181,6 +181,8 @@
 #        5.0.4        2018-02-09      Completing the knowndevices.json file with blades. Adding icon for unknown    Patrik Jonsson  No
 #                                     devices
 #        5.0.5        2018-02-16      Specifying encoding in the script log file                                    Patrik Jonsson  No
+#        5.0.6        2018-02-27      Added error handling for invalid management certificates and updated          Patrik Jonsson  No
+#                                     examples in the configuration file
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -924,29 +926,39 @@ function Cache-LTMInformation {
 		#Check if ASM is enabled
 		if($ModuleDict.Keys -contains "ASM"){
 
-            log info "Version 12 or higher detected together with the ASM module. Getting authentication token for the REST API to be able to fetch ASM information"
-            $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerName
+            $ErrorActionPreference = "SilentlyContinue"
 
-            log verbose "Getting ASM Policy information"
+            Try {
+                log info "Version 12 or higher detected together with the ASM module. Getting authentication token for the REST API to be able to fetch ASM information"
+                $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
+            
+                log verbose "Getting ASM Policy information"
 
-			$Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
+    			$Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
-			$Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
-			$Policies = ($Response | ConvertFrom-Json).items
+    			$Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
+    			$Policies = ($Response | ConvertFrom-Json).items
 
-			Foreach($Policy in $Policies){
+    			Foreach($Policy in $Policies){
 
-				$ObjTempPolicy = New-Object -Type ASMPolicy
+    				$ObjTempPolicy = New-Object -Type ASMPolicy
 
-				$ObjTempPolicy.name = $Policy.fullPath
-				$ObjTempPolicy.enforcementMode = $Policy.enforcementMode
-				$ObjTempPolicy.learningMode = $Policy.learningMode
-				$ObjTempPolicy.virtualServers = $Policy.virtualServers
-				$ObjTempPolicy.loadbalancer = $LoadBalancerName
+    				$ObjTempPolicy.name = $Policy.fullPath
+    				$ObjTempPolicy.enforcementMode = $Policy.enforcementMode
+    				$ObjTempPolicy.learningMode = $Policy.learningMode
+    				$ObjTempPolicy.virtualServers = $Policy.virtualServers
+    				$ObjTempPolicy.loadbalancer = $LoadBalancerName
 
-				$LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
-			}
-		}
+    				$LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
+    			}
+
+            } Catch {
+                log error "Unable to get a valid token from $LoadbalancerName."
+            }
+
+            $ErrorActionPreference = "Continue"
+		
+        }
 	}
 
 	#EndRegion

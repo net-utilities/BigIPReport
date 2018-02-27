@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="5.0.5">
+	<Settings version="5.0.6">
 	
 		<!-- 
 		***************************************************************************
@@ -35,19 +35,19 @@
 		*
 		*	This section contains the load balancers which configuration you want base the report on.
 		*
-		*	Example:
+		*	Examples with and without configured status vips:
 			<DeviceGroups>
 				<DeviceGroup>
 					<Name>Stockholm QA</Name>
-					<Loadbalancer>192.168.10.23</Loadbalancer>
-					<Loadbalancer>192.168.10.23</Loadbalancer>
+					<Device>192.168.10.23</Device>
+					<Device>192.168.10.23</Device>
 					<StatusVip>https://lb1statusvip.domain.local</StatusVip>
 				</DeviceGroup>
 				<DeviceGroup>
 					<Name>London Cluster</Name>
-					<Loadbalancer>192.168.11.55</Loadbalancer>
-					<Loadbalancer>192.168.11.56</Loadbalancer>
-					<StatusVip>https://lb2statusvip.domain.local</StatusVip>
+					<Device>192.168.11.55</Device>
+					<Device>192.168.11.56</Device>
+					<StatusVip></StatusVip>
 				</DeviceGroup>
 			</DeviceGroups>
 		*
