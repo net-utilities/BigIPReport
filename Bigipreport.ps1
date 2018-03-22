@@ -256,12 +256,12 @@ Function log {
 		$LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
 
 		switch($Logtype) {
-			"error" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
+			"error"   { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
 			"warning" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
 			"info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
 			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
 			"verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
-			default { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
+			default   { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
 		}
 	}
 
@@ -1633,7 +1633,7 @@ Function Translate-Member-Status {
 		}
 	}
 
-	Return '<span class="statusicon"><img src="./images/' + $Icon + '" title="' + $Title + '"/></span> <span class="textstatus">' + $TextStatus + '</span>'
+	Return '<span class="statusicon"><img src="images/' + $Icon + '" title="' + $Title + '"/></span> <span class="textstatus">' + $TextStatus + '</span>'
 }
 #Endregion
 
@@ -2085,16 +2085,18 @@ $Global:HTML = @'
 <!DOCTYPE html>
 <html>
 	<head>
-		<script type="text/javascript" language="javascript" src="./js/pace.js" data-pace-options='{ "restartOnRequestAfter": false }'></script>
-		<script type="text/javascript" language="javascript" src="./js/jquery.min.js"></script>
-		<script type="text/javascript" language="javascript" src="./js/jquery.dataTables.min.js"></script>
-		<link href="./css/pace.css" rel="stylesheet" type="text/css"/>
-		<link href="./css/jquery.dataTables.css" rel="stylesheet" type="text/css">
-		<link href="./css/bigipreportstyle.css" rel="stylesheet" type="text/css">
-		<link href="./css/sh_style.css" rel="stylesheet" type="text/css">
-		<script type="text/javascript" language="javascript" src="./js/jquery.highlight.js"></script>
-		<script type="text/javascript" language="javascript" src="./js/bigipreport.js"></script>
-		<script type="text/javascript" language="javascript" src="./js/sh_main.js"></script>
+		<title>BIG-IP Report</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<script src="js/pace.js" data-pace-options='{ "restartOnRequestAfter": false }'></script>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/jquery.dataTables.min.js"></script>
+		<link href="css/pace.css" rel="stylesheet" type="text/css"/>
+		<link href="css/jquery.dataTables.css" rel="stylesheet" type="text/css">
+		<link href="css/bigipreportstyle.css" rel="stylesheet" type="text/css">
+		<link href="css/sh_style.css" rel="stylesheet" type="text/css">
+		<script src="js/jquery.highlight.js"></script>
+		<script src="js/bigipreport.js"></script>
+		<script src="js/sh_main.js"></script>
 		<script>
 '@
 
@@ -2131,7 +2133,7 @@ $Global:HTML += @'
 	</head>
 	<body>
 		<div class="beforedocumentready"></div>
-		<div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
+		<div class="bigipreportheader"><img src="images/bigipreportlogo.png"/></div>
 		<div class="realtimestatusdiv">
 			<table>
 				<tr>
@@ -2202,7 +2204,7 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 		$Global:HTML += @"
 						<td class="virtualServerCell">
-							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($ObjVirtualServer.name)">Edit</a></span>
+							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="images/details.png"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($ObjVirtualServer.name)">Edit</a></span>
 						</td>
 "@
 		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
@@ -2300,10 +2302,10 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 						$Global:HTML += @"
 						<td class="PoolInformation" data-vsid="$i">
 							<div class="expand" id="expand-$i">
-								<a href="javascript:void(0);"><img src="./images/chevron-down.png" data-vsid="$i"/></a>
+								<a href="javascript:void(0);"><img src="images/chevron-down.png" data-vsid="$i"/></a>
 							</div>
 							<div class="collapse" id="collapse-$i">
-								<a href="javascript:void(0);"><img src="./images/chevron-up.png" data-vsid="$i"/></a>
+								<a href="javascript:void(0);"><img src="images/chevron-up.png" data-vsid="$i"/></a>
 							</div>
 							<div class="AssociatedPoolsInfo" data-vsid=$i id="AssociatedPoolsInfo-$i"> Click here to show $($ObjVirtualServer.pools.Count) associated pools</div>
 							<div id="PoolInformation-$i" class="pooltablediv">
@@ -2314,11 +2316,11 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 						if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
 							$Global:HTML += @"
-								$($PoolName.split("/")[2]) <span class="detailsicon"><img src="./images/details.png"/></span>
+								$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png"/></span>
 "@
 						} else {
 							$Global:HTML += @"
-							$PoolName <span class="detailsicon"><img src="./images/details.png"/></span>
+							$PoolName <span class="detailsicon"><img src="images/details.png"/></span>
 "@
 						}
 											$Global:HTML += @"
@@ -2336,11 +2338,11 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 											if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
 												$Global:HTML += @"
-												$($PoolName.split("/")[2]) <span class="detailsicon"><img src="./images/details.png"/></span>
+												$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png"/></span>
 "@
 											} else {
 												$Global:HTML += @"
-												$PoolName <span class="detailsicon"><img src="./images/details.png"/></span>
+												$PoolName <span class="detailsicon"><img src="images/details.png"/></span>
 "@
 											}
 											$Global:HTML += @"
@@ -2433,12 +2435,12 @@ $Global:HTML += @"
 		<div class="lightbox" id="consolediv">
 				<div id="consoleholder">
 					<div class="sidemenu">
-						<div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
-					 --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div><!--								  Weird solution. But it works.
-					 --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates <span id="certificatenotification"></span></div><!--
-					 --><div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div><!--
-					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div><!--
-					 --><div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
+						<div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
+					 --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="images/irulesicon.png"/> Defined iRules</div><!--								  Weird solution. But it works.
+					 --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="images/certificates.png"/> Certificates <span id="certificatenotification"></span></div><!--
+					 --><div id="logsbutton" class="menuitem"><img id="logsicon" src="images/logsicon.png"/> Logs</div><!--
+					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="images/preferences.png"/> Preferences</div><!--
+					 --><div id="helpbutton" class="menuitem"><img id="helpicon" src="images/help.png"/> Help</div>
 					</div>
 
 					<div class="consolesection" id="deviceoverview"></div>
