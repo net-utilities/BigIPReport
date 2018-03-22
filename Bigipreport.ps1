@@ -2439,7 +2439,7 @@ $Global:HTML += @"
 					 --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/> Defined iRules</div><!--								  Weird solution. But it works.
 					 --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates <span id="certificatenotification"></span></div><!--
 					 --><div id="logsbutton" class="menuitem"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div><!--
-					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="images/preferences.png"alt="preferences"/> Preferences</div><!--
+					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="images/preferences.png" alt="preferences"/> Preferences</div><!--
 					 --><div id="helpbutton" class="menuitem"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
 					</div>
 
