@@ -1633,7 +1633,7 @@ Function Translate-Member-Status {
 		}
 	}
 
-	Return '<span class="statusicon"><img src="images/' + $Icon + '" title="' + $Title + '"/></span> <span class="textstatus">' + $TextStatus + '</span>'
+	Return '<span class="statusicon"><img src="images/' + $Icon + '" title="' + $Title + '" alt="' + $TextStatus + '"/></span> <span class="textstatus">' + $TextStatus + '</span>'
 }
 #Endregion
 
@@ -1642,15 +1642,15 @@ Function Translate-VirtualServer-Status {
 	Param($VirtualServer)
 
 	if($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_GREEN"){
-		Return "<span class=`"statusicon`"><img src=`"./images/green-circle-checkmark.png`" title=`"Available (Enabled) - The virtual server is available`"/></span> <span class=`"textstatus`">UP</span>"
+		Return "<span class=`"statusicon`"><img src=`"images/green-circle-checkmark.png`" alt=`"Available (Enabled)`" title=`"Available (Enabled) - The virtual server is available`"/></span> <span class=`"textstatus`">UP</span>"
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_DISABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_BLUE"){
-		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-checkmark.png`" title=`"Unknown (Disabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">DISABLED</span>"
+		Return "<span class=`"statusicon`"><img src=`"images/black-circle-checkmark.png`" alt=`"Unknown (Disabled)`" title=`"Unknown (Disabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">DISABLED</span>"
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_BLUE") {
-		Return "<span class=`"statusicon`"><img src=`"./images/blue-square-questionmark.png`" title=`"Unknown (Enabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">UNKNOWN</span>"
+		Return "<span class=`"statusicon`"><img src=`"images/blue-square-questionmark.png`" alt=`"Unknown (Enabled)`" title=`"Unknown (Enabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">UNKNOWN</span>"
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_RED"){
-		Return "<span class=`"statusicon`"><img src=`"./images/red-circle-cross.png`" title=`"Offline (Enabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
+		Return "<span class=`"statusicon`"><img src=`"images/red-circle-cross.png`" alt=`"Offline (Enabled)`" title=`"Offline (Enabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_DISABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_RED"){
-		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-cross.png`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
+		Return "<span class=`"statusicon`"><img src=`"images/black-circle-cross.png`" alt=`"Offline (Disabled)`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
 	}
 }
 #Endregion
@@ -2133,7 +2133,7 @@ $Global:HTML += @'
 	</head>
 	<body>
 		<div class="beforedocumentready"></div>
-		<div class="bigipreportheader"><img src="images/bigipreportlogo.png"/></div>
+		<div class="bigipreportheader"><img src="images/bigipreportlogo.png" alt="bigipreportlogo"/></div>
 		<div class="realtimestatusdiv">
 			<table>
 				<tr>
@@ -2204,7 +2204,7 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 		$Global:HTML += @"
 						<td class="virtualServerCell">
-							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="images/details.png"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($ObjVirtualServer.name)">Edit</a></span>
+							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="images/details.png" alt="details"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($ObjVirtualServer.name)">Edit</a></span>
 						</td>
 "@
 		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
@@ -2302,10 +2302,10 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 						$Global:HTML += @"
 						<td class="PoolInformation" data-vsid="$i">
 							<div class="expand" id="expand-$i">
-								<a href="javascript:void(0);"><img src="images/chevron-down.png" data-vsid="$i"/></a>
+								<a href="javascript:void(0);"><img src="images/chevron-down.png" alt="down" data-vsid="$i"/></a>
 							</div>
 							<div class="collapse" id="collapse-$i">
-								<a href="javascript:void(0);"><img src="images/chevron-up.png" data-vsid="$i"/></a>
+								<a href="javascript:void(0);"><img src="images/chevron-up.png" alt="up" data-vsid="$i"/></a>
 							</div>
 							<div class="AssociatedPoolsInfo" data-vsid=$i id="AssociatedPoolsInfo-$i"> Click here to show $($ObjVirtualServer.pools.Count) associated pools</div>
 							<div id="PoolInformation-$i" class="pooltablediv">
@@ -2316,11 +2316,11 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 						if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
 							$Global:HTML += @"
-								$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png"/></span>
+								$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
 "@
 						} else {
 							$Global:HTML += @"
-							$PoolName <span class="detailsicon"><img src="images/details.png"/></span>
+							$PoolName <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
 "@
 						}
 											$Global:HTML += @"
@@ -2338,11 +2338,11 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 											if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
 												$Global:HTML += @"
-												$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png"/></span>
+												$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
 "@
 											} else {
 												$Global:HTML += @"
-												$PoolName <span class="detailsicon"><img src="images/details.png"/></span>
+												$PoolName <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
 "@
 											}
 											$Global:HTML += @"
@@ -2435,12 +2435,12 @@ $Global:HTML += @"
 		<div class="lightbox" id="consolediv">
 				<div id="consoleholder">
 					<div class="sidemenu">
-						<div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
-					 --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="images/irulesicon.png"/> Defined iRules</div><!--								  Weird solution. But it works.
-					 --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="images/certificates.png"/> Certificates <span id="certificatenotification"></span></div><!--
-					 --><div id="logsbutton" class="menuitem"><img id="logsicon" src="images/logsicon.png"/> Logs</div><!--
-					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="images/preferences.png"/> Preferences</div><!--
-					 --><div id="helpbutton" class="menuitem"><img id="helpicon" src="images/help.png"/> Help</div>
+						<div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png" alt="overview"/> Device overview</div><!-- To remove the space between the items.
+					 --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/> Defined iRules</div><!--								  Weird solution. But it works.
+					 --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates <span id="certificatenotification"></span></div><!--
+					 --><div id="logsbutton" class="menuitem"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div><!--
+					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="images/preferences.png"alt="preferences"/> Preferences</div><!--
+					 --><div id="helpbutton" class="menuitem"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
 					</div>
 
 					<div class="consolesection" id="deviceoverview"></div>
