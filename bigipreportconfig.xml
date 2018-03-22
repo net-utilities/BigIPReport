@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
 	<Settings version="5.0.6">
-	
-		<!-- 
+
+		<!--
 		***************************************************************************
 		*
 		*		Mandatory configuration section
-		*		All fields in this section must be configured in order for the script to work		
+		*		All fields in this section must be configured in order for the script to work
 		*
 		***************************************************************************
 		-->
-		
+
 		<!--
 		*******************************************************************************
 		*
@@ -24,12 +24,12 @@
 		*
 		*******************************************************************************
 		-->
-		
+
 		<Credentials>
 			<Username></Username>
 			<Password></Password>
 		</Credentials>
-		
+
 		<!--
 		**************************************************************************************************************************************
 		*
@@ -53,7 +53,7 @@
 		*
 		**************************************************************************************************************************************
 		-->
-		
+
 		<DeviceGroups>
 			<DeviceGroup>
 				<Name></Name>
@@ -62,7 +62,7 @@
 				<StatusVip></StatusVip>
 			</DeviceGroup>
 		</DeviceGroups>
-		
+
 		<!--
 		**************************************************************************************************************************************
 		*
@@ -75,9 +75,9 @@
 		*
 		**************************************************************************************************************************************
 		-->
-		
+
 		<ReportRoot></ReportRoot>
-		
+
 		<!--
 		**************************************************************************************************************************************
 		*
@@ -92,10 +92,10 @@
 		*
 		**************************************************************************************************************************************
 		-->
-		
-		<DefaultDocument></DefaultDocument>						
-		
-		<!-- 
+
+		<DefaultDocument></DefaultDocument>
+
+		<!--
 		************************************************************
 		*
 		*	Optional configuration below
@@ -105,14 +105,14 @@
 		*
 		************************************************************
 		-->
-		
+
 		<!--
 		**************************************************************************************************************************************
 		*
 		*	Log settings
-		*	
+		*
 		*	<Enabled>		-	Determines if the logging is enabled or not. If it is enabled you MUST configure the other settings too.
-		*	<LogFilePath>	- 	Where to store the log. Can also be a share.
+		*	<LogFilePath>	-	Where to store the log. Can also be a share.
 		*	<LogLevel>		-	Which level to log. Verbose = Informational messages included, Normal = only errors/warnings
 		*	<MaximumLines>	-	How many lines the logfile should be kept at (will be pruned at the end of script runtime). Depending on your environment, but you'll want to set this to a quite high number.
 		*
@@ -123,7 +123,7 @@
 		*		<LogLevel>Verbose</LogLevel>
 		*		<MaximumLines>100000</MaximumLines>
 		*	</LogSettings>
-		*	
+		*
 		*	Example of disabled logging:
 		*	<LogSettings>
 		*		<Enabled>false</Enabled>
@@ -134,14 +134,14 @@
 		*
 		**************************************************************************************************************************************
 		-->
-		
+
 		<LogSettings>
 			<Enabled>false</Enabled>
 			<LogFilePath></LogFilePath>
 			<LogLevel></LogLevel>
 			<MaximumLines></MaximumLines>
 		</LogSettings>
-		
+
 		<!--
 		**************************************************************************************************************************************
 		*
@@ -149,9 +149,9 @@
 		*	Useful for debugging, but there's no harm to leave it on verbose
 		*
 		*	Levels:
-		*	Normal 		- Only errors
+		*	Normal		- Only errors
 		*	Verbose		- Informational messages too
-		*	
+		*
 		*	Examples:
 		*	<Outputlevel>Normal</Outputlevel>
 		*	<Outputlevel>Verbose</Outputlevel>
@@ -160,8 +160,8 @@
 		-->
 
 		<Outputlevel>Verbose</Outputlevel>
-		
-		
+
+
 		<!--
 			**************************************************************************************************************************************
 			*
@@ -178,16 +178,16 @@
 			*
 			**************************************************************************************************************************************
 		-->
-		
+
 		<PoolExceptions>
 		</PoolExceptions>
-		
+
 		<!--
 			**************************************************************************************************************************************
 			*
 			*	In many cases the load balancer is using internal virtual addresses while letting the firewall do the NAT.
 			*	If you want to add external IP translation you can put them in a file.
-			*	
+			*
 			*	The text file should contain rows with the format [public ip]=[private ip]
 			*	1.1.1.1=10.10.10.1
 			*	1.1.1.2=10.10.10.2
@@ -202,26 +202,26 @@
 			*
 			**************************************************************************************************************************************
 		-->
-		
+
 		<NATFilePath></NATFilePath>
-		
+
 		<!--
 			**************************************************************************************************************************************
 			*
 			*	This variable enables or disables the use of TLS1.2. If disabled the script will revert to TLS1.0
-			*	
+			*
 			*	To enable, set the variable to true, otherwise false
 			*
 			*	Example:
 			*	<UseTLS12>true</UseTLS12>
-			*	or 
+			*	or
 			*	<UseTLS12>false</UseTLS12>
 			*
 			**************************************************************************************************************************************
 		-->
-		
+
 		<UseTLS12>true</UseTLS12>
-		
+
 		<!--
 			**************************************************************************************************************************************
 			*
@@ -236,14 +236,14 @@
 			*
 			**************************************************************************************************************************************
 		-->
-		
+
 		<PartitionInformation>
 			<ShowPoolPartition>false</ShowPoolPartition>
 			<ShowPoolMemberPartition>false</ShowPoolMemberPartition>
 		</PartitionInformation>
-		
+
 		<!--
-		
+
 		Here you can configure individual iRule you want to expose to the clients.
 		These will be available in the iRules section even if iRules are disabled below.
 
@@ -260,10 +260,10 @@
 		</iRules>
 
 		-->
-			
+
 		<iRules>
 		</iRules>
-		
+
 		<!--
 			**************************************************************************************************************************************
 			*
@@ -275,26 +275,26 @@
 			*
 			**************************************************************************************************************************************
 		-->
-		
+
 		<HideLoadBalancerFQDN>true</HideLoadBalancerFQDN>
-		
+
 		<!--
 			**************************************************************************************************************************************
 			*
 			*	Error reporting
 			*	This means that "loadbalancername.mydomain.local" is shown as "loadbalancername"
 			*
-			*	<Enabled>	 	This variable controls if the reports sends emails or not. 
+			*	<Enabled>		This variable controls if the reports sends emails or not.
 			*					Note that if you use this one you MUST configure the mailerrorto and mailfrom variables too.
 			*					Set to true to enable. False to disable
-			*	
-			*	<Sender>		This is the variable containing the sender mail of the report. 
-			*	
+			*
+			*	<Sender>		This is the variable containing the sender mail of the report.
+			*
 			*	<Recipients>	Contains the recipients of the report. Multiple recipients can be configured.
-			*	
+			*
 			*	<SMTPServer>	Contains the address to the smtp server.
-			*	
-			*	Example of enabled error reporting	
+			*
+			*	Example of enabled error reporting
 			*	<ErrorReporting>
 			*		<Enabled>true</Enabled>
 			*		<Sender>myscript@mydomain.com</Sender>
@@ -303,34 +303,34 @@
 			*		</Recipients>
 			*		<SMTPServer>mysmtpserver.mydomain.com</SMTPServer>
 			*	</ErrorReporting>
-			*		
+			*
 			*	Example of disabled error reporting:
 			*	<ErrorReporting>
 			*		<Enabled>false</Enabled>
 			*	</ErrorReporting>
 			-->
-			
+
 			<ErrorReporting>
 				<Enabled>false</Enabled>
 			</ErrorReporting>
-						
-			
+
+
 		<!--
-			
+
 			**************************************************************************************************************************************
 			*
 			*	Share the report should authenticate
 			*	Used if the report is generated on a separate server
-			*	
+			*
 			*	Example of share config:
 			*	<Shares>
 			*		<Share>
-			*				<Path>\\myserver\myshare</Path> 
+			*				<Path>\\myserver\myshare</Path>
 			*				<Username>shareuser</Username>
 			*				<Password>password</Password>
 			*		</Share>
 			*	</Shares>
-			*	
+			*
 			*	Example of no share
 			*	<Shares>
 			*	</Shares>
@@ -338,24 +338,24 @@
 			**************************************************************************************************************************************
 
 		-->
-		
+
 			<Shares>
 			</Shares>
-			
+
 				<!--
-			
+
 			***********************************************************************************************************************************************
 			*
 			*	Global irules configuration
 			*	Here you can configure if virtual server irules and data group lists should be listed and if they should be linked
-			*	
+			*
 			*	Note:
 			*	If you set any of these options to from true to false the report will clear any information in the next update from the json files
 			*	in order to make sure that no unwanted data is available to clients
 			*
 			*	Right now you can't configure data group list links unless irules are enabled.
 			*	Let me know if this is an issue and I'll see if I can fix it in a future version.
-			*	
+			*
 			*	Example of when irules are showing in the virtual server details and both irules + data group lists are available for clients to see:
 			*	<iRules>
 			*		<Enabled>true</Enabled>
@@ -368,7 +368,7 @@
 			*		<Enabled>true</Enabled>
 			*		<ShowiRuleLinks>true</ShowiRuleLinks>
 			*		<ShowDataGroupListLinks>false</ShowDataGroupListLinks>
-			*	</iRules>	
+			*	</iRules>
 			*	Example of when no iRules or data group lists is shown at all in the virtual server details:
 			*	<iRules>
 			*		<Enabled>false</Enabled>
@@ -379,19 +379,19 @@
 			************************************************************************************************************************************************
 
 		-->
-		
+
 			<iRules>
 				<Enabled>true</Enabled>
 				<ShowiRuleLinks>true</ShowiRuleLinks>
 				<ShowDataGroupListsLinks>true</ShowDataGroupListsLinks>
 			</iRules>
-		
+
 		<!--
-			
+
 			***********************************************************************************************************************************************
 			*
 			*	Export link settings
-			* 
+			*
 			*	Enabled:
 			*	<ExportLink>
 			*		<Enabled>true</Enabled>
@@ -410,7 +410,7 @@
 		</ExportLink>
 
 		<!--
-			
+
 			***********************************************************************************************************************************************
 			*
 			*	Realtime data
@@ -420,7 +420,7 @@
 			*	Realtime data is not enabled through the configuration file, but via the BigIP configuration.
 			*	More information about this is available here:
 			*	https://loadbalancing.se/bigip-report/#Realtime_Pool_Member_State
-			* 
+			*
 			*	Update a maximum of 5 members at the same time.
 			*	<RealTimeMemberStates>
 			*		<MaxQueue>
@@ -438,6 +438,6 @@
 			<RealTimeMemberStates>
 				<MaxQueue>1</MaxQueue>
 				<RefreshRate>60</RefreshRate>
-			</RealTimeMemberStates>	
+			</RealTimeMemberStates>
 
 	</Settings>
