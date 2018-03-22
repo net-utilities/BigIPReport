@@ -2179,10 +2179,10 @@ if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
 }
 
+$i = 0
 ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
 	$LoadBalancer = $LoadBalancerObjects.LoadBalancer
 	$LoadBalancerName = $LoadBalancer.name
-	$i = 0
 	$VirtualServers = $LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools
 	$VirtualServerCount = $VirtualServers.Count
 	ForEach ($ObjVirtualServer in $VirtualServers){
@@ -2227,13 +2227,13 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 						<td class="centeredCell">
 "@
 			if($ObjVirtualServer.asmPolicies.count -gt 0){
-				for($i = 0; $i -lt $ObjVirtualServer.asmPolicies.Count; $i++){
-					$ObjASMPolicy = $LoadBalancerObjects.ASMPolicies[$ObjVirtualServer.asmPolicies[$i]]
+				for($asm = 0; $asm -lt $ObjVirtualServer.asmPolicies.Count; $asm++){
+					$ObjASMPolicy = $LoadBalancerObjects.ASMPolicies[$ObjVirtualServer.asmPolicies[$asm]]
 
 					if($ObjASMPolicy.enforcementMode -eq "blocking"){
-						$ObjVirtualServer.asmPolicies[$i] = $ObjVirtualServer.asmPolicies[$i] + " (B)"
+						$ObjVirtualServer.asmPolicies[$asm] = $ObjVirtualServer.asmPolicies[$asm] + " (B)"
 					} else {
-						$ObjVirtualServer.asmPolicies[$i] = $ObjVirtualServer.asmPolicies[$i] + " (T)"
+						$ObjVirtualServer.asmPolicies[$asm] = $ObjVirtualServer.asmPolicies[$asm] + " (T)"
 					}
 				}
 				$Global:HTML += $ObjVirtualServer.asmPolicies -Join "<br>"
