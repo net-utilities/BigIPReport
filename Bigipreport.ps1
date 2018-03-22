@@ -2469,7 +2469,7 @@ $Global:HTML += @"
 						<h3>Feature requests</h3>
 						<p>Please add any feature requests or suggestions here:</p>
 						<p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
-						<p>And if you like the project, please set aside some of your time to leave a <a href=\"https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
+						<p>And if you like the project, please set aside some of your time to leave a <a href="https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
 						<h3>Troubleshooting</h3>
 						<p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
 						<p>To collect and download anonymized data for submitting a device overview bug report, click <a href="javascript:exportDeviceData()">here</a>.</p>
