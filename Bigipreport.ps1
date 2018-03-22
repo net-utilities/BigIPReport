@@ -2192,7 +2192,7 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 		}
 		$Global:HTML += @"
 					<tr class="virtualserverrow">
-						<td class="loadbalancerCell" NOWRAP data-loadbalancer="$LoadBalancerName">
+						<td class="loadbalancerCell" data-loadbalancer="$LoadBalancerName">
 							$(
 								if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
 									$LoadBalancerName.split('.')[0]
