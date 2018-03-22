@@ -2147,7 +2147,7 @@ $Global:HTML += @'
 '@
 	#Show the div used to contain information generating by clicking at pool members
 	$Global:HTML += @'
-		<div id='allbigipsdiv' class="lbdiv" style="position:absolute;visibility:visible;width:100%";>
+		<div id='allbigipsdiv' class="lbdiv" style="position:absolute;visibility:visible;width:100%;">
 		<table id="allbigips" class="bigiptable">
 			<thead>
 				<tr>
