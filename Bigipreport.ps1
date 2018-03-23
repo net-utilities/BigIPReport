@@ -2088,7 +2088,7 @@ If ($Global:ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
 
 $Global:HTML = @'
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<title>BIG-IP Report</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
