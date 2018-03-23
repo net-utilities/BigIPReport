@@ -2008,6 +2008,11 @@ Function Write-TemporaryFiles {
 
 	log verbose "Writing temporary report file to $($Global:reportpath + ".tmp")"
 
+	# remove whitespace from output
+	if($Outputlevel -ne "Verbose"){
+		$Global:HTML = string.Join("`n", $Global.HTML.Split("`n").Trim())
+	}
+
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:reportpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 	$StreamWriter.Write($Global:HTML)
 
