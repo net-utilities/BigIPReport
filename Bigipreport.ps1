@@ -2010,7 +2010,7 @@ Function Write-TemporaryFiles {
 
 	# remove whitespace from output
 	if($Outputlevel -ne "Verbose"){
-		$Global:HTML = string.Join("`n", $Global.HTML.Split("`n").Trim())
+		$Global:HTML = $Global:HTML.Split("`n").Trim() -Join "`n"
 	}
 
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:reportpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
@@ -2209,7 +2209,7 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 		$Global:HTML += @"
 						<td class="virtualServerCell">
-							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="images/details.png" alt="details"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($ObjVirtualServer.name)">Edit</a></span>
+							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="images/details.png" alt="details"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$([System.Web.HttpUtility]::UrlEncode($ObjVirtualServer.name))">Edit</a></span>
 						</td>
 "@
 		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
