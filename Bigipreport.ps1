@@ -2187,9 +2187,9 @@ if($RealTimeStatusDetected){
 ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
 	$LoadBalancer = $LoadBalancerObjects.LoadBalancer
 	$LoadBalancerName = $LoadBalancer.name
+	$i = 0
 	$VirtualServers = $LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools
 	$VirtualServerCount = $VirtualServers.Count
-	$i = 0
 	ForEach ($ObjVirtualServer in $VirtualServers){
 		$i++
 		if($Outputlevel -eq "Verbose"){
