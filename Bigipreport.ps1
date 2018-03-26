@@ -2,7 +2,7 @@
 ######################################################################################################################################
 #
 #		Copyright (C) 2016 Patrik Jonsson <patrik.jonsson#at#gmail-com>
-#		
+#
 #		This script is free: you can redistribute it and/or modify
 #		it under the terms of the GNU General Public License as published by
 #		the Free Software Foundation, either version 3 of the License, or
@@ -216,10 +216,9 @@ $Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
 #Check if the configuration file exists
 if(Test-Path $ConfigurationFile){
-	
 	#Read the file as xml
 	[xml]$Global:Bigipreportconfig = Get-Content $ConfigurationFile
-	
+
 	#Verify that the file was succssfully loaded, otherwise exit
 	if($?){
 		$Outputlevel = $Global:Bigipreportconfig.Settings.Outputlevel
@@ -242,73 +241,63 @@ if(Test-Path $ConfigurationFile){
 ################################################################################################################################################
 
 Function log {
-
 	Param ([string]$LogType, [string]$Message)
-	
+
 	#Initiate the log header with date and time
 	$CurrentTime =  $(Get-Date -UFormat "%Y-%m-%d") + "`t" + $(Get-Date -Uformat "%H:%M:%S")
 	$LogHeader = $CurrentTime+ "`t$($LogType.toUpper())"
-	
+
 	if($LogType -eq "error"){
 		$Global:LoggedErrors  += $Message
 	}
 
 	if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
-	
 		$LogFilePath = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
 		$LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
-		
-		switch($Logtype) { 
-	        "error" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
-	        "warning" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
-	        "info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
+
+		switch($Logtype) {
+			"error" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
+			"warning" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
+			"info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
 			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
 			"verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
 			default { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
-	    }
+		}
 	}
-	
+
 	$ConsoleHeader = $CurrentTime
-	
-	switch($logtype) { 
-        "error" 	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Red" }
-		"warning" 	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Yellow" }
+
+	switch($logtype) {
+		"error"		{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Red" }
+		"warning"	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Yellow" }
 		"info"		{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Gray" }  }
-		"success" 	{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Green" } }
+		"success"	{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Green" } }
 		"verbose"   { if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
-		default 	{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
-    }
+		default		{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
+	}
 }
 
 
 #Enable case sensitive dictonaries
-function c@ { 
-    New-Object Collections.Hashtable ([StringComparer]::CurrentCulture) 
-} 
+function c@ {
+	New-Object Collections.Hashtable ([StringComparer]::CurrentCulture)
+}
 
 ################################################################################################################################################
 #
 #	Function to send an error report if error reporting is configured
 #
 ################################################################################################################################################
-
-
-
 Function Send-Errors {
-
-
 	#Check for errors when executing the script and send them
 	If($Error.Count -gt 0 -or $Global:LoggedErrors -gt 0){
-		
 		log verbose "There were errors while generating the report"
-		
-		if($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true){	
-			
+
+		if($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true){
 			$Errorsummary = @"
 <html>
 	<head>
 		<style type="text/css">
-
 			.errortable {
 				margin:0px;padding:0px;
 				box-shadow: 10px 10px 5px #888888;
@@ -323,12 +312,12 @@ Function Send-Errors {
 				padding:0px;
 				border:1px solid #000000;
 			}
-			.errortable tr:nth-child(odd){ 
-				background-color:#ffffff; 
+			.errortable tr:nth-child(odd){
+				background-color:#ffffff;
 				border-collapse: collapse;
 			}
-			.oddrow{ 
-				background-color:#d3e9ff; 
+			.oddrow{
+				background-color:#d3e9ff;
 			}
 			.errortable td{
 				vertical-align:middle;
@@ -350,55 +339,48 @@ Function Send-Errors {
 			.error {
 				color:red;
 			}
-
 		</style>
 
 	</head>
 	<body>
 "@
-			
+
 			if($Global:LoggedErrors.Count -gt 0){
 				$Errorsummary += "<h4>The following handled errors was thrown during the execution</h4>"
-				
+
 				Foreach($HandledError in $Global:LoggedErrors){
 					$Errorsummary += "<font class=""error"">" + $HandledError + "</font><br>"
 				}
 			}
-					
-			if($Error.Count -gt 0){		
+
+			if($Error.Count -gt 0){
 				$Errorsummary += "<h4>The following exceptions was thrown during script execution</h4>"
-				
+
 				$Errorsummary += "<table class=""errortable""><thead><tr class=""headerrow""><th>Category</th><th>Linenumber</th><th>Line</th><th>Stacktrace</th></tr></thead><tbody>"
-				
+
 				Foreach($erroritem in $error){
-					
 					$Category = $Erroritem.Categoryinfo.Reason
 					$StackTrace = $Erroritem.ScriptStackTrace
 					$LineNumber = $Erroritem.InvocationInfo.ScriptLineNumber
 					$PositionMessage = $ErrorItem.InvocationInfo.PositionMessage
-					
+
 					$Errorsummary += "<tr><td>$Category</td><td>$Linenumber</td><td>$PositionMessage</td><td>$Stacktrace</td></tr>"
-					
 				}
-				
+
 				$Errorsummary += "</tbody></table></body></html>"
 			}
 			log verbose "Sending report"
 			$Subject = "$(Get-Date -format d): BigIP Report generation encountered errors"
-	        $Body = "$errorsummary"
-	
-	        Foreach($Recipient in $Global:Bigipreportconfig.Settings.ErrorReporting.Recipients.Recipient){
-		        send-MailMessage -SmtpServer $Global:Bigipreportconfig.Settings.ErrorReporting.SMTPServer -To $Recipient -From $Global:Bigipreportconfig.Settings.ErrorReporting.Sender -Subject $Subject -Body $Body -BodyAsHtml
-	        }
+			$Body = "$errorsummary"
+
+			Foreach($Recipient in $Global:Bigipreportconfig.Settings.ErrorReporting.Recipients.Recipient){
+				send-MailMessage -SmtpServer $Global:Bigipreportconfig.Settings.ErrorReporting.SMTPServer -To $Recipient -From $Global:Bigipreportconfig.Settings.ErrorReporting.Sender -Subject $Subject -Body $Body -BodyAsHtml
+			}
 		} else {
 			log error "No error mail reporting enabled/configured"
 		}
 	}
 }
-
-
-
-
 
 log verbose "Configuring the console window"
 
@@ -450,9 +432,8 @@ if($Global:Bigipreportconfig.Settings.LogSettings -eq $null -or $Global:Bigiprep
 }
 
 if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq "true" ){
-
 	if($Global:Bigipreportconfig.Settings.LogSettings.LogFilePath -eq $null -or $Global:Bigipreportconfig.Settings.LogSettings.LogLevel -eq $null -or $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines -eq $null) {
-		log error "Logging has been enabled but all logging fields has not been configured"	
+		log error "Logging has been enabled but all logging fields has not been configured"
 		$SaneConfig = $false
 	}
 }
@@ -463,11 +444,10 @@ if($Global:Bigipreportconfig.Settings.Outputlevel -eq $null -or $Global:Bigiprep
 }
 
 Foreach($Share in $Global:Bigipreportconfig.Settings.Shares.Share){
-	
 	log verbose "Mounting $($Share.Path)"
-	
+
 	& net use $($Share.Path) /user:$($Share.Username) $($Share.Password) | Out-Null
-	
+
 	if($?){
 		log success "Share $($Share.Path) was mounted successfully"
 	} else {
@@ -500,19 +480,15 @@ if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigiprepo
 	log error "No report root configured"
 	$SaneConfig = $false
 } else {
-
 	#Make sure the site root ends with \
 	if(-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")){
 		$Global:bigipreportconfig.Settings.ReportRoot += "\"
 	}
 
 	if(-not (Test-Path $Global:Bigipreportconfig.Settings.ReportRoot)){
-
 		log error "Can't access the site root $($Global:Bigipreportconfig.Settings.ReportRoot)"
 		$SaneConfig = $false
-
 	} else {
-
 		if(-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "json"))){
 			log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
 			$SaneConfig = $false
@@ -545,44 +521,38 @@ if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigiprepo
 			$SaneConfig = $false
 		}
 	}
-
 }
 
 Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup){
+	If ($DeviceGroup.name -eq $null -or $DeviceGroup.name -eq "") {
+		log error "A device group does not have any name. Please check the latest version of the configuration file."
+		$SaneConfig = $false
+	}
 
-    If ($DeviceGroup.name -eq $null -or $DeviceGroup.name -eq "") {
-        log error "A device group does not have any name. Please check the latest version of the configuration file."
-        $SaneConfig = $false
-    }
-
-    If ($DeviceGroup.Device -eq $null -or ($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
-        log error "A device group does not have any devices, please re-check your configuration"
-        $SaneConfig = $false
-    }
-
+	If ($DeviceGroup.Device -eq $null -or ($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
+		log error "A device group does not have any devices, please re-check your configuration"
+		$SaneConfig = $false
+	}
 }
 
 #Initialize iControlSnapin
 if(Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl") }){
-	
-    $SnapInInfo = Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl") }
+	$SnapInInfo = Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl") }
 
-    if($SnapInInfo.Version.Major -lt 13 -or ($SnapInInfo.Version.Major -eq 13 -and $SnapInInfo.Version.Minor -lt 1) ){
-        log error "The detected iControl SnapIn running on version $([string]$SnapInInfo.Version.Major + "." + [string]$SnapInInfo.Version.Minor) while the one required by this script is 13.1"
-        log error "Follow the steps to upgrade: https://loadbalancing.se/bigip-report/#Upgrading_the_iControl_Snap-in"
-        log error "If you have any issues, please report is in the BigIPReport thread on Devcentral"
-        $SaneConfig = $false
-    } else {
-
-    	Add-PSSnapIn iControlSnapIn
-    	if($?){
-    		log success "Loaded F5 iControl snapin"
-    	} else {
-    		log error "Failed to load F5 iControl, aborting"
-    		$SaneConfig = $false
-    	}
-
-    }
+	if($SnapInInfo.Version.Major -lt 13 -or ($SnapInInfo.Version.Major -eq 13 -and $SnapInInfo.Version.Minor -lt 1) ){
+		log error "The detected iControl SnapIn running on version $([string]$SnapInInfo.Version.Major + "." + [string]$SnapInInfo.Version.Minor) while the one required by this script is 13.1"
+		log error "Follow the steps to upgrade: https://loadbalancing.se/bigip-report/#Upgrading_the_iControl_Snap-in"
+		log error "If you have any issues, please report is in the BigIPReport thread on Devcentral"
+		$SaneConfig = $false
+	} else {
+		Add-PSSnapIn iControlSnapIn
+		if($?){
+			log success "Loaded F5 iControl snapin"
+		} else {
+			log error "Failed to load F5 iControl, aborting"
+			$SaneConfig = $false
+		}
+	}
 } else {
 	log error "iControl Snapin could not be found, aborting"
 	$SaneConfig = $false
@@ -591,12 +561,12 @@ if(Get-PSSnapin -Registered | Where-Object { $_.Description.contains("iControl")
 
 if(-not $SaneConfig){
 	log verbose "There were errors during the config file sanity check"
-	
+
 	if($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true){
 		log verbose "Attempting to sen an error report via mail"
 		Send-Errors
 	}
-	
+
 	log verbose "Exiting"
 	Exit
 } else {
@@ -633,13 +603,13 @@ $Global:loggederrorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
-	
+
 	using System.Collections;
 	public class VirtualServer
 	{
-	    public string name;
-        public string description;
-	    public string ip;
+		public string name;
+		public string description;
+		public string ip;
 		public string port;
 		public string defaultpool;
 		public string sslprofile;
@@ -647,9 +617,9 @@ Add-Type @'
 		public string persistence;
 		public string[] irules;
 		public string[] pools;
-	    public string[] vlans;
-	    public string trafficgroup;
-	    public string vlanstate;
+		public string[] vlans;
+		public string trafficgroup;
+		public string vlanstate;
 		public string sourcexlatetype;
 		public string sourcexlatepool;
 		public string[] asmPolicies;
@@ -676,9 +646,9 @@ Add-Type @'
 	}
 
 	public class Pool {
-	    public string name;
-        public string description;
-	    public string[] monitors;
+		public string name;
+		public string description;
+		public string[] monitors;
 		public Member[] members;
 		public string loadbalancingmethod;
 		public string actiononservicedown;
@@ -689,22 +659,22 @@ Add-Type @'
 	}
 
 	public class iRule {
-	    public string name;
-	    public string[] pools;
+		public string name;
+		public string[] pools;
 		public string definition;
 		public string loadbalancer;
 	}
 
 	public class Node {
-	    public string ip;
-	    public string name;
-        public string description;
+		public string ip;
+		public string name;
+		public string description;
 		public string loadbalancer;
 	}
 
 	public class Monitor {
-	    public string name;
-	    public string type;
+		public string name;
+		public string type;
 		public string sendstring;
 		public string receivestring;
 		public string loadbalancer;
@@ -713,8 +683,8 @@ Add-Type @'
 	}
 
 	public class Datagrouplist {
-	    public string name;
-	    public string type;
+		public string name;
+		public string type;
 		public Hashtable data;
 		public string loadbalancer;
 	}
@@ -725,10 +695,10 @@ Add-Type @'
 		public string state;
 	}
 
-    public class DeviceGroup {
-        public string name;
-        public string[] ips;
-    }
+	public class DeviceGroup {
+		public string name;
+		public string[] ips;
+	}
 
 	public class Loadbalancer {
 		public string name;
@@ -744,7 +714,7 @@ Add-Type @'
 		public string color;
 		public Hashtable modules;
 		public PoolStatusVip statusvip;
-        public bool success = true;
+		public bool success = true;
 	}
 
 	public class ASMPolicy {
@@ -755,22 +725,22 @@ Add-Type @'
 		public string loadbalancer;
 	}
 
-    public class CertificateDetails {
-        public string commonName;
-        public string countryName;
-        public string stateName;
-        public string localityName;
-        public string organizationName;
-        public string divisionName;
-    }
+	public class CertificateDetails {
+		public string commonName;
+		public string countryName;
+		public string stateName;
+		public string localityName;
+		public string organizationName;
+		public string divisionName;
+	}
 
-    public class Certificate {
-        public string fileName;
-        public long expirationDate;
-        public CertificateDetails subject;
-        public CertificateDetails issuer;
-        public string loadbalancer;
-    }
+	public class Certificate {
+		public string fileName;
+		public long expirationDate;
+		public CertificateDetails subject;
+		public CertificateDetails issuer;
+		public string loadbalancer;
+	}
 
 '@
 
@@ -794,7 +764,7 @@ $Global:ModuleToShort = @{
 	"TMOS_MODULE_AVR" = "AVR";
 	"TMOS_MODULE_ILX" = "ILX";
  }
- 
+
 $Global:ModuleToDescription = @{
 	"ASM" = "The Application Security Module.";
 	"APM" = "The Access Policy Module.";
@@ -865,54 +835,48 @@ if($Global:Bigipreportconfig.Settings.UseTLS12 -eq $true){
 #If configured, read the NAT rules from the specified NAT File
 
 if($Global:Bigipreportconfig.Settings.NATFilePath -ne ""){
-	
 	log verbose "NAT File has been configured"
-	
+
 	if(Test-Path -Path $Global:Bigipreportconfig.Settings.NATFilePath){
-		
 		$NATContent = Get-Content $Global:Bigipreportconfig.Settings.NATFilePath
-		
+
 		$NATContent | ForEach-Object {
-			$ArrLine = $_.split("=")	
+			$ArrLine = $_.split("=")
 			if($ArrLine.Count -eq 2){
 				$Global:NATdict[$arrLine[1]] = $arrLine[0]
 			 } else {
-			 	log error "Malformed NAT file content detected: Check $_"
+				log error "Malformed NAT file content detected: Check $_"
 			 }
 		}
-		
+
 		if($NATdict.count -gt 0){
 			log success "Loaded $($NATdict.count) NAT entries"
 		} else {
 			log error "No NAT entries loaded"
 		}
-	
 	} else {
 		log error "NAT file could not be found in location $($Global:Bigipreportconfig.Settings.NATFilePath)"
 	}
 }
 
-
-
 #Region function Cache-LTMInformation
 
 #Function used to gather data from the load balancers
 function Cache-LTMInformation {
-
 	Param(
 		$F5,
 		$LoadBalancerObjects
 	)
-	
+
 	$VersionInfo = $F5.SystemSystemInfo.get_product_information()
 
 	#Set some variables to make the code nicer to read
 	$LoadBalancerName = $LoadBalancerObjects.LoadBalancer.name
 	$LoadBalancerIP =  $LoadBalancerObjects.LoadBalancer.ip
-	
+
 	#Regexp for parsing monitors from iRule definitions
 	[regex]$Poolregexp = "pool\s+([a-zA-Z0-9_\-\./]+)"
-	
+
 	$F5.SystemSession.set_active_folder("/");
 	$F5.SystemSession.set_recursive_query_state("STATE_ENABLED");
 
@@ -922,168 +886,157 @@ function Cache-LTMInformation {
 	$LoadBalancerObjects.ASMPolicies = c@{}
 
 	If($MajorVersion -gt 11){
-
 		#Check if ASM is enabled
 		if($ModuleDict.Keys -contains "ASM"){
+			$ErrorActionPreference = "SilentlyContinue"
 
-            $ErrorActionPreference = "SilentlyContinue"
+			Try {
+				log info "Version 12 or higher detected together with the ASM module. Getting authentication token for the REST API to be able to fetch ASM information"
+				$AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
 
-            Try {
-                log info "Version 12 or higher detected together with the ASM module. Getting authentication token for the REST API to be able to fetch ASM information"
-                $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
-            
-                log verbose "Getting ASM Policy information"
+				log verbose "Getting ASM Policy information"
 
-    			$Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
+				$Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
-    			$Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
-    			$Policies = ($Response | ConvertFrom-Json).items
+				$Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
+				$Policies = ($Response | ConvertFrom-Json).items
 
-    			Foreach($Policy in $Policies){
+				Foreach($Policy in $Policies){
+					$ObjTempPolicy = New-Object -Type ASMPolicy
 
-    				$ObjTempPolicy = New-Object -Type ASMPolicy
+					$ObjTempPolicy.name = $Policy.fullPath
+					$ObjTempPolicy.enforcementMode = $Policy.enforcementMode
+					$ObjTempPolicy.learningMode = $Policy.learningMode
+					$ObjTempPolicy.virtualServers = $Policy.virtualServers
+					$ObjTempPolicy.loadbalancer = $LoadBalancerName
 
-    				$ObjTempPolicy.name = $Policy.fullPath
-    				$ObjTempPolicy.enforcementMode = $Policy.enforcementMode
-    				$ObjTempPolicy.learningMode = $Policy.learningMode
-    				$ObjTempPolicy.virtualServers = $Policy.virtualServers
-    				$ObjTempPolicy.loadbalancer = $LoadBalancerName
+					$LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
+				}
+			} Catch {
+				log error "Unable to get a valid token from $LoadbalancerName."
+			}
 
-    				$LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
-    			}
-
-            } Catch {
-                log error "Unable to get a valid token from $LoadbalancerName."
-            }
-
-            $ErrorActionPreference = "Continue"
-		
-        }
+			$ErrorActionPreference = "Continue"
+		}
 	}
 
 	#EndRegion
 
 	#Region Cache Node and monitor data
-	
+
 	#Cache information about iRules, nodes and monitors
-	
+
 	#Region Cache certificate information
 
-    log verbose "Caching certificates"
+	log verbose "Caching certificates"
 
-    $LoadBalancerObjects.Certificates = c@{}
+	$LoadBalancerObjects.Certificates = c@{}
 
-    $Certificates = $F5.ManagementKeyCertificate.get_certificate_list(0)
+	$Certificates = $F5.ManagementKeyCertificate.get_certificate_list(0)
 
-    Foreach($Certificate in $Certificates){
+	Foreach($Certificate in $Certificates){
+		$ObjSubject = New-Object -TypeName "CertificateDetails"
 
-        $ObjSubject = New-Object -TypeName "CertificateDetails"
+		$ObjSubject.commonName = $Certificate.certificate.subject.common_name
+		$ObjSubject.countryName = $Certificate.certificate.subject.country_name
+		$ObjSubject.stateName = $Certificate.certificate.subject.state_name
+		$ObjSubject.localityName = $Certificate.certificate.subject.locality_name
+		$ObjSubject.organizationName = $Certificate.certificate.subject.organization_name
+		$ObjSubject.divisionName = $Certificate.certificate.subject.division_name
 
-        $ObjSubject.commonName = $Certificate.certificate.subject.common_name
-        $ObjSubject.countryName = $Certificate.certificate.subject.country_name
-        $ObjSubject.stateName = $Certificate.certificate.subject.state_name
-        $ObjSubject.localityName = $Certificate.certificate.subject.locality_name
-        $ObjSubject.organizationName = $Certificate.certificate.subject.organization_name
-        $ObjSubject.divisionName = $Certificate.certificate.subject.division_name
-        
-        $ObjIssuer = New-Object -TypeName "CertificateDetails"
+		$ObjIssuer = New-Object -TypeName "CertificateDetails"
 
-        $ObjIssuer.commonName = $Certificate.certificate.issuer.common_name
-        $ObjIssuer.countryName = $Certificate.certificate.issuer.country_name
-        $ObjIssuer.stateName = $Certificate.certificate.issuer.state_name
-        $ObjIssuer.localityName = $Certificate.certificate.issuer.locality_name
-        $ObjIssuer.organizationName = $Certificate.certificate.issuer.organization_name
-        $ObjIssuer.divisionName = $Certificate.certificate.issuer.division_name
+		$ObjIssuer.commonName = $Certificate.certificate.issuer.common_name
+		$ObjIssuer.countryName = $Certificate.certificate.issuer.country_name
+		$ObjIssuer.stateName = $Certificate.certificate.issuer.state_name
+		$ObjIssuer.localityName = $Certificate.certificate.issuer.locality_name
+		$ObjIssuer.organizationName = $Certificate.certificate.issuer.organization_name
+		$ObjIssuer.divisionName = $Certificate.certificate.issuer.division_name
 
-        $ObjCertificate = New-Object -TypeName "Certificate"
+		$ObjCertificate = New-Object -TypeName "Certificate"
 
-        $ObjCertificate.fileName = $Certificate.file_name
-        $ObjCertificate.expirationDate = $Certificate.certificate.expiration_date
-        $ObjCertificate.subject = $ObjSubject
-        $ObjCertificate.issuer = $ObjIssuer
-        $ObjCertificate.loadbalancer = $LoadbalancerName
+		$ObjCertificate.fileName = $Certificate.file_name
+		$ObjCertificate.expirationDate = $Certificate.certificate.expiration_date
+		$ObjCertificate.subject = $ObjSubject
+		$ObjCertificate.issuer = $ObjIssuer
+		$ObjCertificate.loadbalancer = $LoadbalancerName
 
-        $LoadBalancerObjects.Certificates.add($ObjCertificate.fileName, $ObjCertificate)
-
-    }
+		$LoadBalancerObjects.Certificates.add($ObjCertificate.fileName, $ObjCertificate)
+	}
 
 	#Region Cache node data
-	
+
 	$LoadBalancerObjects.Nodes = c@{}
 
 	[array]$NodeNames = $F5.LocalLBNodeAddressV2.get_list()
-    [array]$NodeAddresses = $F5.LocalLBNodeAddressV2.get_address($NodeNames)
-    [array]$NodeDescriptions = $F5.LocalLBNodeAddressV2.get_description($NodeNames)
+	[array]$NodeAddresses = $F5.LocalLBNodeAddressV2.get_address($NodeNames)
+	[array]$NodeDescriptions = $F5.LocalLBNodeAddressV2.get_description($NodeNames)
 
-	
+
 	for($i=0;$i -lt ($NodeAddresses.Count);$i++){
-		
 		$ObjTempNode = New-Object Node
-		
+
 		$ObjTempNode.ip = [string]$NodeAddresses[$i]
 		$ObjTempNode.name = [string]$NodeNames[$i]
-        $ObjTempNode.description = [string]$NodeDescriptions[$i]
+		$ObjTempNode.description = [string]$NodeDescriptions[$i]
 		$ObjTempNode.loadbalancer = $LoadBalancerName
-				
+
 		if($ObjTempNode.name -eq ""){
 			$ObjTempNode.name = "Unnamed"
 		}
-		
-		$LoadBalancerObjects.Nodes.add($ObjTempNode.name, $ObjTempNode)
 
+		$LoadBalancerObjects.Nodes.add($ObjTempNode.name, $ObjTempNode)
 	}
 
 	#EndRegion
-		
+
 	#Region Caching monitor data
 
 	$LoadBalancerObjects.Monitors = c@{}
 
 	log verbose "Caching monitors"
-	
-	[array]$MonitorList = $F5.LocalLBMonitor.get_template_list()		
-	
+
+	[array]$MonitorList = $F5.LocalLBMonitor.get_template_list()
+
 	#Save the HTTP monitors separately since they have different properties
 	[array]$HttpMonitors = $MonitorList | Where-Object { $_.template_type -eq "TTYPE_HTTP" -or $_.template_type -eq "TTYPE_HTTPS" }
-	
+
 	if($HttpMonitors.Count -gt 0){
 		[array]$HttpmonitorsSendstrings = $F5.LocalLBMonitor.get_template_string_property($HttpMonitors.template_name, $($HttpMonitors | ForEach-Object { 1 }))
 		[array]$HttpmonitorsReceiveStrings = $F5.LocalLBMonitor.get_template_string_property($HttpMonitors.template_name, $($HttpMonitors | ForEach-Object { 3 }))
 		[array]$HttpmonitorsIntervals = $F5.LocalLBMonitor.get_template_integer_property($HttpMonitors.template_name,$($HttpMonitors | ForEach-Object { 1 }))
 		[array]$HttpmonitorsTimeOuts = $F5.LocalLBMonitor.get_template_integer_property($HttpMonitors.template_name,$($HttpMonitors | ForEach-Object { 2 }))
 	}
-	
+
 	#Save the monitors which has interval and timeout properties
 	[array]$OtherMonitors = $MonitorList | Where-Object { @("TTYPE_ICMP", "TTYPE_GATEWAY_ICMP", "TTYPE_REAL_SERVER", "TTYPE_SNMP_DCA", "TTYPE_TCP_HALF_OPEN", "TTYPE_TCP", "TTYPE_UDP") -contains $_.template_type }
-	
+
 	if($OtherMonitors.Count -gt 0){
 		[array]$OtherMonitorsIntervals = $F5.LocalLBMonitor.get_template_integer_property($OtherMonitors.template_name,$($OtherMonitors | ForEach-Object { 1 }))
 		[array]$OtherMonitorsTimeouts = $F5.LocalLBMonitor.get_template_integer_property($OtherMonitors.template_name,$($OtherMonitors | ForEach-Object { 2 }))
 	}
-	
+
 	#Save the rest here
 	$NonCompatibleMonitors = $MonitorList | Where-Object { @("TTYPE_ICMP", "TTYPE_GATEWAY_ICMP", "TTYPE_REAL_SERVER", "TTYPE_SNMP_DCA", "TTYPE_TCP_HALF_OPEN", "TTYPE_TCP", "TTYPE_UDP", "TTYPE_HTTP", "TTYPE_HTTPS") -notcontains $_.template_type }
-	
+
 	For($i = 0;$i -lt $HttpMonitors.Count;$i++){
-		
 		$ObjTempMonitor = New-Object Monitor
-		
+
 		$ObjTempMonitor.name = $HttpMonitors[$i].template_name
 		$ObjTempMonitor.sendstring = $HttpmonitorsSendstrings[$i].value
 		$ObjTempMonitor.receivestring = $HttpmonitorsReceiveStrings[$i].value
 		$ObjTempMonitor.interval = $HttpmonitorsIntervals[$i].value
 		$ObjTempMonitor.timeout = $HttpmonitorsTimeOuts[$i].value
 		$ObjTempMonitor.type = $HttpMonitors[$i].template_type
-	
+
 		$ObjTempMonitor.loadbalancer = $LoadBalancerName
-		
+
 		$LoadBalancerObjects.Monitors.add($ObjTempMonitor.name, $ObjTempMonitor)
 	}
-	
+
 	For($i = 0;$i -lt $OtherMonitors.Count;$i++){
-		
 		$ObjTempMonitor = New-Object Monitor
-		
+
 		$ObjTempMonitor.name = $OtherMonitors[$i].template_name
 		$ObjTempMonitor.sendstring = "N/A"
 		$ObjTempMonitor.receivestring = "N/A"
@@ -1091,29 +1044,27 @@ function Cache-LTMInformation {
 		$ObjTempMonitor.timeout = $OtherMonitorsTimeouts[$i].value
 		$ObjTempMonitor.type = $OtherMonitors[$i].template_type
 		$ObjTempMonitor.loadbalancer = $LoadBalancerName
-		
+
 		$LoadBalancerObjects.Monitors.add($ObjTempMonitor.name, $ObjTempMonitor)
 	}
-	
+
 	Foreach($Monitor in $NonCompatibleMonitors){
-	
 		$ObjTempMonitor = New-Object Monitor
-		
+
 		$ObjTempMonitor.name = $Monitor.template_name
 		$ObjTempMonitor.sendstring = "N/A"
 		$ObjTempMonitor.receivestring = "N/A"
 		$ObjTempMonitor.interval = "N/A"
 		$ObjTempMonitor.timeout = "N/A"
 		$ObjTempMonitor.type = $Monitor.template_type
-		
+
 		$ObjTempMonitor.loadbalancer = $LoadBalancerName
-	
+
 		$LoadBalancerObjects.Monitors.add($ObjTempMonitor.name, $ObjTempMonitor)
-		
 	}
-	
+
 	#EndRegion
-	
+
 	#Region Cache Data group lists
 
 	log verbose "Caching data group lists"
@@ -1126,27 +1077,23 @@ function Cache-LTMInformation {
 
 	#Get address type data group lists data
 	For($i = 0;$i -lt $AddressClassList.Count;$i++){
-		
 		$ObjTempDataGroupList = New-Object -Type DataGroupList
 		$ObjTempDataGroupList.name = $AddressClassList[$i]
 		$ObjTempDataGroupList.type = "Address"
-		
+
 		$Dgdata = New-Object System.Collections.Hashtable
-		
+
 		for($x=0;$x -lt $AddressClassKeys[$i].members.Count;$x++){
-			
 			$Key = [string]$AddressClassKeys[$i].members[$x].Address + " " + [string]$AddressClassKeys[$i].members[$x].Netmask
 			$Value = [string]$AddressClassValues[$i][$x]
-			
+
 			$Dgdata.add($Key, $Value)
-			
 		}
-		
+
 		$ObjTempDataGroupList.data = $Dgdata
 		$objTempDataGroupList.loadbalancer = $LoadBalancerName
-		
+
 		$LoadBalancerObjects.DataGroupLists.add($ObjTempDataGroupList.name, $ObjTempDataGroupList)
-		
 	}
 
 	$StringClassList = $F5.LocalLBClass.get_string_class_list()
@@ -1154,26 +1101,23 @@ function Cache-LTMInformation {
 	$StringClassValues = $F5.LocalLBClass.get_string_class_member_data_value($StringClassKeys)
 
 	For($i = 0;$i -lt $StringClassList.Count;$i++){
-		
 		$ObjTempDataGroupList = New-Object -Type DataGroupList
 		$ObjTempDataGroupList.name = $StringClassList[$i]
 		$ObjTempDataGroupList.type = "String"
-		
+
 		$Dgdata = New-Object System.Collections.Hashtable
-		
+
 		for($x=0;$x -lt $StringClassKeys[$i].members.Count;$x++){
-			
 			$Key = [string]$StringClassKeys[$i].members[$x]
 			$Value = [string]$StringClassValues[$i][$x]
-			
+
 			$Dgdata.add($Key, $Value)
 		}
-		
+
 		$ObjTempDataGroupList.data = $Dgdata
 		$ObjTempDataGroupList.loadbalancer = $LoadBalancerName
-		
+
 		$LoadBalancerObjects.DataGroupLists.add($ObjTempDataGroupList.name, $ObjTempDataGroupList)
-		
 	}
 
 	$ValueClassList = $F5.LocalLBClass.get_value_class_list()
@@ -1181,37 +1125,34 @@ function Cache-LTMInformation {
 	$ValueClassValues = $F5.LocalLBClass.get_value_class_member_data_value($ValueClassKeys)
 
 	For($i = 0;$i -lt $ValueClassList.Count;$i++){
-		
 		$ObjTempDataGroupList = New-Object -Type DataGroupList
 		$ObjTempDataGroupList.name = $ValueClassList[$i]
 		$ObjTempDataGroupList.type = "String"
-		
+
 		$Dgdata = New-Object System.Collections.Hashtable
-		
+
 		for($x=0;$x -lt $ValueClassKeys[$i].members.Count;$x++){
-			
 			$Key = [string]$ValueClassKeys[$i].members[$x]
 			$Value = [string]$ValueClassValues[$i][$x]
-			
+
 			$Dgdata.add($Key, $Value)
 		}
-		
+
 		$ObjTempDataGroupList.data = $Dgdata
 		$ObjTempDataGroupList.loadbalancer = $LoadBalancerName
-		
+
 		$LoadBalancerObjects.DataGroupLists.add($ObjTempDataGroupList.name, $ObjTempDataGroupList)
-		
 	}
 
 	#EndRegion
 	#EndRegion
-	
+
 	#Region Caching Pool information
-	
+
 	log verbose "Caching Pools"
 
 	$LoadBalancerObjects.Pools = c@{}
-	
+
 	[array]$Poollist = $F5.LocalLBPool.get_list()
 	[array]$PoolMonitors = $F5.LocalLBPool.get_monitor_association($PoolList)
 	[array]$PoolMembers = $F5.LocalLBPool.get_member_v2($PoolList)
@@ -1222,27 +1163,25 @@ function Cache-LTMInformation {
 	[array]$PoolAllowNAT = $F5.LocalLBPool.get_allow_nat_state($PoolList)
 	[array]$PoolAllowSNAT = $F5.LocalLBPool.get_allow_snat_state($PoolList)
 	[array]$PoolMemberStatistics = $F5.LocalLBPool.get_all_member_statistics($PoolList)
-    [array]$PoolDescriptions = $F5.LocalLBPool.get_description($PoolList)
-	
+	[array]$PoolDescriptions = $F5.LocalLBPool.get_description($PoolList)
+
 	for($i=0;$i -lt ($PoolList.Count);$i++){
-	
 		$ObjTempPool = New-Object -Type Pool
 		$ObjTempPool.name = [string]$Poollist[$i]
-		
+
 		$PoolMonitors[$i].monitor_rule.monitor_templates | ForEach-Object {
 			$ObjTempPool.monitors += $_
 		}
 
 		$PoolMemberStatisticsDict = Get-PoolMemberStatisticsDictionary -PoolMemberStatsObjArray $PoolMemberStatistics[$i]
-					
+
 		For($x=0;$x -lt $PoolMembers[$i].count;$x++){
-		
 			#Create a new temporary object of the member class
 			$ObjTempMember = New-Object Member
-			
-	    	#Populate the object
+
+			#Populate the object
 			$ObjTempMember.Name = $PoolMembers[$i][$x].address
-			
+
 			$ObjTempMember.ip = ($LoadBalancerObjects.Nodes[$ObjTempMember.Name]).ip
 			$ObjTempMember.Port = $PoolMembers[$i][$x].port
 			$ObjTempMember.Availability = $PoolMemberstatuses[$i][$x].availability_status
@@ -1250,7 +1189,7 @@ function Cache-LTMInformation {
 			$ObjTempMember.Status = $PoolMemberstatuses[$i][$x].status_description
 			$ObjTempMember.Priority = $PoolMemberpriorities[$i][$x]
 
-			Try { 
+			Try {
 				$Statistics = $PoolMemberStatisticsDict[$ObjTempMember.Name + ":" + [string]$ObjTempMember.port]
 				$ObjTempMember.currentconnections = $Statistics["currentconnections"]
 				$ObjTempMember.maximumconnections = $Statistics["maximumconnections"]
@@ -1260,61 +1199,57 @@ function Cache-LTMInformation {
 
 			#Add the object to a list
 			$ObjTempPool.members += $ObjTempMember
-			
 		}
 
 		$ObjTempPool.loadbalancingmethod = $Global:LBMethodToString[[string]($PoolLBMethods[$i])]
 		$ObjTempPool.actiononservicedown = $Global:ActionOnPoolFailureToString[[string]($PoolActionOnServiceDown[$i])]
 		$ObjTempPool.allownat = $StateToString[[string]($PoolAllowNAT[$i])]
 		$ObjTempPool.allowsnat = $StateToString[[string]($PoolAllowSNAT[$i])]
-        $ObjTempPool.description = $PoolDescriptions[$i]
+		$ObjTempPool.description = $PoolDescriptions[$i]
 		$ObjTempPool.loadbalancer = $LoadBalancerName
-		
-		$LoadBalancerObjects.Pools.add($ObjTempPool.name, $ObjTempPool) 
+
+		$LoadBalancerObjects.Pools.add($ObjTempPool.name, $ObjTempPool)
 	}
-	
+
 	#EndRegion
-	
+
 	#Region Cache information about irules
-			
+
 	log verbose "Caching iRules"
 
 	$LoadBalancerObjects.iRules = c@{}
 
 	$F5.LocalLBRule.query_all_rules() | ForEach-Object {
-
 		$ObjiRule = New-Object iRule
-		
+
 		$ObjiRule.name = $_.rule_name
-		
+
 		$partition = $ObjiRule.name.split("/")[1]
-		
+
 		$ObjiRule.loadbalancer = $LoadBalancerName
 
 		$ObjiRule.definition = $($_.rule_definition)
-		
+
 		$TempPools = @()
-		
+
 		$poolregexp.Matches($ObjiRule.definition) | ForEach-Object {
-			
 			$TempPool = $_.Groups[1].value
-					
+
 			if(-not $TempPool.contains("/")){
 				$TempPool = "/$partition/$TempPool"
 			}
-			
+
 			if($LoadBalancerObjects.Pools.ContainsKey($TempPool)) {
 				$TempPools += $TempPool
 			}
-							
 		}
-									
+
 		$ObjiRule.pools = $TempPools | Select -Unique
-			
+
 		$LoadBalancerObjects.iRules.add($ObjiRule.name, $ObjiRule)
 	}
-	
-	#EndRegion	
+
+	#EndRegion
 
 	#Region Cache virtual address information
 
@@ -1324,20 +1259,18 @@ function Cache-LTMInformation {
 	[array]$VirtualAddressTrafficGroups = $F5.LocalLBVirtualAddressV2.get_traffic_group($VirtualAddressList)
 
 	for($i=0;$i -lt ($VirtualAddressList.Count);$i++){
-		
 		$VirtualAddress = $VirtualAddressList[$i]
 		$TrafficGroup = $VirtualAddressTrafficGroups[$i]
 
 		$TrafficGroupDict.add($VirtualAddress, $TrafficGroup)
-
 	}
 
 	#EndRegion
-	
+
 	#Region Cache Virtual Server information
-	
+
 	log verbose "Caching Virtual servers"
-	
+
 	$LoadBalancerObjects.VirtualServers = c@{}
 
 	[array]$VirtualServers = $F5.LocalLBVirtualServer.get_list()
@@ -1346,10 +1279,10 @@ function Cache-LTMInformation {
 	[array]$VirtualServerProfiles = $F5.LocalLBVirtualServer.get_profile($VirtualServers)
 	[array]$VirtualServeriRules = $F5.LocalLBVirtualServer.get_rule($VirtualServers)
 	[array]$VirtualServerPersistenceProfiles = $F5.LocalLBVirtualServer.get_persistence_profile($VirtualServers)
-    [array]$VirtualServerVlans = $F5.LocalLBVirtualServer.get_vlan($VirtualServers);
+	[array]$VirtualServerVlans = $F5.LocalLBVirtualServer.get_vlan($VirtualServers);
 	[array]$VirtualServerStates = $F5.LocalLBVirtualServer.get_object_status($VirtualServers)
 	[array]$VirtualServerStatistics = $F5.LocalLBVirtualServer.get_statistics($VirtualServers)
-    [array]$VirtualServerDescriptions = $F5.LocalLBVirtualServer.get_description($VirtualServers)
+	[array]$VirtualServerDescriptions = $F5.LocalLBVirtualServer.get_description($VirtualServers)
 
 	#Only supported since version 11.3
 	Try {
@@ -1358,78 +1291,75 @@ function Cache-LTMInformation {
 	} Catch {
 		log verbose "Unable to get address translationlist"
 	}
-	
+
 	for($i=0;$i -lt ($VirtualServers.Count);$i++){
-		
 		$VirtualServerName = $VirtualServers[$i]
-		
+
 		$ObjTempVirtualServer = New-Object VirtualServer
-		
+
 		#Set the name of the Virtual server
 		$ObjTempVirtualServer.name = $VirtualServerName
 
-        #Set the description
-        $ObjTempVirtualServer.description = $VirtualServerDescriptions[$i]
-		
+		#Set the description
+		$ObjTempVirtualServer.description = $VirtualServerDescriptions[$i]
+
 		#Get the IP and port of the destination
 		$VirtualServerDestination = $VirtualServerDestinations[$i]
-					
+
 		$ObjTempVirtualServer.ip = [string]($VirtualServerDestination.Address)
-		
+
 		#Set the port to "Any" if it's 0
 		if(($VirtualServerDestination.port) -eq 0){
 			$ObjTempVirtualServer.port = "Any"
 		} else {
 			$ObjTempVirtualServer.port = [string]($VirtualServerDestination.port)
 		}
-		
+
 		#Set the default pool
 		$ObjTempVirtualServer.defaultpool = [string]$VirtualServerDefaultPools[$i]
-					
-		#Set the ssl profile to None by default, then check if there's an SSL profile and 
-		
-        $ObjTempVirtualServer.sslprofile = "None";
-		
+
+		#Set the ssl profile to None by default, then check if there's an SSL profile and
+
+		$ObjTempVirtualServer.sslprofile = "None";
+
 		$VirtualServerProfiles[$i] | ForEach-Object {
 			if([string]($_.profile_type) -eq "PROFILE_TYPE_CLIENT_SSL"){
 				$ObjTempVirtualServer.sslprofile = $_.profile_name;
 			}
 		}
-		
-		$ObjTempVirtualServer.compressionprofile = "None";
-		
-		$VirtualServerProfiles[$i] | ForEach-Object {
 
+		$ObjTempVirtualServer.compressionprofile = "None";
+
+		$VirtualServerProfiles[$i] | ForEach-Object {
 			if([string]($_.profile_type) -eq "PROFILE_TYPE_HTTPCOMPRESSION"){
 				$ObjTempVirtualServer.compressionprofile = $_.profile_name;
 			}
 		}
-		
+
 		#Get the iRules of the Virtual server
 		$VirtualServeriRules[$i] | Sort-Object -Property priority | ForEach-Object {
 			$tempName = $_.rule_name
 			$ObjTempVirtualServer.irules += [string]$tempName
-		}										
-		
+		}
+
 		if([string]($ObjTempVirtualServer.irules) -eq ""){
 			$ObjTempVirtualServer.irules = @();
 		}
-		
+
 		$ObjTempVirtualServer.loadbalancer = $LoadBalancerName
-		
+
 		#Get the persistence profile of the Virtual server
-		
+
 		if($VirtualServerPersistenceProfiles[$i] -ne $null){
 			$ObjTempVirtualServer.persistence = [string]($VirtualServerPersistenceProfiles[$i].profile_name)
 		} else {
 			$ObjTempVirtualServer.persistence = "None"
 		}
-		
+
 		#$ObjTempVirtualServer.irules
 		$ObjTempVirtualServer.irules | ForEach-Object {
-
 			$iRule = $LoadBalancerObjects.iRules[$_]
-			
+
 			if($iRule){
 				if($iRule.pools.Count -gt 0){
 					$ObjTempVirtualServer.pools += [array]$iRule.pools | select -uniq
@@ -1440,9 +1370,9 @@ function Cache-LTMInformation {
 		if($ObjTempVirtualServer.defaultpool -ne ""){
 			$ObjTempVirtualServer.pools += $ObjTempVirtualServer.defaultpool
 		}
-		
+
 		$ObjTempVirtualServer.pools = $ObjTempVirtualServer.pools | select -Unique
-		
+
 		Try{
 			$ObjTempVirtualServer.sourcexlatetype = [string]$VirtualServerSourceAddressTranslationTypes[$i]
 			$ObjTempVirtualServer.sourcexlatepool = [string]$VirtualServerSourceAddressSnatPool[$i]
@@ -1450,22 +1380,22 @@ function Cache-LTMInformation {
 			$ObjTempVirtualServer.sourcexlatetype = "OLDVERSION"
 			$ObjTempVirtualServer.sourcexlatepool = "OLDVERSION"
 		}
-		
-		
+
+
 		if($Global:Bigipreportconfig.Settings.iRules.enabled -eq $false){
 			#Hiding iRules to the users
 			$ObjTempVirtualServer.irules = @();
 		}
 
-        if($VirtualServerVlans[$i].state -eq "STATE_DISABLED" -and $VirtualServerVlans[$i].vlans.count -eq 0){
-            $ObjTempVirtualServer.vlanstate = "enabled"
-        } elseif ($VirtualServerVlans[$i].state -eq "STATE_DISABLED") {
-            $ObjTempVirtualServer.vlanstate = "disabled"
-            $ObjTempVirtualServer.vlans = $VirtualServerVlans[$i].vlans
-        } elseif ($VirtualServerVlans[$i].state -eq "STATE_ENABLED") {
-            $ObjTempVirtualServer.vlanstate = "enabled"
-            $ObjTempVirtualServer.vlans = $VirtualServerVlans[$i].vlans
-        }
+		if($VirtualServerVlans[$i].state -eq "STATE_DISABLED" -and $VirtualServerVlans[$i].vlans.count -eq 0){
+			$ObjTempVirtualServer.vlanstate = "enabled"
+		} elseif ($VirtualServerVlans[$i].state -eq "STATE_DISABLED") {
+			$ObjTempVirtualServer.vlanstate = "disabled"
+			$ObjTempVirtualServer.vlans = $VirtualServerVlans[$i].vlans
+		} elseif ($VirtualServerVlans[$i].state -eq "STATE_ENABLED") {
+			$ObjTempVirtualServer.vlanstate = "enabled"
+			$ObjTempVirtualServer.vlans = $VirtualServerVlans[$i].vlans
+		}
 
 		$VirtualServerSASMPolicies = $LoadBalancerObjects.ASMPolicies.values | Where-Object { $_.virtualServers -contains $VirtualServerName }
 
@@ -1486,7 +1416,7 @@ function Cache-LTMInformation {
 		#Connection statistics
 		$ObjTempVirtualServer.currentconnections = Get-Int64 -High $($VipStatistics[8].value.high) -Low $($VipStatistics[8].value.low)
 		$ObjTempVirtualServer.maximumconnections = Get-Int64 -High $($VipStatistics[9].value.high) -Low $($VipStatistics[9].value.low)
-		
+
 		#I don't remember seeing these in the older versions so I'll take the safe bet here
 		Try {
 			#CPU statistics
@@ -1498,26 +1428,23 @@ function Cache-LTMInformation {
 		}
 
 		$LoadBalancerObjects.VirtualServers.add($ObjTempVirtualServer.name, $ObjTempVirtualServer)
-
 	}
-	
+
 	#EndRegion
 
 	#Region Get Orphaned Pools
 	log verbose "Detecting orphaned pools"
 
 	$LoadBalancerObjects.OrphanPools = @()
-	
+
 	$VirtualServerPools = $LoadBalancerObjects.VirtualServers.Values.Pools
-	
+
 	Foreach($PoolName in $LoadBalancerObjects.Pools.Keys){
-		
 		If ($VirtualServerPools -NotContains $PoolName ){
-			
 			$LoadBalancerObjects.Pools[$PoolName].orphaned = $true
 
 			$ObjTempVirtualServer = New-Object -TypeName "VirtualServer"
-			
+
 			$ObjTempVirtualServer.name = "N/A (Orphan pool)"
 			$ObjTempVirtualServer.ip = "N/A (Orphan pool)"
 			$ObjTempVirtualServer.sslprofile = "None"
@@ -1526,16 +1453,12 @@ function Cache-LTMInformation {
 			$ObjTempVirtualServer.irules = @()
 			$ObjTempVirtualServer.pools += $PoolName
 			$ObjTempVirtualServer.loadbalancer = $LoadBalancerName
-			
+
 			$LoadBalancerObjects.OrphanPools += $ObjTempVirtualServer
-			
 		}
-
 	}
-
 	#EndRegion
 }
-
 #EndRegion
 
 #Region Function Get-StatisticsDictionary
@@ -1543,13 +1466,11 @@ function Cache-LTMInformation {
 #Converts an F5 statistics object to a more accessible format
 
 Function Get-PoolMemberStatisticsDictionary {
-
 	Param($PoolMemberStatsObjArray)
 
 	$StatisticsDictionary = c@{}
 
 	Foreach($PoolMemberStatsObj in $PoolMemberStatsObjArray.Statistics){
-
 		$Member = $PoolMemberStatsObj.member.address + ":" + $PoolMemberStatsObj.member.port
 
 		$Statistics = c@{}
@@ -1561,7 +1482,6 @@ Function Get-PoolMemberStatisticsDictionary {
 		$Statistics.add("maximumconnections", $MaximumConnections)
 
 		$StatisticsDictionary.add($Member, $Statistics)
-
 	}
 
 	Return $StatisticsDictionary
@@ -1569,14 +1489,12 @@ Function Get-PoolMemberStatisticsDictionary {
 
 #EndRegion
 
-#Region Function Get-Int64 
+#Region Function Get-Int64
 
 Function Get-Int64 {
-
 	Param($High, $Low)
 
 	Return ([math]::Pow($High, 32) + $Low)
-
 }
 
 #EndRegion
@@ -1584,7 +1502,6 @@ Function Get-Int64 {
 #Region Function Get-AuthToken
 
 Function Get-AuthToken {
-
 	Param($LoadBalancer)
 
 	$User = $Global:Bigipreportconfig.Settings.Credentials.Username
@@ -1592,13 +1509,13 @@ Function Get-AuthToken {
 
 	#Create the string that is converted to Base64
 	$Credentials = $User + ":" + $Password
-	 
+
 	#Encode the string to base64
 	$EncodedCreds = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($Credentials))
-	 
+
 	#Add the "Basic prefix"
 	$BasicAuthValue = "Basic $EncodedCreds"
-	 
+
 	#Prepare the headers
 	$Headers = @{
 		"Authorization" = $BasicAuthValue
@@ -1607,30 +1524,27 @@ Function Get-AuthToken {
 
 	#Create the body of the post
 	$Body = @{"username" = $User; "password" = $Password; "loginProviderName" = "tmos" }
-	 
+
 	#Convert the body to Json
 	$Body = $Body | ConvertTo-Json
-	 
-	$Response  = Invoke-WebRequest -Method "POST" -Headers $Headers -Body $Body -Uri "https://$LoadBalancer/mgmt/shared/authn/login" 
-	 
+
+	$Response  = Invoke-WebRequest -Method "POST" -Headers $Headers -Body $Body -Uri "https://$LoadBalancer/mgmt/shared/authn/login"
+
 	#Extract the token from the response
 	$Token = ($Response.content | ConvertFrom-Json).Token.token
- 	
- 	Return $Token
+
+	Return $Token
 }
 
 #EndRegion
 
 #Region Function Get-iRules
-	
 Function Get-DefinedRules {
-
 	$DefinedRules = $Bigipreportconfig.Settings.iRules.iRule
 
 	$Rules = @()
 
 	Foreach($Rule in ( $DefinedRules | Where-Object { $_.LoadBalancer -and $_.iRuleName } )){
-
 		$TempRule = c@{}
 
 		$TempRule.add("loadBalancer", $Rule.loadBalancer)
@@ -1640,15 +1554,11 @@ Function Get-DefinedRules {
 	}
 
 	ConvertTo-Json $Rules
-
 }
-
 #EndRegion
-
 
 #Region Function Translate-status
 Function Translate-Member-Status {
-
 	Param($Member, $RealTimeStatus)
 
 	if($RealTimeStatus){
@@ -1729,88 +1639,71 @@ Function Translate-Member-Status {
 
 #Region Function Translate-status
 Function Translate-VirtualServer-Status {
-
 	Param($VirtualServer)
 
 	if($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_GREEN"){
-	
 		Return "<span class=`"statusicon`"><img src=`"./images/green-circle-checkmark.png`" title=`"Available (Enabled) - The virtual server is available`"/></span> <span class=`"textstatus`">UP</span>"
-	
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_DISABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_BLUE"){
-	
 		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-checkmark.png`" title=`"Unknown (Disabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">DISABLED</span>"
-	
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_BLUE") {
-	
 		Return "<span class=`"statusicon`"><img src=`"./images/blue-square-questionmark.png`" title=`"Unknown (Enabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">UNKNOWN</span>"
-	
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_RED"){
-	
 		Return "<span class=`"statusicon`"><img src=`"./images/red-circle-cross.png`" title=`"Offline (Enabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
-	
 	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_DISABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_RED"){
-	
 		Return "<span class=`"statusicon`"><img src=`"./images/black-circle-cross.png`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
-	
 	}
-
 }
 #Endregion
 
 #Region Call Cache LTM information
-Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) { 
-	
+Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
 	$IsOnlyDevice = $DeviceGroup.Device.Count -eq 1
 	$StatusVIP = $DeviceGroup.StatusVip
 
-    $ObjDeviceGroup = New-Object -TypeName "DeviceGroup"
-    $ObjDeviceGroup.name = $DeviceGroup.name
+	$ObjDeviceGroup = New-Object -TypeName "DeviceGroup"
+	$ObjDeviceGroup.name = $DeviceGroup.name
 
 	Foreach($Device in $DeviceGroup.Device){
-
 		log verbose "Getting data from $Device"
-		
-        $ObjDeviceGroup.ips += $Device
 
-        $ErrorActionPreference = "SilentlyContinue"
+		$ObjDeviceGroup.ips += $Device
 
-        $success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
+		$ErrorActionPreference = "SilentlyContinue"
+
+		$success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
 
 		if($?){
+			log success "iControl session successfully established"
+			$ErrorActionPreference = "Continue"
+		} Else {
+			log error "The script failed to connect to $Device, run the report manually to determine if this was due to a timeout of bad credentials"
 
-            log success "iControl session successfully established"
-            $ErrorActionPreference = "Continue"
+			$ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
 
-        } Else {
+			$ObjLoadBalancer.ip = $Device
+			$ObjLoadBalancer.success = $false
 
-            log error "The script failed to connect to $Device, run the report manually to determine if this was due to a timeout of bad credentials"
+			$ObjStatusVIP = New-Object -TypeName "PoolStatusVip"
+			$ObjLoadBalancer.statusvip = $ObjStatusVIP
 
-            $ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
+			$LoadBalancerObjects = c@{}
+			$LoadBalancerObjects.LoadBalancer = $ObjLoadBalancer
 
-            $ObjLoadBalancer.ip = $Device
-            $ObjLoadBalancer.success = $false
+			$Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
 
-            $ObjStatusVIP = New-Object -TypeName "PoolStatusVip"
-            $ObjLoadBalancer.statusvip = $ObjStatusVIP
-            
-            $LoadBalancerObjects = c@{}
-            $LoadBalancerObjects.LoadBalancer = $ObjLoadBalancer
-
-            $Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
-
-            Continue
-        }
+			Continue
+		}
 
 		$F5 = Get-F5.iControl
-		
+
 		$ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
 
 		$ObjLoadBalancer.isonlydevice = $IsOnlyDevice
 
 		log verbose "Getting hostname"
-		
+
 		$BigIPHostname = $F5.SystemInet.get_hostname()
-		
+
 		if($?){
 			log verbose "Hostname is $BigipHostname"
 		} else {
@@ -1823,37 +1716,32 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		$ObjLoadBalancer.ip = $Device
 		$ObjLoadBalancer.name = $BigIPHostname
 		$ObjLoadBalancer.model = $SystemInfo.platform
-        $ObjLoadBalancer.category = $SystemInfo.product_category
+		$ObjLoadBalancer.category = $SystemInfo.product_category
 
-        If($ObjLoadBalancer.category -eq "Virtual Edition"){
-            # Virtual Editions is using the base registration keys as serial numbers
-            $RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
-            $BaseRegistrationKey = $RegistrationKeys[0]
+		If($ObjLoadBalancer.category -eq "Virtual Edition"){
+			# Virtual Editions is using the base registration keys as serial numbers
+			$RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
+			$BaseRegistrationKey = $RegistrationKeys[0]
 
-            $Serial = $BaseRegistrationKey.split("-")[-1]
-        } else {
-            $Serial = $SystemInfo.chassis_serial
-        }
+			$Serial = $BaseRegistrationKey.split("-")[-1]
+		} else {
+			$Serial = $SystemInfo.chassis_serial
+		}
 
-		$ObjLoadBalancer.serial = $Serial		
+		$ObjLoadBalancer.serial = $Serial
 
-        If($ObjLoadBalancer.category -eq "VCMP"){
+		If($ObjLoadBalancer.category -eq "VCMP"){
+			$HostHardwareInfo = $F5.SystemSystemInfo.get_hardware_information() | Where-Object { $_.name -eq "host_platform" }
 
-            $HostHardwareInfo = $F5.SystemSystemInfo.get_hardware_information() | Where-Object { $_.name -eq "host_platform" }
+			if ($HostHardwareInfo.Count -eq 1){
+				$Platform = $HostHardwareInfo.versions | Where-Object { $_.name -eq "Host platform name" }
 
-            if ($HostHardwareInfo.Count -eq 1){
-
-                $Platform = $HostHardwareInfo.versions | Where-Object { $_.name -eq "Host platform name" }
-
-                if($Platform.Count -gt 0){
-
-                    # Some models includes the disk type for some reason: "C119-SSD". Removing it.
-                    $ObjLoadBalancer.model = $Platform.value -replace "-.+", ""
-                }
-
-            }
-
-        }
+				if($Platform.Count -gt 0){
+					# Some models includes the disk type for some reason: "C119-SSD". Removing it.
+					$ObjLoadBalancer.model = $Platform.value -replace "-.+", ""
+				}
+			}
+		}
 
 		$ObjStatusVIP = New-Object -TypeName "PoolStatusVip"
 		$ObjStatusVIP.url = $StatusVIP
@@ -1868,7 +1756,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		#Get provisioned modules
 		$Modules = $F5.ManagementProvision.get_provisioned_list()
 
-		$ObjLoadBalancer.version = $VersionInformation.version 
+		$ObjLoadBalancer.version = $VersionInformation.version
 		$ObjLoadBalancer.build = $VersionInformation.build
 		$ObjLoadBalancer.baseBuild = $VersionInformation.baseBuild
 
@@ -1881,7 +1769,6 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		$ModuleDict = c@{}
 
 		foreach($Module in $Modules){
-
 			$ModuleCode = [string]$Module
 
 			if($ModuleToShort.keys -contains $ModuleCode){
@@ -1889,7 +1776,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 			} else {
 				$ModuleShortName = $ModuleCode.replace("TMOS_MODULE_", "")
 			}
-			
+
 			if($ModuleToDescription.keys -contains $ModuleShortName){
 				$ModuleDescription = $ModuleToDescription[$ModuleShortName]
 			} else {
@@ -1903,13 +1790,13 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 
 		$ObjLoadBalancer.modules = $ModuleDict
 
-        $ObjLoadBalancer.success = $true
+		$ObjLoadBalancer.success = $true
 
 		$LoadBalancerObjects = c@{}
 		$LoadBalancerObjects.LoadBalancer = $ObjLoadBalancer
 
 		$Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
-		
+
 		#Don't continue if this loabalancer is not active
 		If($ObjLoadBalancer.active -or $IsOnlyDevice){
 			log verbose "Caching LTM information from $BigIPHostname"
@@ -1918,274 +1805,234 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 			log info "This load balancer is not active, and won't be indexed"
 			Continue
 		}
-		
 	}
-
-    $Global:DeviceGroups += $ObjDeviceGroup
-
+	$Global:DeviceGroups += $ObjDeviceGroup
 }
-
 #EndRegion
 
 #Region Function Test-ReportData
 
 #Verify that data from all the load balancers has been indexed by checking the pools variable
-
 function Test-ReportData {
-	
 	$NoneMissing = $true
-	
 	log verbose "Verifying load balancer data to make sure that no load balancer is missing"
-	
 	#For every load balancer IP we will check that no pools or virtual servers are missing
 	Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
-		
-        $DeviceGroupHasData = $False
-
+		$DeviceGroupHasData = $False
 		ForEach($Device in $DeviceGroup.Device){
-	
 			$LoadBalancerObjects = $Global:ReportObjects[$Device]
-				
 			If ($LoadBalancerObjects) {
-
 				$LoadBalancer = $LoadBalancerObjects.LoadBalancer
 				$LoadBalancerName = $LoadBalancer.name
-
 				# Only check for load balancers that is alone in a device group, or active
 				if($LoadBalancer.active -or $LoadBalancer.isonlydevice){
-
-                    $DeviceGroupHasData = $True
-
+					$DeviceGroupHasData = $True
 					#Verify that the $Global:virtualservers contains the $LoadBalancerName
 					If ($LoadBalancerObjects.VirtualServers.Count -eq 0) {
 						log error "$LoadBalancerName does not have any Virtual Server data"
 						$NoneMissing = $false
-					}			
-					
+					}
 					#Verify that the $Global:pools contains the $LoadBalancerName
 					If ($LoadBalancerObjects.Pools.Count -eq 0) {
 						log error "$LoadBalancerName does not have any Pool data"
 					}
-					
 					#Verify that the $Global:monitors contains the $LoadBalancerName
-					If ($LoadBalancerObjects.Monitors.Count -eq 0){			
+					If ($LoadBalancerObjects.Monitors.Count -eq 0){
 						log error "$LoadBalancerName does not have any Monitor data"
 						$NoneMissing = $false
 					}
-					
 					#Verify that the $Global:irules contains the $LoadBalancerName
 					If ($LoadBalancerObjects.iRules.Count -eq 0) {
 						log error "$LoadBalancerName does not have any iRules data"
 						$NoneMissing = $false
 					}
-					
 					#Verify that the $Global:nodes contains the $LoadBalancerName
-					if($LoadBalancerObjects.Nodes.Count -eq 0){	
+					if($LoadBalancerObjects.Nodes.Count -eq 0){
 						log error "$LoadBalancerName does not have any Nodes data"
 						$NoneMissing = $false
 					}
-					
 					#Verify that the $Global:DataGroupLists contains the $LoadBalancerName
-					if($LoadBalancerObjects.DataGroupLists.Count -eq 0){	
+					if($LoadBalancerObjects.DataGroupLists.Count -eq 0){
 						log error "$LoadBalancerName does not have any Data group lists data"
 						$NoneMissing = $false
 					}
-
-                    #Verify that the $Global:DataGroupLists contains the $LoadBalancerName
-                    if($LoadBalancerObjects.Certificates.Count -eq 0){    
-                        log error "$LoadBalancerName does not have any Certificates data"
-                        $NoneMissing = $false
-                    }
-
+					#Verify that the $Global:DataGroupLists contains the $LoadBalancerName
+					if($LoadBalancerObjects.Certificates.Count -eq 0){
+						log error "$LoadBalancerName does not have any Certificates data"
+						$NoneMissing = $false
+					}
 				}
-
 			} Else {
 				log error "$Device does not seem to have been indexed"
 				$NoneMissing = $false
 			}
-        }
-
-        If (-Not $DeviceGroupHasData){
-            log error "Missing data from device group containing $($DeviceGroup.Device -Join ", ")."
-            $NoneMissing = $false
-        }
-
+		}
+		If (-Not $DeviceGroupHasData){
+			log error "Missing data from device group containing $($DeviceGroup.Device -Join ", ")."
+			$NoneMissing = $false
+		}
 	}
-	
 	Return $NoneMissing
-
 }
 #EndRegion
 
 #Region Function Update-ReportData
 Function Update-ReportData {
-	
 	[bool]$Status = $true
-	
+
 	#Move the temp files to the actual report files
 	log verbose "Updating the report with the new data"
-	
+
 	Move-Item -Force $($Global:reportpath + ".tmp") $Global:reportpath
-	
-	if(!$?){ 
-		log error "Failed to update the report file"	
+
+	if(!$?){
+		log error "Failed to update the report file"
 		$Status  = $false
 	}
-	
+
 	Move-Item -Force $($Global:poolsjsonpath + ".tmp") $Global:poolsjsonpath
-	
+
 	if(!$?){
 		log error "Failed to update the pools json file"
 		$Status  = $false
 	}
-	
+
 	Move-Item -Force $($Global:monitorsjsonpath + ".tmp") $Global:monitorsjsonpath
-	
-	if(!$?){ 
+
+	if(!$?){
 		log error "Failed to update the monitor json file"
 		$Status  = $false
 	}
 
 	Move-Item -Force $($Global:virtualserversjsonpath + ".tmp") $Global:virtualserversjsonpath
-	
-	if(!$?){ 
+
+	if(!$?){
 		log error "Failed to update the virtual server json file"
 		$Status  = $false
 	}
 
-
 	Move-Item -Force $($Global:irulesjsonpath + ".tmp") $Global:irulesjsonpath
-	
-	if(!$?){ 
+
+	if(!$?){
 		log error "Failed to update the irules json file"
 		$Status  = $false
 	}
-	
+
 	Move-Item -Force $($Global:datagrouplistjsonpath + ".tmp") $Global:datagrouplistjsonpath
-	
-	if(!$?){ 
+
+	if(!$?){
 		log error "Failed to update the data group lists json file"
 		$Status  = $false
 	}
 
 	Move-Item -Force $($Global:loadbalancersjsonpath + ".tmp") $Global:loadbalancersjsonpath
-	
-	if(!$?){ 
+
+	if(!$?){
 		log error "Failed to update the data group lists json file"
 		$Status  = $false
 	}
 
-    Move-Item -Force $($Global:certificatesjsonpath + ".tmp") $Global:certificatesjsonpath
-    
-    if(!$?){ 
-        log error "Failed to update the certificates json file"
-        $Status  = $false
-    }
+	Move-Item -Force $($Global:certificatesjsonpath + ".tmp") $Global:certificatesjsonpath
 
-    Move-Item -Force $($Global:devicegroupsjsonpath + ".tmp") $Global:devicegroupsjsonpath
-    
-    if(!$?){ 
-        log error "Failed to update the device groups json file"
-        $Status  = $false
-    }
+	if(!$?){
+		log error "Failed to update the certificates json file"
+		$Status  = $false
+	}
 
-    Move-Item -Force $($Global:loggederrorsjsonpath + ".tmp") $Global:loggederrorsjsonpath
-    
-    if(!$?){ 
-        log error "Failed to update the logged errrors json file"
-        $Status  = $false
-    }
+	Move-Item -Force $($Global:devicegroupsjsonpath + ".tmp") $Global:devicegroupsjsonpath
+
+	if(!$?){
+		log error "Failed to update the device groups json file"
+		$Status  = $false
+	}
+
+	Move-Item -Force $($Global:loggederrorsjsonpath + ".tmp") $Global:loggederrorsjsonpath
+
+	if(!$?){
+		log error "Failed to update the logged errrors json file"
+		$Status  = $false
+	}
 
 	Return $Status
-	
 }
-
 #EndRegion
 
 #This function converts a list of objects to an array
 function ConvertTo-Array
 {
-    begin {
-        $Output = @(); 
-    }
-    process {
-        $Output += $_; 
-    }
-    end {
-        return ,$output;
-    }
+	begin {
+		$Output = @();
+	}
+	process {
+		$Output += $_;
+	}
+	end {
+		return ,$output;
+	}
 }
-
 
 Function Write-JSONFile {
+	Param($Data, $DestinationFile)
 
-    Param($Data, $DestinationFile)
+	$DestinationTempFile = $DestinationFile + ".tmp"
 
-    $DestinationTempFile = $DestinationFile + ".tmp"
+	log verbose "Writing temporary file $DestinationTempFile"
 
-    log verbose "Writing temporary file $DestinationTempFile"
+	$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
-    $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
-    
-    $JSONData = ConvertTo-Json -Compress -Depth 5 $($Data | ConvertTo-Array)
+	$JSONData = ConvertTo-Json -Compress -Depth 5 $($Data | ConvertTo-Array)
 
-    $StreamWriter = New-Object System.IO.StreamWriter($DestinationTempFile, $false, $Utf8NoBomEncoding,0x10000)
-    $StreamWriter.Write($JSONData)
+	$StreamWriter = New-Object System.IO.StreamWriter($DestinationTempFile, $false, $Utf8NoBomEncoding,0x10000)
+	$StreamWriter.Write($JSONData)
 
-    if(!$?){
-        log error "Failed to update the temporary pool json file"   
-        $Success = $false
-    } else {
-        $Success = $true
-    }
+	if(!$?){
+		log error "Failed to update the temporary pool json file"
+		$Success = $false
+	} else {
+		$Success = $true
+	}
 
-    $StreamWriter.dispose() 
+	$StreamWriter.dispose()
 
-    Return $Success
-
+	Return $Success
 }
-
 
 #Region Function Write-TemporaryFiles
 Function Write-TemporaryFiles {
-	
 	#This is done to save some downtime if writing the report over a slow connection
 	#or if the report is really big.
-	
+
 	$WriteStatuses = @()
-	
+
 	$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
-    
+
 	log verbose "Writing temporary report file to $($Global:reportpath + ".tmp")"
-	
+
 	$StreamWriter = New-Object System.IO.StreamWriter($($Global:reportpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
 	$StreamWriter.Write($Global:HTML)
-	
-	if(!$?){ 
-		log error "Failed to update the temporary report file"	
+
+	if(!$?){
+		log error "Failed to update the temporary report file"
 		$Status  = $false
 	}
-	
+
 	$StreamWriter.dispose()
-	
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data $Global:ReportObjects.Values.Pools.Values
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data $Global:ReportObjects.Values.Monitors.Values
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data $Global:ReportObjects.Values.LoadBalancer
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data $Global:ReportObjects.Values.VirtualServers.Values
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $Global:ReportObjects.Values.Certificates.Values
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data $Global:DeviceGroups
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
-	
+
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data $Global:ReportObjects.Values.Pools.Values
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data $Global:ReportObjects.Values.Monitors.Values
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data $Global:ReportObjects.Values.LoadBalancer
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data $Global:ReportObjects.Values.VirtualServers.Values
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $Global:ReportObjects.Values.Certificates.Values
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data $Global:DeviceGroups
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
+
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
-		
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data $Global:ReportObjects.Values.iRules.Values
-		
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data $Global:ReportObjects.Values.iRules.Values
 	} else {
-		
 		log verbose "iRule links disabled in config. Writing empty json object to $($Global:irulesjsonpath + ".tmp")"
-		
+
 		$StreamWriter = New-Object System.IO.StreamWriter($($Global:irulesjsonpath + ".tmp"), $false, $Utf8NoBomEncoding,0x10000)
-		
+
 		#Since rules has been disabled, only write those defined
 		$RuleScope = $Global:ReportObjects.Values.iRules.Values | Where-Object { $_.name -in $Bigipreportconfig.Settings.iRules.iRule.iRuleName -and $_.loadbalancer -in $Bigipreportconfig.Settings.iRules.iRule.loadbalancer }
 
@@ -2195,25 +2042,21 @@ Function Write-TemporaryFiles {
 			$StreamWriter.Write($(ConvertTo-Json -Compress -Depth 5 [array]$RuleScope))
 		}
 
-		if(!$?){ 
-			log error "Failed to update the temporary irules json file"	
+		if(!$?){
+			log error "Failed to update the temporary irules json file"
 			$WriteStatuses += $false
 		}
-
 	}
-	
+
 	$StreamWriter.dispose()
-	
+
 	if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data $Global:ReportObjects.Values.DataGroupLists.Values
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data $Global:ReportObjects.Values.DataGroupLists.Values
 	} else {
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data @()
 	}
-	
-	$StreamWriter.dispose()	
-
-    Return -not $( $WriteStatuses -Contains $false)
-
+	$StreamWriter.dispose()
+	Return -not $( $WriteStatuses -Contains $false)
 }
 
 #EndRegion
@@ -2242,63 +2085,53 @@ $Global:HTML = @'
 <!DOCTYPE html>
 <html>
 	<head>
-
 		<script type="text/javascript" language="javascript" src="./js/pace.js" data-pace-options='{ "restartOnRequestAfter": false }'></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.min.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/jquery.dataTables.min.js"></script>
-		
 		<link href="./css/pace.css" rel="stylesheet" type="text/css"/>
 		<link href="./css/jquery.dataTables.css" rel="stylesheet" type="text/css">
 		<link href="./css/bigipreportstyle.css" rel="stylesheet" type="text/css">
 		<link href="./css/sh_style.css" rel="stylesheet" type="text/css">
-		
 		<script type="text/javascript" language="javascript" src="./js/jquery.highlight.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/bigipreport.js"></script>
 		<script type="text/javascript" language="javascript" src="./js/sh_main.js"></script>
-		
 		<script>
 '@
-		
+
 		# Transfer some settings from the config file onto the Javascript
 		# Todo: All global variables should be located in a single object
-		#       to minimize the polution of the global namespace.
-
+		#	   to minimize the polution of the global namespace.
 		$DefinediRules = Get-DefinedRules
 		$Global:HTML += "`nvar definedRules = " + $DefinediRules + ";`n"
-
 		if($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true){
 			$Global:HTML += "var ShowiRules = true;"
 		} else {
 			$Global:HTML += "var ShowiRules = false;"
 		}
-		
 		if($Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $true){
 			$Global:HTML += "var ShowiRuleLinks = true;"
 		} else {
 			$Global:HTML += "var ShowiRuleLinks = false;"
 		}
-
 		if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
 			$Global:HTML += "var ShowDataGroupListsLinks = true;"
 		} else {
 			$Global:HTML += "var ShowDataGroupListsLinks = false;"
 		}
-
 		if($Global:Bigipreportconfig.Settings.ExportLink.Enabled -eq $true){
 			$Global:HTML += "var ShowExportLink = true;"
 		} else {
 			$Global:HTML += "var ShowExportLink = false;"
 		}
-
 		$Global:HTML += "const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";"
 		$Global:HTML += "const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";"
 
-$Global:HTML += @'		
+$Global:HTML += @'
 		</script>
 	</head>
 	<body>
-        <div class="beforedocumentready"></div>
-        <div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
+		<div class="beforedocumentready"></div>
+		<div class="bigipreportheader"><img src="./images/bigipreportlogo.png"/></div>
 		<div class="realtimestatusdiv">
 			<table>
 				<tr>
@@ -2310,10 +2143,8 @@ $Global:HTML += @'
 			</table>
 		</div>
 '@
-
 	#Show the div used to contain information generating by clicking at pool members
 	$Global:HTML += @'
-	
 		<div id='allbigipsdiv' class="lbdiv" style="position:absolute;visibility:visible;width:100%";>
 		<table id="allbigips" class="bigiptable">
 			<thead>
@@ -2322,54 +2153,42 @@ $Global:HTML += @'
 					<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
 					<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
 '@
-
 	if($HasASMProfiles){
 		$Global:HTML += @'
 					<th class="asmPoliciesHeaderCell"><input type="text" name="asmPolicies" size=6 value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
 '@
 	}
-
-		$Global:HTML += @'
-					<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size=6 value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
-					<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size=6 value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
-					<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size=6 value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
-					<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
-				</tr>
-			</thead>
-			<tbody>
+	$Global:HTML += @'
+				<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size=6 value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
+				<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size=6 value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
+				<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size=6 value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+				<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
+			</tr>
+		</thead>
+		<tbody>
 '@
 
 #Initiate variables used for showing progress (in case the debug is set)
 
 #Initiate variables to give unique id's to pools and members
 $xPool = 0
-
 $RealTimeStatusDetected = ($Global:ReportObjects.Values.LoadBalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
-
 if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
 }
 
 ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
-
 	$LoadBalancer = $LoadBalancerObjects.LoadBalancer
 	$LoadBalancerName = $LoadBalancer.name
-
-    $i = 0
-
-    $VirtualServers = $LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools
-    $VirtualServerCount = $VirtualServers.Count
-
+	$i = 0
+	$VirtualServers = $LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools
+	$VirtualServerCount = $VirtualServers.Count
 	ForEach ($ObjVirtualServer in $VirtualServers){
-		
 		$i++
-		
 		if($Outputlevel -eq "Verbose"){
 			Write-Progress -activity "Generating HTML for $LoadBalancerName. $i virtual servers out of $VirtualServerCount done." -status "Progress: " -PercentComplete (($i / $VirtualServerCount)  * 100)
 		}
-		
 		$Global:HTML += @"
-					
 					<tr class="virtualserverrow">
 						<td class="loadbalancerCell" NOWRAP data-loadbalancer="$LoadBalancerName">
 							$(
@@ -2381,43 +2200,32 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 							)
 						</td>
 "@
-
-
 		$Global:HTML += @"
-
 						<td class="virtualServerCell">
 							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="./images/details.png"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$($ObjVirtualServer.name)">Edit</a></span>
 						</td>
 "@
 		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
 		$VirtualServerIPExRD = $ObjVirtualServer.ip -replace "%[0-9]+$", ""
-		
 		if($NATdict.Contains($VirtualServerIPExRD)){
 			$Global:HTML += @"
-			
 						<td class="centeredCell">
 							$($ObjVirtualServer.ip + ":" + $ObjVirtualServer.port)<br>Public IP:$($NATdict[$VirtualServerIPExRD])
 						</td>
 "@
 		} else {
 			$Global:HTML += @"
-			
 						<td class="centeredCell">
 							$($ObjVirtualServer.ip + ":" + $ObjVirtualServer.port)
 						</td>
 "@
 		}
-
 		if($HasASMProfiles){
-
 			$Global:HTML += @"
 						<td class="centeredCell">
 "@
-
 			if($ObjVirtualServer.asmPolicies.count -gt 0){
-				
 				for($i = 0; $i -lt $ObjVirtualServer.asmPolicies.Count; $i++){
-
 					$ObjASMPolicy = $LoadBalancerObjects.ASMPolicies[$ObjVirtualServer.asmPolicies[$i]]
 
 					if($ObjASMPolicy.enforcementMode -eq "blocking"){
@@ -2425,92 +2233,71 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 					} else {
 						$ObjVirtualServer.asmPolicies[$i] = $ObjVirtualServer.asmPolicies[$i] + " (T)"
 					}
-
 				}
-
 				$Global:HTML += $ObjVirtualServer.asmPolicies -Join "<br>"
-
 			} else {
 				$Global:HTML += @'
 							N/A
 '@
 			}
-
 			$Global:HTML += @"
 						</td>
 "@
-
 		}
-		
-        $Global:HTML += @"
-                        <td class="centeredCell">
-                            $(
-                                If ($ObjVirtualServer.sslprofile -ne "None") {
-                                    "Yes"
-                                } Else {
-                                    "No"
-                                }
-                            )
-                        </td>
+		$Global:HTML += @"
+						<td class="centeredCell">
+							$(
+								If ($ObjVirtualServer.sslprofile -ne "None") {
+									"Yes"
+								} Else {
+									"No"
+								}
+							)
+						</td>
 "@
-        
-
-
-
-        $Global:HTML += @"
-                        <td class="centeredCell">
-                             $(
-                                If ($ObjVirtualServer.compressionprofile -ne "None") {
-                                    "Yes"
-                                } Else {
-                                    "No"
-                                }
-
-                             )
-                        </td>
+		$Global:HTML += @"
+						<td class="centeredCell">
+							 $(
+								If ($ObjVirtualServer.compressionprofile -ne "None") {
+									"Yes"
+								} Else {
+									"No"
+								}
+							 )
+						</td>
 "@
 
-        
-        $Global:HTML += @"
-                    
-                    <td class="centeredCell">
-                        $(
-                            If($ObjVirtualServer.persistence -eq "None" ) {
-                                "No"
-                            } else {
-                                "Yes"
-                            }
-                        )
-                    </td>
+
+		$Global:HTML += @"
+					<td class="centeredCell">
+						$(
+							If($ObjVirtualServer.persistence -eq "None" ) {
+								"No"
+							} else {
+								"Yes"
+							}
+						)
+					</td>
 "@
-		
+
 		#Remove exceptions from the list of virtual server pools
 		$VirtualServerPools = ($ObjVirtualServer.pools | Where-Object { !($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -contains $_) })
 
 		#If the pool list is empty after excluding the pools in the pool exception list, enter N/A
 		if(!$VirtualServerPools){
 			$Global:HTML += @"
-						
 						<td>
 							N/A
 						</td>
 "@
 		} else {
-
 			$FirstPool = $true
-			
 			Foreach($PoolName in $VirtualServerPools){
-
 				if($PoolName -ne ""){
-					
 					$ObjPool = $LoadBalancerObjects.Pools[$PoolName]
-									
 					if($FirstPool){
-
 						$xPool++;
-                        
 						$Global:HTML += @"
-											
 						<td class="PoolInformation" data-vsid="$i">
 							<div class="expand" id="expand-$i">
 								<a href="javascript:void(0);"><img src="./images/chevron-down.png" data-vsid="$i"/></a>
@@ -2523,82 +2310,70 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 							<table class="pooltable">
 								<tr class="Pool-$xPool" onMouseOver="javascript:togglePoolHighlight(this);" onMouseOut="javascript:togglePoolHighlight(this);">
 									<td rowspan=$($ObjPool.members.Count) data-vsid=$i class="poolname" id=Pool$xPool>
-											<a href="javascript:void(0);" class="tooltip" data-originalpoolname="$PoolName" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showPoolDetails(`$(this).attr('data-originalpoolname').trim(), `$(this).attr('data-loadbalancer').trim());"> 
+											<a href="javascript:void(0);" class="tooltip" data-originalpoolname="$PoolName" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showPoolDetails(`$(this).attr('data-originalpoolname').trim(), `$(this).attr('data-loadbalancer').trim());">
 "@
-						if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){ 
+						if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
 							$Global:HTML += @"
 								$($PoolName.split("/")[2]) <span class="detailsicon"><img src="./images/details.png"/></span>
 "@
 						} else {
 							$Global:HTML += @"
 							$PoolName <span class="detailsicon"><img src="./images/details.png"/></span>
-"@											
+"@
 						}
 											$Global:HTML += @"
-											<p>Click to see pool details</p></a>  
+											<p>Click to see pool details</p></a>
 											<span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=$PoolName">Edit</a></span>
 									</td>
 "@
 						$FirstPool = $false
-
 					} else {
 						$xPool++;
 						$Global:HTML += @"
-							
 								<tr class="Pool-$xPool" onMouseOver="javascript:togglePoolHighlight(this);" onMouseOut="javascript:togglePoolHighlight(this);">
 									<td rowspan=$($ObjPool.members.Count) class="poolname" id="Pool$xPool">
-										
 											<a href="javascript:void(0);" class="tooltip" data-originalpoolname="$PoolName" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showPoolDetails(`$(this).attr('data-originalpoolname').trim(), `$(this).attr('data-loadbalancer').trim());">
 "@
-
-											if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){ 
+											if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
 												$Global:HTML += @"
 												$($PoolName.split("/")[2]) <span class="detailsicon"><img src="./images/details.png"/></span>
 "@
 											} else {
 												$Global:HTML += @"
 												$PoolName <span class="detailsicon"><img src="./images/details.png"/></span>
-"@											
+"@
 											}
-
 											$Global:HTML += @"
-											<p>Click to see pool details</p></a>  
+											<p>Click to see pool details</p></a>
 											<span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=$PoolName">Edit</a></span>
 									</td>
 "@
 					}
-					
+
 					$FirstMember = $true
 
 					foreach($Member in $ObjPool.members){
-						
 						if($Member){
-							
 							if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolMemberPartition -eq $false){
 								$MemberName = $Member.name.split("/")[2]
 							} else {
 								$MemberName = $Member.name
 							}
-							
-                            $MemberPort = $Member.port
-                            $MemberIPPort = $Member.ip + ":" + $MemberPort
-                            $MemberNamePort = $MemberName + ":" + $MemberPort
+
+							$MemberPort = $Member.port
+							$MemberIPPort = $Member.ip + ":" + $MemberPort
+							$MemberNamePort = $MemberName + ":" + $MemberPort
 
 							if($FirstMember){
-									
 								$Global:HTML += @"
-								    
 									<td class="PoolMember" data-pool="Pool$xPool">
 										$MemberNamePort - $MemberIPPort - <span data-member="$MemberIPPort">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</span>
 									</td>
 								</tr>
 "@
 								$FirstMember = $false
-
 							} else {
-															
 								$Global:HTML += @"
-								
 								<tr class="Pool-$xPool">
 									<td class="PoolMember" data-pool="Pool$xPool">
 										$MemberNamePort - $MemberIPPort - <span data-member="$($MemberIPPort)">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</span>
@@ -2607,7 +2382,6 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 							}
 						}
-						
 					}
 				}
 			}
@@ -2619,94 +2393,90 @@ ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $
 "@
 		}
 		$Global:HTML += @"
-						
 						</tr>
 "@
 	}
 }
 
 $Global:HTML += @"
-
 				</tbody>
 			</table>
 			<br>
 			<font size=-1>
 				<i>
 					The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion). Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-                    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
+					BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
 				</i>
 			</font>
-
 		</div>
 "@
 
 
 $Global:HTML += @"
+		<div class="lightbox" id="firstlayerdiv">
+			<div class="innerLightbox">
+				<div class="lightboxcontent" id="firstlayerdetailscontentdiv">
 
-    	<div class="lightbox" id="firstlayerdiv">
-    		<div class="innerLightbox">
-    			<div class="lightboxcontent" id="firstlayerdetailscontentdiv">
-    				
-    			</div>
-    		</div>
-    		<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"><a class="lightboxbutton" id="closefirstlayerbutton" href="javascript:void(0);">Close div</a></div>
-    	</div>
-    	
-    	<div class="lightbox" id="secondlayerdiv">
-    		<div class="innerLightbox">
-    			<div class="lightboxcontent" id="secondlayerdetailscontentdiv">
-    			</div>
-    		</div>
-    		<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton" id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>
-    	</div>
+				</div>
+			</div>
+			<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"><a class="lightboxbutton" id="closefirstlayerbutton" href="javascript:void(0);">Close div</a></div>
+		</div>
 
-        <div class="lightbox" id="consolediv">
-                <div id="consoleholder">
-                    <div class="sidemenu">
-                        <div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
-                     --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div><!--                                  Weird solution. But it works.
-                     --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates <span id="certificatenotification"></span></div><!--
-                     --><div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div><!--
-                     --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div><!--
-                     --><div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
-                    </div>
+		<div class="lightbox" id="secondlayerdiv">
+			<div class="innerLightbox">
+				<div class="lightboxcontent" id="secondlayerdetailscontentdiv">
+				</div>
+			</div>
+			<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton" id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>
+		</div>
 
-                    <div class="consolesection" id="deviceoverview"></div>
-                    <div class="consolesection" id="definedirules"></div>
-                    <div class="consolesection" id="certificatedetails"></div>
-                    <div class="consolesection" id="preferences"></div>
+		<div class="lightbox" id="consolediv">
+				<div id="consoleholder">
+					<div class="sidemenu">
+						<div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="./images/deviceicons/viprion_c2400.png"/> Device overview</div><!-- To remove the space between the items.
+					 --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="./images/irulesicon.png"/> Defined iRules</div><!--								  Weird solution. But it works.
+					 --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="./images/certificates.png"/> Certificates <span id="certificatenotification"></span></div><!--
+					 --><div id="logsbutton" class="menuitem"><img id="logsicon" src="./images/logsicon.png"/> Logs</div><!--
+					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="./images/preferences.png"/> Preferences</div><!--
+					 --><div id="helpbutton" class="menuitem"><img id="helpicon" src="./images/help.png"/> Help</div>
+					</div>
 
-                    <div class="consolesection" id="reportlogs">
-                        <table id="reportlogstable" class="bigiptable">
-                            <thead>
-                                <tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="consolesection" id="helpcontent">
-                        <h3>Filtering for pool members being down</h3>
-                        <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b>"</font>, <font color="green"><b>"UP"</b></font> and <b>"DISABLED"</b>.</p>
-                        <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
-                        <h3>Column filtering</h3>
-                        <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
-                        <h3>Pool member tests</h3>
-                        <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
-                        <h3>Feature requests</h3>
-                        <p>Please add any feature requests or suggestions here:</p>
-                        <p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
-                        <p>And if you like the project, please set aside some of your time to leave a <a href=\"https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
-                        <h3>Troubleshooting</h3>
-                        <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
-                        <p>To collect and download anonymized data for submitting a device overview bug report, click <a href="javascript:exportDeviceData()">here</a>.</p>
-                        <h3>Contact</h3>
-                        <p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-                    </div>
-                </div>
-                <div id="consoledivfooter"><a class="lightboxbutton" id="closeconsolebutton" href="javascript:void(0);">Close console</a></div>
-        </div>
+					<div class="consolesection" id="deviceoverview"></div>
+					<div class="consolesection" id="definedirules"></div>
+					<div class="consolesection" id="certificatedetails"></div>
+					<div class="consolesection" id="preferences"></div>
+
+					<div class="consolesection" id="reportlogs">
+						<table id="reportlogstable" class="bigiptable">
+							<thead>
+								<tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
+
+					<div class="consolesection" id="helpcontent">
+						<h3>Filtering for pool members being down</h3>
+						<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b>"</font>, <font color="green"><b>"UP"</b></font> and <b>"DISABLED"</b>.</p>
+						<p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
+						<h3>Column filtering</h3>
+						<p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
+						<h3>Pool member tests</h3>
+						<p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
+						<h3>Feature requests</h3>
+						<p>Please add any feature requests or suggestions here:</p>
+						<p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
+						<p>And if you like the project, please set aside some of your time to leave a <a href=\"https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
+						<h3>Troubleshooting</h3>
+						<p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
+						<p>To collect and download anonymized data for submitting a device overview bug report, click <a href="javascript:exportDeviceData()">here</a>.</p>
+						<h3>Contact</h3>
+						<p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+					</div>
+				</div>
+				<div id="consoledivfooter"><a class="lightboxbutton" id="closeconsolebutton" href="javascript:void(0);">Close console</a></div>
+		</div>
 	</body>
 </html>
 "@
@@ -2714,16 +2484,14 @@ $Global:HTML += @"
 $ErrorLog = @()
 
 ForEach ( $e in $Global:LoggedErrors) {
-    
-    $LogLineDict = @{}
+	$LogLineDict = @{}
 
-    $LogLineDict["date"] = $(Get-Date -UFormat %Y-%m-%d)
-    $LogLineDict["time"] = $(Get-Date -UFormat %H:%M:%S)
-    $logLineDict["severity"] = "ERROR"
-    $LogLineDict["message"] = $e
+	$LogLineDict["date"] = $(Get-Date -UFormat %Y-%m-%d)
+	$LogLineDict["time"] = $(Get-Date -UFormat %H:%M:%S)
+	$logLineDict["severity"] = "ERROR"
+	$LogLineDict["message"] = $e
 
-    $ErrorLog += $LogLineDict
-
+	$ErrorLog += $LogLineDict
 }
 
 $ReportObjects.LoggedErrors = $ErrorLog
@@ -2733,11 +2501,10 @@ $ReportObjects.LoggedErrors = $ErrorLog
 $TemporaryFilesWritten = $false
 
 if(-not (Write-TemporaryFiles)){
-	
 	#Failed to write the temporary files
 	log error "Failed to write the temporary files, waiting 2 minutes and trying again"
 	Sleep 120
-	
+
 	if(Write-TemporaryFiles){
 		$TemporaryFilesWritten = $true
 		log success "Successfully wrote the temporary files"
@@ -2753,21 +2520,19 @@ if($TemporaryFilesWritten){
 	#Had some problems with the move of the temporary files
 	#Adding a sleep to allow the script to finish writing
 	Sleep 10
-	
+
 	if(Update-ReportData){
 		log success "The report has been successfully been updated"
 	} else {
-		
 		#Failed, trying again after two minutes
 		Sleep 120
-		
+
 		if(Update-ReportData){
 			log success "The report has been successfully been updated"
 		} else {
 			log error "Failed to create/update the report"
 		}
-		
-	}	
+	}
 } else {
 	log error "The writing of the temporary files failed, no report files will be updated"
 }
@@ -2775,15 +2540,14 @@ if($TemporaryFilesWritten){
 Send-Errors
 
 if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
-    
-    $LogFile = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
-    
-    if(Test-Path $LogFile){
-         log verbose "Pruning logfile"
-        
-        $MaximumLines = $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines
+	$LogFile = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
 
-        $LogContent = Get-Content $LogFile
-        $LogContent | Select -Last $MaximumLines | Out-File $LogFile
-    }
+	if(Test-Path $LogFile){
+		 log verbose "Pruning logfile"
+
+		$MaximumLines = $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines
+
+		$LogContent = Get-Content $LogFile
+		$LogContent | Select -Last $MaximumLines | Out-File $LogFile
+	}
 }

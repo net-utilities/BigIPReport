@@ -11,133 +11,120 @@
 
 
 /*
+	Documentation of the options
 
-	Documentation of the options 
-	
 	hideModulesByDefault:
 	Hides modules you don't have installed. Please report if you see any missing modules.
 
-    hideVersionsByDefault:
-    Hides versions that you don't have.
+	hideVersionsByDefault:
+	Hides versions that you don't have.
 
-    defaultSeverityEnabled:
-    If you want to set the default severity.
+	defaultSeverityEnabled:
+	If you want to set the default severity.
 
-    defaultSeverity:
-    What you want to set the default severity to.
+	defaultSeverity:
+	What you want to set the default severity to.
 
-    defaultWorkingBeforeToNo:
-    Set "Was this working before?" to no by default.
+	defaultWorkingBeforeToNo:
+	Set "Was this working before?" to no by default.
 
-    defaultProblemWithVirtualServerToNo:
+	defaultProblemWithVirtualServerToNo:
 	Set "Is the problem related to a virtual server?" to no by default.
 
-    preferredContactMethod:
-    Your preferred method of contact. Possible options are "Phone", "Mobile", "Email".
+	preferredContactMethod:
+	Your preferred method of contact. Possible options are "Phone", "Mobile", "Email".
 
-    timeZone:
-    Which item in the time zone list that you want to use as default.
-    The values in the list does not really follow a standard, so this was the "best" way.
+	timeZone:
+	Which item in the time zone list that you want to use as default.
+	The values in the list does not really follow a standard, so this was the "best" way.
 
-    Examples:
-    1 = First timezone in the drop down ("GMT -12:00) GMT-12:00")
-    2 = Second timezone in the drop down ("GMT -11:00) GMT-11:00")
+	Examples:
+	1 = First timezone in the drop down ("GMT -12:00) GMT-12:00")
+	2 = Second timezone in the drop down ("GMT -11:00) GMT-11:00")
 */
 
 (function() {
-    'use strict';
+	'use strict';
 
-    var options = {
-    	"hideModulesByDefault": true,
-    	"hideVersionsByDefault": true,
-    	"defaultSeverityEnabled": true,
-    	"defaultSeverity": 4,
-    	"defaultWorkingBeforeToNo": true,
-    	"defaultProblemWithVirtualServerToNo": true,
-    	"preferredContactMethod": "Phone",
-    	"timeZone": 8
-    };
+	var options = {
+		"hideModulesByDefault": true,
+		"hideVersionsByDefault": true,
+		"defaultSeverityEnabled": true,
+		"defaultSeverity": 4,
+		"defaultWorkingBeforeToNo": true,
+		"defaultProblemWithVirtualServerToNo": true,
+		"preferredContactMethod": "Phone",
+		"timeZone": 8
+	};
 
-    var bigipReportURL = "https://linuxworker.j.local/json/loadbalancers.json";
+	var bigipReportURL = "https://linuxworker.j.local/json/loadbalancers.json";
 
-    // Get the load balancer objects from BigIP Report
-    GM_xmlhttpRequest({
-        method: "GET",
-        url: bigipReportURL,
-        onload: function (response) {
+	// Get the load balancer objects from BigIP Report
+	GM_xmlhttpRequest({
+		method: "GET",
+		url: bigipReportURL,
+		onload: function (response) {
+			if (response.status == 200) {
+				var devices = JSON.parse(response.responseText);
+				var modules = getModules(devices);
+				var availableVersions = getVersions(devices);
+				var deviceToSerialSelectionHTML = getDeviceSelectionDropDown(devices);
 
-            if (response.status == 200) {
+				if(options.hideModulesByDefault){
+					filterModuleSelection(modules);
+				}
 
-                var devices = JSON.parse(response.responseText);
-                var modules = getModules(devices);
-                var availableVersions = getVersions(devices);
-                var deviceToSerialSelectionHTML = getDeviceSelectionDropDown(devices);
+				if(options.hideVersionsByDefault){
+					filterVersionSelection(availableVersions);
+				}
 
-                if(options.hideModulesByDefault){
-                	filterModuleSelection(modules);	
-                }             	
+				var secondPageTimer = setInterval(function(){
+					var serialNumberInput = $("input#serialNumberInput");
+					if(serialNumberInput.is(":visible")){
+						serialNumberInput.css("display", "inline").css("width", "20%");
+						serialNumberInput.after(deviceToSerialSelectionHTML);
 
-	            if(options.hideVersionsByDefault){
-                	filterVersionSelection(availableVersions);
-                }
+						var deviceDropDown = $("select#deviceToSerial");
+						deviceDropDown.on("change", function(){
+							serialNumberInput.val(deviceDropDown.val());
 
-                var secondPageTimer = setInterval(function(){
+							// Somehow jQuery binds the objects to this when declaring them.
+							// Native JS was the only thing working for some reason.
 
-                	var serialNumberInput = $("input#serialNumberInput");
-                	if(serialNumberInput.is(":visible")){
-
-                		serialNumberInput.css("display", "inline").css("width", "20%");
-                		serialNumberInput.after(deviceToSerialSelectionHTML);
-
-                		var deviceDropDown = $("select#deviceToSerial");
-                		deviceDropDown.on("change", function(){
-
-                			serialNumberInput.val(deviceDropDown.val());
-
-                			// Somehow jQuery binds the objects to this when declaring them.
-                			// Native JS was the only thing working for some reason.
-
-                			triggerEvent("change", "input#serialNumberInput");
+							triggerEvent("change", "input#serialNumberInput");
 							triggerEvent("blur", "input#serialNumberInput");
-							
-                		});
+						});
 
-                		if(options.defaultSeverityEnabled){
+						if(options.defaultSeverityEnabled){
+							$("select#severitySelect").val(options.defaultSeverity);
+							triggerEvent("change", "select#severitySelect");
+						}
 
-                			$("select#severitySelect").val(options.defaultSeverity);
-                			triggerEvent("change", "select#severitySelect");
+						if(options.defaultWorkingBeforeToNo){
+							$("input#workingBeforeNo").click();
+						}
 
-                		}
+						if(options.defaultProblemWithVirtualServerToNo){
+							$("input#virtualServerNo").click();
+						}
 
-                		if(options.defaultWorkingBeforeToNo){
-                			$("input#workingBeforeNo").click();
-                		}
+						clearInterval(secondPageTimer);
+					}
+				}, 500);
 
-                		if(options.defaultProblemWithVirtualServerToNo){
-                			$("input#virtualServerNo").click();
-                		}
+				var thirdPageTimer = setInterval(function(){
+					$("select#contactMethodOfContact").val(options.preferredContactMethod);
+					triggerEvent("change", "select#contactMethodOfContact");
 
-                		clearInterval(secondPageTimer);
-                	}
-                }, 500);
-
-                var thirdPageTimer = setInterval(function(){
-
-                	$("select#contactMethodOfContact").val(options.preferredContactMethod);
-                	triggerEvent("change", "select#contactMethodOfContact");
-
-                	$("select#contactTimezoneSelect option").eq(options.timeZone).attr("selected", true);
-					triggerEvent("change", "select#contactTimezoneSelect");                	
-
-                }, 500);
-            }
-        },
-        error: function(e){
-            console.log(e);
-        }
-    });
-
-
+					$("select#contactTimezoneSelect option").eq(options.timeZone).attr("selected", true);
+					triggerEvent("change", "select#contactTimezoneSelect");
+				}, 500);
+			}
+		},
+		error: function(e){
+			console.log(e);
+		}
+	});
 })();
 
 function triggerEvent(e, s){
@@ -146,18 +133,15 @@ function triggerEvent(e, s){
 	var event = document.createEvent('HTMLEvents');
 	event.initEvent(e, true, true);
 	document.querySelector(s).dispatchEvent(event);
-
 }
 
 
 function filterModuleSelection(configuredModules){
 	"use strict";
 	var moduleFilterInterval = setInterval(function(){
-		
 		var productSelect = $("select#productSelect");
 
 		if(productSelect.find("option").length > 10){
-
 			productSelect.find("option:not(:selected)").each(function(){
 				if(configuredModules.indexOf($(this).attr("label")) === -1){
 					$(this).hide();
@@ -170,7 +154,6 @@ function filterModuleSelection(configuredModules){
 			});
 
 			clearInterval(moduleFilterInterval);
-
 		}
 	}, 500);
 }
@@ -205,10 +188,8 @@ function filterVersionSelection(availableVersions){
 					filterVersionSelection(availableVersions);
 				});
 			}
-
 			clearInterval(filterVersionInterval);
 		}
-
 	}, 500);
 }
 
@@ -245,12 +226,9 @@ function getModules(devices){
 				if(m === "GTM"){
 					configuredModules.push("BIG-IP DNS");
 				}
-
 			}
-
 		}
 	});
-
 	return configuredModules;
 }
 
@@ -275,9 +253,9 @@ function getDeviceSelectionDropDown(devices){
 	var deviceDict = {};
 
 	devices.map(function(d){
-        if(d.name){
-            deviceDict[d.name.toUpperCase()] = d.serial;
-        }
+		if(d.name){
+			deviceDict[d.name.toUpperCase()] = d.serial;
+		}
 	});
 
 	var deviceNames = [];
