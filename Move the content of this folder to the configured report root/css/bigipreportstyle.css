@@ -129,26 +129,29 @@
 .pooltable {
 	border-collapse: collapse;
 	width:100%;
+	border-top:border: 1px solid var(--bordercolor);
+	border-collapse: collapse;
+}
+
+.pooltable td.poolname {
+	border-left:none;
+}
+
+.pooltable tbody > tr:first-child td {
+	border-top: none;
+}
+
+.pooltable tbody > tr:last-child td {
+	border-bottom: none;
 }
 
 .pooltable tbody > tr:nth-child(odd) > td {
 	background:transparent !important;
-	border-bottom:none;
-	border-left:none;
-	border-right:none;
 	border-collapse: collapse;
 }
 .pooltable tbody > tr:nth-child(even) > td {
 	background:transparent !important;
-	border-bottom:none;
-	border-left:none;
-	border-right:none;
-	border-top:border: 1px solid var(--bordercolor);;
 	border-collapse: collapse;
-}
-
-.pooltable tbody > tr:first-child > td {
-	border:none;
 }
 
 /* Containing style for the top left information box */
@@ -227,8 +230,11 @@ div.expand, div.collapse {
 	white-space:nowrap;
 }
 
-.virtualserverdetailstable tbody > tr:nth-child(even) > td {     background-
-color:#6890B2;     border-collapse: collapse;     border:1px solid var(--bordercolor); }
+.virtualserverdetailstable tbody > tr:nth-child(even) > td {
+	background-color:#6890B2;
+	border-collapse: collapse;
+	border:1px solid var(--bordercolor);
+}
 
 
 /****************************************************************************************************************************     
