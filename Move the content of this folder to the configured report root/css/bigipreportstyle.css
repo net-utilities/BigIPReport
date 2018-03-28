@@ -126,30 +126,32 @@
 
 /* The table in the cell containing the pool information */
 
-.pooltable {
+table.pooltable {
 	border-collapse: collapse;
 	width:100%;
 	border-top:border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 }
 
-.pooltable td.poolname {
-	border-left:none;
+table.pooltable tr td {
+	border-left: none;
+	border-right: none;
 }
 
-.pooltable tbody > tr:first-child td {
+table.pooltable tbody tr:first-child td {
 	border-top: none;
 }
 
-.pooltable tbody > tr:last-child td {
+table.pooltable tbody tr:last-child td {
 	border-bottom: none;
 }
 
-.pooltable tbody > tr:nth-child(odd) > td {
+table.pooltable tbody > tr:nth-child(odd) > td {
 	background:transparent !important;
 	border-collapse: collapse;
 }
-.pooltable tbody > tr:nth-child(even) > td {
+
+table.pooltable tbody > tr:nth-child(even) > td {
 	background:transparent !important;
 	border-collapse: collapse;
 }
