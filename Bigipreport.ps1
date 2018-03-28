@@ -185,7 +185,8 @@
 #                                     examples in the configuration file
 #        5.0.7        2018-03-28      White-space clean-up                                                          Tim Riker       No
 #        5.0.7        2018-03-28      HTML clean-up                                                                 Tim Riker       No
-#        5.0.8        2018-03-28      Using string builder to make the report building more efficient               Patrik Jonsson  No
+#        5.0.8        2018-03-28      Using string builder to make the report building more efficient based on      Patrik Jonsson  No
+#                                     a suggestion from Tim
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -200,7 +201,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.0.4"
+$Global:ScriptVersion = "5.0.8"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
