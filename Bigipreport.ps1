@@ -1,4 +1,4 @@
-#Requires -Version 4
+#Requires -Version 5
 ######################################################################################################################################
 #
 #		Copyright (C) 2016 Patrik Jonsson <patrik.jonsson#at#gmail-com>
@@ -187,7 +187,8 @@
 #        5.0.7        2018-03-28      HTML clean-up                                                                 Tim Riker       No
 #        5.0.8        2018-03-28      Using string builder to make the report building more efficient based on      Patrik Jonsson  No
 #                                     a suggestion from Tim
-#        5.0.9        2018-03-30      Removing URI encode which causes issues on some systems                       Patrik Jonsson  No
+#        5.0.9        2018-03-30      Removing URI encode which causes issues on some systems, also making          Patrik Jonsson  No
+#                                     PowerShell version 5 mandatory because of the string builder addition
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
