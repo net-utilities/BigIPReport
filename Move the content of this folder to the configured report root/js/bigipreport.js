@@ -157,7 +157,7 @@
 					"sSearch": "Search all columns:"
 				},
 				"dom": '<"top">frt<"bottom"ilp><"clear">',
-				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+				"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]]
 			} );
 
 			
