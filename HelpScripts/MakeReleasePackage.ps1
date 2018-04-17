@@ -42,4 +42,4 @@ if(-not (Test-Path "$ScriptFolder\Releases\BigipReport-$Version.zip")){
 #Halt before exit to show that everything has gone OK
 $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
-cd $PSScriptRoot
+Set-Location $PSScriptRoot
