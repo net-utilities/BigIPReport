@@ -229,14 +229,14 @@ if(Test-Path $ConfigurationFile){
 	if($?){
 		$Outputlevel = $Global:Bigipreportconfig.Settings.Outputlevel
 		if($Outputlevel -eq "Verbose"){
-			"Successfully loaded the config file"
+			"Successfully loaded the config file: $ConfigurationFile"
 		}
 	} else {
-		Write-Error "Can't read the config file, or config file corrupt. Aborting."
+		Write-Error "Can't read the config file: $ConfigurationFile, or config file corrupt. Aborting."
 		Exit
 	}
 } else {
-	Write-Error "Failed to load config file $PSScriptRoot\bigipreportconfig.xml. Aborting."
+	Write-Error "Failed to load config file $ConfigurationFile from $PSScriptRoot. Aborting."
 	Exit
 }
 
@@ -1250,7 +1250,7 @@ function Cache-LTMInformation {
 			}
 		}
 
-		$ObjiRule.pools = $TempPools | Select -Unique
+		$ObjiRule.pools = $TempPools | Select-Object -Unique
 
 		$LoadBalancerObjects.iRules.add($ObjiRule.name, $ObjiRule)
 	}
@@ -1368,7 +1368,7 @@ function Cache-LTMInformation {
 
 			if($iRule){
 				if($iRule.pools.Count -gt 0){
-					$ObjTempVirtualServer.pools += [array]$iRule.pools | select -uniq
+					$ObjTempVirtualServer.pools += [array]$iRule.pools | Select-Object -uniq
 				}
 			}
 		}
@@ -1377,7 +1377,7 @@ function Cache-LTMInformation {
 			$ObjTempVirtualServer.pools += $ObjTempVirtualServer.defaultpool
 		}
 
-		$ObjTempVirtualServer.pools = $ObjTempVirtualServer.pools | select -Unique
+		$ObjTempVirtualServer.pools = $ObjTempVirtualServer.pools | Select-Object -Unique
 
 		Try{
 			$ObjTempVirtualServer.sourcexlatetype = [string]$VirtualServerSourceAddressTranslationTypes[$i]
@@ -2523,7 +2523,7 @@ $TemporaryFilesWritten = $false
 if(-not (Write-TemporaryFiles)){
 	#Failed to write the temporary files
 	log error "Failed to write the temporary files, waiting 2 minutes and trying again"
-	Sleep 120
+	Start-Sleep 120
 
 	if(Write-TemporaryFiles){
 		$TemporaryFilesWritten = $true
@@ -2539,13 +2539,13 @@ if(-not (Write-TemporaryFiles)){
 if($TemporaryFilesWritten){
 	#Had some problems with the move of the temporary files
 	#Adding a sleep to allow the script to finish writing
-	Sleep 10
+	Start-Sleep 10
 
 	if(Update-ReportData){
 		log success "The report has been successfully been updated"
 	} else {
 		#Failed, trying again after two minutes
-		Sleep 120
+		Start-Sleep 120
 
 		if(Update-ReportData){
 			log success "The report has been successfully been updated"
@@ -2568,6 +2568,6 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
 		$MaximumLines = $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines
 
 		$LogContent = Get-Content $LogFile
-		$LogContent | Select -Last $MaximumLines | Out-File $LogFile
+		$LogContent | Select-Object -Last $MaximumLines | Out-File $LogFile
 	}
 }
