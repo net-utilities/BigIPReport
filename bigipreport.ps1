@@ -2026,7 +2026,7 @@ Function Write-TemporaryFiles {
 
 	if(!$?){
 		log error "Failed to update the temporary report file"
-		$Status  = $false
+		$WriteStatuses += $false
 	}
 
 	$StreamWriter.dispose()
