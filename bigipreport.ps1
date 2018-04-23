@@ -394,13 +394,13 @@ log verbose "Configuring the console window"
 $PShost = Get-Host
 $PSWindow = $PShost.ui.rawui
 $PSWindowSize = $PSWindow.buffersize
-$PSWindowSize.height = 3000
-$PSWindowSize.width = [math]::floor([decimal]$PSWindow.MaxPhysicalWindowSize.width)-5
-$PSwindow.buffersize = $PSWindowSize
+#$PSWindowSize.height = 3000
+#$PSWindowSize.width = [math]::floor([decimal]$PSWindow.MaxPhysicalWindowSize.width)-5
+#$PSwindow.buffersize = $PSWindowSize
 $PSWindowSize = $PSWindow.windowsize
-$PSWindowSize.height = 50
-$PSWindowSize.width = $PSWindowSize.width = [math]::floor([decimal]$PSWindow.MaxPhysicalWindowSize.width)-5
-$PSWindow.windowsize = $PSWindowSize
+#$PSWindowSize.height = 50
+#$PSWindowSize.width = $PSWindowSize.width = [math]::floor([decimal]$PSWindow.MaxPhysicalWindowSize.width)-5
+#$PSWindow.windowsize = $PSWindowSize
 
 ################################################################################################################################################
 #
@@ -2013,9 +2013,9 @@ Function Write-TemporaryFiles {
 	$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
 	log verbose "Writing temporary report file to $($Global:reportpath + ".tmp")"
-	
+
 	$HTMLContent = $Global:HTML.ToString();
-	
+
 	# remove whitespace from output
 	if($Outputlevel -ne "Verbose"){
 		$HTMLContent = $HTMLContent.Split("`n").Trim() -Join "`n"
@@ -2121,7 +2121,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 		#	   to minimize the polution of the global namespace.
 		$DefinediRules = Get-DefinedRules
 		[void]$Global:HTML.AppendLine("var definedRules = " + $DefinediRules + ";`n")
-		
+
 		if($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true){
 			[void]$Global:HTML.AppendLine("var ShowiRules = true;")
 		} else {
@@ -2195,227 +2195,6 @@ $xPool = 0
 $RealTimeStatusDetected = ($Global:ReportObjects.Values.LoadBalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
 if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
-}
-
-ForEach($LoadBalancerObjects in ($Global:ReportObjects.Values | Where-Object { $_.LoadBalancer.active -or $_.LoadBalancer.isonlydevice })){
-	$LoadBalancer = $LoadBalancerObjects.LoadBalancer
-	$LoadBalancerName = $LoadBalancer.name
-	$i = 0
-	$VirtualServers = $LoadBalancerObjects.VirtualServers.Values + $LoadBalancerObjects.OrphanPools
-	$VirtualServerCount = $VirtualServers.Count
-	ForEach ($ObjVirtualServer in $VirtualServers){
-		$i++
-		if($Outputlevel -eq "Verbose"){
-			Write-Progress -activity "Generating HTML for $LoadBalancerName. $i virtual servers out of $VirtualServerCount done." -status "Progress: " -PercentComplete (($i / $VirtualServerCount)  * 100)
-		}
-		[void]$Global:HTML.AppendLine(@"
-					<tr class="virtualserverrow">
-						<td class="loadbalancerCell" data-loadbalancer="$LoadBalancerName">
-							$(
-								if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
-									$LoadBalancerName.split('.')[0]
-								} else {
-									$LoadBalancerName
-								}
-							)
-						</td>
-"@)
-		[void]$Global:HTML.AppendLine(@"
-						<td class="virtualServerCell">
-							$(Translate-VirtualServer-Status -virtualserver $ObjVirtualServer) <a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="$($ObjVirtualServer.name)" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showVirtualServerDetails(`$(this).attr('data-originalvirtualservername').trim(),`$(this).attr('data-loadbalancer').trim());">$($ObjVirtualServer.name) <span class="detailsicon"><img src="images/details.png" alt="details"/></span><p>Click to see virtual server details</p></a> <span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=$ObjVirtualServer.name">Edit</a></span>
-						</td>
-"@)
-		#Remove any route domain from the virtual server ip and store in vsipexrd in order to be able to compare with NAT translation list (which would not contain route domains)
-		$VirtualServerIPExRD = $ObjVirtualServer.ip -replace "%[0-9]+$", ""
-		if($NATdict.Contains($VirtualServerIPExRD)){
-			[void]$Global:HTML.AppendLine(@"
-						<td class="centeredCell">
-							$($ObjVirtualServer.ip + ":" + $ObjVirtualServer.port)<br>Public IP:$($NATdict[$VirtualServerIPExRD])
-						</td>
-"@)
-		} else {
-			[void]$Global:HTML.AppendLine(@"
-						<td class="centeredCell">
-							$($ObjVirtualServer.ip + ":" + $ObjVirtualServer.port)
-						</td>
-"@)
-		}
-		if($HasASMProfiles){
-			[void]$Global:HTML.AppendLine(@"
-						<td class="centeredCell">
-"@)
-			if($ObjVirtualServer.asmPolicies.count -gt 0){
-				for($asm = 0; $asm -lt $ObjVirtualServer.asmPolicies.Count; $asm++){
-					$ObjASMPolicy = $LoadBalancerObjects.ASMPolicies[$ObjVirtualServer.asmPolicies[$asm]]
-
-					if($ObjASMPolicy.enforcementMode -eq "blocking"){
-						$ObjVirtualServer.asmPolicies[$asm] = $ObjVirtualServer.asmPolicies[$asm] + " (B)"
-					} else {
-						$ObjVirtualServer.asmPolicies[$asm] = $ObjVirtualServer.asmPolicies[$asm] + " (T)"
-					}
-				}
-				[void]$Global:HTML.AppendLine($ObjVirtualServer.asmPolicies -Join "<br>")
-			} else {
-				[void]$Global:HTML.AppendLine(@'
-							N/A
-'@)
-			}
-			[void]$Global:HTML.AppendLine(@"
-						</td>
-"@)
-		}
-		[void]$Global:HTML.AppendLine(@"
-						<td class="centeredCell">
-							$(
-								If ($ObjVirtualServer.sslprofile -ne "None") {
-									"Yes"
-								} Else {
-									"No"
-								}
-							)
-						</td>
-"@)
-		[void]$Global:HTML.AppendLine(@"
-						<td class="centeredCell">
-							 $(
-								If ($ObjVirtualServer.compressionprofile -ne "None") {
-									"Yes"
-								} Else {
-									"No"
-								}
-							 )
-						</td>
-"@)
-
-
-		[void]$Global:HTML.AppendLine(@"
-					<td class="centeredCell">
-						$(
-							If($ObjVirtualServer.persistence -eq "None" ) {
-								"No"
-							} else {
-								"Yes"
-							}
-						)
-					</td>
-"@)
-
-		#Remove exceptions from the list of virtual server pools
-		$VirtualServerPools = ($ObjVirtualServer.pools | Where-Object { !($Global:Bigipreportconfig.Settings.PoolExceptions.PoolException -contains $_) })
-
-		#If the pool list is empty after excluding the pools in the pool exception list, enter N/A
-		if(!$VirtualServerPools){
-			[void]$Global:HTML.AppendLine(@"
-						<td>
-							N/A
-						</td>
-"@)
-		} else {
-			$FirstPool = $true
-			Foreach($PoolName in $VirtualServerPools){
-				if($PoolName -ne ""){
-					$ObjPool = $LoadBalancerObjects.Pools[$PoolName]
-					if($FirstPool){
-						$xPool++;
-						[void]$Global:HTML.AppendLine(@"
-						<td class="PoolInformation" data-vsid="$i">
-							<div class="expand" id="expand-$i">
-								<a href="javascript:void(0);"><img src="images/chevron-down.png" alt="down" data-vsid="$i"/></a>
-							</div>
-							<div class="collapse" id="collapse-$i">
-								<a href="javascript:void(0);"><img src="images/chevron-up.png" alt="up" data-vsid="$i"/></a>
-							</div>
-							<div class="AssociatedPoolsInfo" data-vsid=$i id="AssociatedPoolsInfo-$i"> Click here to show $($ObjVirtualServer.pools.Count) associated pools</div>
-							<div id="PoolInformation-$i" class="pooltablediv">
-							<table class="pooltable">
-								<tr class="Pool-$xPool" onMouseOver="javascript:togglePoolHighlight(this);" onMouseOut="javascript:togglePoolHighlight(this);">
-									<td rowspan=$($ObjPool.members.Count) data-vsid=$i class="poolname" id=Pool$xPool>
-											<a href="javascript:void(0);" class="tooltip" data-originalpoolname="$PoolName" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showPoolDetails(`$(this).attr('data-originalpoolname').trim(), `$(this).attr('data-loadbalancer').trim());">
-"@)
-						if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
-							[void]$Global:HTML.AppendLine(@"
-								$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
-"@)
-						} else {
-							[void]$Global:HTML.AppendLine(@"
-							$PoolName <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
-"@)
-						}
-											[void]$Global:HTML.AppendLine(@"
-											<p>Click to see pool details</p></a>
-											<span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=$PoolName">Edit</a></span>
-									</td>
-"@)
-						$FirstPool = $false
-					} else {
-						$xPool++;
-						[void]$Global:HTML.AppendLine(@"
-								<tr class="Pool-$xPool" onMouseOver="javascript:togglePoolHighlight(this);" onMouseOut="javascript:togglePoolHighlight(this);">
-									<td rowspan=$($ObjPool.members.Count) class="poolname" id="Pool$xPool">
-											<a href="javascript:void(0);" class="tooltip" data-originalpoolname="$PoolName" data-loadbalancer="$LoadBalancerName" onClick="Javascript:showPoolDetails(`$(this).attr('data-originalpoolname').trim(), `$(this).attr('data-loadbalancer').trim());">
-"@)
-											if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolPartition -eq $false){
-												[void]$Global:HTML.AppendLine(@"
-												$($PoolName.split("/")[2]) <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
-"@)
-											} else {
-												[void]$Global:HTML.AppendLine(@"
-												$PoolName <span class="detailsicon"><img src="images/details.png" alt="details"/></span>
-"@)
-											}
-											[void]$Global:HTML.AppendLine(@"
-											<p>Click to see pool details</p></a>
-											<span class="adcLinkSpan"><a href="https://$LoadBalancerName/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=$PoolName">Edit</a></span>
-									</td>
-"@)
-					}
-
-					$FirstMember = $true
-
-					foreach($Member in $ObjPool.members){
-						if($Member){
-							if($Global:Bigipreportconfig.Settings.PartitionInformation.ShowPoolMemberPartition -eq $false){
-								$MemberName = $Member.name.split("/")[2]
-							} else {
-								$MemberName = $Member.name
-							}
-
-							$MemberPort = $Member.port
-							$MemberIPPort = $Member.ip + ":" + $MemberPort
-							$MemberNamePort = $MemberName + ":" + $MemberPort
-
-							if($FirstMember){
-								[void]$Global:HTML.AppendLine(@"
-									<td class="PoolMember" data-pool="Pool$xPool">
-										$MemberNamePort - $MemberIPPort - <span data-member="$MemberIPPort">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</span>
-									</td>
-								</tr>
-"@)
-								$FirstMember = $false
-							} else {
-								[void]$Global:HTML.AppendLine(@"
-								<tr class="Pool-$xPool">
-									<td class="PoolMember" data-pool="Pool$xPool">
-										$MemberNamePort - $MemberIPPort - <span data-member="$($MemberIPPort)">$(Translate-Member-Status -Member $Member -RealTimeStatus $RealTimeStatusDetected)</span>
-									</td>
-								</tr>
-"@)
-							}
-						}
-					}
-				}
-			}
-
-			[void]$Global:HTML.AppendLine(@"
-								</table>
-								</div>
-							</td>
-"@)
-		}
-		[void]$Global:HTML.AppendLine(@"
-						</tr>
-"@)
-	}
 }
 
 [void]$Global:HTML.AppendLine(@"
