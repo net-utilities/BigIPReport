@@ -129,7 +129,7 @@
 table.pooltable {
 	border-collapse: collapse;
 	width:100%;
-	border-top:border: 1px solid var(--bordercolor);
+	border-top: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 }
 
@@ -654,13 +654,14 @@ div#secondlayerdetailscontent {
 *****************************************************************************************************************************/
 
 .dgtype {
-	font-family:Cambria;
-	font-size:20px;
+	font-family: Cambria;
+	font-size: 20px;
 	text-align: center;
-	color:#00000;
+	color: black;
 }
+
 .dgkey {
-	color:blue;	
+	color:blue;
 }
 .dgvalue {
 	color:red;
