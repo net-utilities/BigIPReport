@@ -1,4 +1,6 @@
-output
+*.xml
+!bigipreportconfig.xml
+Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/index.html
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/certificates.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/datagrouplists.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/devicegroups.json
@@ -8,3 +10,5 @@ Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/log
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/monitors.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/pools.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/virtualservers.json
+output
+.vscode
