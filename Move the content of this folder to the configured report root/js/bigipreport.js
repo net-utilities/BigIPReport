@@ -117,7 +117,7 @@
 			loadPreferences();
 
 			/*************************************************************************************************************
-			
+
 				Test the status VIPs
 
 			*************************************************************************************************************/
@@ -125,11 +125,11 @@
 			initializeStatusVIPs();
 
 			/*************************************************************************************************************
-			
-				This attaches an on click event to all Poolinformation cells (the cell in the main data table 
-				containing pool information that makes sure that the pool details lightbox is shown when 
+
+				This attaches an on click event to all Poolinformation cells (the cell in the main data table
+				containing pool information that makes sure that the pool details lightbox is shown when
 				clicking on the	pool details cell without the cell content collapsing
-				
+
 			**************************************************************************************************************/
 
 			$("td.PoolInformation").click(function (e) {
@@ -140,9 +140,9 @@
 
 
 			/*************************************************************************************************************
-			
+
 				Initiate data tables, add a search all columns header and save the standard table header values
-			
+
 			**************************************************************************************************************/
 
 			$("thead input.search_init").each(function (i) {
@@ -231,11 +231,11 @@
 
 
 			/*************************************************************************************************************
-			
-				Attaches a function to the main data table column filters that 
+
+				Attaches a function to the main data table column filters that
 				removes the text from the input windows when clicking on them
 				and adds the possibility to filter per column
-			
+
 			**************************************************************************************************************/
 
 			$("thead input").focus(function () {
@@ -266,9 +266,9 @@
 			sh_highlightDocument('./js/', '.js');
 
 			/*************************************************************************************************************
-			
+
 				This section inserts the reset filters button and it's handlers
-			
+
 			**************************************************************************************************************/
 
 			$("#allbigips_filter").append("<a id=\"resetFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
@@ -288,9 +288,9 @@
 			});
 
 			/*************************************************************************************************************
-			
+
 				This section inserts a button that exports the report to CSV
-			
+
 			**************************************************************************************************************/
 
 			if (ShowExportLink) {
@@ -299,9 +299,9 @@
 			}
 
 			/*************************************************************************************************************
-			
+
 				This section inserts the column toggle buttons and attaches even handlers to it
-			
+
 			**************************************************************************************************************/
 
 			$("#allbigips_filter").append("<a id=\"showConsoleButton\" class=\"showConsoleButton\" href=\"javascript:void(0);\">Show Console</a>")
@@ -331,9 +331,9 @@
 			});
 
 			/*************************************************************************************************************
-			
+
 				This section adds the update check button div and initiates the update checks
-			
+
 			**************************************************************************************************************/
 
 			//Add the div containing the update available button
@@ -365,10 +365,10 @@
 				});
 			}, 3000);
 
-			/****************************************************************************************************************************** 
-			
+			/******************************************************************************************************************************
+
 				Lightbox related functions
-			
+
 			******************************************************************************************************************************/
 
 			/* Hide the lightbox if clicking outside the information box*/
@@ -388,10 +388,10 @@
 				return this;
 			}
 
-			/****************************************************************************************************************************** 
-			
+			/******************************************************************************************************************************
+
 				Add custom data tables functions
-			
+
 			******************************************************************************************************************************/
 
 
@@ -489,9 +489,9 @@
 			}
 
 			/*************************************************************************************************************
-			
+
 				If any search parameters has been sent, populate the search
-			
+
 			**************************************************************************************************************/
 
 			bigipTable.draw();
@@ -569,11 +569,143 @@
 			return "N/A";
 		}
 		poolinformation = '<div class="expand" id="expand-' + (meta.row + 1) + '" style="display: none;">' +
-			'<a href="javascript:void(0);"><img src="images/chevron-down.png" alt="down" data-vsid="' + (meta.row+1) + '"></a></div>' +
-			'<div class="collapse" id="collapse-' + (meta.row+1) + '" style="display: block;">' +
-			'<a href="javascript:void(0);"><img src="images/chevron-up.png" alt="up" data-vsid="' + (meta.row+1) + '"></a></div>' +
-			'<div class="AssociatedPoolsInfo" data-vsid="' + (meta.row+1) + '" id="AssociatedPoolsInfo-' + (meta.row+1) + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
+			'<a href="javascript:void(0);"><img src="images/chevron-down.png" alt="down" data-vsid="' + (meta.row+1) + '"></a></div>';
+		poolinformation += '<div class="collapse" id="collapse-' + (meta.row+1) + '" style="display: block;">' +
+			'<a href="javascript:void(0);"><img src="images/chevron-up.png" alt="up" data-vsid="' + (meta.row+1) + '"></a></div>';
+		poolinformation +=	'<div class="AssociatedPoolsInfo" data-vsid="' + (meta.row+1) + '" id="AssociatedPoolsInfo-' + (meta.row+1) + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
 			'<div id="PoolInformation-' + (meta.row+1) + '" class="pooltablediv" style="display: block;">';
+		poolinformation += '<table class="pooltable"><tbody>';
+		for (var i=0; i<row.pools.length; i++) {
+			for (var p=0; p<siteData.pools.length; p++) {
+				// check load balancer too
+				if (row.pools[i] == siteData.pools[p].name) {
+					poolinformation += '<tr><td rowspan="' + siteData.pools[p].members.length + '">' + siteData.pools[p].name.split('/')[2] + '</td><td class="poolMember">'+ siteData.pools[p].members[0].name.split('/')[2] + '</td></tr>';
+					for (var m=1; m<siteData.pools[p].members.length; m++) {
+						poolinformation += '<tr><td class="poolMember">' + siteData.pools[p].members[m].name.split('/')[2] + "</td></tr>";
+					}
+				}
+			}
+			//poolinformation += '<tr><td>' + row.pools[i];'</td></tr>';
+		}
+		poolinformation += '</tbody></table>';
+		poolinformation += '<table class="staticpooltable">';
+		poolinformation1 = `
+		<tbody>
+			<tr class="Pool-1" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">
+				<td rowspan="6" data-vsid="1" class="poolname" id="Pool1">
+					<a href="javascript:void(0);" class="tooltip" data-originalpoolname="/Common/pool_lds.org_WEBGATE" data-loadbalancer="slb-ash-dmz-a.ldschurch.org" onclick="Javascript:showPoolDetails($(this).attr(\'data-originalpoolname\').trim(), $(this).attr(\'data-loadbalancer\').trim());">
+						pool_lds.org_WEBGATE
+						<span class="detailsicon">
+							<img src="images/details.png" alt="details">
+						</span>
+						<p>Click to see pool details</p>
+					</a>
+					<span class="adcLinkSpan"><a href="https://slb-ash-dmz-a.ldschurch.org/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=/Common/pool_lds.org_WEBGATE">Edit</a></span>
+				</td>
+				<td class="PoolMember" data-pool="Pool1">
+					L5392:80 - 10.98.1.92:80 -
+					<span data-member="10.98.1.92:80">
+						<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+						<span class="textstatus">UP</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-1" style="">
+				<td class="PoolMember" data-pool="Pool1">
+					L5393:80 - 10.98.1.73:80 -
+					<span data-member="10.98.1.73:80">
+						<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+						<span class="textstatus">UP</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-1" style="">
+				<td class="PoolMember" data-pool="Pool1">
+					L5394:80 - 10.98.1.94:80 -
+					<span data-member="10.98.1.94:80">
+						<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+						<span class="textstatus">UP</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-1" style="">
+				<td class="PoolMember" data-pool="Pool1">
+					l0090:80 - 10.58.1.132:80 -
+					<span data-member="10.58.1.132:80">
+						<span class="statusicon"><img src="images/black-circle-checkmark.png" title="Member is available, but disabled" alt="DISABLED"></span>
+						<span class="textstatus">DISABLED</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-1" style="">
+				<td class="PoolMember" data-pool="Pool1">
+					l0091:80 - 10.58.1.133:80 -
+					<span data-member="10.58.1.133:80">
+						<span class="statusicon"><img src="images/black-circle-checkmark.png" title="Member is available, but disabled" alt="DISABLED"></span>
+						<span class="textstatus">DISABLED</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-1" style="">
+				<td class="PoolMember" data-pool="Pool1">
+					l16900:80 - 10.98.1.69:80 -
+					<span data-member="10.98.1.69:80">
+						<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+						<span class="textstatus">UP</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-2" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">
+				<td rowspan="4" class="poolname" id="Pool2">
+					<a href="javascript:void(0);" class="tooltip" data-originalpoolname="/Common/pool_cf-ash.lds.org_CLOUD" data-loadbalancer="slb-ash-dmz-a.ldschurch.org" onclick="Javascript:showPoolDetails($(this).attr(\'data-originalpoolname\').trim(), $(this).attr(\'data-loadbalancer\').trim());">
+						pool_cf-ash.lds.org_CLOUD
+						<span class="detailsicon">
+							<img src="images/details.png" alt="details">
+						</span>
+						<p>Click to see pool details</p>
+					</a>
+					<span class="adcLinkSpan">
+						<a href="https://slb-ash-dmz-a.ldschurch.org/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=/Common/pool_cf-ash.lds.org_CLOUD">Edit</a>
+					</span>
+				</td>
+				<td class="PoolMember" data-pool="Pool2">
+					10.53.64.253:80 - 10.53.64.253:80 -
+					<span data-member="10.53.64.253:80">
+						<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+						<span class="textstatus">UP</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-2" style="">
+				<td class="PoolMember" data-pool="Pool2">
+				10.53.64.254:80 - 10.53.64.254:80 -
+				<span data-member="10.53.64.254:80">
+					<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+					<span class="textstatus">UP</span>
+				</span>
+				</td>
+			</tr>
+			<tr class="Pool-2" style="">
+				<td class="PoolMember" data-pool="Pool2">
+					10.53.65.253:80 - 10.53.65.253:80 -
+					<span data-member="10.53.65.253:80">
+						<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+						<span class="textstatus">UP</span>
+					</span>
+				</td>
+			</tr>
+			<tr class="Pool-2" style="">
+				<td class="PoolMember" data-pool="Pool2">
+					10.53.65.254:80 - 10.53.65.254:80 -
+					<span data-member="10.53.65.254:80">
+						<span class="statusicon"><img src="images/green-circle-checkmark.png" title="Pool member is able to pass traffic" alt="UP"></span>
+						<span class="textstatus">UP</span>
+					</span>
+				</td>
+			</tr>
+		</tbody>
+		`;
+		poolinformation += '</table>';
 		poolinformation += "</div>";
 		return poolinformation;
 	}
@@ -952,7 +1084,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 	********************************************************************************************************************************************************************************************/
 
 
-	/****************************************************************************************************************************** 
+	/******************************************************************************************************************************
 		Highlight all matches
 	******************************************************************************************************************************/
 
@@ -975,7 +1107,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 		});
 	}
 
-	/****************************************************************************************************************************** 
+	/******************************************************************************************************************************
 		Gets the query strings and populate the table
 	******************************************************************************************************************************/
 
@@ -1114,18 +1246,15 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 		//Prepare the content
 		var settingsContent = `
 							<table id="preferencestable" class="bigiptable">
-
 								<thead>
 									<tr>
 										<th colspan=2>Generic settings</th>
 									</tr>
 								</thead>
-		
 								<tbody>
 									<tr><td>Expand all pool members</td><td class="preferencescheckbox"><input type="checkbox" id="autoExpandPools"></td></tr>
 									<tr><td>Direct links to Big-IP objects</td><td class="preferencescheckbox"><input type="checkbox" id="adcLinks"></td></tr>
 								</tbody>
-
 							</table>
 `
 
@@ -1451,7 +1580,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 
 	}
 
-	/****************************************************************************************************************************** 
+	/******************************************************************************************************************************
 		Expands all pool matches in the main table when searching
 	******************************************************************************************************************************/
 
@@ -1467,7 +1596,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 		}
 	}
 
-	/****************************************************************************************************************************** 
+	/******************************************************************************************************************************
 		Collapses all pool cells in the main table
 	******************************************************************************************************************************/
 
@@ -1485,7 +1614,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 		}
 	}
 
-	/****************************************************************************************************************************** 
+	/******************************************************************************************************************************
 		Expands/collapses a pool cell based on the id
 	******************************************************************************************************************************/
 
@@ -1513,7 +1642,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 
 	}
 
-	/****************************************************************************************************************************** 
+	/******************************************************************************************************************************
 		Set the max width of the pool cells in order to make the member column align
 	******************************************************************************************************************************/
 
@@ -1547,7 +1676,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 		});
 	}
 
-	/****************************************************************************************************************************** 
+	/******************************************************************************************************************************
 		Handles the highlight of content when searching
 	******************************************************************************************************************************/
 
@@ -1765,7 +1894,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 
 					for (var i in matchingvirtualserver.irules) {
 
-						// If iRules linking has been set to true show iRule links 
+						// If iRules linking has been set to true show iRule links
 						// and parse data group lists
 						if (ShowiRuleLinks) {
 
@@ -1818,7 +1947,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 
 				<h4>What happened?</h4>
 				When clicking the report it will parse the JSON data to find the matching Virtual Server and display the details. However, in this case it was not able to find any matching Virtual Server.
-				
+
 				<h4>Possible reason</h4>
 				This might happen if the report is being updated as you navigate to the page. If you see this page often though, please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
 
@@ -1930,7 +2059,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 	function ParseDataGroupLists(irule) {
 
 		/*
-			Disclaimer. I know this one is very ugly, but since the commands potentially can do multiple levels 
+			Disclaimer. I know this one is very ugly, but since the commands potentially can do multiple levels
 			of brackets	I could not think of a better way
 		*/
 
@@ -2233,7 +2362,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 									<tr><td class="monitordetailstablerowheader"><b>Interval</b></td><td>` + matchingmonitor.interval + `</td></tr>
 									<tr><td class="monitordetailstablerowheader"><b>Timeout</b></td><td>` + matchingmonitor.timeout + `</td></tr>
 								</table>
-					
+
 					<table class="membermonitortable">
 						<thead>
 							<tr><th>Member Name</th><th>Member ip</th><th>Member Port</th><th>HTTP Link</th><th>Curl Link</th><th>Netcat Link</th>
@@ -2316,7 +2445,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 
 				<h4>What happened?</h4>
 				When clicking the report it will parse the JSON data to find the matching pool and display the details. However, in this case it was not able to find any matching pool.
-				
+
 				<h4>Possible reason</h4>
 				This might happen if the report is being updated as you navigate to the page. If you see this page often though, please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
 
