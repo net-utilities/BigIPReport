@@ -5,12 +5,13 @@
 /****************************************************************************************************************************
 	Declare color variables to make it easier to change the color scheme of the report
 *****************************************************************************************************************************/
+
 :root {
-  --alternatetablecolor:#f9f9f9;
-  --headerbackgroundcolor:#efefef;
-  --headerfontcolor: #333;
-  --bordercolor:#DDDDDD;
-  --defaultfontcolor:#222;
+	--alternatetablecolor: #f9f9f9;
+	--headerbackgroundcolor: #efefef;
+	--headerfontcolor: #333;
+	--bordercolor: #DDDDDD;
+	--defaultfontcolor: #222;
 }
 
 /****************************************************************************************************************************
@@ -32,14 +33,15 @@
 *****************************************************************************************************************************/
 
 /* This style controls the column search */
+
 .search_init {
-	background:var(--headerbackgroundcolor);
-	border:none;
+	background: var(--headerbackgroundcolor);
+	border: none;
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-weight: bold;
-	font-size:14px;
-	width:100%;
-	text-align:center;
+	font-size: 14px;
+	width: 100%;
+	text-align: center;
 	background-image: url(../images/filter.png);
 	background-repeat: no-repeat;
 	background-position: right;
@@ -47,56 +49,58 @@
 }
 
 /* This style controls how the search results should be highlighted */
+
 .highlight {
-	background-color:yellow;
+	background-color: yellow;
 }
 
 /****************************************************************************************************************************
 	Styles related to the main bigip data table
 *****************************************************************************************************************************/
-.bigiptable  {
+
+.bigiptable {
 	border-collapse: collapse;
 	font-family: Calibri;
-	padding:10px;
+	padding: 10px;
 	color: var(--defaultfontcolor);
 }
 
-.bigiptable tbody > tr > td {
+.bigiptable tbody>tr>td {
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	min-width: 45px;
 }
 
-.bigiptable thead > tr > th {
+.bigiptable thead>tr>th {
 	text-align: center;
-	background-color:var(--headerbackgroundcolor);
+	background-color: var(--headerbackgroundcolor);
 	color: var(--headerfontcolor);
 	border-top: 1px solid var(--bordercolor);
 }
 
-#allbigips thead > tr > th {
+#allbigips thead>tr>th {
 	white-space: nowrap;
 }
 
-#bigiptable tbody > tr > td {
+#bigiptable tbody>tr>td {
 	white-space: nowrap;
 }
 
-.bigiptable thead > tr > th:first-child {
+.bigiptable thead>tr>th:first-child {
 	border-left: 1px solid var(--bordercolor);
 }
 
-.bigiptable thead > tr > th:last-child {
+.bigiptable thead>tr>th:last-child {
 	border-right: 1px solid var(--bordercolor);
 }
 
-.bigiptable tbody > tr:nth-child(even) > td {
-	background-color:var(--alternatetablecolor);
+.bigiptable tbody>tr:nth-child(even)>td {
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 }
 
 .loadbalancerHeaderCell {
-	min-width:130px;
+	min-width: 130px;
 }
 
 .persistenceProfileHeaderCell {
@@ -119,16 +123,16 @@
 
 .PoolInformation {
 	padding: 0px 0px !important;
-	position:relative;
+	position: relative;
 	vertical-align: middle;
-	cursor:pointer;
+	cursor: pointer;
 }
 
 /* The table in the cell containing the pool information */
 
 table.pooltable {
 	border-collapse: collapse;
-	width:100%;
+	width: 100%;
 	border-top: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 }
@@ -146,13 +150,13 @@ table.pooltable tbody tr:last-child td {
 	border-bottom: none;
 }
 
-table.pooltable tbody > tr:nth-child(odd) > td {
-	background:transparent !important;
+table.pooltable tbody>tr:nth-child(odd)>td {
+	background: transparent !important;
 	border-collapse: collapse;
 }
 
-table.pooltable tbody > tr:nth-child(even) > td {
-	background:transparent !important;
+table.pooltable tbody>tr:nth-child(even)>td {
+	background: transparent !important;
 	border-collapse: collapse;
 }
 
@@ -160,8 +164,8 @@ table.pooltable tbody > tr:nth-child(even) > td {
 
 div.realtimestatusdiv {
 	position: absolute;
-	top:15px;
-	left:25px;
+	top: 15px;
+	left: 25px;
 }
 
 span.topleftheader {
@@ -171,17 +175,17 @@ span.topleftheader {
 
 span#realtimetestsuccess {
 	font-weight: bold;
-	color:green;
+	color: green;
 }
 
 span#realtimetestfailed {
 	font-weight: bold;
-	color:red;
+	color: red;
 }
 
 span#realtimenotconfigured {
 	font-weight: bold;
-	color:#cc9900;
+	color: #cc9900;
 }
 
 span#refreshcountdown {
@@ -190,54 +194,56 @@ span#refreshcountdown {
 
 /* Containing the chevrons used to collapse and expand the pool*/
 
-div.expand, div.collapse {
+div.expand,
+div.collapse {
 	position: absolute;
 	right: 0;
-	top:0;
+	top: 0;
 }
+
 .collapse {
-	display:none;
+	display: none;
 }
 
 /* Style for the information that says Click here to show X associated pools */
+
 .AssociatedPoolsInfo {
-	padding-left:10px;
+	padding-left: 10px;
 }
 
 /****************************************************************************************************************************
 	This section contains the style for the virtual server details lightbox div
 *****************************************************************************************************************************/
 
-
 /* Contains the pool details table (the one with members and status) */
 
-.virtualserverdetailstable  {
+.virtualserverdetailstable {
 	border-collapse: collapse;
 	font-family: Calibri;
 	margin: 0 auto;
-	width:100%;
+	width: 100%;
 }
 
-.virtualserverdetailstable tbody > tr > td {
+.virtualserverdetailstable tbody>tr>td {
 	border-collapse: collapse;
-	padding:5px;
-	text-align:center;
-	border:1px solid var(--bordercolor);
-}
-.virtualserverdetailstable tbody > tr > th {
+	padding: 5px;
 	text-align: center;
-	background-color:var(--headerbackgroundcolor);
-	border:1px solid var(--bordercolor);
-	color:var(--headerfontcolor);
-	white-space:nowrap;
+	border: 1px solid var(--bordercolor);
 }
 
-.virtualserverdetailstable tbody > tr:nth-child(even) > td {
-	background-color:#6890B2;
+.virtualserverdetailstable tbody>tr>th {
+	text-align: center;
+	background-color: var(--headerbackgroundcolor);
+	border: 1px solid var(--bordercolor);
+	color: var(--headerfontcolor);
+	white-space: nowrap;
+}
+
+.virtualserverdetailstable tbody>tr:nth-child(even)>td {
+	background-color: #6890B2;
 	border-collapse: collapse;
-	border:1px solid var(--bordercolor);
+	border: 1px solid var(--bordercolor);
 }
-
 
 /****************************************************************************************************************************
 				This section contains the  style for the pool details lightbox div
@@ -254,174 +260,182 @@ div#secondlayerdiv {
 div#consolediv {
 	z-index: 1;
 }
+
 /*Header with the pool name */
 
 .pooldetailsheader {
-	font-family:Cambria;
-	font-size:24px;
+	font-family: Cambria;
+	font-size: 24px;
 	text-align: center;
-	margin-bottom:10px;
+	margin-bottom: 10px;
 }
 
 /* Contains the pool details table (the one with members and status) */
 
-.pooldetailstable  {
+.pooldetailstable {
 	border-collapse: collapse;
 	font-family: Calibri;
 	margin: 0 auto;
-	width:100%;
+	width: 100%;
 	color: var(--defaultfontcolor);
 }
 
-.pooldetailstable tbody > tr > td {
+.pooldetailstable tbody>tr>td {
 	border-collapse: collapse;
-	border:1px solid var(--bordercolor);
-	padding:5px;
-	text-align:center;
-}
-
-.pooldetailstable tbody > tr > td:first-child {
-    white-space: nowrap;
-}
-
-.pooldetailstable tbody > tr > td.testlinks {
-	width:140px;
-}
-.pooldetailstable tbody > tr > td > a > p.testlinks {
-	white-space:nowrap;
-}
-
-.pooldetailstable thead > tr > th {
+	border: 1px solid var(--bordercolor);
+	padding: 5px;
 	text-align: center;
-	background-color:var(--headerbackgroundcolor);
+}
+
+.pooldetailstable tbody>tr>td:first-child {
+	white-space: nowrap;
+}
+
+.pooldetailstable tbody>tr>td.testlinks {
+	width: 140px;
+}
+
+.pooldetailstable tbody>tr>td>a>p.testlinks {
+	white-space: nowrap;
+}
+
+.pooldetailstable thead>tr>th {
+	text-align: center;
+	background-color: var(--headerbackgroundcolor);
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	color:var(--headerfontcolor);
-	white-space:nowrap;
+	color: var(--headerfontcolor);
+	white-space: nowrap;
 }
 
-.pooldetailstable tbody > tr:nth-child(even) > td {
-	background-color:var(--alternatetablecolor);
+.pooldetailstable tbody>tr:nth-child(even)>td {
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
-	border:1px solid var(--bordercolor);
+	border: 1px solid var(--bordercolor);
 }
 
-.pooldetailstable span.memberup, .memberenabled {
-	color:green;
+.pooldetailstable span.memberup,
+.memberenabled {
+	color: green;
 }
 
 .pooldetailstable span.memberdisabled {
-	color:#000;
-	font-weight:bold;
+	color: #000;
+	font-weight: bold;
 }
 
 .pooldetailstable span.memberdown {
-	color:red;
+	color: red;
 }
-
 
 .pooldetailstable span.memberunknown {
-	color:blue;
+	color: blue;
 }
 
-
 /* Header with the monitor name */
-.monitordetailsheader, .monitordetailsheader {
-	font-family:Cambria;
-	font-size:20px;
-	font-weight:bold;
+
+.monitordetailsheader,
+.monitordetailsheader {
+	font-family: Cambria;
+	font-size: 20px;
+	font-weight: bold;
 	text-align: center;
-	margin-bottom:5px;
+	margin-bottom: 5px;
 }
 
 /* The table containing information about the monitors */
-.monitordetailstable  {
+
+.monitordetailstable {
 	border-collapse: collapse;
 	font-family: Calibri;
 	margin: 0 auto;
-	width:100%;
+	width: 100%;
 }
 
-.monitordetailstable tbody > tr > td {
+.monitordetailstable tbody>tr>td {
 	border-collapse: collapse;
-	border:1px solid var(--bordercolor);
-	padding:5px;
+	border: 1px solid var(--bordercolor);
+	padding: 5px;
 }
+
 .monitordetailstablerowheader {
-	width:1%;
-	white-space:nowrap;
-}
-.monitordetailstable thead > tr > th {
-	text-align: center;
-	background-color:var(--headerbackgroundcolor);
-	color:var(--headerfontcolor);
+	width: 1%;
 	white-space: nowrap;
 }
 
-.monitordetailstable tbody > tr:nth-child(even) > td {
-	background-color:var(--alternatetablecolor);
+.monitordetailstable thead>tr>th {
+	text-align: center;
+	background-color: var(--headerbackgroundcolor);
+	color: var(--headerfontcolor);
+	white-space: nowrap;
+}
+
+.monitordetailstable tbody>tr:nth-child(even)>td {
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
-	border:1px solid var(--bordercolor);
+	border: 1px solid var(--bordercolor);
 }
 
 /*The table containing information about the monitors and test links per member (just underneath the monitor information*/
 
-.membermonitortable  {
+.membermonitortable {
 	border-collapse: collapse;
 	font-family: Calibri;
 	margin: 0 auto;
-	width:100%;
+	width: 100%;
 }
 
-.membermonitortable tbody > tr > td {
+.membermonitortable tbody>tr>td {
 	border-collapse: collapse;
-	border:1px solid var(--bordercolor);
-	padding:5px;
-	text-align:center;
-}
-
-.membermonitortable tbody > tr > td.testlinks {
-	width:140px;
-}
-
-.membermonitortable thead > tr > th {
+	border: 1px solid var(--bordercolor);
+	padding: 5px;
 	text-align: center;
-	background-color:var(--headerbackgroundcolor);
-	color:var(--headerfontcolor);
-	white-space:nowrap;
 }
 
-.membermonitortable tbody > tr:nth-child(even) > td {
-	background-color:var(--alternatetablecolor);
+.membermonitortable tbody>tr>td.testlinks {
+	width: 140px;
+}
+
+.membermonitortable thead>tr>th {
+	text-align: center;
+	background-color: var(--headerbackgroundcolor);
+	color: var(--headerfontcolor);
+	white-space: nowrap;
+}
+
+.membermonitortable tbody>tr:nth-child(even)>td {
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
-	border:1px solid var(--bordercolor);
+	border: 1px solid var(--bordercolor);
 }
-
 
 /* The monitor tooltip that appears over the the curl, netcat links */
+
 a.monitortest {
 	position: relative;
 	display: inline;
-	color:#000000;
+	color: #000000;
 }
+
 a.monitortest p {
 	position: absolute;
 	color: #000;
-	top:-60px;
-	left:-55px;
+	top: -60px;
+	left: -55px;
 	background: #fff;
 	border: 1px solid #000;
-	padding-left:3px;
-	padding-right:3px;
-	padding-top:0px;
-	padding-bottom:1px;
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-top: 0px;
+	padding-bottom: 1px;
 	height: 40px;
 	text-align: center;
 	visibility: hidden;
 	border-radius: 2px;
-	font-size:12px;
-	font-weight:bold;
+	font-size: 12px;
+	font-weight: bold;
 }
+
 a:hover.monitortest p {
 	visibility: visible;
 	bottom: 30px;
@@ -429,28 +443,32 @@ a:hover.monitortest p {
 }
 
 /* The actual text input box that contains the monitor test data */
+
 .monitorcopybox {
-	width:140px;
+	width: 140px;
 }
 
 /* The div that contains the button that closes the pool details  */
+
 .secondlayerdetailsfooter {
-	margin-top:20px;
-	text-align:center;
+	margin-top: 20px;
+	text-align: center;
 }
 
 /* The div that contains the button that closes the pool details  */
+
 .firstlayerdetailsfooter {
-	margin-top:20px;
-	text-align:center;
+	margin-top: 20px;
+	text-align: center;
 }
 
 .iruledetailsfooter {
-	margin-top:20px;
-	text-align:center;
+	margin-top: 20px;
+	text-align: center;
 }
 
-.closelightboxbutton:hover, .openlightboxbutton:hover {
+.closelightboxbutton:hover,
+.openlightboxbutton:hover {
 	background: #3cb0fd;
 	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
 	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
@@ -460,7 +478,11 @@ a:hover.monitortest p {
 	text-decoration: none;
 }
 
-a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton {
+a.showConsoleButton,
+a.irulesButton,
+a.definedRuleButton,
+a.exportCSVButton,
+a.lightboxbutton {
 	position: relative;
 	display: inline;
 	background: #33699d;
@@ -474,11 +496,14 @@ a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.l
 	border-radius: 10px;
 	font-family: Arial;
 	color: #ffffff;
-	margin:5px;
+	margin: 5px;
 	text-decoration: none;
 }
 
-a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
+a.showConsoleButton,
+a.irulesButton,
+a.definedRuleButton,
+a.exportCSVButton {
 	font-size: 12px;
 	padding: 5px 20px 5px 20px;
 }
@@ -488,7 +513,11 @@ a.lightboxbutton {
 	padding: 7px 20px 7px 20px;
 }
 
-a.showConsoleButton:hover, a.irulesButton:hover, a.definedRuleButton:hover, a.exportCSVButton:hover, a.lightboxbutton:hover {
+a.showConsoleButton:hover,
+a.irulesButton:hover,
+a.definedRuleButton:hover,
+a.exportCSVButton:hover,
+a.lightboxbutton:hover {
 	background: #3a79b5;
 	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
 	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
@@ -498,7 +527,8 @@ a.showConsoleButton:hover, a.irulesButton:hover, a.definedRuleButton:hover, a.ex
 	text-decoration: none;
 }
 
-span.statusicon, span.detailsicon {
+span.statusicon,
+span.detailsicon {
 	vertical-align: middle;
 }
 
@@ -507,7 +537,7 @@ span.detailsicon {
 }
 
 span.textstatus {
-	display:none;
+	display: none;
 }
 
 /****************************************************************************************************************************
@@ -520,43 +550,45 @@ div#firstlayerdetailscontent {
 	display: table;
 	margin: 0 auto;
 	max-width: 95%;
-	min-width:1000px;
+	min-width: 1000px;
 }
 
 /*Header with the pool name */
 
-div.virtualserverdetailsheader, div.iruledetailsheader, div.datagrouplistdetailsheader {
-	font-family:Cambria;
-	font-size:24px;
+div.virtualserverdetailsheader,
+div.iruledetailsheader,
+div.datagrouplistdetailsheader {
+	font-family: Cambria;
+	font-size: 24px;
 	font-weight: bold;
 	text-align: center;
-	color:var(--defaultfontcolor);
+	color: var(--defaultfontcolor);
 	margin-bottom: 10px
 }
 
 div.pooldetailsheader {
-	font-family:Cambria;
-	font-size:30px;
+	font-family: Cambria;
+	font-size: 30px;
 	font-weight: bold;
 	text-align: center;
-	color:var(--defaultfontcolor);
+	color: var(--defaultfontcolor);
 	margin-bottom: 10px
 }
 
 div.beforedocumentready {
-	position:fixed;
-	left:0;
-	top:0;
-	width:100%;
-	height:100%;
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
 	background-color: #fff;
 	z-index: 2;
 	text-align: center;
 }
 
 .bigipreportheader {
-	padding-top:5px;
-	padding-bottom:10px;
+	padding-top: 5px;
+	padding-bottom: 10px;
 	text-align: center;
 }
 
@@ -575,21 +607,21 @@ div.jsonloadingerrors {
 }
 
 h1.jsonloadingerrors {
-	color:#800000;
-	text-align:center;
+	color: #800000;
+	text-align: center;
 }
 
 #jsonloadingerrors li {
-	padding:10px;
+	padding: 10px;
 }
 
 #jsonloadingerrordetails span.error {
-	color:red;
-	font-weight:bold;
+	color: red;
+	font-weight: bold;
 }
 
 #jsonloadingerrordetails span.errordetails {
-	font-style:italic;
+	font-style: italic;
 }
 
 div.failedjsonitem {
@@ -607,7 +639,6 @@ div.webconfig {
 	This section contains the style for object not found
 *****************************************************************************************************************************/
 
-
 div#objectnotfound {
 	display: table;
 	margin: 0 auto;
@@ -615,15 +646,13 @@ div#objectnotfound {
 }
 
 div#objectnotfound h1 {
-	color:#800000;
-	text-align:center;
+	color: #800000;
+	text-align: center;
 }
 
 div#objectnotfound h4 {
 	margin-bottom: 1px;
 }
-
-
 
 /****************************************************************************************************************************
 	This section contains the style for the irule details lightbox content
@@ -633,6 +662,7 @@ div#objectnotfound h4 {
 	display: table;
 	margin: 0 auto;
 }
+
 div#secondlayerdetailscontent {
 	display: table;
 	margin: 0 auto;
@@ -641,13 +671,12 @@ div#secondlayerdetailscontent {
 }
 
 .iRuleheader {
-	font-family:Cambria;
-	font-size:24px;
+	font-family: Cambria;
+	font-size: 24px;
 	text-align: center;
-	color:#ffffff;
-	margin-top:40px;
+	color: #ffffff;
+	margin-top: 40px;
 }
-
 
 /****************************************************************************************************************************
 	This section contains the style for the data group list details lightbox content
@@ -661,41 +690,43 @@ div#secondlayerdetailscontent {
 }
 
 .dgkey {
-	color:blue;
-}
-.dgvalue {
-	color:red;
+	color: blue;
 }
 
-.datagrouplisttable  {
+.dgvalue {
+	color: red;
+}
+
+.datagrouplisttable {
 	border-collapse: collapse;
 	font-family: Calibri;
-	padding:10px;
+	padding: 10px;
 	width: 100%;
 }
 
-.datagrouplisttable td,th {
+.datagrouplisttable td,
+th {
 	/*border: 1px solid #000;*/
-	padding:10px;
+	padding: 10px;
 }
 
-.datagrouplisttable tbody > tr > td {
+.datagrouplisttable tbody>tr>td {
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 	text-align: center;
 }
 
-.datagrouplisttable thead > tr > th {
+.datagrouplisttable thead>tr>th {
 	text-align: center;
-	background-color:var(--headerbackgroundcolor);
-	width:70px;
-	color:var(--headerfontcolor);
+	background-color: var(--headerbackgroundcolor);
+	width: 70px;
+	color: var(--headerfontcolor);
 	white-space: nowrap;
 }
 
-.datagrouplisttable tbody > tr:nth-child(even) > td {
-	background-color:var(--alternatetablecolor);
+.datagrouplisttable tbody>tr:nth-child(even)>td {
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
@@ -705,22 +736,23 @@ div#secondlayerdetailscontent {
 ***********************************************************************************************************************************/
 
 /* Generic tooltip for showing information above links */
+
 a.tooltip {
 	position: relative;
 	display: inline;
-	text-decoration:none;
-	color:var(--defaultfontcolor);
+	text-decoration: none;
+	color: var(--defaultfontcolor);
 }
 
 a.tooltip p {
 	position: absolute;
 	color: #000;
-	top:-55px;
-	left:40%;
+	top: -55px;
+	left: 40%;
 	background: #fff;
 	border: 1px solid #000;
-	padding-left:10px;
-	padding-right:10px;
+	padding-left: 10px;
+	padding-right: 10px;
 	height: 29px;
 	line-height: 29px;
 	text-align: center;
@@ -734,18 +766,21 @@ a.tooltip p:before {
 	top: 100%;
 	left: 40%;
 	margin-left: -9px;
-	width: 0; height: 0;
+	width: 0;
+	height: 0;
 	border-top: 9px solid #000;
 	border-right: 9px solid transparent;
 	border-left: 9px solid transparent;
 }
+
 a.tooltip p:after {
 	content: '';
 	position: absolute;
 	top: 100%;
 	left: 40%;
 	margin-left: -8px;
-	width: 0; height: 0;
+	width: 0;
+	height: 0;
 	border-top: 8px solid #fff;
 	border-right: 8px solid transparent;
 	border-left: 8px solid transparent;
@@ -761,26 +796,27 @@ a:hover.tooltip p {
 }
 
 /* Generic class for the lightbox divs that contains detailed information about the pools, virtual servers and irules etc. */
+
 .lightbox {
-	display:none;
-	position:fixed;
-	left:0;
-	top:0;
-	width:100%;
-	height:100%;
+	display: none;
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
 	background: rgba(0, 0, 0, 0.8);
 	text-align: center;
 }
 
 div.innerLightbox {
-	background:#fff;
+	background: #fff;
 	display: inline-block;
-	text-align:left;
+	text-align: left;
 	max-height: 75%;
 	max-width: 90%;
 	overflow-y: scroll;
 	padding: 10px 20px 20px 20px;
-	top:100px;
+	top: 100px;
 	border: 1px #000 solid;
 	-webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
 	-moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
@@ -788,9 +824,8 @@ div.innerLightbox {
 }
 
 div.innerLightbox {
-	margin-top:40px;
+	margin-top: 40px;
 }
-
 
 /**********************************************************************************************************************************
 	Side menu
@@ -827,7 +862,7 @@ div.sidemenu div.menuitem {
 	padding: 10px;
 	font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
 	padding: 10px 30px 10px 20px;
-	white-space:nowrap;
+	white-space: nowrap;
 	text-align: middle;
 }
 
@@ -850,18 +885,16 @@ div#consoledivfooter {
 	text-align: center;
 }
 
-
 /****************************************************************************************************************************
 	This section contains the style for the help content
 *****************************************************************************************************************************/
 
 div#helpcontent {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    margin: 0 auto;
-    max-width: 970px;
-    padding: 0px 40px 20px 40px;
+	margin: 0 auto;
+	max-width: 970px;
+	padding: 0px 40px 20px 40px;
 }
-
 
 /****************************************************************************************************************************
 	This section contains the style for the device overview
@@ -873,11 +906,11 @@ div#deviceoverview {
 	min-width: 1300px;
 }
 
-table#deviceoverviewtable  {
+table#deviceoverviewtable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	font-size:16px;
+	font-size: 16px;
 	margin: 0 auto;
-	width:95%;
+	width: 95%;
 }
 
 table#deviceoverviewtable tbody tr td {
@@ -885,7 +918,7 @@ table#deviceoverviewtable tbody tr td {
 	padding: 5px;
 	text-align: center;
 	vertical-align: middle;
-	white-space:nowrap;
+	white-space: nowrap;
 }
 
 table#deviceoverviewtable tbody tr td.devicenamecell {
@@ -898,10 +931,10 @@ table#deviceoverviewtable tbody tr td img.deviceicon {
 }
 
 table#deviceoverviewtable tbody tr td img.devicestatusicon {
-   max-height: 23px;
-   vertical-align: middle;
-   margin-right:5px;
-   margin-bottom:2px;
+	max-height: 23px;
+	vertical-align: middle;
+	margin-right: 5px;
+	margin-bottom: 2px;
 }
 
 table#deviceoverviewtable tbody tr td span.devicefailed {
@@ -910,19 +943,18 @@ table#deviceoverviewtable tbody tr td span.devicefailed {
 
 span.devicepollingsuccess {
 	font-weight: bold;
-	color:green;
+	color: green;
 }
 
 span.devicepollingfailed {
 	font-weight: bold;
-	color:red;
+	color: red;
 }
 
 span.devicepollingnotconfigured {
 	font-weight: bold;
-	color:#cc9900;
+	color: #cc9900;
 }
-
 
 /****************************************************************************************************************************
 	This section contains the style for the preferences
@@ -952,20 +984,20 @@ table#preferencestable tbody tr td.preferencescheckbox {
 *****************************************************************************************************************************/
 
 a#certnotification {
-  display:inline-block;
-  -webkit-border-radius: 100;
-  -moz-border-radius: 100;
-  border-radius: 100px;
-  font-family: Arial;
-  color: #ffffff;
-  font-size: 14px;
-  background: #dd111a;
-  padding: 3px 7px 3px 7px;
-  text-decoration: none;
+	display: inline-block;
+	-webkit-border-radius: 100;
+	-moz-border-radius: 100;
+	border-radius: 100px;
+	font-family: Arial;
+	color: #ffffff;
+	font-size: 14px;
+	background: #dd111a;
+	padding: 3px 7px 3px 7px;
+	text-decoration: none;
 }
 
 a#certnotification:hover {
-  text-decoration: none;
+	text-decoration: none;
 }
 
 div#certificatedetails {
@@ -974,12 +1006,13 @@ div#certificatedetails {
 
 table#certificatedetailstable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	font-size:16px;
+	font-size: 16px;
 	margin: 0 auto;
-	width:95%;
+	width: 95%;
 }
 
-table#certificatedetailstable tbody tr td.certificatecountryname, table#certificatedetailstable tbody tr td.certificateloadbalancer {
+table#certificatedetailstable tbody tr td.certificatecountryname,
+table#certificatedetailstable tbody tr td.certificateloadbalancer {
 	text-align: center;
 }
 
@@ -991,16 +1024,18 @@ img.flagicon {
 	max-width: 20px;
 }
 
-tr#certificateExpiringIn60, tr.certificateExpiringIn30, tr.certificateExpiringIn14 {
+tr#certificateExpiringIn60,
+tr.certificateExpiringIn30,
+tr.certificateExpiringIn14 {
 	font-weight: bold;
 }
 
 tr.certificateExpiringIn30 {
-	color:#cc9900;
+	color: #cc9900;
 }
 
 tr.certificateExpiringIn14 {
-	color:red;
+	color: red;
 }
 
 /****************************************************************************************************************************
@@ -1048,14 +1083,14 @@ div#definedirules {
 	padding: 20px 30px 20px 30px;
 }
 
-.definedRulesTable  {
+.definedRulesTable {
 	border-collapse: collapse;
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 0 auto;
 	width: 95%;
 }
 
-.definedRulesTable tbody > tr > td {
+.definedRulesTable tbody>tr>td {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-size: 16px;
 	border: 1px solid var(--bordercolor);
@@ -1065,16 +1100,16 @@ div#definedirules {
 	padding: 10px;
 }
 
-.definedRulesTable thead > tr > th {
+.definedRulesTable thead>tr>th {
 	text-align: center;
-	background-color:var(--headerbackgroundcolor);
-	color:var(--headerfontcolor);
+	background-color: var(--headerbackgroundcolor);
+	color: var(--headerfontcolor);
 	white-space: nowrap;
 	padding: 10px;
 }
 
-.definedRulesTable tbody > tr:nth-child(even) > td {
-	background-color:var(--alternatetablecolor);
+.definedRulesTable tbody>tr:nth-child(even)>td {
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
@@ -1085,91 +1120,95 @@ div#definedirules {
 	-moz-box-shadow: 0px 1px 0px 0px #fff6af;
 	-webkit-box-shadow: 0px 1px 0px 0px #fff6af;
 	box-shadow: 0px 1px 0px 0px #fff6af;
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffec64), color-stop(1, #ffab23));
-	background:-moz-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-	background:-webkit-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-	background:-o-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-	background:-ms-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-	background:linear-gradient(to bottom, #ffec64 5%, #ffab23 100%);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffec64', endColorstr='#ffab23',GradientType=0);
-	background-color:#ffec64;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
-	border-radius:3px;
-	border:1px solid #ffaa22;
-	display:inline-block;
-	cursor:pointer;
-	color:#333333;
-	font-family:Arial;
-	font-size:12px;
-	font-weight:bold;
-	margin-top:2px;
-	margin-left:10px;
-	padding:4px 24px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px #ffee66;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffec64), color-stop(1, #ffab23));
+	background: -moz-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -webkit-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -o-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -ms-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: linear-gradient(to bottom, #ffec64 5%, #ffab23 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffec64', endColorstr='#ffab23', GradientType=0);
+	background-color: #ffec64;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid #ffaa22;
+	display: inline-block;
+	cursor: pointer;
+	color: #333333;
+	font-family: Arial;
+	font-size: 12px;
+	font-weight: bold;
+	margin-top: 2px;
+	margin-left: 10px;
+	padding: 4px 24px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px #ffee66;
 }
 
-.centeredCell, .loadbalancerCell {
+.centeredCell,
+.loadbalancerCell {
 	text-align: center;
-	width:1px;
+	width: 1px;
 }
 
 .updateavailable:hover {
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffab23), color-stop(1, #ffec64));
-	background:-moz-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-	background:-webkit-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-	background:-o-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-	background:-ms-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-	background:linear-gradient(to bottom, #ffab23 5%, #ffec64 100%);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffab23', endColorstr='#ffec64',GradientType=0);
-	background-color:#ffab23;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffab23), color-stop(1, #ffec64));
+	background: -moz-linear-gradient(top, #ffab23 5%, #ffec64 100%);
+	background: -webkit-linear-gradient(top, #ffab23 5%, #ffec64 100%);
+	background: -o-linear-gradient(top, #ffab23 5%, #ffec64 100%);
+	background: -ms-linear-gradient(top, #ffab23 5%, #ffec64 100%);
+	background: linear-gradient(to bottom, #ffab23 5%, #ffec64 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffab23', endColorstr='#ffec64', GradientType=0);
+	background-color: #ffab23;
 }
+
 .updateavailable:active {
-	position:relative;
-	top:1px;
+	position: relative;
+	top: 1px;
 }
 
 .criticalupdateavailable {
-	-moz-box-shadow:inset 0px 1px 0px 0px #cf866c;
-	-webkit-box-shadow:inset 0px 1px 0px 0px #cf866c;
-	box-shadow:inset 0px 1px 0px 0px #cf866c;
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #d0451b), color-stop(1, #bc3315));
-	background:-moz-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-	background:-webkit-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-	background:-o-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-	background:-ms-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-	background:linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#d0451b', endColorstr='#bc3315',GradientType=0);
-	background-color:#d0451b;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
-	border-radius:3px;
-	border:1px solid #942911;
-	display:inline-block;
-	cursor:pointer;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:12px;
-	margin-left:10px;
-	margin-top:2px;
-	padding:4px 24px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px #854629;
+	-moz-box-shadow: inset 0px 1px 0px 0px #cf866c;
+	-webkit-box-shadow: inset 0px 1px 0px 0px #cf866c;
+	box-shadow: inset 0px 1px 0px 0px #cf866c;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #d0451b), color-stop(1, #bc3315));
+	background: -moz-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background: -webkit-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background: -o-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background: -ms-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+	background: linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d0451b', endColorstr='#bc3315', GradientType=0);
+	background-color: #d0451b;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid #942911;
+	display: inline-block;
+	cursor: pointer;
+	color: #ffffff;
+	font-family: Arial;
+	font-size: 12px;
+	margin-left: 10px;
+	margin-top: 2px;
+	padding: 4px 24px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px #854629;
 }
+
 .criticalupdateavailable:hover {
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
-	background:-moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-	background:-webkit-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-	background:-o-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-	background:-ms-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-	background:linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b',GradientType=0);
-	background-color:#bc3315;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
+	background: -moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background: -webkit-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background: -o-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background: -ms-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+	background: linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b', GradientType=0);
+	background-color: #bc3315;
 }
+
 .criticalupdateavailable:active {
-	position:relative;
-	top:1px;
+	position: relative;
+	top: 1px;
 }
 
 span.adcLinkSpan a {
