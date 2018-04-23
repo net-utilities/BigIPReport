@@ -114,7 +114,7 @@
 /******************************************************************************************
 	Style for cell containing the pool and member information in the main table 
 *******************************************************************************************/
-	
+
 /*The cell that contains the pool table */
 
 .PoolInformation {
@@ -200,7 +200,7 @@ div.expand, div.collapse {
 }
 
 /* Style for the information that says Click here to show X associated pools */
-.AssociatedPoolsInfo {	
+.AssociatedPoolsInfo {
 	padding-left:10px;
 }
 
@@ -239,8 +239,8 @@ div.expand, div.collapse {
 }
 
 
-/****************************************************************************************************************************     
-				This section contains the  style for the pool details lightbox div 
+/****************************************************************************************************************************
+				This section contains the  style for the pool details lightbox div
 *****************************************************************************************************************************/
 
 div#firstlayerdiv {
