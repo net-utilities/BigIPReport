@@ -1,1 +1,5 @@
 *.ps1 text
+*.css text
+*.js text
+*.md text
+*.tcl text
