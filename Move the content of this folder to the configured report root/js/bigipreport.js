@@ -566,6 +566,9 @@
 
 	function renderPoolMemberCell(member, poolnum) {
 		membercell = '<td class="PoolMember" data-pool="Pool' + poolnum + '">';
+		if (member !== null) {
+			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port
+		}
 		membercell += '</td>'
 		return membercell;
 	}
@@ -588,15 +591,14 @@
 					if (siteData.pools[p].members !== null) {
 						poolinformation += ' rowspan="' + siteData.pools[p].members.length + '"';
 					}
-					poolinformation += ' data-vsid="' + (meta.row+1) + '" class="poolname" id="Pool' + p + '"';
-					poolinformation += '>' + siteData.pools[p].name.split('/')[2] + '</td><td class="poolMember">';
+					poolinformation += ' data-vsid="' + (meta.row+1) + '" class="poolname" id="Pool' + p + '">' + siteData.pools[p].name.split('/')[2] + '</td>';
 					if (siteData.pools[p].members !== null) {
-						poolinformation += siteData.pools[p].members[0].name.split('/')[2];
+						poolinformation += renderPoolMemberCell(siteData.pools[p].members[0], 0);
 					}
-					poolinformation += '</td></tr>';
+					poolinformation += '</tr>';
 					if (siteData.pools[p].members !== null) {
 						for (var m=1; m<siteData.pools[p].members.length; m++) {
-							poolinformation += '<tr><td class="PoolMember">' + siteData.pools[p].members[m].name.split('/')[2] + "</td></tr>";
+							poolinformation += '<tr>' + renderPoolMemberCell(siteData.pools[p].members[m], p) + '</tr>';
 						}
 					}
 				}
