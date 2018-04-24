@@ -586,7 +586,7 @@
 				if (row.pools[i] == siteData.pools[p].name && row.loadbalancer == siteData.pools[p].loadbalancer) {
 					poolinformation += '<tr class="Pool-' + p + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
 					poolinformation += '<td';
-					if (siteData.pools[p].members.length) {
+					if (siteData.pools[p].members && siteData.pools[p].members.length) {
 						poolinformation += ' rowspan="' + siteData.pools[p].members.length + '"';
 					}
 					poolinformation += ' data-vsid="' + (meta.row+1) + '" class="poolname" id="Pool' + p + '"';
