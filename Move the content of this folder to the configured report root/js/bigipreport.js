@@ -564,6 +564,11 @@
 		$(cell).attr('data-visid', rowIndex + 1);
 	}
 
+	function renderPoolMemberCell(member, poolnum) {
+		membercell = '<td class="PoolMember" data-pool="Pool' + poolnum + '">';
+		membercell += '</td>'
+		return membercell;
+	}
 	function renderPoolCell(data, type, row, meta) {
 		if (!row.pools) {
 			return "N/A";
@@ -578,10 +583,16 @@
 		for (var i=0; i<row.pools.length; i++) {
 			for (var p=0; p<siteData.pools.length; p++) {
 				// check load balancer too
-				if (row.pools[i] == siteData.pools[p].name) {
-					poolinformation += '<tr><td rowspan="' + siteData.pools[p].members.length + '">' + siteData.pools[p].name.split('/')[2] + '</td><td class="poolMember">'+ siteData.pools[p].members[0].name.split('/')[2] + '</td></tr>';
+				if (row.pools[i] == siteData.pools[p].name && row.loadbalancer == siteData.pools[p].loadbalancer) {
+					poolinformation += '<tr class="Pool-' + p + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
+					poolinformation += '<td';
+					if (siteData.pools[p].members.length) {
+						poolinformation += ' rowspan="' + siteData.pools[p].members.length + '"';
+					}
+					poolinformation += ' data-vsid="' + (meta.row+1) + '" class="poolname" id="Pool' + p + '"';
+					poolinformation += '>' + siteData.pools[p].name.split('/')[2] + '</td><td class="poolMember">'+ siteData.pools[p].members[0].name.split('/')[2] + '</td></tr>';
 					for (var m=1; m<siteData.pools[p].members.length; m++) {
-						poolinformation += '<tr><td class="poolMember">' + siteData.pools[p].members[m].name.split('/')[2] + "</td></tr>";
+						poolinformation += '<tr><td class="PoolMember">' + siteData.pools[p].members[m].name.split('/')[2] + "</td></tr>";
 					}
 				}
 			}
