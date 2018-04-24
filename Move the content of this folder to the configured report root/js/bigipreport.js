@@ -594,8 +594,10 @@
 						poolinformation += siteData.pools[p].members[0].name.split('/')[2];
 					}
 					poolinformation += '</td></tr>';
-					for (var m=1; m<siteData.pools[p].members.length; m++) {
-						poolinformation += '<tr><td class="PoolMember">' + siteData.pools[p].members[m].name.split('/')[2] + "</td></tr>";
+					if (siteData.pools[p].members !== null) {
+						for (var m=1; m<siteData.pools[p].members.length; m++) {
+							poolinformation += '<tr><td class="PoolMember">' + siteData.pools[p].members[m].name.split('/')[2] + "</td></tr>";
+						}
 					}
 				}
 			}
