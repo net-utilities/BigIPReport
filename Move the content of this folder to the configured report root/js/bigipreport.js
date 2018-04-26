@@ -578,7 +578,12 @@
 					if (siteData.pools[p].members !== null) {
 						poolinformation += ' rowspan="' + siteData.pools[p].members.length + '"';
 					}
-					poolinformation += ' data-vsid="' + (meta.row+1) + '" class="poolname" id="Pool' + p + '">' + siteData.pools[p].name.split('/')[2] + '</td>';
+					poolinformation += ' data-vsid="' + (meta.row+1) + '" class="poolname" id="Pool' + p + '">';
+					poolinformation += '<a class="tooltip" data-originalpoolname="' + siteData.pools[p].name + '" data-loadbalancer="' + siteData.pools[p].loadbalancer + '" onclick="Javascript:showPoolDetails($(this).attr(\'data-originalpoolname\'), $(this).attr(\'data-loadbalancer\'));">';
+					poolinformation += siteData.pools[p].name.split('/')[2] + '<span class="detailsicon"><img src="images/details.png" alt="details"></span><p>Click to see pool details</p>';
+					poolinformation += '</a>'
+					poolinformation += '<span class="adcLinkSpan"><a href="https://' + siteData.pools[p].loadbalancer + '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + siteData.pools[p].name + '">Edit</a></span>';
+					poolinformation += '</td>';
 					if (siteData.pools[p].members !== null) {
 						poolinformation += renderPoolMemberCell(siteData.pools[p].members[0], 0);
 					}
