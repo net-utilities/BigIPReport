@@ -528,6 +528,21 @@
 		}
 	}
 
+	function PoolMemberStatus(member) {
+		var mstatus = member.enabled.split('_')[2] + ':' + member.availability.split('_')[2];
+
+		if (mstatus == "ENABLED:GREEN" || mstatus == "ENABLED:BLUE") {
+			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Pool member is able to pass traffic"/></span><span class="textstatus">UP</span>';
+		} else if (mstatus == "ENABLED:RED" || mstatus == "DISABLED:RED") {
+			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Pool member is unable to pass traffic"/></span><span class="textstatus">DOWN</span>';
+		} else if (mstatus == "DISABLED:GREEN") {
+			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)" title="Available (Disabled) - The virtual server is disabled"/></span><span class="textstatus">DISABLED</span>'
+		} else if (mstatus == "DISABLED:BLUE") {
+			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Unknown (Disabled) - The children pool member(s) either don\'t have service checking enabled, or service check results are not available yet"/></span><span class="textstatus">DISABLED</span>';
+		}
+		return mstatus;
+	}
+
 	function VirtualServerStatus(row) {
 		var vsstatus = row.enabled.split('_')[2] + ':' + row.availability.split('_')[2];
 
@@ -554,7 +569,10 @@
 	function renderPoolMemberCell(member, poolnum) {
 		membercell = '<td class="PoolMember" data-pool="Pool' + poolnum + '">';
 		if (member !== null) {
-			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port
+			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port + ' - ';
+			membercell += '<span date-member="">';
+			membercell += PoolMemberStatus(member);
+			membercell += '</span>';
 		}
 		membercell += '</td>'
 		return membercell;
@@ -590,7 +608,7 @@
 					poolinformation += '</tr>';
 					if (siteData.pools[p].members !== null) {
 						for (var m=1; m<siteData.pools[p].members.length; m++) {
-							poolinformation += '<tr>' + renderPoolMemberCell(siteData.pools[p].members[m], p) + '</tr>';
+							poolinformation += '<tr class="Pool-' + p + '">' + renderPoolMemberCell(siteData.pools[p].members[m], p) + '</tr>';
 						}
 					}
 				}
