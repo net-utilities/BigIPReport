@@ -213,20 +213,8 @@
 					[10, 15, 25, 50, 100, "All"]
 				],
 				"drawCallback": function(settings){
-					/*************************************************************************************************************
-						This attaches an on click event to all Poolinformation cells (the cell in the main data table
-						containing pool information that makes sure that the pool details lightbox is shown when
-						clicking on the	pool details cell without the cell content collapsing
-					**************************************************************************************************************/
-					$("td.PoolInformation").click(function (e) {
-						if ($(e.target).attr("class") != "tooltip") {
-							togglePool(e.target);
-						}
-					});
 				}
 			});
-			// call draw() to trigger the drawCallback
-			bigipTable.draw();
 
 
 			/*************************************************************************************************************
@@ -262,7 +250,7 @@
 			});
 
 			/* Initiate the syntax highlighting for irules*/
-			sh_highlightDocument('./js/', '.js');
+			sh_highlightDocument('js/', '.js');
 
 			/*************************************************************************************************************
 
@@ -576,10 +564,10 @@
 			return "N/A";
 		}
 		poolinformation = '<div class="expand" id="expand-' + (meta.row + 1) + '" style="display: none;">' +
-			'<a href="javascript:void(0);"><img src="images/chevron-down.png" alt="down" data-vsid="' + (meta.row+1) + '"></a></div>';
+			'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + (meta.row+1) + '"></a></div>';
 		poolinformation += '<div class="collapse" id="collapse-' + (meta.row+1) + '" style="display: block;">' +
-			'<a href="javascript:void(0);"><img src="images/chevron-up.png" alt="up" data-vsid="' + (meta.row+1) + '"></a></div>';
-		poolinformation +=	'<div class="AssociatedPoolsInfo" data-vsid="' + (meta.row+1) + '" id="AssociatedPoolsInfo-' + (meta.row+1) + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
+			'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + (meta.row+1) + '"></a></div>';
+		poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + (meta.row+1) + '" id="AssociatedPoolsInfo-' + (meta.row+1) + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
 			'<div id="PoolInformation-' + (meta.row+1) + '" class="pooltablediv" style="display: block;">';
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
@@ -1089,7 +1077,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 				break;
 		}
 
-		var html = "<span class=\"statusicon\"><img src=\"./images/" + icon + "\" title=\"" + title + "\"/></span><span class=\"textstatus\">" + textStatus + "</span>";
+		var html = "<span class=\"statusicon\"><img src=\"images/" + icon + "\" title=\"" + title + "\"/></span><span class=\"textstatus\">" + textStatus + "</span>";
 		$(statusIcon).fadeOut(200).html(html).fadeIn(200);
 
 	}
@@ -1353,7 +1341,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 			var countryIcon = "";
 
 			if (certificateSubject.countryName) {
-				countryIcon = "<img class=\"flagicon\" src=\"./images/flags/" + certificateSubject.countryName.toLowerCase() + ".png\"/> ";
+				countryIcon = "<img class=\"flagicon\" src=\"images/flags/" + certificateSubject.countryName.toLowerCase() + ".png\"/> ";
 			}
 
 			html += "<tr class=\"" + rowClass + "\"><td class=\"certificateloadbalancer\">" + certificate.loadbalancer + "</td><td>" + certificate.fileName + "</td><td>" + certificateSubject.commonName + "</td><td class=\"certificatecountryname\">" + countryIcon + certificateSubject.countryName + "</td><td>" + certificateSubject.stateName + "</td><td>" + certificateSubject.organizationName + "</td><td class=\"certificateexpiredate\">" + dateString + "</td>";
@@ -1432,9 +1420,9 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 			}
 
 			if (icon === "" && successFound) {
-				icon = "./images/deviceicons/unknowndevice.png";
+				icon = "images/deviceicons/unknowndevice.png";
 			} else if (icon === "") {
-				icon = "./images/faileddevice.png";
+				icon = "images/faileddevice.png";
 			}
 
 			for (var i in deviceGroup.ips) {
@@ -1471,7 +1459,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 					html += "<tr>";
 				}
 
-				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"./images/devicestatus" + (loadbalancer.color || "red") + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
+				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"images/devicestatus" + (loadbalancer.color || "red") + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
 
 			}
 
@@ -2061,7 +2049,7 @@ pool_cf-ash.lds.org_CLOUD <span class="detailsicon"><img src="images/details.png
 		//Add the div content to the page
 		$("#secondlayerdetailscontentdiv").html(html);
 		//Add syntax highlighting
-		sh_highlightDocument('./js/', '.js');
+		sh_highlightDocument('js/', '.js');
 		//Show the div
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
 	}
