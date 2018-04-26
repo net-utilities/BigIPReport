@@ -532,13 +532,13 @@
 		var mstatus = member.enabled.split('_')[2] + ':' + member.availability.split('_')[2];
 
 		if (mstatus == "ENABLED:GREEN" || mstatus == "ENABLED:BLUE") {
-			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Pool member is able to pass traffic"/></span><span class="textstatus">UP</span>';
+			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Member is able to pass traffic"/></span><span class="textstatus">UP</span>';
 		} else if (mstatus == "ENABLED:RED" || mstatus == "DISABLED:RED") {
-			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Pool member is unable to pass traffic"/></span><span class="textstatus">DOWN</span>';
+			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Member is unable to pass traffic"/></span><span class="textstatus">DOWN</span>';
 		} else if (mstatus == "DISABLED:GREEN") {
-			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)" title="Available (Disabled) - The virtual server is disabled"/></span><span class="textstatus">DISABLED</span>'
+			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)" title="Member is available, but disabled"/></span><span class="textstatus">DISABLED</span>'
 		} else if (mstatus == "DISABLED:BLUE") {
-			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Unknown (Disabled) - The children pool member(s) either don\'t have service checking enabled, or service check results are not available yet"/></span><span class="textstatus">DISABLED</span>';
+			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Member is disabled"/></span><span class="textstatus">DISABLED</span>';
 		}
 		return mstatus;
 	}
