@@ -126,21 +126,6 @@
 
 			/*************************************************************************************************************
 
-				This attaches an on click event to all Poolinformation cells (the cell in the main data table
-				containing pool information that makes sure that the pool details lightbox is shown when
-				clicking on the	pool details cell without the cell content collapsing
-
-			**************************************************************************************************************/
-
-			$("td.PoolInformation").click(function (e) {
-				if ($(e.target).attr("class") != "tooltip") {
-					togglePool(e.target);
-				}
-			});
-
-
-			/*************************************************************************************************************
-
 				Initiate data tables, add a search all columns header and save the standard table header values
 
 			**************************************************************************************************************/
@@ -226,8 +211,22 @@
 				"lengthMenu": [
 					[10, 15, 25, 50, 100, -1],
 					[10, 15, 25, 50, 100, "All"]
-				]
+				],
+				"drawCallback": function(settings){
+					/*************************************************************************************************************
+						This attaches an on click event to all Poolinformation cells (the cell in the main data table
+						containing pool information that makes sure that the pool details lightbox is shown when
+						clicking on the	pool details cell without the cell content collapsing
+					**************************************************************************************************************/
+					$("td.PoolInformation").click(function (e) {
+						if ($(e.target).attr("class") != "tooltip") {
+							togglePool(e.target);
+						}
+					});
+				}
 			});
+			// call draw() to trigger the drawCallback
+			bigipTable.draw();
 
 
 			/*************************************************************************************************************
