@@ -199,7 +199,6 @@
 					}
 				}, {
 					"data": "pools",
-					"className": "PoolInformation",
 					"createdCell": createdPoolCell,
 					"render": renderPoolCell
 				}],
@@ -563,7 +562,10 @@
 	}
 
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
-		$(cell).attr('data-visid', rowIndex + 1);
+		if (rowData.pools) {
+			$(cell).addClass('PoolInformation');
+			$(cell).attr('data-visid', rowIndex + 1);
+		}
 	}
 
 	function renderPoolMemberCell(member, poolnum) {
