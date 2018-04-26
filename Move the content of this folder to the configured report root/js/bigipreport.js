@@ -536,7 +536,7 @@
 		} else if (mstatus == "ENABLED:RED" || mstatus == "DISABLED:RED") {
 			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Member is unable to pass traffic"/></span><span class="textstatus">DOWN</span>';
 		} else if (mstatus == "DISABLED:GREEN") {
-			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)" title="Member is available, but disabled"/></span><span class="textstatus">DISABLED</span>'
+			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)" title="Member is available, but disabled"/></span><span class="textstatus">DISABLED</span>'
 		} else if (mstatus == "DISABLED:BLUE") {
 			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Member is disabled"/></span><span class="textstatus">DISABLED</span>';
 		}
