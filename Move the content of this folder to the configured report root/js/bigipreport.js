@@ -65,6 +65,12 @@
 			// Get pools
 			$.getJSON("json/pools.json", function (result) {
 				siteData.pools = result;
+				siteData.poolsMap = new Map();
+				let index = 0;
+				result.forEach(({loadbalancer, name, ...rest}) => {
+					siteData.poolsMap.set(`${loadbalancer}:${name}`, {loadbalancer, name, index, ...rest});
+					index++;
+				})
 			}).fail(addJSONLoadingFailure),
 			//Get the monitor data
 			$.getJSON("json/monitors.json", function (result) {
@@ -576,7 +582,7 @@
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
 		if (rowData.pools) {
 			$(cell).addClass('PoolInformation');
-			$(cell).attr('data-visid', rowIndex + 1);
+			$(cell).attr('data-visid', rowIndex);
 		}
 	}
 
@@ -595,39 +601,36 @@
 		if (!row.pools) {
 			return "N/A";
 		}
-		poolinformation = '<div class="expand" id="expand-' + (meta.row + 1) + '" style="display: none;">' +
-			'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + (meta.row+1) + '"></a></div>';
-		poolinformation += '<div class="collapse" id="collapse-' + (meta.row+1) + '" style="display: block;">' +
-			'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + (meta.row+1) + '"></a></div>';
-		poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + (meta.row+1) + '" id="AssociatedPoolsInfo-' + (meta.row+1) + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
-			'<div id="PoolInformation-' + (meta.row+1) + '" class="pooltablediv" style="display: block;">';
+		poolinformation = '<div class="expand" id="expand-' + meta.row + '" style="display: none;">' +
+			'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+		poolinformation += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
+			'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+		poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '" id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
+			'<div id="PoolInformation-' + meta.row + '" class="pooltablediv" style="display: block;">';
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
-			for (var p=0; p<siteData.pools.length; p++) {
-				if (row.pools[i] == siteData.pools[p].name && row.loadbalancer == siteData.pools[p].loadbalancer) {
-					poolinformation += '<tr class="Pool-' + p + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
-					poolinformation += '<td';
-					if (siteData.pools[p].members !== null) {
-						poolinformation += ' rowspan="' + siteData.pools[p].members.length + '"';
-					}
-					poolinformation += ' data-vsid="' + (meta.row+1) + '" class="poolname" id="Pool' + p + '">';
-					poolinformation += '<a class="tooltip" data-originalpoolname="' + siteData.pools[p].name + '" data-loadbalancer="' + siteData.pools[p].loadbalancer + '" onclick="Javascript:showPoolDetails($(this).attr(\'data-originalpoolname\'), $(this).attr(\'data-loadbalancer\'));">';
-					poolinformation += siteData.pools[p].name.split('/')[2] + '<span class="detailsicon"><img src="images/details.png" alt="details"></span><p>Click to see pool details</p>';
-					poolinformation += '</a>'
-					poolinformation += '<span class="adcLinkSpan"><a href="https://' + siteData.pools[p].loadbalancer + '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + siteData.pools[p].name + '">Edit</a></span>';
-					poolinformation += '</td>';
-					if (siteData.pools[p].members !== null) {
-						poolinformation += renderPoolMemberCell(siteData.pools[p].members[0], 0);
-					}
-					poolinformation += '</tr>';
-					if (siteData.pools[p].members !== null) {
-						for (var m=1; m<siteData.pools[p].members.length; m++) {
-							poolinformation += '<tr class="Pool-' + p + '">' + renderPoolMemberCell(siteData.pools[p].members[m], p) + '</tr>';
-						}
-					}
+			pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
+			p = pool.index;
+			poolinformation += '<tr class="Pool-' + p + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
+			poolinformation += '<td';
+			if (pool.members !== null) {
+				poolinformation += ' rowspan="' + pool.members.length + '"';
+			}
+			poolinformation += ' data-vsid="' + meta.row + '" class="poolname" id="Pool' + p + '">';
+			poolinformation += '<a class="tooltip" data-originalpoolname="' + pool.name + '" data-loadbalancer="' + pool.loadbalancer + '" onclick="Javascript:showPoolDetails($(this).attr(\'data-originalpoolname\'), $(this).attr(\'data-loadbalancer\'));">';
+			poolinformation += pool.name.split('/')[2] + '<span class="detailsicon"><img src="images/details.png" alt="details"></span><p>Click to see pool details</p>';
+			poolinformation += '</a>'
+			poolinformation += '<span class="adcLinkSpan"><a href="https://' + pool.loadbalancer + '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + pool.name + '">Edit</a></span>';
+			poolinformation += '</td>';
+			if (pool.members !== null) {
+				poolinformation += renderPoolMemberCell(pool.members[0], p);
+			}
+			poolinformation += '</tr>';
+			if (pool.members !== null) {
+				for (var m=1; m<pool.members.length; m++) {
+					poolinformation += '<tr class="Pool-' + p + '">' + renderPoolMemberCell(pool.members[m], p) + '</tr>';
 				}
 			}
-			//poolinformation += '<tr><td>' + row.pools[i];'</td></tr>';
 		}
 		poolinformation += '</tbody></table>';
 		poolinformation += "</div>";
