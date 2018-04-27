@@ -1452,8 +1452,9 @@ function Cache-LTMInformation {
 
 			$ObjTempVirtualServer = New-Object -TypeName "VirtualServer"
 
-			$ObjTempVirtualServer.name = "N/A (Orphan pool)"
-			$ObjTempVirtualServer.ip = "N/A (Orphan pool)"
+			$ObjTempVirtualServer.name = $PoolName + "(Orphan)"
+			$ObjTempVirtualServer.ip = "N"
+			$ObjTempVirtualServer.port = "A"
 			$ObjTempVirtualServer.sslprofile = "None"
 			$ObjTempVirtualServer.compressionprofile = "None"
 			$ObjTempVirtualServer.persistence = "None"
