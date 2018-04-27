@@ -99,7 +99,7 @@
 			}).fail(addJSONLoadingFailure),
 			$.getJSON("json/asmpolicies.json", function (result) {
 				siteData.asmPolicies = result;
-			}).fail(addJSONLoadingFailure)
+			}).fail(addJSONLoadingFailure),
 			$.getJSON("json/loggederrors.json", function (result) {
 				siteData.loggedErrors = result;
 			}).fail(addJSONLoadingFailure)
