@@ -606,6 +606,7 @@ $Global:devicegroupsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "
 $Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loadbalancers.json"
 $Global:certificatesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\certificates.json"
 $Global:loggederrorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loggederrors.json"
+$Global:asmjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\asm.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -1955,7 +1956,14 @@ Function Update-ReportData {
 	Move-Item -Force $($Global:loggederrorsjsonpath + ".tmp") $Global:loggederrorsjsonpath
 
 	if(!$?){
-		log error "Failed to update the logged errrors json file"
+		log error "Failed to update the logged errors json file"
+		$Status  = $false
+	}
+
+	Move-Item -Force $($Global:asmjsonpath + ".tmp") $Global:asmjsonpath
+
+	if(!$?){
+		log error "Failed to update the asm json file"
 		$Status  = $false
 	}
 
@@ -2038,6 +2046,7 @@ Function Write-TemporaryFiles {
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $Global:ReportObjects.Values.Certificates.Values
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data $Global:DeviceGroups
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmjsonpath -Data $Global:ReportObjects.Values.ASMPolicies.Values
 
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data $Global:ReportObjects.Values.iRules.Values
