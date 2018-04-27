@@ -224,9 +224,7 @@
 				"lengthMenu": [
 					[10, 15, 25, 50, 100, -1],
 					[10, 15, 25, 50, 100, "All"]
-				],
-				"drawCallback": function(settings){
-				}
+				]
 			});
 
 
