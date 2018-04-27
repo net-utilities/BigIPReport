@@ -561,6 +561,8 @@
 	}
 
 	function VirtualServerStatus(row) {
+		if (!row.enabled || !row.availability)
+			return '';
 		var vsstatus = row.enabled.split('_')[2] + ':' + row.availability.split('_')[2];
 
 		if (vsstatus == "ENABLED:GREEN") {
