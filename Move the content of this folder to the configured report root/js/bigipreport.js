@@ -97,6 +97,9 @@
 			$.getJSON("json/devicegroups.json", function (result) {
 				siteData.deviceGroups = result;
 			}).fail(addJSONLoadingFailure),
+			$.getJSON("json/asmpolicies.json", function (result) {
+				siteData.asmPolicies = result;
+			}).fail(addJSONLoadingFailure)
 			$.getJSON("json/loggederrors.json", function (result) {
 				siteData.loggedErrors = result;
 			}).fail(addJSONLoadingFailure)
