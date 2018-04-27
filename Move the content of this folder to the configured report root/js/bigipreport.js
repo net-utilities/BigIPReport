@@ -2127,16 +2127,9 @@
 	function showPoolDetails(pool, loadbalancer, layer = "first") {
 
 		var pools = siteData.pools;
-		var matchingpool = "";
+		var matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
 
 		updateLocationHash(pool + "@loadbalancer", null)
-
-		//Find the matching pool from the JSON object
-		for (var i in pools) {
-			if (pools[i].name == pool && pools[i].loadbalancer == loadbalancer) {
-				matchingpool = pools[i]
-			}
-		}
 
 		//If a pool was found, populate the pool details table and display it on the page
 		if (matchingpool != "") {
@@ -2393,11 +2386,7 @@
 	}
 
 	function getPool(pool, loadbalancer) {
-
-		return siteData.pools.find(function (o) {
-			return o.name === pool && o.loadbalancer === loadbalancer;
-		}) || false;
-
+		return siteData.poolsMap.get(loadbalancer + ':' + pool);
 	}
 
 	function getVirtualServer(vs, loadbalancer) {
