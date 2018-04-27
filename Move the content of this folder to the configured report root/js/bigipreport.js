@@ -152,7 +152,7 @@
 					"data": "loadbalancer",
 					"className": "loadbalancerCell",
 					"render": function (data, type, row) {
-						return '<a href="https://' + data + '">' + data.split('.')[0] +
+						return '<a onclick="window.open(\'https://' + data + '\',\'_blank\')">' + data.split('.')[0] +
 							'</a>';
 					}
 				}, {
