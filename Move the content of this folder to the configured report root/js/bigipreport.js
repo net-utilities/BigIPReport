@@ -170,7 +170,18 @@
 						if (!row.asmPolicies) {
 							return "N/A";
 						} else {
-							return row.asmPolicies;
+							result = row.asmPolicies;
+							for (asm=0;asm<siteData.asmPolicies.length;asm++) {
+								if (row.loadbalancer == siteData.asmPolicies[asm].loadbalancer &&
+										row.asmPolicies[0] == siteData.asmPolicies[asm].name) {
+									if (siteData.asmPolicies[asm].enforcementMode == 'blocking') {
+										result += ' (B)';
+									} else {
+										result += ' (T)';
+									}
+								}
+							}
+							return result;
 						}
 					}
 				}, {
