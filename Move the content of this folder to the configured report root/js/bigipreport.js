@@ -20,9 +20,7 @@
 
 		//Prevent caching of ajax requests
 		$(document).ready(function () {
-			$.ajaxSetup({
-				cache: false
-			});
+			$.ajaxSetup({ cache: false });
 		});
 
 		$("#firstlayerdetailscontentdiv").html(`
@@ -44,7 +42,8 @@
 
 				<h3>Please note that while you can close these details, the report won't function as it should until these problems has been solved.</h3>
 
-			</div>`);
+			</div>`
+		);
 
 		$("a#closefirstlayerbutton").text("Close error details");
 
@@ -56,7 +55,8 @@
 			$("#jsonloadingerrordetails").append(`
 					<div class="failedjsonitem"><span class="error">Failed object:</span><span class="errordetails"><a href="` + url + `">` + url + `</a></span>
 					<br><span class="error">Status code:</span><span class="errordetails"> ` + jqxhr.status + `</span>
-					<br><span class="error">Reason:</span><span class="errordetails"> ` + jqxhr.statusText + "</div>")
+					<br><span class="error">Reason:</span><span class="errordetails"> ` + jqxhr.statusText + "</div>"
+			)
 			$("div.beforedocumentready").hide();
 			$("#firstlayerdiv").fadeIn();
 		}
@@ -221,10 +221,7 @@
 					"sSearch": "Search all columns:"
 				},
 				"dom": '<"top">frt<"bottom"ilp><"clear">',
-				"lengthMenu": [
-					[10, 15, 25, 50, 100, -1],
-					[10, 15, 25, 50, 100, "All"]
-				]
+				"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]]
 			});
 
 
@@ -237,7 +234,8 @@
 			**************************************************************************************************************/
 
 			$("thead input").focus(function () {
-				if (this.className == "search_init") {
+				if (this.className == "search_init")
+				{
 					this.className = "search_entered";
 					this.value = "";
 				}
@@ -303,20 +301,31 @@
 			**************************************************************************************************************/
 
 			$("#allbigips_filter").append("<a id=\"showConsoleButton\" class=\"showConsoleButton\" href=\"javascript:void(0);\">Show Console</a>")
+
 			$("a#showConsoleButton").on("click", showConsole);
+
 			$("#allbigips_filter").append("<div style=\"float:right\"><span id=\"toggleHeader\">Toggle columns:<span><span id=\"columnToggleButtons\"></span></div>")
+
 			$("#allbigips thead th input").each(function () {
+
 				var columnID = $(this).attr("data-setting-name");
+
 				var toggleLinkData = "";
+
 				if (localStorage.getItem(columnID) === "true") {
 					buttonClass = "visibleColumnButton";
 				} else {
 					buttonClass = "hiddenColumnButton";
 				}
+
 				toggleLinkData += "<a href=\"javascript:void(0)\" class=\"" + buttonClass + "\" id=\"" + columnID + "\">" + $(this).attr("data-column-name") + "</a>";
+
 				$("#columnToggleButtons").append(toggleLinkData);
+
 				$("#" + columnID).on("click", function () {
+
 					var preferenceName = $(this).attr("id")
+
 					if (localStorage.getItem(preferenceName) === "false") {
 						$(this).addClass("visibleColumnButton").removeClass("hiddenColumnButton");
 						localStorage.setItem(preferenceName, "true");
@@ -324,8 +333,11 @@
 						$(this).addClass("hiddenColumnButton").removeClass("visibleColumnButton");
 						localStorage.setItem(preferenceName, "false");
 					}
+
 					toggleColumns();
+
 				});
+
 			});
 
 			/*************************************************************************************************************
@@ -762,8 +774,7 @@
 							ruleTable += "<br>"
 						}
 
-						ruleTable += "<a href=\"javascript:showPoolDetails('" + iRule.pools[x] + "', '" + loadBalancer + "', 'second')\">" + iRule.pools[x] + "</a>"
-					}
+						ruleTable += "<a href=\"javascript:showPoolDetails('" + iRule.pools[x] + "', '" + loadBalancer + "', 'second')\">" + iRule.pools[x] + "</a>" }
 
 				} else {
 					ruleTable += "N/A";
@@ -1092,15 +1103,18 @@
 		//Prepare the content
 		var settingsContent = `
 							<table id="preferencestable" class="bigiptable">
+
 								<thead>
 									<tr>
 										<th colspan=2>Generic settings</th>
 									</tr>
 								</thead>
+
 								<tbody>
 									<tr><td>Expand all pool members</td><td class="preferencescheckbox"><input type="checkbox" id="autoExpandPools"></td></tr>
 									<tr><td>Direct links to Big-IP objects</td><td class="preferencescheckbox"><input type="checkbox" id="adcLinks"></td></tr>
 								</tbody>
+
 							</table>
 `
 
@@ -1202,10 +1216,7 @@
 				"sSearch": "Search all columns:"
 			},
 			"dom": '<"top">frt<"bottom"ilp><"clear">',
-			"lengthMenu": [
-				[10, 25, 50, 100, -1],
-				[10, 25, 50, 100, "All"]
-			]
+			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
 		showConsoleSection("certificatedetails");
@@ -2382,9 +2393,7 @@
 		var defaultPreferences = siteData.defaultPreferences;
 
 		for (var k in defaultPreferences) {
-			if (localStorage.getItem(k) === null) {
-				localStorage.setItem(k, defaultPreferences[k])
-			}
+			if (localStorage.getItem(k) === null){ localStorage.setItem(k, defaultPreferences[k]) }
 		}
 
 	}
@@ -2442,11 +2451,7 @@
 			var firstmember = true;
 
 			for (var m in pool.members) {
-				if (!firstmember) {
-					returnStr += ", "
-				} else {
-					firstmember = false;
-				}
+				if (!firstmember){ returnStr += ", "} else { firstmember = false;}
 				var member = pool.members[m]
 				returnStr += member.name + ":" + member.port + " (" + member.ip + ":" + member.port + ")";
 			}
@@ -2473,11 +2478,7 @@
 
 				for (var p in vs.pools) {
 
-					if (!firstpool) {
-						line += "|"
-					} else {
-						firstpool = false
-					}
+					if (!firstpool){ line += "|"} else { firstpool = false }
 
 					var pool = getPool(vs.pools[p], vs.loadbalancer);
 					line += pool.name + ": ";
@@ -2533,12 +2534,8 @@
 		var month = d.getMonth();
 		var day = d.getDay();
 
-		if (month < 10) {
-			month = "0" + month
-		}
-		if (day < 10) {
-			day = "0" + day
-		}
+		if(month < 10){ month = "0" + month }
+		if(day < 10){ day = "0" + day }
 
 		var fileName = year + "-" + month + "-" + day + "-bigipreportexport.csv";
 
