@@ -90,7 +90,7 @@
 #                                     Adding option to add shares if the report script is running on a separate
 #                                     server
 #                                     Adding log file pruning (max lines)
-#        4.1.3        2016-07-01      Fixed an error in the pre-execution part. Updated some log verbosermation.       Patrik Jonsson  -
+#        4.1.3        2016-07-01      Fixed an error in the pre-execution part. Updated some log verbosermation.    Patrik Jonsson  -
 #        4.1.4        2016-07-11      Fixed a problem with the javascript files not referring the correct folder    Patrik Jonsson  -
 #        4.2.0        2016-07-18      Added support to show virtual server details                                  Patrik Jonsson  -
 #                                     Added support for showing irules
@@ -138,7 +138,7 @@
 #        4.5.6        2017-08-04      Adding VLAN information to the virtual server object                          Patrik Jonsson  -
 #        4.5.7        2017-08-13      Adding icons                                                                  Patrik Jonsson  -
 #        4.5.8        2017-08-14      Adding filter icon                                                            Patrik Jonsson  -
-#        4.5.9        2017-08-16      Adding traffic group to the virtual server object and showing it             Patrik Jonsson  -
+#        4.5.9        2017-08-16      Adding traffic group to the virtual server object and showing it              Patrik Jonsson  -
 #        4.6.0        2017-08-17      Adding virtual server state icons                                             Patrik Jonsson  -
 #        4.6.1        2017-08-18      Fixing bug when extracting source NAT pool                                    Patrik Jonsson  -
 #        4.6.2        2017-08-18      Fixing a bug when extracting version information                              Patrik Jonsson  -
@@ -189,6 +189,14 @@
 #                                     a suggestion from Tim
 #        5.0.9        2018-03-30      Removing URI encode which causes issues on some systems, also making          Patrik Jonsson  No
 #                                     PowerShell version 5 mandatory because of the string builder addition
+#        5.1.0        2018-04-28      Use a datasource for bigiptable rendering in the client                       Tim Riker       No
+#                                     Copy new files over or your table will be empty
+#                                     using relative paths for resources loaded from javascript
+#                                     logo now transparent, css typos, updates to .gitattributes and .gitignore
+#                                     orphan pools render with pool name in virtual server field
+#                                     use Map() for pool lookups, another increase in browser loading speed
+#                                     link to DevCentral from README.md
+#                                     write asmpolicies.json, always include asm column in report
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -203,7 +211,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.0.9"
+$Global:ScriptVersion = "5.1.0"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
