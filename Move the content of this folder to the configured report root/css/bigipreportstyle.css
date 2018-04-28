@@ -5,7 +5,6 @@
 /****************************************************************************************************************************
 	Declare color variables to make it easier to change the color scheme of the report
 *****************************************************************************************************************************/
-
 :root {
 	--alternatetablecolor: #f9f9f9;
 	--headerbackgroundcolor: #efefef;
@@ -33,7 +32,6 @@
 *****************************************************************************************************************************/
 
 /* This style controls the column search */
-
 .search_init {
 	background: var(--headerbackgroundcolor);
 	border: none;
@@ -49,7 +47,6 @@
 }
 
 /* This style controls how the search results should be highlighted */
-
 .highlight {
 	background-color: yellow;
 }
@@ -57,7 +54,6 @@
 /****************************************************************************************************************************
 	Styles related to the main bigip data table
 *****************************************************************************************************************************/
-
 .bigiptable {
 	border-collapse: collapse;
 	font-family: Calibri;
@@ -194,19 +190,16 @@ span#refreshcountdown {
 
 /* Containing the chevrons used to collapse and expand the pool*/
 
-div.expand,
-div.collapse {
+div.expand, div.collapse {
 	position: absolute;
 	right: 0;
 	top: 0;
 }
-
 .collapse {
 	display: none;
 }
 
 /* Style for the information that says Click here to show X associated pools */
-
 .AssociatedPoolsInfo {
 	padding-left: 10px;
 }
@@ -214,6 +207,7 @@ div.collapse {
 /****************************************************************************************************************************
 	This section contains the style for the virtual server details lightbox div
 *****************************************************************************************************************************/
+
 
 /* Contains the pool details table (the one with members and status) */
 
@@ -230,7 +224,6 @@ div.collapse {
 	text-align: center;
 	border: 1px solid var(--bordercolor);
 }
-
 .virtualserverdetailstable tbody>tr>th {
 	text-align: center;
 	background-color: var(--headerbackgroundcolor);
@@ -244,6 +237,7 @@ div.collapse {
 	border-collapse: collapse;
 	border: 1px solid var(--bordercolor);
 }
+
 
 /****************************************************************************************************************************
 				This section contains the  style for the pool details lightbox div
@@ -260,7 +254,6 @@ div#secondlayerdiv {
 div#consolediv {
 	z-index: 1;
 }
-
 /*Header with the pool name */
 
 .pooldetailsheader {
@@ -294,7 +287,6 @@ div#consolediv {
 .pooldetailstable tbody>tr>td.testlinks {
 	width: 140px;
 }
-
 .pooldetailstable tbody>tr>td>a>p.testlinks {
 	white-space: nowrap;
 }
@@ -313,8 +305,7 @@ div#consolediv {
 	border: 1px solid var(--bordercolor);
 }
 
-.pooldetailstable span.memberup,
-.memberenabled {
+.pooldetailstable span.memberup, .memberenabled {
 	color: green;
 }
 
@@ -327,14 +318,14 @@ div#consolediv {
 	color: red;
 }
 
+
 .pooldetailstable span.memberunknown {
 	color: blue;
 }
 
-/* Header with the monitor name */
 
-.monitordetailsheader,
-.monitordetailsheader {
+/* Header with the monitor name */
+.monitordetailsheader, .monitordetailsheader {
 	font-family: Cambria;
 	font-size: 20px;
 	font-weight: bold;
@@ -343,7 +334,6 @@ div#consolediv {
 }
 
 /* The table containing information about the monitors */
-
 .monitordetailstable {
 	border-collapse: collapse;
 	font-family: Calibri;
@@ -356,12 +346,10 @@ div#consolediv {
 	border: 1px solid var(--bordercolor);
 	padding: 5px;
 }
-
 .monitordetailstablerowheader {
 	width: 1%;
 	white-space: nowrap;
 }
-
 .monitordetailstable thead>tr>th {
 	text-align: center;
 	background-color: var(--headerbackgroundcolor);
@@ -409,14 +397,13 @@ div#consolediv {
 	border: 1px solid var(--bordercolor);
 }
 
-/* The monitor tooltip that appears over the the curl, netcat links */
 
+/* The monitor tooltip that appears over the the curl, netcat links */
 a.monitortest {
 	position: relative;
 	display: inline;
 	color: #000000;
 }
-
 a.monitortest p {
 	position: absolute;
 	color: #000;
@@ -435,7 +422,6 @@ a.monitortest p {
 	font-size: 12px;
 	font-weight: bold;
 }
-
 a:hover.monitortest p {
 	visibility: visible;
 	bottom: 30px;
@@ -443,20 +429,17 @@ a:hover.monitortest p {
 }
 
 /* The actual text input box that contains the monitor test data */
-
 .monitorcopybox {
 	width: 140px;
 }
 
 /* The div that contains the button that closes the pool details  */
-
 .secondlayerdetailsfooter {
 	margin-top: 20px;
 	text-align: center;
 }
 
 /* The div that contains the button that closes the pool details  */
-
 .firstlayerdetailsfooter {
 	margin-top: 20px;
 	text-align: center;
@@ -467,8 +450,7 @@ a:hover.monitortest p {
 	text-align: center;
 }
 
-.closelightboxbutton:hover,
-.openlightboxbutton:hover {
+.closelightboxbutton:hover, .openlightboxbutton:hover {
 	background: #3cb0fd;
 	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
 	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
@@ -478,11 +460,7 @@ a:hover.monitortest p {
 	text-decoration: none;
 }
 
-a.showConsoleButton,
-a.irulesButton,
-a.definedRuleButton,
-a.exportCSVButton,
-a.lightboxbutton {
+a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton {
 	position: relative;
 	display: inline;
 	background: #33699d;
@@ -500,10 +478,7 @@ a.lightboxbutton {
 	text-decoration: none;
 }
 
-a.showConsoleButton,
-a.irulesButton,
-a.definedRuleButton,
-a.exportCSVButton {
+a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
 	font-size: 12px;
 	padding: 5px 20px 5px 20px;
 }
@@ -513,11 +488,7 @@ a.lightboxbutton {
 	padding: 7px 20px 7px 20px;
 }
 
-a.showConsoleButton:hover,
-a.irulesButton:hover,
-a.definedRuleButton:hover,
-a.exportCSVButton:hover,
-a.lightboxbutton:hover {
+a.showConsoleButton:hover, a.irulesButton:hover, a.definedRuleButton:hover, a.exportCSVButton:hover, a.lightboxbutton:hover {
 	background: #3a79b5;
 	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
 	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
@@ -527,8 +498,7 @@ a.lightboxbutton:hover {
 	text-decoration: none;
 }
 
-span.statusicon,
-span.detailsicon {
+span.statusicon, span.detailsicon {
 	vertical-align: middle;
 }
 
@@ -555,9 +525,7 @@ div#firstlayerdetailscontent {
 
 /*Header with the pool name */
 
-div.virtualserverdetailsheader,
-div.iruledetailsheader,
-div.datagrouplistdetailsheader {
+div.virtualserverdetailsheader, div.iruledetailsheader, div.datagrouplistdetailsheader {
 	font-family: Cambria;
 	font-size: 24px;
 	font-weight: bold;
@@ -639,6 +607,7 @@ div.webconfig {
 	This section contains the style for object not found
 *****************************************************************************************************************************/
 
+
 div#objectnotfound {
 	display: table;
 	margin: 0 auto;
@@ -654,6 +623,8 @@ div#objectnotfound h4 {
 	margin-bottom: 1px;
 }
 
+
+
 /****************************************************************************************************************************
 	This section contains the style for the irule details lightbox content
 *****************************************************************************************************************************/
@@ -662,7 +633,6 @@ div#objectnotfound h4 {
 	display: table;
 	margin: 0 auto;
 }
-
 div#secondlayerdetailscontent {
 	display: table;
 	margin: 0 auto;
@@ -678,6 +648,7 @@ div#secondlayerdetailscontent {
 	margin-top: 40px;
 }
 
+
 /****************************************************************************************************************************
 	This section contains the style for the data group list details lightbox content
 *****************************************************************************************************************************/
@@ -688,11 +659,9 @@ div#secondlayerdetailscontent {
 	text-align: center;
 	color: black;
 }
-
 .dgkey {
 	color: blue;
 }
-
 .dgvalue {
 	color: red;
 }
@@ -704,8 +673,7 @@ div#secondlayerdetailscontent {
 	width: 100%;
 }
 
-.datagrouplisttable td,
-th {
+.datagrouplisttable td,th {
 	/*border: 1px solid #000;*/
 	padding: 10px;
 }
@@ -736,7 +704,6 @@ th {
 ***********************************************************************************************************************************/
 
 /* Generic tooltip for showing information above links */
-
 a.tooltip {
 	position: relative;
 	display: inline;
@@ -766,21 +733,18 @@ a.tooltip p:before {
 	top: 100%;
 	left: 40%;
 	margin-left: -9px;
-	width: 0;
-	height: 0;
+	width: 0; height: 0;
 	border-top: 9px solid #000;
 	border-right: 9px solid transparent;
 	border-left: 9px solid transparent;
 }
-
 a.tooltip p:after {
 	content: '';
 	position: absolute;
 	top: 100%;
 	left: 40%;
 	margin-left: -8px;
-	width: 0;
-	height: 0;
+	width: 0; height: 0;
 	border-top: 8px solid #fff;
 	border-right: 8px solid transparent;
 	border-left: 8px solid transparent;
@@ -796,7 +760,6 @@ a:hover.tooltip p {
 }
 
 /* Generic class for the lightbox divs that contains detailed information about the pools, virtual servers and irules etc. */
-
 .lightbox {
 	display: none;
 	position: fixed;
@@ -826,6 +789,7 @@ div.innerLightbox {
 div.innerLightbox {
 	margin-top: 40px;
 }
+
 
 /**********************************************************************************************************************************
 	Side menu
@@ -885,6 +849,7 @@ div#consoledivfooter {
 	text-align: center;
 }
 
+
 /****************************************************************************************************************************
 	This section contains the style for the help content
 *****************************************************************************************************************************/
@@ -895,6 +860,7 @@ div#helpcontent {
 	max-width: 970px;
 	padding: 0px 40px 20px 40px;
 }
+
 
 /****************************************************************************************************************************
 	This section contains the style for the device overview
@@ -956,6 +922,7 @@ span.devicepollingnotconfigured {
 	color: #cc9900;
 }
 
+
 /****************************************************************************************************************************
 	This section contains the style for the preferences
 *****************************************************************************************************************************/
@@ -1011,8 +978,7 @@ table#certificatedetailstable {
 	width: 95%;
 }
 
-table#certificatedetailstable tbody tr td.certificatecountryname,
-table#certificatedetailstable tbody tr td.certificateloadbalancer {
+table#certificatedetailstable tbody tr td.certificatecountryname, table#certificatedetailstable tbody tr td.certificateloadbalancer {
 	text-align: center;
 }
 
@@ -1024,9 +990,7 @@ img.flagicon {
 	max-width: 20px;
 }
 
-tr#certificateExpiringIn60,
-tr.certificateExpiringIn30,
-tr.certificateExpiringIn14 {
+tr#certificateExpiringIn60, tr.certificateExpiringIn30, tr.certificateExpiringIn14 {
 	font-weight: bold;
 }
 
@@ -1145,8 +1109,7 @@ div#definedirules {
 	text-shadow: 0px 1px 0px #ffee66;
 }
 
-.centeredCell,
-.loadbalancerCell {
+.centeredCell, .loadbalancerCell {
 	text-align: center;
 	width: 1px;
 }
@@ -1161,7 +1124,6 @@ div#definedirules {
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffab23', endColorstr='#ffec64', GradientType=0);
 	background-color: #ffab23;
 }
-
 .updateavailable:active {
 	position: relative;
 	top: 1px;
@@ -1194,7 +1156,6 @@ div#definedirules {
 	text-decoration: none;
 	text-shadow: 0px 1px 0px #854629;
 }
-
 .criticalupdateavailable:hover {
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
 	background: -moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
@@ -1205,7 +1166,6 @@ div#definedirules {
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b', GradientType=0);
 	background-color: #bc3315;
 }
-
 .criticalupdateavailable:active {
 	position: relative;
 	top: 1px;
