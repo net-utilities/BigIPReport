@@ -1452,8 +1452,9 @@ function Cache-LTMInformation {
 
 			$ObjTempVirtualServer = New-Object -TypeName "VirtualServer"
 
-			$ObjTempVirtualServer.name = "N/A (Orphan pool)"
-			$ObjTempVirtualServer.ip = "N/A (Orphan pool)"
+			$ObjTempVirtualServer.name = $PoolName + "(Orphan)"
+			$ObjTempVirtualServer.ip = "N"
+			$ObjTempVirtualServer.port = "A"
 			$ObjTempVirtualServer.sslprofile = "None"
 			$ObjTempVirtualServer.compressionprofile = "None"
 			$ObjTempVirtualServer.persistence = "None"
@@ -2042,7 +2043,7 @@ Function Write-TemporaryFiles {
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data $Global:ReportObjects.Values.Pools.Values
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data $Global:ReportObjects.Values.Monitors.Values
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data $Global:ReportObjects.Values.LoadBalancer
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data $Global:ReportObjects.Values.VirtualServers.Values
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data ($Global:ReportObjects.Values.VirtualServers.Values + $Global:ReportObjects.Values.OrphanPools)
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $Global:ReportObjects.Values.Certificates.Values
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data $Global:DeviceGroups
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
