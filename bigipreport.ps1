@@ -197,6 +197,7 @@
 #                                     use Map() for pool lookups, another increase in browser loading speed
 #                                     link to DevCentral from README.md
 #                                     write asmpolicies.json, always include asm column in report
+#                                     disable console resizing (vscode and PowerShell ISE)
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
