@@ -546,39 +546,39 @@
 	}
 
 	function PoolMemberStatus(member) {
-		var mstatus = member.enabled.split('_')[2] + ':' + member.availability.split('_')[2];
+		var mStatus = member.enabled.split('_')[2] + ':' + member.availability.split('_')[2];
 
-		if (mstatus == "ENABLED:GREEN" || mstatus == "ENABLED:BLUE") {
+		if (mStatus == "ENABLED:GREEN" || mStatus == "ENABLED:BLUE") {
 			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Member is able to pass traffic"/></span><span class="textstatus">UP</span>';
-		} else if (mstatus == "ENABLED:RED" || mstatus == "DISABLED:RED") {
+		} else if (mStatus == "ENABLED:RED" || mStatus == "DISABLED:RED") {
 			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Member is unable to pass traffic"/></span><span class="textstatus">DOWN</span>';
-		} else if (mstatus == "DISABLED:GREEN") {
+		} else if (mStatus == "DISABLED:GREEN") {
 			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)" title="Member is available, but disabled"/></span><span class="textstatus">DISABLED</span>'
-		} else if (mstatus == "DISABLED:BLUE") {
+		} else if (mStatus == "DISABLED:BLUE") {
 			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Member is disabled"/></span><span class="textstatus">DISABLED</span>';
 		}
-		return mstatus;
+		return mStatus;
 	}
 
 	function VirtualServerStatus(row) {
 		if (!row.enabled || !row.availability)
 			return '';
-		var vsstatus = row.enabled.split('_')[2] + ':' + row.availability.split('_')[2];
+		var vsStatus = row.enabled.split('_')[2] + ':' + row.availability.split('_')[2];
 
-		if (vsstatus == "ENABLED:GREEN") {
+		if (vsStatus == "ENABLED:GREEN") {
 			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Available (Enabled) - The virtual server is available"/></span><span class="textstatus">UP</span>';
-		} else if (vsstatus == "ENABLED:BLUE") {
+		} else if (vsStatus == "ENABLED:BLUE") {
 			return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)" title="Unknown (Enabled) - The children pool member(s) either don\'t have service checking enabled, or service check results are not available yet"/></span><span class="textstatus">UNKNOWN</span>';
-		} else if (vsstatus == "ENABLED:RED") {
+		} else if (vsStatus == "ENABLED:RED") {
 			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Offline (Enabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>';
-		} else if (vsstatus == "DISABLED:GREEN") {
+		} else if (vsStatus == "DISABLED:GREEN") {
 			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)" title="Available (Disabled) - The virtual server is disabled"/></span><span class="textstatus">DISABLED</span>'
-		} else if (vsstatus == "DISABLED:BLUE") {
+		} else if (vsStatus == "DISABLED:BLUE") {
 			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Unknown (Disabled) - The children pool member(s) either don\'t have service checking enabled, or service check results are not available yet"/></span><span class="textstatus">DISABLED</span>';
-		} else if (vsstatus == "DISABLED:RED") {
+		} else if (vsStatus == "DISABLED:RED") {
 			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)" title="Offline (Disabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>'
 		}
-		return vsstatus;
+		return vsStatus;
 	}
 
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
