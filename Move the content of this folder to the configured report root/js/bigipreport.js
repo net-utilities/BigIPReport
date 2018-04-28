@@ -66,10 +66,10 @@
 			$.getJSON("json/pools.json", function (result) {
 				siteData.pools = result;
 				siteData.poolsMap = new Map();
-				let index = 0;
+				let poolNum = 0;
 				result.forEach(({loadbalancer, name, ...rest}) => {
-					siteData.poolsMap.set(`${loadbalancer}:${name}`, {loadbalancer, name, index, ...rest});
-					index++;
+					siteData.poolsMap.set(`${loadbalancer}:${name}`, {loadbalancer, name, poolNum, ...rest});
+					poolNum++;
 				})
 			}).fail(addJSONLoadingFailure),
 			//Get the monitor data
@@ -612,7 +612,7 @@
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
 			pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
-			p = pool.index;
+			p = pool.poolNum;
 			poolinformation += '<tr class="Pool-' + p + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
 			poolinformation += '<td';
 			if (pool.members !== null) {
