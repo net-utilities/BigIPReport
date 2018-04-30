@@ -1282,3 +1282,13 @@ span.adcLinkSpan a:hover {
 	font-family: Arial;
 	font-weight: bold;
 }
+
+.footer {
+	font-size: 90%;
+	font-style: italic;
+	text-align: center;
+}
+
+#Generationtime {
+	font-weight: bold;
+}

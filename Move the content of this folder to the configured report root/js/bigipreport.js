@@ -152,8 +152,13 @@
 					"data": "loadbalancer",
 					"className": "loadbalancerCell",
 					"render": function (data, type, row) {
-						return '<a onclick="window.open(\'https://' + data + '\',\'_blank\')">' + data.split('.')[0] +
-							'</a>';
+						var balancer;
+						if (HideLoadBalancerFQDN) {
+							balancer = data.split('.')[0]
+						} else {
+							balancer = data;
+						}
+						return '<a onclick="window.open(\'https://' + data + '\',\'_blank\')">' + balancer + '</a>';
 					}
 				}, {
 					"data": "name",
