@@ -143,7 +143,9 @@
 				asInitVals[i] = this.value;
 			});
 
+
 			bigipTable = $('table#allbigips').DataTable({
+
 				"data": siteData.virtualservers,
 				"createdRow": function (row, data, index) {
 					$(row).addClass('virtualserverrow');
