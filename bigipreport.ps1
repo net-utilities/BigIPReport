@@ -2121,7 +2121,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 	<head>
 		<title>BIG-IP Report</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<script src="js/pace.js" data-pace-options='{ "restartOnRequestAfter": false }'></script>
+		<script src="js/pace.js" data-pace-options="{ restartOnRequestAfter: false }"></script>
 		<script src="js/jquery.min.js"></script>
 		<script src="js/jquery.dataTables.min.js"></script>
 		<link href="css/pace.css" rel="stylesheet" type="text/css"/>
@@ -2161,6 +2161,11 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 		} else {
 			[void]$Global:HTML.AppendLine("var ShowExportLink = false;")
 		}
+		if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
+			[void]$Global:HTML.AppendLine("var HideLoadBalancerFQDN = true;")
+		} else {
+			[void]$Global:HTML.AppendLine("var HideLoadBalancerFQDN = false;")
+		}
 		[void]$Global:HTML.AppendLine("const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";")
 		[void]$Global:HTML.AppendLine("const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";")
 
@@ -2184,7 +2189,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 
 	#Show the div used to contain information generating by clicking at pool members
 	[void]$Global:HTML.AppendLine(@'
-		<div id='allbigipsdiv' class="lbdiv" style="position:absolute;visibility:visible;width:100%;">
+		<div id="allbigipsdiv" class="lbdiv" style="position:absolute;visibility:visible;width:100%;">
 		<table id="allbigips" class="bigiptable">
 			<thead>
 				<tr>
@@ -2194,13 +2199,13 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 '@)
 	#if($HasASMProfiles){
 		[void]$Global:HTML.AppendLine(@'
-					<th class="asmPoliciesHeaderCell"><input type="text" name="asmPolicies" size=6 value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
+					<th class="asmPoliciesHeaderCell"><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
 '@)
 	#}
 	[void]$Global:HTML.AppendLine(@'
-				<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size=6 value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
-				<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size=6 value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
-				<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size=6 value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+				<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
+				<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
+				<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
 				<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
 			</tr>
 		</thead>
@@ -2219,13 +2224,10 @@ if($RealTimeStatusDetected){
 [void]$Global:HTML.AppendLine(@"
 				</tbody>
 			</table>
-			<br>
-			<font size=-1>
-				<i>
-					The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion). Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-					BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
-				</i>
-			</font>
+			<div class="footer">
+				The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
+				BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
+			</div>
 		</div>
 "@)
 
