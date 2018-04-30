@@ -362,7 +362,7 @@
 
 			//Check if there's a new update every 30 minutes
 			setInterval(function () {
-				$.ajax('json/virtualservers.json', {
+				$.ajax(document.location.href, {
 					type: 'HEAD',
 					success: function (response, status, xhr) {
 
