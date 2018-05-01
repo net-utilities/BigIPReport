@@ -2158,24 +2158,24 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 		[void]$Global:HTML.AppendLine("var definedRules = " + $DefinediRules + ";`n")
 
 		if($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true){
-			[void]$Global:HTML.AppendLine("var ShowiRules = true;")
+			[void]$Global:HTML.AppendLine("const ShowiRules = true;")
 		} else {
-			[void]$Global:HTML.AppendLine("var ShowiRules = false;")
+			[void]$Global:HTML.AppendLine("const ShowiRules = false;")
 		}
 		if($Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $true){
-			[void]$Global:HTML.AppendLine("var ShowiRuleLinks = true;")
+			[void]$Global:HTML.AppendLine("const ShowiRuleLinks = true;")
 		} else {
-			[void]$Global:HTML.AppendLine("var ShowiRuleLinks = false;")
+			[void]$Global:HTML.AppendLine("const ShowiRuleLinks = false;")
 		}
 		if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
-			[void]$Global:HTML.AppendLine("var ShowDataGroupListsLinks = true;")
+			[void]$Global:HTML.AppendLine("const ShowDataGroupListsLinks = true;")
 		} else {
-			[void]$Global:HTML.AppendLine("var ShowDataGroupListsLinks = false;")
+			[void]$Global:HTML.AppendLine("const ShowDataGroupListsLinks = false;")
 		}
 		if($Global:Bigipreportconfig.Settings.ExportLink.Enabled -eq $true){
-			[void]$Global:HTML.AppendLine("var ShowExportLink = true;")
+			[void]$Global:HTML.AppendLine("const ShowExportLink = true;")
 		} else {
-			[void]$Global:HTML.AppendLine("var ShowExportLink = false;")
+			[void]$Global:HTML.AppendLine("const ShowExportLink = false;")
 		}
 		if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
 			[void]$Global:HTML.AppendLine("var HideLoadBalancerFQDN = true;")
