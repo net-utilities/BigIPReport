@@ -11,6 +11,7 @@
 	--headerfontcolor: #333;
 	--bordercolor: #DDDDDD;
 	--defaultfontcolor: #222;
+	--border-radius: 10px;
 }
 
 /****************************************************************************************************************************
@@ -469,9 +470,7 @@ a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.l
 	background-image: -ms-linear-gradient(top, #33699d, #33699d);
 	background-image: -o-linear-gradient(top, #33699d, #33699d);
 	background-image: linear-gradient(to bottom, #33699d, #33699d);
-	-webkit-border-radius: 10;
-	-moz-border-radius: 10;
-	border-radius: 10px;
+	border-radius: var(--border-radius);
 	font-family: Arial;
 	color: #ffffff;
 	margin: 5px;
@@ -952,8 +951,6 @@ table#preferencestable tbody tr td.preferencescheckbox {
 
 a#certnotification {
 	display: inline-block;
-	-webkit-border-radius: 100;
-	-moz-border-radius: 100;
 	border-radius: 100px;
 	font-family: Arial;
 	color: #ffffff;
@@ -1092,8 +1089,6 @@ div#definedirules {
 	background: linear-gradient(to bottom, #ffec64 5%, #ffab23 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffec64', endColorstr='#ffab23', GradientType=0);
 	background-color: #ffec64;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
 	border-radius: 3px;
 	border: 1px solid #ffaa22;
 	display: inline-block;
@@ -1141,8 +1136,6 @@ div#definedirules {
 	background: linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d0451b', endColorstr='#bc3315', GradientType=0);
 	background-color: #d0451b;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
 	border-radius: 3px;
 	border: 1px solid #942911;
 	display: inline-block;
@@ -1178,9 +1171,7 @@ span.adcLinkSpan a {
 	background-image: -ms-linear-gradient(top, #99173C, #B93057);
 	background-image: -o-linear-gradient(top, #99173C, #B93057);
 	background-image: linear-gradient(to bottom, #99173C, #B93057);
-	-webkit-border-radius: 28;
-	-moz-border-radius: 28;
-	border-radius: 28px;
+	border-radius: var(--border-radius);
 	font-family: Arial;
 	color: #ffffff;
 	font-size: 12px;
@@ -1205,10 +1196,7 @@ span.adcLinkSpan a:hover {
 	background-image: -ms-linear-gradient(top, #4F9717, #4F9717);
 	background-image: -o-linear-gradient(top, #4F9717, #4F9717);
 	background-image: linear-gradient(to bottom, #4F9717, #4F9717);
-	/*-webkit-border-radius: 28;
-	-moz-border-radius: 28;
-	border-radius: 28px;
-	*/
+	border-radius: var(--border-radius);
 	font-family: Arial;
 	color: #fff;
 	font-size: 12px;
@@ -1234,6 +1222,7 @@ span.adcLinkSpan a:hover {
 	background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
 	background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
 	background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+	border-radius: var(--border-radius);
 	font-family: Arial;
 	color: #383838;
 	font-size: 12px;
@@ -1259,6 +1248,7 @@ span.adcLinkSpan a:hover {
 	background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
 	background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
 	background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+	border-radius: var(--border-radius);
 	font-family: Arial;
 	color: #383838;
 	font-size: 12px;
@@ -1291,4 +1281,8 @@ span.adcLinkSpan a:hover {
 
 #Generationtime {
 	font-weight: bold;
+}
+
+.paginate_button {
+	border-radius: var(--border-radius);
 }
