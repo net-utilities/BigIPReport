@@ -2205,7 +2205,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 
 	#Show the div used to contain information generating by clicking at pool members
 	[void]$Global:HTML.AppendLine(@'
-		<div id="allbigipsdiv" class="lbdiv" style="position:absolute;visibility:visible;width:100%;">
+		<div id="allbigipsdiv" class="lbdiv">
 		<table id="allbigips" class="bigiptable">
 			<thead>
 				<tr>
