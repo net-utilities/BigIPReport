@@ -2137,7 +2137,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 	<head>
 		<title>BIG-IP Report</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<script src="js/pace.js" data-pace-options="{ restartOnRequestAfter: false }"></script>
+		<script src="js/pace.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;: false }"></script>
 		<script src="js/jquery.min.js"></script>
 		<script src="js/jquery.dataTables.min.js"></script>
 		<link href="css/pace.css" rel="stylesheet" type="text/css"/>
