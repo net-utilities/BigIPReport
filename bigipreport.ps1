@@ -198,6 +198,9 @@
 #                                     link to DevCentral from README.md
 #                                     write asmpolicies.json, always include asm column in report
 #                                     disable console resizing (vscode and PowerShell ISE)
+#        5.1.1        2018-05-01      add back NATFile support and a new nat.json file                              Tim Riker       No
+#                                     sort json data before writing
+#                                     don't compress json files if Verbose
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -616,6 +619,7 @@ $Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + 
 $Global:certificatesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\certificates.json"
 $Global:loggederrorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loggederrors.json"
 $Global:asmpoliciesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\asmpolicies.json"
+$Global:natjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\nat.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -857,7 +861,7 @@ if($Global:Bigipreportconfig.Settings.NATFilePath -ne ""){
 		$NATContent = Get-Content $Global:Bigipreportconfig.Settings.NATFilePath
 
 		$NATContent | ForEach-Object {
-			$ArrLine = $_.split("=")
+			$ArrLine = $_.split("=").Trim()
 			if($ArrLine.Count -eq 2){
 				$Global:NATdict[$arrLine[1]] = $arrLine[0]
 			 } else {
@@ -1977,6 +1981,13 @@ Function Update-ReportData {
 		$Status  = $false
 	}
 
+	Move-Item -Force $($Global:natjsonpath + ".tmp") $Global:natjsonpath
+
+	if(!$?){
+		log error "Failed to update the nat json file"
+		$Status  = $false
+	}
+
 	Return $Status
 }
 #EndRegion
@@ -2004,7 +2015,11 @@ Function Write-JSONFile {
 
 	$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
-	$JSONData = ConvertTo-Json -Compress -Depth 5 $($Data | ConvertTo-Array)
+	if ($Outputlevel -ne "Verbose") {
+		$JSONData = ConvertTo-Json -Compress -Depth 5 $Data
+	} else {
+		$JSONData = ConvertTo-Json -Depth 5 $Data
+	}
 
 	$StreamWriter = New-Object System.IO.StreamWriter($DestinationTempFile, $false, $Utf8NoBomEncoding,0x10000)
 	$StreamWriter.Write($JSONData)
@@ -2049,14 +2064,15 @@ Function Write-TemporaryFiles {
 
 	$StreamWriter.dispose()
 
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data $Global:ReportObjects.Values.Pools.Values
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data $Global:ReportObjects.Values.Monitors.Values
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data $Global:ReportObjects.Values.LoadBalancer
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data ($Global:ReportObjects.Values.VirtualServers.Values + $Global:ReportObjects.Values.OrphanPools)
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data $Global:ReportObjects.Values.Certificates.Values
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data $Global:DeviceGroups
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data ( $Global:ReportObjects.Values.Pools.Values | Sort-Object loadbalancer, name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data ( $Global:ReportObjects.Values.Monitors.Values | Sort-Object loadbalancer, name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data ( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data ( $Global:ReportObjects.Values.VirtualServers.Values + $Global:ReportObjects.Values.OrphanPools | Sort-Object loadbalancer,name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data ( $Global:ReportObjects.Values.Certificates.Values | Sort-Object loadbalancer, fileName )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data ( $Global:DeviceGroups | Sort-Object name )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data $Global:ReportObjects.Values.ASMPolicies.Values
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:natjsonpath -Data $Global:NATdict
 
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data $Global:ReportObjects.Values.iRules.Values

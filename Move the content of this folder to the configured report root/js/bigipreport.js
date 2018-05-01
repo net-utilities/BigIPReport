@@ -106,6 +106,9 @@
 			$.getJSON("json/asmpolicies.json", function (result) {
 				siteData.asmPolicies = result;
 			}).fail(addJSONLoadingFailure),
+			$.getJSON("json/nat.json", function (result) {
+				siteData.NATdict = result;
+			}).fail(addJSONLoadingFailure),
 			$.getJSON("json/loggederrors.json", function (result) {
 				siteData.loggedErrors = result;
 			}).fail(addJSONLoadingFailure)
@@ -175,7 +178,11 @@
 				}, {
 					"className": "centeredCell",
 					"render": function (data, type, row) {
-						return row.ip + ':' + row.port;
+						result = row.ip + ':' + row.port;
+						if (siteData.NATdict[row.ip.split('%')[0]]) {
+							result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
+						}
+						return result;
 					}
 				}, {
 					"className": "centeredCell",
