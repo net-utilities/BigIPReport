@@ -233,7 +233,7 @@ div.expand, div.collapse {
 }
 
 .virtualserverdetailstable tbody>tr:nth-child(even)>td {
-	background-color: #6890B2;
+	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 	border: 1px solid var(--bordercolor);
 }
