@@ -189,7 +189,7 @@
 #                                     a suggestion from Tim
 #        5.0.9        2018-03-30      Removing URI encode which causes issues on some systems, also making          Patrik Jonsson  No
 #                                     PowerShell version 5 mandatory because of the string builder addition
-#        5.1.0        2018-04-28      Use a datasource for bigiptable rendering in the client                       Tim Riker       No
+#        5.1.0        2018-04-30      Use a datasource for bigiptable rendering in the client                       Tim Riker       No
 #                                     Copy new files over or your table will be empty
 #                                     using relative paths for resources loaded from javascript
 #                                     logo now transparent, css typos, updates to .gitattributes and .gitignore
