@@ -169,7 +169,7 @@
 					"data": "name",
 					"className": "virtualServerCell",
 					"render": function (data, type, row) {
-						return VirtualServerStatus(row) + '<a class="tooltip" data-originalvirtualservername="' + data +
+						return VirtualServerStatus(row) + '<a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="' + data +
 							'" data-loadbalancer="' + row.loadbalancer +
 							'" onclick="Javascript:showVirtualServerDetails($(this).attr(\'data-originalvirtualservername\').trim(),$(this).attr(\'data-loadbalancer\').trim());">' +
 							data + '<span class="detailsicon"><img src="images/details.png" alt="details"></span><p>Click to see virtual server details</p></a>' +
