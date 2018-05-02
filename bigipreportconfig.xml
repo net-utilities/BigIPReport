@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="5.1.2">
+	<Settings version="5.1.3">
 
 		<!--
 		***************************************************************************
@@ -69,9 +69,9 @@
 		*	Which folder to store the generated report in. Can be a local path or a network path.
 		*
 		*	Examples
-		*	<ReportRoot>D:\Inetpub\wwwroot\</ReportRoot>
+		*	<ReportRoot>D:/Inetpub/wwwroot/</ReportRoot>
 		*	or
-		*	<ReportRoot>\\aserver.domain.local\wwwshare$\</ReportRoot>
+		*	<ReportRoot>//aserver.domain.local/wwwshare$/</ReportRoot>
 		*
 		**************************************************************************************************************************************
 		-->
@@ -112,14 +112,14 @@
 		*	Log settings
 		*
 		*	<Enabled>		-	Determines if the logging is enabled or not. If it is enabled you MUST configure the other settings too.
-		*	<LogFilePath>	-	Where to store the log. Can also be a share.
+		*	<LogFilePath>	-	Where to store the log. Does not need a full path. Can also be a share.
 		*	<LogLevel>		-	Which level to log. Verbose = Informational messages included, Normal = only errors/warnings
 		*	<MaximumLines>	-	How many lines the logfile should be kept at (will be pruned at the end of script runtime). Depending on your environment, but you'll want to set this to a quite high number.
 		*
 		*	Example of enabled logging:
 		*	<Logsettings>
 		*		<Enabled>true</Enabled>
-		*		<LogFilePath>C:\Script\Log\bigipreport.log</LogFilePath>
+		*		<LogFilePath>C:/Script/Log/bigipreport.log</LogFilePath>
 		*		<LogLevel>Verbose</LogLevel>
 		*		<MaximumLines>100000</MaximumLines>
 		*	</LogSettings>
@@ -193,9 +193,11 @@
 			*	1.1.1.2=10.10.10.2
 			*
 			*	Examples of enabled nat file:
-			*	<NATFilePath>C:\NATs\natfile.nat</NATFilePath>
+			*	<NATFilePath>natfile.txt</NATFilePath>
 			*	or
-			*	<NATFilePath>\\myserver\share\natfile.txt</NATFilePath>
+			*	<NATFilePath>C:/NATs/natfile.nat</NATFilePath>
+			*	or
+			*	<NATFilePath>//myserver/share/natfile.txt</NATFilePath>
 			*
 			*	Example of disabled NAT file
 			*	<NATFilePath></NATFilePath>
@@ -325,7 +327,7 @@
 			*	Example of share config:
 			*	<Shares>
 			*		<Share>
-			*				<Path>\\myserver\myshare</Path>
+			*				<Path>//myserver/myshare</Path>
 			*				<Username>shareuser</Username>
 			*				<Password>password</Password>
 			*		</Share>

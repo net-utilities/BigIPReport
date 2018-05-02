@@ -1286,3 +1286,9 @@ span.adcLinkSpan a:hover {
 .paginate_button {
 	border-radius: var(--border-radius);
 }
+
+/* fix for jquery.daTables.css */
+.dataTables_filter {
+	width: inherit !important;
+	margin-right: 15px;
+}

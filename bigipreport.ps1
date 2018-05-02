@@ -203,6 +203,8 @@
 #                                     don't compress json files if Verbose
 #        5.1.2        2018-05-01      explicit write for empty asmpolicies.json                                     Tim Riker       No
 #                                     button-radius, const, data-pace-option, layout, alternatetablecolor
+#        5.1.3        2018-05-02      fix: explicit array for datagroups.json, fix: utf8 logfile truncation         Tim Riker       No
+#                                     datatables layout, remove unused code, prefer / to \ in paths
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -217,7 +219,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.1.2"
+$Global:ScriptVersion = "5.1.3"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -264,8 +266,8 @@ Function log {
 	Param ([string]$LogType, [string]$Message)
 
 	#Initiate the log header with date and time
-	$CurrentTime =  $(Get-Date -UFormat "%Y-%m-%d") + "`t" + $(Get-Date -Uformat "%H:%M:%S")
-	$LogHeader = $CurrentTime+ "`t$($LogType.toUpper())"
+	$CurrentTime =  $(Get-Date -UFormat "%Y-%m-%d %H:%M:%S ")
+	$LogHeader = $CurrentTime + $($LogType.toUpper()) + ' '
 
 	if($LogType -eq "error"){
 		$Global:LoggedErrors  += $Message
@@ -276,24 +278,24 @@ Function log {
 		$LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
 
 		switch($Logtype) {
-			"error"   { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
-			"warning" { [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message")) }
-			"info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
-			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
-			"verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) }}
-			default   { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, $("$LogHeader`t$Message`n"), $Global:Utf8NoBomEncoding) } }
+			"error"   { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
+			"warning" { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
+			"info"	  { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+			"success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+			"verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+			default   { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
 		}
 	}
 
 	$ConsoleHeader = $CurrentTime
 
 	switch($logtype) {
-		"error"		{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Red" }
-		"warning"	{ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Yellow" }
-		"info"		{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Gray" }  }
-		"success"	{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader`t$Message") -ForegroundColor "Green" } }
-		"verbose"   { if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
-		default		{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader`t$Message" } }
+		"error"		{ Write-Host $("$ConsoleHeader$Message") -ForegroundColor "Red" }
+		"warning"	{ Write-Host $("$ConsoleHeader$Message") -ForegroundColor "Yellow" }
+		"info"		{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader$Message") -ForegroundColor "Gray" }  }
+		"success"	{ if($OutputLevel -eq "Verbose"){ Write-Host $("$ConsoleHeader$Message") -ForegroundColor "Green" } }
+		"verbose"   { if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader$Message" } }
+		default		{ if($OutputLevel -eq "Verbose"){ Write-Host "$ConsoleHeader$Message" } }
 	}
 }
 
@@ -500,9 +502,9 @@ if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigiprepo
 	log error "No report root configured"
 	$SaneConfig = $false
 } else {
-	#Make sure the site root ends with \
-	if(-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")){
-		$Global:bigipreportconfig.Settings.ReportRoot += "\"
+	#Make sure the site root ends with / or \
+	if(-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("/") -and -not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")){
+		$Global:bigipreportconfig.Settings.ReportRoot += "/"
 	}
 
 	if(-not (Test-Path $Global:Bigipreportconfig.Settings.ReportRoot)){
@@ -611,17 +613,17 @@ $Global:DeviceGroups = @();
 $Global:reportpath = $Global:bigipreportconfig.Settings.ReportRoot + $Global:bigipreportconfig.Settings.Defaultdocument
 
 #Build the json object paths
-$Global:poolsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\pools.json"
-$Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\monitors.json"
-$Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\virtualservers.json"
-$Global:irulesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\irules.json"
-$Global:datagrouplistjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\datagrouplists.json"
-$Global:devicegroupsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\devicegroups.json"
-$Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loadbalancers.json"
-$Global:certificatesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\certificates.json"
-$Global:loggederrorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\loggederrors.json"
-$Global:asmpoliciesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\asmpolicies.json"
-$Global:natjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json\nat.json"
+$Global:poolsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/pools.json"
+$Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
+$Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/virtualservers.json"
+$Global:irulesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/irules.json"
+$Global:datagrouplistjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/datagrouplists.json"
+$Global:devicegroupsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/devicegroups.json"
+$Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/loadbalancers.json"
+$Global:certificatesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/certificates.json"
+$Global:loggederrorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/loggederrors.json"
+$Global:asmpoliciesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/asmpolicies.json"
+$Global:natjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -1580,103 +1582,6 @@ Function Get-DefinedRules {
 }
 #EndRegion
 
-#Region Function Translate-status
-Function Translate-Member-Status {
-	Param($Member, $RealTimeStatus)
-
-	if($RealTimeStatus){
-		if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-			$Class = "memberup"
-			$Icon = "green-circle-checkmark.png"
-			$Title = "Pool member is able to pass traffic"
-			$TextStatus = "UP"
-		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED"){
-			$Icon = "red-circle-cross.png"
-			$Title = "Pool member is unable to pass traffic"
-			$TextStatus = "DOWN"
-		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_BLUE" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-			$Icon = "green-circle-checkmark.png"
-			$Title = "Pool member is able to pass traffic"
-			$TextStatus = "UP"
-		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED" -or $Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT"){
-			$Icon = "black-circle-checkmark.png"
-			$Title = "Member is available, but disabled"
-			$TextStatus = "DISABLED"
-		} else {
-			$Icon = "blue-square-questionmark.png"
-			$Title = "Unknown status"
-			$TextStatus = "UNKNOWN"
-		}
-	} else {
-		if($Member.Availability -eq "AVAILABILITY_STATUS_GREEN" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-			$Class = "memberup"
-			$Icon = "green-circle-checkmark.png"
-			$Title = "Pool member is up"
-			$TextStatus = "UP"
-		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED_BY_PARENT" -and $Member.Status -eq "Pool member is available"){
-			$Icon = "black-circle-checkmark.png"
-			$Title = "Member available, but disabled by parent"
-			$TextStatus = "DISABLED"
-		} elseif ($Member.Status.contains("unable to connect") -or $Member.Status.contains("Could not connect")) {
-			$Icon = "red-circle-cross.png"
-			$Title = "Could not connect, member down"
-			$TextStatus = "DOWN"
-		} elseif ($Member.Status.contains("Failed to succeed before deadline")) {
-			$Icon = "red-circle-cross.png"
-			$Title = "Failed to succed before deadline"
-			$TextStatus = "DOWN"
-		} elseif ($Member.Status -eq "Pool member is available, user disabled"){
-			$Icon = "black-circle-checkmark.png"
-			$Title = "Member is available, but disabled"
-			$TextStatus = "DISABLED"
-		} elseif ($Member.Availability -eq "AVAILABILITY_STATUS_RED" -and $Member.Enabled -eq "ENABLED_STATUS_ENABLED"){
-			$Icon = "red-circle-cross.png"
-			$Title = "Member is marked down by a monitor"
-			$TextStatus = "DOWN"
-		} elseif ($Member.Status -eq "Parent down"){
-			$Icon = "red-circle-cross.png"
-			$Title = "Parent monitor failed"
-			$TextStatus = "DOWN"
-		} elseif ($Member.Status -eq "Pool member does not have service checking enabled"){
-			$Icon = "blue-square-questionmark.png"
-			$Title = "Member has no monitor assigned"
-			$TextStatus = "UNKNOWN"
-		} elseif ($Member.Status -eq "Forced down"){
-			$Icon = "black-diamond-exclamationmark.png"
-			$Title = "Member is forced down"
-			$TextStatus = "DISABLED"
-		} elseif ($Member.Enabled -eq "ENABLED_STATUS_DISABLED" -and $Member.Availability -eq "AVAILABILITY_STATUS_RED"){
-			$Icon = "black-circle-cross.png"
-			$Title = "Member is disabled and marked as down by a monitor"
-			$TextStatus = "DISABLED"
-		} else {
-			$Icon = "blue-square-questionmark.png"
-			$Title = "Unknown status"
-			$TextStatus = "UNKNOWN"
-		}
-	}
-
-	Return '<span class="statusicon"><img src="images/' + $Icon + '" title="' + $Title + '" alt="' + $TextStatus + '"/></span> <span class="textstatus">' + $TextStatus + '</span>'
-}
-#Endregion
-
-#Region Function Translate-status
-Function Translate-VirtualServer-Status {
-	Param($VirtualServer)
-
-	if($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_GREEN"){
-		Return "<span class=`"statusicon`"><img src=`"images/green-circle-checkmark.png`" alt=`"Available (Enabled)`" title=`"Available (Enabled) - The virtual server is available`"/></span> <span class=`"textstatus`">UP</span>"
-	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_DISABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_BLUE"){
-		Return "<span class=`"statusicon`"><img src=`"images/black-circle-checkmark.png`" alt=`"Unknown (Disabled)`" title=`"Unknown (Disabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">DISABLED</span>"
-	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_BLUE") {
-		Return "<span class=`"statusicon`"><img src=`"images/blue-square-questionmark.png`" alt=`"Unknown (Enabled)`" title=`"Unknown (Enabled) - The children pool member(s) either don't have service checking enabled, or service check results are not available yet`"/></span> <span class=`"textstatus`">UNKNOWN</span>"
-	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_ENABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_RED"){
-		Return "<span class=`"statusicon`"><img src=`"images/red-circle-cross.png`" alt=`"Offline (Enabled)`" title=`"Offline (Enabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
-	} elseif($VirtualServer.enabled -eq "ENABLED_STATUS_DISABLED" -and $VirtualServer.availability -eq "AVAILABILITY_STATUS_RED"){
-		Return "<span class=`"statusicon`"><img src=`"images/black-circle-cross.png`" alt=`"Offline (Disabled)`" title=`"Offline (Disabled) - The children pool member(s) are down`"/></span> <span class=`"textstatus`">DOWN</span>"
-	}
-}
-#Endregion
 
 #Region Call Cache LTM information
 Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
@@ -2288,7 +2193,7 @@ if($RealTimeStatusDetected){
 
 					<div class="consolesection" id="helpcontent">
 						<h3>Filtering for pool members being down</h3>
-						<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b>"</font>, <font color="green"><b>"UP"</b></font> and <b>"DISABLED"</b>.</p>
+						<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b></font>", "<font color="green"><b>UP</b></font>" and "<b>DISABLED</b>".</p>
 						<p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
 						<h3>Column filtering</h3>
 						<p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
@@ -2373,11 +2278,11 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
 	$LogFile = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
 
 	if(Test-Path $LogFile){
-		 log verbose "Pruning logfile"
+		 log verbose "Pruning logfile $LogFile"
 
 		$MaximumLines = $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines
 
-		$LogContent = Get-Content $LogFile
-		$LogContent | Select-Object -Last $MaximumLines | Out-File $LogFile
+		$LogContent = Get-Content $LogFile -Encoding UTF8
+		$LogContent | Select-Object -Last $MaximumLines | Out-File $LogFile -Encoding UTF8
 	}
 }
