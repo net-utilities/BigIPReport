@@ -201,6 +201,8 @@
 #        5.1.1        2018-05-01      add back NATFile support and a new nat.json file                              Tim Riker       No
 #                                     sort json data before writing
 #                                     don't compress json files if Verbose
+#        5.1.2        2018-05-01      explicit write for empty asmpolicies.json                                     Tim Riker       No
+#                                     button-radius, const, data-pace-option, layout, alternatetablecolor
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -215,7 +217,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.1.1"
+$Global:ScriptVersion = "5.1.2"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -2071,7 +2073,12 @@ Function Write-TemporaryFiles {
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data ( $Global:ReportObjects.Values.Certificates.Values | Sort-Object loadbalancer, fileName )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data ( $Global:DeviceGroups | Sort-Object name )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data $Global:ReportObjects.Values.ASMPolicies.Values
+	If ($Global:ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data ( $Global:ReportObjects.Values.ASMPolicies.Values | Sort-Object loadbalancer, name )
+	} else {
+		log error "writing empty asmpolicies.json"
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data @()
+	}
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:natjsonpath -Data $Global:NATdict
 
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
@@ -2117,12 +2124,6 @@ if(-not (Test-ReportData)){
 }
 
 log success "No missing loadbalancer data was detected, compiling the report"
-
-If ($Global:ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
-	$HasASMProfiles = $true
-} else {
-	$HasASMProfiles = $false
-}
 
 #EndRegion
 
@@ -2178,9 +2179,9 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 			[void]$Global:HTML.AppendLine("const ShowExportLink = false;")
 		}
 		if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
-			[void]$Global:HTML.AppendLine("var HideLoadBalancerFQDN = true;")
+			[void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = true;")
 		} else {
-			[void]$Global:HTML.AppendLine("var HideLoadBalancerFQDN = false;")
+			[void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = false;")
 		}
 		[void]$Global:HTML.AppendLine("const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";")
 		[void]$Global:HTML.AppendLine("const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";")
@@ -2212,19 +2213,13 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 					<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
 					<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
 					<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
-'@)
-	#if($HasASMProfiles){
-		[void]$Global:HTML.AppendLine(@'
 					<th class="asmPoliciesHeaderCell"><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
-'@)
-	#}
-	[void]$Global:HTML.AppendLine(@'
-				<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
-				<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
-				<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
-				<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
-			</tr>
-		</thead>
+					<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
+					<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
+					<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+					<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
+				</tr>
+			</thead>
 		<tbody>
 '@)
 
