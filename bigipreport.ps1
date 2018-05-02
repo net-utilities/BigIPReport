@@ -2071,12 +2071,11 @@ Function Write-TemporaryFiles {
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data ( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data ( $Global:ReportObjects.Values.VirtualServers.Values + $Global:ReportObjects.Values.OrphanPools | Sort-Object loadbalancer,name )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data ( $Global:ReportObjects.Values.Certificates.Values | Sort-Object loadbalancer, fileName )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data ( $Global:DeviceGroups | Sort-Object name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data ( $Global:DeviceGroups | Sort-Object name | ConvertTo-Array )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
 	If ($Global:ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data ( $Global:ReportObjects.Values.ASMPolicies.Values | Sort-Object loadbalancer, name )
 	} else {
-		log error "writing empty asmpolicies.json"
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data @()
 	}
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:natjsonpath -Data $Global:NATdict
