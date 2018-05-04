@@ -1201,11 +1201,6 @@
 			$("#" + columnID).prop("checked", localStorage.getItem(columnID) === "true");
 		});
 
-		$(".columnToggle").on("click", function () {
-			localStorage.setItem(this.getAttribute("id"), this.checked);
-			toggleColumns();
-		});
-
 		showConsoleSection("preferences");
 
 	}
