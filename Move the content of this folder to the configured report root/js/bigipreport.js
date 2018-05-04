@@ -149,6 +149,7 @@
 
 			bigipTable = $('table#allbigips').DataTable({
 
+				"bAutoWidth": false,
 				"data": siteData.virtualservers,
 				"createdRow": function (row, data, index) {
 					$(row).addClass('virtualserverrow');
