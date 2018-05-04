@@ -429,12 +429,7 @@
 
 				hidePools();
 				toggleColumns();
-
-				if (localStorage.getItem("showAdcLinks") === "false") {
-					$(".adcLinkSpan").hide();
-				} else {
-					$(".adcLinkSpan").show();
-				}
+				toggleAdcLinks();
 
 				if (bigipTable.search() != "") {
 					expandPoolMatches(body, bigipTable.search());
@@ -862,6 +857,7 @@
 		$("div#definedirules").html(ruleTable);
 
 		showConsoleSection("definedirules");
+		toggleAdcLinks();
 	}
 
 	function resetClock() {
@@ -1205,7 +1201,7 @@
 			$("#" + columnID).prop("checked", localStorage.getItem(columnID) === "true");
 		});
 
-		$(".columToggle").on("click", function () {
+		$(".columnToggle").on("click", function () {
 			localStorage.setItem(this.getAttribute("id"), this.checked);
 			toggleColumns();
 		});
@@ -1444,6 +1440,14 @@
 			"<tr><td class=\"reportlogdate\">" + date + "</td><td class=\"reportlogtime\">" + time + "</td><td class=\"" + severityClass + "\">" + severity + "</td><td>" + message + "</td></tr>"
 		);
 
+	}
+
+	function toggleAdcLinks () {
+		if (localStorage.getItem("showAdcLinks") === "false") {
+			$(".adcLinkSpan").hide();
+		} else {
+			$(".adcLinkSpan").show();
+		}
 	}
 
 	function toggleColumns() {
@@ -1879,6 +1883,7 @@
 		$('a#closefirstlayerbutton').text("Close virtual server details");
 		$("#firstlayerdetailscontentdiv").html(html);
 		$("#firstlayerdiv").fadeIn(updateLocationHash);
+		toggleAdcLinks();
 
 	}
 
