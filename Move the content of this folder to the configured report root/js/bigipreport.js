@@ -169,11 +169,7 @@
 					"data": "name",
 					"className": "virtualServerCell",
 					"render": function (data, type, row) {
-						return VirtualServerStatus(row) + '<a href="javascript:void(0);" class="tooltip" data-originalvirtualservername="' + data +
-							'" data-loadbalancer="' + row.loadbalancer +
-							'" onclick="Javascript:showVirtualServerDetails($(this).attr(\'data-originalvirtualservername\').trim(),$(this).attr(\'data-loadbalancer\').trim());">' +
-							data + '<span class="detailsicon"><img src="images/details.png" alt="details"></span><p>Click to see virtual server details</p></a>' +
-							'<span class="adcLinkSpan"><a href="https://' + row.loadbalancer + '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + data + '">Edit</a></span>';
+						return VirtualServerStatus(row) + renderVirtualServer(row.loadbalancer, data);
 					}
 				}, {
 					"className": "centeredCell",
@@ -310,8 +306,7 @@
 			**************************************************************************************************************/
 
 			if (ShowExportLink) {
-				$("#allbigips_filter").append("<a id=\"exportCSVButton\" class=\"exportCSVButton\" href=\"javascript:void(0);\">Export to CSV</a>");
-				$("#exportCSVButton").on("click", downloadCSV);
+				$("#allbigips_filter").append("<a id=\"exportCSVButton\" class=\"exportCSVButton\" href=\"javascript:downloadCSV();\">Export to CSV</a>");
 			}
 
 			/*************************************************************************************************************
@@ -320,9 +315,7 @@
 
 			**************************************************************************************************************/
 
-			$("#allbigips_filter").append("<a id=\"showConsoleButton\" class=\"showConsoleButton\" href=\"javascript:void(0);\">Show Console</a>")
-
-			$("a#showConsoleButton").on("click", showConsole);
+			$("#allbigips_filter").append("<a id=\"showConsoleButton\" class=\"showConsoleButton\" href=\"javascript:showConsole();\">Show Console</a>")
 
 			$("#allbigips_filter").append("<div style=\"float:right\"><span id=\"toggleHeader\">Toggle columns:<span><span id=\"columnToggleButtons\"></span></div>")
 
@@ -645,10 +638,7 @@
 				poolinformation += ' rowspan="' + pool.members.length + '"';
 			}
 			poolinformation += ' data-vsid="' + meta.row + '" class="poolname" id="Pool' + p + '">';
-			poolinformation += '<a class="tooltip" data-originalpoolname="' + pool.name + '" data-loadbalancer="' + pool.loadbalancer + '" onclick="Javascript:showPoolDetails($(this).attr(\'data-originalpoolname\'), $(this).attr(\'data-loadbalancer\'));">';
-			poolinformation += pool.name.split('/')[2] + '<span class="detailsicon"><img src="images/details.png" alt="details"></span><p>Click to see pool details</p>';
-			poolinformation += '</a>'
-			poolinformation += '<span class="adcLinkSpan"><a href="https://' + pool.loadbalancer + '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + pool.name + '">Edit</a></span>';
+			poolinformation += renderPool(pool.loadbalancer, pool.name);
 			poolinformation += '</td>';
 			if (pool.members !== null) {
 				poolinformation += renderPoolMemberCell(pool.members[0], p);
@@ -758,22 +748,48 @@
 
 	}
 
+	function renderVirtualServer(loadbalancer, name) {
+		vsName=name.replace(/^\/Common\//,'');
+		result = '<a';
+		result += ' class="tooltip"';
+		result += ' data-originalvirtualservername="' + name + '"';
+		result += ' data-loadbalancer="' + loadbalancer + '"';
+		result += ' href="Javascript:showVirtualServerDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		result += vsName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+		result += '<p>Click to see virtual server details</p>';
+		result += '</a>';
+		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + name + '">Edit</a></span>';
+		return result;
+	}
+
 	function renderRule(loadbalancer, name) {
-		return '<a href="javascript:void(0);" class="tooltip"' +
-		'" onclick="Javascript:showiRuleDetails(\'' + name + '\',\'' + loadbalancer + '\');">' +
-		name + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>' +
-		'<p>Click to see iRule details</p></a>' +
-		'<span class="adcLinkSpan"><a href="https://' + loadbalancer +
-		'/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
+		ruleName=name.replace(/^\/Common\//,'');
+		result = '<a';
+		result += ' class="tooltip"';
+		result += ' data-originalvirtualservername="' + name + '"';
+		result += ' data-loadbalancer="' + loadbalancer + '"';
+		result += ' href="Javascript:showiRuleDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		result += ruleName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+		result += '<p>Click to see iRule details</p>';
+		result += '</a>';
+		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
+		return result;
 	}
 
 	function renderPool(loadbalancer, name) {
-		return '<a href="javascript:void(0);" class="tooltip"' +
-		'" onclick="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">' +
-		name + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>' +
-		'<p>Click to see iRule details</p></a>' +
-		'<span class="adcLinkSpan"><a href="https://' + loadbalancer +
-		'/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
+		poolname=name.replace(/^\/Common\//,'');
+		result = '<a';
+		result += ' class="tooltip"';
+		result += ' data-originalpoolname="' + name + '"';
+		result += ' href="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		result += poolname + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+		result += '<p>Click to see pool details</p>';
+		result += '</a>';
+		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
+		return result;
 	}
 
 	function showDefinediRules() {
@@ -785,7 +801,7 @@
 		var ruleTable = "";
 
 		ruleTable += "<table class=\"definedRulesTable\"><thead>";
-		ruleTable += "<tr><th>Load balancer</th><th>Name</th><th>Associated Pools</th><th>&nbsp;</th>";
+		ruleTable += "<tr><th>Load balancer</th><th>Name</th><th>Associated Pools</th>";
 		ruleTable += "</thead>";
 		ruleTable += "<tbody>";
 
@@ -801,7 +817,7 @@
 				ruleTable += "<tr class=\"missingRule\"><td>" + loadBalancer + "</td><td>" + iRuleName + "</td><td>This rule was defined but not found.<br>Make sure the configuration is correct.<br>Please note that it's case sensitive.</td><td>N/A</td></tr>"
 			} else {
 
-				ruleTable += "<tr class=\"definedRuleRow\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\"><td>" + iRule.loadbalancer + "</td><td>" + iRule.name + "</td><td>"
+				ruleTable += "<tr class=\"definedRuleRow\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\"><td>" + iRule.loadbalancer + "</td><td>" + renderRule(loadBalancer,iRule.name) + "</td><td>"
 
 				if (iRule.pools !== null) {
 
@@ -811,13 +827,13 @@
 							ruleTable += "<br>"
 						}
 
-						ruleTable += "<a href=\"javascript:showPoolDetails('" + iRule.pools[x] + "', '" + loadBalancer + "', 'second')\">" + iRule.pools[x] + "</a>" }
+						ruleTable += "<a href=\"Javascript:showPoolDetails('" + iRule.pools[x] + "', '" + loadBalancer + "', 'second')\">" + iRule.pools[x] + "</a>" }
 
 				} else {
 					ruleTable += "N/A";
 				}
 
-				ruleTable += "</td><td><a href=\"javascript:void(0);\" class=\"definedRuleButton\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\">Show definition</a></td></tr>";
+				ruleTable += "</td></tr>";
 			}
 
 		}
@@ -826,15 +842,6 @@
 
 		//Inject the html
 		$("div#definedirules").html(ruleTable);
-
-		//Attach event handlers
-		$(".definedRuleButton").on("click", function () {
-
-			var iRuleName = $(this).attr("data-rule-name");
-			var loadBalancer = $(this).attr("data-rule-loadbalancer");
-			showiRuleDetails(iRuleName, loadBalancer);
-
-		});
 
 		showConsoleSection("definedirules");
 	}
@@ -1747,7 +1754,7 @@
 			table += '				<table class="virtualserverdetailstable">';
 			table += '					<tr><th>Name</th><td>' + matchingvirtualserver.name + '</td></tr>';
 			table += '					<tr><th>IP:Port</th><td>' + matchingvirtualserver.ip + ':' + matchingvirtualserver.port + '</td></tr>';
-			table += '					<tr><th>Default pool</th><td>' + defaultPool + '</td></tr>';
+			table += '					<tr><th>Default pool</th><td>' + renderPool(loadbalancer,defaultPool) + '</td></tr>';
 			table += '					<tr><th>Traffic Group</th><td>' + trafficGroup + '</td></tr>';
 			table += '					<tr><th>Description</th><td>' + description + '</td></tr>';
 			table += '				</table>';
@@ -1815,14 +1822,14 @@
 										}
 
 										if (ShowDataGroupListsLinks) {
-											datagrouplistdata.push('<a href="javascript:void(0);" onClick="Javascript:showDataGroupListDetails(\'' + matcheddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + name + '</a>');
+											datagrouplistdata.push('<a href="Javascript:showDataGroupListDetails(\'' + matcheddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + name + '</a>');
 										} else {
 											datagrouplistdata.push(name)
 										}
 									}
 								}
 
-								table += '	<tr><td><a href="javascript:void(0);" onClick="Javascript:showiRuleDetails(\'' + iruleobj.name + '\', \'' + loadbalancer + '\')">' + iruleobj.name + '</a></td><td>' + datagrouplistdata.join("<br>") + '</td></tr>';
+								table += '	<tr><td>' + renderRule(loadbalancer, iruleobj.name) + '</td><td>' + datagrouplistdata.join("<br>") + '</td></tr>';
 							}
 						} else {
 							table += '	<tr><td>' + matchingvirtualserver.irules[i] + '</td></tr>';
@@ -1914,7 +1921,7 @@
 						//First, prepare a regexp to replace all instances of the data group list with a link
 						var regexp = new RegExp("\\s" + dg + "(\\s|\])", "g");
 						//Prepare the link
-						var dglink = ' <a href="javascript:void(0);" onClick="Javascript:showDataGroupListDetails(\'' + connecteddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a> ';
+						var dglink = ' <a href="Javascript:showDataGroupListDetails(\'' + connecteddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a> ';
 						//Do the actual replacement
 						definition = definition.replace(regexp, dglink);
 					}
