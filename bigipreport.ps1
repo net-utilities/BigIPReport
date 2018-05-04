@@ -680,6 +680,9 @@ Add-Type @'
 		public string allowsnat;
 		public bool orphaned;
 		public string loadbalancer;
+		public string availability;
+		public string enabled;
+		public string status;
 	}
 
 	public class iRule {
@@ -1178,6 +1181,7 @@ function Cache-LTMInformation {
 	$LoadBalancerObjects.Pools = c@{}
 
 	[array]$Poollist = $F5.LocalLBPool.get_list()
+	[array]$PoolStatus = $F5.LocalLBPool.get_object_status($PoolList)
 	[array]$PoolMonitors = $F5.LocalLBPool.get_monitor_association($PoolList)
 	[array]$PoolMembers = $F5.LocalLBPool.get_member_v2($PoolList)
 	[array]$PoolMemberstatuses = $F5.LocalLBPool.get_member_object_status($PoolList, $Poolmembers)
@@ -1230,6 +1234,9 @@ function Cache-LTMInformation {
 		$ObjTempPool.allownat = $StateToString[[string]($PoolAllowNAT[$i])]
 		$ObjTempPool.allowsnat = $StateToString[[string]($PoolAllowSNAT[$i])]
 		$ObjTempPool.description = $PoolDescriptions[$i]
+		$ObjTempPool.availability = $PoolStatus[$i].availability_status
+		$ObjTempPool.enabled = $PoolStatus[$i].enabled_status
+		$ObjTempPool.status = $PoolStatus[$i].status_description
 		$ObjTempPool.loadbalancer = $LoadBalancerName
 
 		$LoadBalancerObjects.Pools.add($ObjTempPool.name, $ObjTempPool)
