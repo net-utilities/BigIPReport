@@ -157,6 +157,10 @@ table.pooltable tbody>tr:nth-child(even)>td {
 	border-collapse: collapse;
 }
 
+td.PoolMember {
+	text-align: right;
+}
+
 /* Containing style for the top left information box */
 
 div.realtimestatusdiv {
