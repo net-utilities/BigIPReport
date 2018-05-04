@@ -169,7 +169,7 @@
 					"data": "name",
 					"className": "virtualServerCell",
 					"render": function (data, type, row) {
-						return VirtualServerStatus(row) + renderVirtualServer(row.loadbalancer, data);
+						return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data);
 					}
 				}, {
 					"className": "centeredCell",
@@ -579,6 +579,21 @@
 		return mStatus;
 	}
 
+	function PoolStatus(pool) {
+		var pStatus = pool.enabled.split('_')[2] + ':' + pool.availability.split('_')[2];
+
+		if (pStatus == "ENABLED:GREEN" || pStatus == "ENABLED:BLUE") {
+			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
+		} else if (pStatus == "ENABLED:RED" || pStatus == "DISABLED:RED") {
+			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DOWN</span>';
+		} else if (pStatus == "DISABLED:GREEN") {
+			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>'
+		} else if (pStatus == "DISABLED:BLUE") {
+			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>';
+		}
+		return pStatus;
+	}
+
 	function VirtualServerStatus(row) {
 		if (!row.enabled || !row.availability)
 			return '';
@@ -610,8 +625,8 @@
 	function renderPoolMemberCell(member, poolnum) {
 		membercell = '<td class="PoolMember" data-pool="Pool' + poolnum + '">';
 		if (member !== null) {
-			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port + ' - ';
-			membercell += '<span data-member="' + member.ip + ':' + member.port + '">';
+			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port;
+			membercell += '&nbsp;<span data-member="' + member.ip + ':' + member.port + '">';
 			membercell += PoolMemberStatus(member);
 			membercell += '</span>';
 		}
@@ -780,9 +795,11 @@
 
 	function renderPool(loadbalancer, name) {
 		poolname=name.replace(/^\/Common\//,'');
-		result = '<a';
+		result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
+		result += '<a';
 		result += ' class="tooltip"';
 		result += ' data-originalpoolname="' + name + '"';
+		result += ' data-loadbalancer="' + loadbalancer + '"';
 		result += ' href="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
 		result += poolname + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
 		result += '<p>Click to see pool details</p>';
