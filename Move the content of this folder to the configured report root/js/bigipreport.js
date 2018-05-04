@@ -15,7 +15,7 @@
 
 	*************************************************************************************************************************************************************************************/
 
-	$(window).load(function () {
+	$(window).on("load", function () {
 		// Animate loader off screen
 
 		//Prevent caching of ajax requests
@@ -710,7 +710,7 @@
 					loadbalancer.statusvip.reason = jqxhr.statusText;
 					siteData.memberStates.ajaxQueue--;
 				})
-				.complete(function () {
+				.always(function () {
 
 					if (siteData.memberStates.ajaxQueue === 0) {
 
@@ -756,6 +756,24 @@
 
 		$("div.beforedocumentready").fadeOut(1500);
 
+	}
+
+	function renderRule(loadbalancer, name) {
+		return '<a href="javascript:void(0);" class="tooltip"' +
+		'" onclick="Javascript:showiRuleDetails(\'' + name + '\',\'' + loadbalancer + '\');">' +
+		name + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>' +
+		'<p>Click to see iRule details</p></a>' +
+		'<span class="adcLinkSpan"><a href="https://' + loadbalancer +
+		'/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
+	}
+
+	function renderPool(loadbalancer, name) {
+		return '<a href="javascript:void(0);" class="tooltip"' +
+		'" onclick="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">' +
+		name + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>' +
+		'<p>Click to see iRule details</p></a>' +
+		'<span class="adcLinkSpan"><a href="https://' + loadbalancer +
+		'/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
 	}
 
 	function showDefinediRules() {
