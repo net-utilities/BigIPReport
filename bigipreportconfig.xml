@@ -245,28 +245,6 @@
 		</PartitionInformation>
 
 		<!--
-
-		Here you can configure individual iRule you want to expose to the clients.
-		These will be available in the iRules section even if iRules are disabled below.
-
-		Example:
-		<iRules>
-			<iRule>
-				<Loadbalancer>f501.j.local</Loadbalancer>
-				<iRuleName>/Common/miscvip.j.local-pool_selection</iRuleName>
-			</iRule>
-			<iRule>
-				<Loadbalancer>f502.j.local</Loadbalancer>
-				<iRuleName>/Common/generate_ga_code</iRuleName>
-			</iRule>
-		</iRules>
-
-		-->
-
-		<iRules>
-		</iRules>
-
-		<!--
 			**************************************************************************************************************************************
 			*
 			*	In this section you can choose to hide the load balancer TLD section to save space in the report.

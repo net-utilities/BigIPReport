@@ -58,7 +58,6 @@
 .bigiptable {
 	border-collapse: collapse;
 	font-family: Calibri;
-	padding: 10px;
 	color: var(--defaultfontcolor);
 }
 
@@ -465,7 +464,7 @@ a:hover.monitortest p {
 	text-decoration: none;
 }
 
-a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.lightboxbutton {
+a.irulesButton, a.iRuleButton, a.exportCSVButton, a.lightboxbutton {
 	position: relative;
 	display: inline;
 	background: #33699d;
@@ -481,7 +480,7 @@ a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton, a.l
 	text-decoration: none;
 }
 
-a.showConsoleButton, a.irulesButton, a.definedRuleButton, a.exportCSVButton {
+a.irulesButton, a.iRuleButton, a.exportCSVButton {
 	font-size: 12px;
 	padding: 5px 20px 5px 20px;
 }
@@ -491,7 +490,7 @@ a.lightboxbutton {
 	padding: 7px 20px 7px 20px;
 }
 
-a.showConsoleButton:hover, a.irulesButton:hover, a.definedRuleButton:hover, a.exportCSVButton:hover, a.lightboxbutton:hover {
+a.irulesButton:hover, a.iRuleButton:hover, a.exportCSVButton:hover, a.lightboxbutton:hover {
 	background: #3a79b5;
 	background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
 	background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
@@ -811,13 +810,6 @@ div#consoleholder {
 	margin-top: 2%;
 }
 
-div.consolesection {
-	overflow-y: scroll;
-	overflow-x: hidden;
-	padding: 10px;
-	max-height: 700px;
-}
-
 div.sidemenu {
 	background-color: var(--headerbackgroundcolor);
 	width: 100%;
@@ -826,9 +818,8 @@ div.sidemenu {
 
 div.sidemenu div.menuitem {
 	display: inline-block;
-	padding: 10px;
 	font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	padding: 10px 30px 10px 20px;
+	padding: 5px;
 	white-space: nowrap;
 	text-align: middle;
 }
@@ -870,10 +861,6 @@ div#helpcontent {
 *****************************************************************************************************************************/
 
 /* Contains the pool details table (the one with members and status) */
-
-div#deviceoverview {
-	min-width: 1300px;
-}
 
 table#deviceoverviewtable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -1044,18 +1031,13 @@ table#reportlogstable.reportlogdate {
 	CSS related to defined iRules
 ***********************************************************************************************************************************/
 
-div#definedirules {
-	padding: 20px 30px 20px 30px;
-}
-
-.definedRulesTable {
+.iRulesTable {
 	border-collapse: collapse;
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 0 auto;
-	width: 95%;
 }
 
-.definedRulesTable tbody>tr>td {
+.iRulesTable tbody>tr>td {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-size: 16px;
 	border: 1px solid var(--bordercolor);
@@ -1065,7 +1047,7 @@ div#definedirules {
 	padding: 10px;
 }
 
-.definedRulesTable thead>tr>th {
+.iRulesTable thead>tr>th {
 	text-align: center;
 	background-color: var(--headerbackgroundcolor);
 	color: var(--headerfontcolor);
@@ -1073,7 +1055,7 @@ div#definedirules {
 	padding: 10px;
 }
 
-.definedRulesTable tbody>tr:nth-child(even)>td {
+.iRulesTable tbody>tr:nth-child(even)>td {
 	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
