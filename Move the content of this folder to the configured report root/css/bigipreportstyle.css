@@ -797,19 +797,6 @@ div.innerLightbox {
 	Side menu
 ***********************************************************************************************************************************/
 
-div#consoleholder {
-	background: #fff;
-	display: inline-block;
-	text-align: left;
-	max-width: 90%;
-	padding: 0px;
-	border: 1px #000 solid;
-	-webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-	-moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-	box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-	margin-top: 2%;
-}
-
 div.sidemenu {
 	background-color: var(--headerbackgroundcolor);
 	width: 100%;
@@ -852,7 +839,6 @@ div#helpcontent {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 0 auto;
 	max-width: 970px;
-	padding: 0px 40px 20px 40px;
 }
 
 
@@ -917,15 +903,10 @@ span.devicepollingnotconfigured {
 	This section contains the style for the preferences
 *****************************************************************************************************************************/
 
-div#preferences {
-	padding: 20px 30px 20px 30px;
-}
-
 table#preferencestable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-size: 16px;
 	margin: 0 auto;
-	width: 95%;
 }
 
 table#preferencestable tbody tr td {
@@ -953,10 +934,6 @@ a#certnotification {
 
 a#certnotification:hover {
 	text-decoration: none;
-}
-
-div#certificatedetails {
-	padding: 20px 30px 20px 30px;
 }
 
 table#certificatedetailstable {
@@ -993,10 +970,6 @@ tr.certificateExpiringIn14 {
 /****************************************************************************************************************************
 	This section contains the style for the log content
 *****************************************************************************************************************************/
-
-div#reportlogs {
-	padding: 20px 30px 20px 30px;
-}
 
 table#reportlogstable {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
