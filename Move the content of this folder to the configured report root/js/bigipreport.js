@@ -504,12 +504,12 @@
 			})();
 
 			//This section handles the global search
-			$('div.dataTables_filter input').off('keyup.DT input.DT');
+			$('div#allbigips_filter.dataTables_filter input').off('keyup.DT input.DT');
 
 			var searchDelay = null;
 
-			$('div.dataTables_filter input').on('keyup', function () {
-				var search = $('div.dataTables_filter input').val();
+			$('div#allgibips_filter.dataTables_filter input').on('keyup', function () {
+				var search = $('div#allbigips_filter.dataTables_filter input').val();
 				delay(function () {
 					if (search != null) {
 						updateLocationHash();
