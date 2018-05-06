@@ -233,12 +233,12 @@
 					"createdCell": createdPoolCell,
 					"render": renderPoolCell
 				}],
-				"iDisplayLength": 15,
+				"iDisplayLength": 10,
 				"oLanguage": {
 					"sSearch": "Search all columns:"
 				},
 				"dom": 'frtilp',
-				"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]]
+				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 			});
 
 
@@ -316,8 +316,6 @@
 
 			**************************************************************************************************************/
 
-			$("#allbigips_filter").append("<a id=\"showConsoleButton\" class=\"showConsoleButton\" href=\"javascript:showConsole();\">Show Console</a>")
-
 			$("#allbigips_filter").append("<div style=\"float:right\"><span id=\"toggleHeader\">Toggle columns:<span><span id=\"columnToggleButtons\"></span></div>")
 
 			$("#allbigips thead th input").each(function () {
@@ -361,7 +359,7 @@
 			**************************************************************************************************************/
 
 			//Add the div containing the update available button
-			$("a#showConsoleButton").after($('<span id="updateavailablespan"></span>'));
+			$("a#resetFiltersButton").after($('<span id="updateavailablespan"></span>'));
 
 			//Check if there's a new update every 30 minutes
 			setInterval(function () {
@@ -412,6 +410,53 @@
 				return this;
 			}
 
+
+			/* iRule Table */
+			iRuleTable = $('table#iRuleTable').DataTable({
+				"bAutoWidth": false,
+				"data": siteData.irules,
+				"columns": [{
+					"data": "loadbalancer",
+					"className": "loadbalancerCell",
+					"render": function (data, type, row) {
+						var balancer;
+						if (HideLoadBalancerFQDN) {
+							balancer = data.split('.')[0]
+						} else {
+							balancer = data;
+						}
+						return '<a onclick="window.open(\'https://' + data + '\',\'_blank\')">' + balancer + '</a>';
+					}
+				}, {
+					"data": "name",
+					"className": "iRuleCell",
+					"render": function (data, type, row) {
+						return renderRule(row.loadbalancer, data);
+					}
+				}, {
+					"render": function (data, type, row) {
+						var result = '';
+						if (row.pools && row.pools.length > 0) {
+							row.pools.forEach((pool) => {
+								if (result != '') {
+									result += '<br>';
+								}
+								result += renderPool(row.loadbalancer, pool);
+							});
+						} else {
+							result = "None";
+						}
+						return result;
+					}
+				}],
+				"iDisplayLength": 10,
+				"oLanguage": {
+					"sSearch": "Search all columns:"
+				},
+				"dom": 'frtilp',
+				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+			});
+
 			/******************************************************************************************************************************
 
 				Add custom data tables functions
@@ -439,15 +484,6 @@
 
 			});
 
-			$("div#preferencesbutton").on("click", showPreferences);
-			$("div#deviceoverviewbutton").on("click", showDeviceOverview);
-			$("div#irulesbutton").on("click", showDefinediRules);
-			$("div#certificatebutton").on("click", showCertificateDetails);
-			$("div#logsbutton").on("click", showReportLogs);
-			$("div#helpbutton").on("click", showHelp);
-			$("a#closeconsolebutton").on("click", function () {
-				$("div#consolediv").trigger("click");
-			});
 			$("a#closefirstlayerbutton").on("click", function () {
 				$("div#firstlayerdiv").trigger("click");
 			});
@@ -514,6 +550,17 @@
 			**************************************************************************************************************/
 
 			bigipTable.draw();
+
+			/* highlight selected menu option */
+
+			var currentSection = $("div#mainholder").attr("data-activesection");
+
+			if (currentSection === undefined) {
+				showVirtualServers();
+				$("div#consolediv").fadeIn(updateLocationHash);
+			} else {
+				$("div#consolediv").fadeIn(updateLocationHash);
+			}
 
 		});
 
@@ -805,58 +852,13 @@
 		return result;
 	}
 
-	function showDefinediRules() {
+	function showiRules() {
 
 		activateMenuButton("div#irulesbutton");
-		$("div#consoleholder").attr("data-activesection", "definedirules");
+		$("div#mainholder").attr("data-activesection", "irules");
 		updateLocationHash();
 
-		var ruleTable = "";
-
-		ruleTable += "<table class=\"definedRulesTable\"><thead>";
-		ruleTable += "<tr><th>Load balancer</th><th>Name</th><th>Associated Pools</th>";
-		ruleTable += "</thead>";
-		ruleTable += "<tbody>";
-
-		for (i in definedRules) {
-
-			var loadBalancer = definedRules[i].loadBalancer;
-			var iRuleName = definedRules[i].iRuleName;
-
-			iRule = getiRule(iRuleName, loadBalancer);
-
-			//Test for missing rule by testing for an empty object ("{}")
-			if (Object.keys(iRule).length === 0 && iRule.constructor === Object) {
-				ruleTable += "<tr class=\"missingRule\"><td>" + loadBalancer + "</td><td>" + iRuleName + "</td><td>This rule was defined but not found.<br>Make sure the configuration is correct.<br>Please note that it's case sensitive.</td><td>N/A</td></tr>"
-			} else {
-
-				ruleTable += "<tr class=\"definedRuleRow\" data-rule-name=\"" + iRuleName + "\" data-rule-loadbalancer=\"" + loadBalancer + "\"><td>" + iRule.loadbalancer + "</td><td>" + renderRule(loadBalancer,iRule.name) + "</td><td>"
-
-				if (iRule.pools !== null) {
-
-					for (x in iRule.pools) {
-
-						if (x !== 0) {
-							ruleTable += "<br>"
-						}
-
-						ruleTable += "<a href=\"Javascript:showPoolDetails('" + iRule.pools[x] + "', '" + loadBalancer + "', 'second')\">" + iRule.pools[x] + "</a>" }
-
-				} else {
-					ruleTable += "N/A";
-				}
-
-				ruleTable += "</td></tr>";
-			}
-
-		}
-
-		ruleTable += "</tbody></table>";
-
-		//Inject the html
-		$("div#definedirules").html(ruleTable);
-
-		showConsoleSection("definedirules");
+		showMainSection("irules");
 		toggleAdcLinks();
 	}
 
@@ -1106,11 +1108,14 @@
 				showiRuleDetails(iruleName, loadBalancer);
 			}
 
-			if (vars['consolesection']) {
+			if (vars['mainsection']) {
 
-				var activeSection = vars['consolesection'];
+				var activeSection = vars['mainsection'];
 
 				switch (activeSection) {
+					case "virtualservers":
+						showVirtualServers();
+						break;
 					case "preferences":
 						showPreferences();
 						break;
@@ -1138,24 +1143,20 @@
 		}
 	}
 
-	function showConsole() {
+	function showVirtualServers() {
 
-		var currentSection = $("div#consoleholder").attr("data-activesection");
+		activateMenuButton("div#virtualserversbutton");
+		$("div#mainholder").attr("data-activesection", "virtualservers");
+		updateLocationHash();
 
-		if (currentSection === undefined) {
-			showDeviceOverview();
-			$("div#consolediv").fadeIn(updateLocationHash);
-		} else {
-			$("div#consolediv").fadeIn(updateLocationHash);
-		}
-
+		showMainSection("virtualservers")
 	}
 
 
 	function showPreferences() {
 
 		activateMenuButton($("div#preferencesbutton"));
-		$("div#consoleholder").attr("data-activesection", "preferences");
+		$("div#mainholder").attr("data-activesection", "preferences");
 		updateLocationHash();
 
 		//Prepare the content
@@ -1201,14 +1202,14 @@
 			$("#" + columnID).prop("checked", localStorage.getItem(columnID) === "true");
 		});
 
-		showConsoleSection("preferences");
+		showMainSection("preferences");
 
 	}
 
 	function showCertificateDetails() {
 
 		activateMenuButton("div#certificatebutton");
-		$("div#consoleholder").attr("data-activesection", "certificatedetails");
+		$("div#mainholder").attr("data-activesection", "certificatedetails");
 		updateLocationHash();
 
 		var certificates = siteData.certificates;
@@ -1264,22 +1265,22 @@
 		$("div#certificatedetails").html(html);
 
 		var certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
-			"iDisplayLength": 15,
+			"iDisplayLength": 10,
 			"oLanguage": {
 				"sSearch": "Search all columns:"
 			},
 			"dom": 'frtilp',
-			"lengthMenu": [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]]
+			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
-		showConsoleSection("certificatedetails");
+		showMainSection("certificatedetails");
 
 	}
 
 	function showDeviceOverview() {
 
 		activateMenuButton("div#deviceoverviewbutton");
-		$("div#consoleholder").attr("data-activesection", "deviceoverview");
+		$("div#mainholder").attr("data-activesection", "deviceoverview");
 		updateLocationHash();
 
 		var deviceGroups = siteData.deviceGroups
@@ -1375,33 +1376,33 @@
 				</table>`
 
 		$("div#deviceoverview").html(html);
-		showConsoleSection("deviceoverview");
+		showMainSection("deviceoverview");
 
 	}
 
-	function showConsoleSection(section) {
-		$("div.consolesection").hide();
-		$("div#" + section).fadeIn(updateLocationHash);
+	function showMainSection(section) {
+		$("div.mainsection").hide();
+		$("div#" + section).fadeIn(10, updateLocationHash);
 	}
 
 	function showReportLogs() {
 
 		activateMenuButton($("div#logsbutton"));
-		$("div#consoleholder").attr("data-activesection", "reportlogs");
+		$("div#mainholder").attr("data-activesection", "reportlogs");
 
 		updateLocationHash();
 
-		showConsoleSection("reportlogs");
+		showMainSection("reportlogs");
 
 	}
 
 	function showHelp() {
 
 		activateMenuButton("div#helpbutton");
-		$("div#consoleholder").attr("data-activesection", "help");
+		$("div#mainholder").attr("data-activesection", "help");
 		updateLocationHash();
 
-		showConsoleSection("helpcontent")
+		showMainSection("helpcontent")
 
 	}
 
@@ -1487,12 +1488,8 @@
 			parameters.push(type + "=" + objectName + "@" + loadbalancer);
 		});
 
-		if ($("div#consolediv").is(":visible")) {
-
-			var activeSection = $("div#consoleholder").attr("data-activesection");
-			parameters.push("consolesection=" + activeSection);
-
-		}
+		var activeSection = $("div#mainholder").attr("data-activesection");
+		parameters.push("mainsection=" + activeSection);
 
 		window.location.hash = parameters.join("&");
 

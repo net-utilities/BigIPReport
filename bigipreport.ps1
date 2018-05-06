@@ -2113,26 +2113,90 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				</tr>
 			</table>
 		</div>
+		<div id="mainholder">
+			<div class="sidemenu">
+				<div class="menuitem" id="virtualserversbutton" onclick="Javascript:showVirtualServers();"><img id="virtualserverviewicon" src="images/deviceicons/viprion_c2400.png" alt="virtual servers"/>VirtualServers</div>
+				<div class="menuitem" id="irulesbutton" onclick="Javascript:showiRules();"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/>iRules</div>
+				<div class="menuitem" id="deviceoverviewbutton" onclick="Javascript:showDeviceOverview();"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png" alt="overview"/> Device overview</div>
+				<div class="menuitem" id="certificatebutton" onclick="Javascript:showCertificateDetails();"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates <span id="certificatenotification"></span></div>
+				<div class="menuitem" id="logsbutton" onclick="Javascript:showReportLogs();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div>
+				<div class="menuitem" id="preferencesbutton" onclick="Javascript:showPreferences();"><img id="preferencesicon" src="images/preferences.png" alt="preferences"/> Preferences</div>
+				<div class="menuitem" id="helpbutton" onclick="Javascript:showHelp();"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
+			</div>
+
+			<div class="mainsection" id="virtualservers">
+				<div id="allbigipsdiv" class="lbdiv">
+					<table id="allbigips" class="bigiptable">
+						<thead>
+							<tr>
+								<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
+								<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
+								<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
+								<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
+								<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
+								<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
+								<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+								<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="mainsection" id="irules">
+				<table id="iRuleTable" class="iRulesTable">
+					<thead>
+						<tr>
+							<th>Load balancer</th>
+							<th>Name</th>
+							<th>Associated Pools</th>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			<div class="mainsection" id="deviceoverview"></div>
+			<div class="mainsection" id="certificatedetails"></div>
+			<div class="mainsection" id="preferences"></div>
+
+			<div class="mainsection" id="reportlogs">
+				<table id="reportlogstable" class="bigiptable">
+					<thead>
+						<tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="mainsection" id="helpcontent">
+				<h3>Filtering for pool members being down</h3>
+				<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b></font>", "<font color="green"><b>UP</b></font>" and "<b>DISABLED</b>".</p>
+				<p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
+				<h3>Column filtering</h3>
+				<p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
+				<h3>Pool member tests</h3>
+				<p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
+				<h3>Feature requests</h3>
+				<p>Please add any feature requests or suggestions here:</p>
+				<p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
+				<p>And if you like the project, please set aside some of your time to leave a <a href="https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
+				<h3>Troubleshooting</h3>
+				<p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
+				<p>To collect and download anonymized data for submitting a device overview bug report, click <a href="javascript:exportDeviceData()">here</a>.</p>
+				<h3>Contact</h3>
+				<p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+			</div>
+		</div>
 '@)
 
-	#Show the div used to contain information generating by clicking at pool members
-	[void]$Global:HTML.AppendLine(@'
-		<div id="allbigipsdiv" class="lbdiv">
-		<table id="allbigips" class="bigiptable">
-			<thead>
-				<tr>
-					<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
-					<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
-					<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
-					<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
-					<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
-					<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
-					<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
-					<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
-				</tr>
-			</thead>
-		<tbody>
-'@)
+[void]$Global:HTML.AppendLine(@"
+		<div class="footer">
+			The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
+			BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
+		</div>
+"@)
 
 #Initiate variables used for showing progress (in case the debug is set)
 
@@ -2142,17 +2206,6 @@ $RealTimeStatusDetected = ($Global:ReportObjects.Values.LoadBalancer | Where-Obj
 if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
 }
-
-[void]$Global:HTML.AppendLine(@"
-				</tbody>
-			</table>
-			<div class="footer">
-				The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-				BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
-			</div>
-		</div>
-"@)
-
 
 [void]$Global:HTML.AppendLine(@"
 		<div class="lightbox" id="firstlayerdiv">
@@ -2170,54 +2223,6 @@ if($RealTimeStatusDetected){
 				</div>
 			</div>
 			<div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton" id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>
-		</div>
-
-		<div class="lightbox" id="consolediv">
-				<div id="consoleholder">
-					<div class="sidemenu">
-						<div id="deviceoverviewbutton" class="menuitem"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png" alt="overview"/> Device overview</div><!-- To remove the space between the items.
-					 --><div id="irulesbutton" class="menuitem"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/> Defined iRules</div><!--								  Weird solution. But it works.
-					 --><div id="certificatebutton" class="menuitem"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates <span id="certificatenotification"></span></div><!--
-					 --><div id="logsbutton" class="menuitem"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div><!--
-					 --><div id="preferencesbutton" class="menuitem"><img id="preferencesicon" src="images/preferences.png" alt="preferences"/> Preferences</div><!--
-					 --><div id="helpbutton" class="menuitem"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
-					</div>
-
-					<div class="consolesection" id="deviceoverview"></div>
-					<div class="consolesection" id="definedirules"></div>
-					<div class="consolesection" id="certificatedetails"></div>
-					<div class="consolesection" id="preferences"></div>
-
-					<div class="consolesection" id="reportlogs">
-						<table id="reportlogstable" class="bigiptable">
-							<thead>
-								<tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
-							</thead>
-							<tbody>
-							</tbody>
-						</table>
-					</div>
-
-					<div class="consolesection" id="helpcontent">
-						<h3>Filtering for pool members being down</h3>
-						<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b></font>", "<font color="green"><b>UP</b></font>" and "<b>DISABLED</b>".</p>
-						<p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
-						<h3>Column filtering</h3>
-						<p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
-						<h3>Pool member tests</h3>
-						<p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
-						<h3>Feature requests</h3>
-						<p>Please add any feature requests or suggestions here:</p>
-						<p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
-						<p>And if you like the project, please set aside some of your time to leave a <a href="https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
-						<h3>Troubleshooting</h3>
-						<p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
-						<p>To collect and download anonymized data for submitting a device overview bug report, click <a href="javascript:exportDeviceData()">here</a>.</p>
-						<h3>Contact</h3>
-						<p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
-					</div>
-				</div>
-				<div id="consoledivfooter"><a class="lightboxbutton" id="closeconsolebutton" href="javascript:void(0);">Close console</a></div>
 		</div>
 	</body>
 </html>
