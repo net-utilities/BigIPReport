@@ -157,7 +157,7 @@ table.pooltable tbody>tr:nth-child(even)>td {
 }
 
 td.PoolMember {
-	text-align: right;
+	text-align: left;
 }
 
 /* Containing style for the top left information box */
