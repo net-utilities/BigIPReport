@@ -2124,7 +2124,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				<div class="menuitem" id="helpbutton" onclick="Javascript:showHelp();"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
 			</div>
 
-			<div class="mainsection" id="virtualservers">
+			<div class="mainsection" id="virtualservers" style="display: none;">
 				<div id="allbigipsdiv" class="lbdiv">
 					<table id="allbigips" class="bigiptable">
 						<thead>
@@ -2144,7 +2144,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 					</table>
 				</div>
 			</div>
-			<div class="mainsection" id="irules">
+			<div class="mainsection" id="irules" style="display: none;">
 				<table id="iRuleTable" class="iRulesTable">
 					<thead>
 						<tr>
@@ -2156,11 +2156,11 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 					</tbody>
 				</table>
 			</div>
-			<div class="mainsection" id="deviceoverview"></div>
-			<div class="mainsection" id="certificatedetails"></div>
-			<div class="mainsection" id="preferences"></div>
+			<div class="mainsection" id="deviceoverview" style="display: none;"></div>
+			<div class="mainsection" id="certificatedetails" style="display: none;"></div>
+			<div class="mainsection" id="preferences" style="display: none;"></div>
 
-			<div class="mainsection" id="reportlogs">
+			<div class="mainsection" id="reportlogs" style="display: none;">
 				<table id="reportlogstable" class="bigiptable">
 					<thead>
 						<tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
@@ -2170,7 +2170,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				</table>
 			</div>
 
-			<div class="mainsection" id="helpcontent">
+			<div class="mainsection" id="helpcontent" style="display: none;">
 				<h3>Filtering for pool members being down</h3>
 				<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b></font>", "<font color="green"><b>UP</b></font>" and "<b>DISABLED</b>".</p>
 				<p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
