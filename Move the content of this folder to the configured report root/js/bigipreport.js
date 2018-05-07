@@ -568,8 +568,6 @@
 			//This section handles the global search
 			$('div#allbigips_filter.dataTables_filter input').off('keyup.DT input.DT');
 
-			var searchDelay = null;
-
 			$('div#allbigips_filter.dataTables_filter input').on('keyup', function () {
 				var search = $('div#allbigips_filter.dataTables_filter input').val();
 				delay(function () {
