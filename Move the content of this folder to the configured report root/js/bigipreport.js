@@ -67,8 +67,8 @@
 				siteData.pools = result;
 				siteData.poolsMap = new Map();
 				let poolNum = 0;
-				result.forEach(({loadbalancer, name, ...rest}) => {
-					siteData.poolsMap.set(`${loadbalancer}:${name}`, {loadbalancer, name, poolNum, ...rest});
+				result.forEach((pool) => {
+					siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
 					poolNum++;
 				})
 			}).fail(addJSONLoadingFailure),
@@ -603,7 +603,6 @@
 			$("td#pollingstatecell").html("Disabled")
 			//Make sure that all pools are hidden
 			populateSearchParameters();
-			$("div.beforedocumentready").fadeOut(1500);
 		}
 	}
 
