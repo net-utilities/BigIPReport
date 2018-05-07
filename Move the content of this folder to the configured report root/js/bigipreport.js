@@ -729,10 +729,10 @@
 	function renderPoolMemberCell(member, poolnum) {
 		membercell = '<td class="PoolMember" data-pool="Pool' + poolnum + '">';
 		if (member !== null) {
-			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port;
-			membercell += '&nbsp;<span data-member="' + member.ip + ':' + member.port + '">';
+			membercell += '<span data-member="' + member.ip + ':' + member.port + '">';
 			membercell += PoolMemberStatus(member);
-			membercell += '</span>';
+			membercell += '</span>&nbsp;&nbsp;';
+			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port;
 		}
 		membercell += '</td>'
 		return membercell;
