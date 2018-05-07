@@ -682,6 +682,9 @@
 	}
 
 	function PoolStatus(pool) {
+		if (!pool) {
+			return '';
+		}
 		var pStatus = pool.enabled.split('_')[2] + ':' + pool.availability.split('_')[2];
 
 		if (pStatus == "ENABLED:GREEN" || pStatus == "ENABLED:BLUE") {
