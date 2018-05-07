@@ -2157,7 +2157,23 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				</table>
 			</div>
 			<div class="mainsection" id="deviceoverview" style="display: none;"></div>
-			<div class="mainsection" id="certificatedetails" style="display: none;"></div>
+			<div class="mainsection" id="certificatedetails" style="display: none;">
+				<table id="certificatedetailstable" class="bigiptable">
+					<thead>
+						<tr>
+							<th>Load Balancer</th>
+							<th>Name</th>
+							<th>Common Name</th>
+							<th>Country Name</th>
+							<th>State Name</th>
+							<th>Organization Name</th>
+							<th>Expiring</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
 			<div class="mainsection" id="preferences" style="display: none;"></div>
 
 			<div class="mainsection" id="reportlogs" style="display: none;">
