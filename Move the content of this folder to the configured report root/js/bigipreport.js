@@ -158,13 +158,7 @@
 					"data": "loadbalancer",
 					"className": "loadbalancerCell",
 					"render": function (data, type, row) {
-						var balancer;
-						if (HideLoadBalancerFQDN) {
-							balancer = data.split('.')[0]
-						} else {
-							balancer = data;
-						}
-						return '<a onclick="window.open(\'https://' + data + '\',\'_blank\')">' + balancer + '</a>';
+						return renderLoadBalancer(data);
 					}
 				}, {
 					"data": "name",
@@ -411,7 +405,12 @@
 			}
 
 
-			/* iRule Table */
+			/******************************************************************************************************************************
+
+				iRule Table
+
+			******************************************************************************************************************************/
+
 			iRuleTable = $('table#iRuleTable').DataTable({
 				"bAutoWidth": false,
 				"data": siteData.irules,
@@ -419,13 +418,7 @@
 					"data": "loadbalancer",
 					"className": "loadbalancerCell",
 					"render": function (data, type, row) {
-						var balancer;
-						if (HideLoadBalancerFQDN) {
-							balancer = data.split('.')[0]
-						} else {
-							balancer = data;
-						}
-						return '<a onclick="window.open(\'https://' + data + '\',\'_blank\')">' + balancer + '</a>';
+						return renderLoadBalancer(data);
 					}
 				}, {
 					"data": "name",
@@ -449,6 +442,72 @@
 						return result;
 					}
 				}],
+				"iDisplayLength": 10,
+				"oLanguage": {
+					"sSearch": "Search all columns:"
+				},
+				"dom": 'frtilp',
+				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+			});
+
+			/******************************************************************************************************************************
+
+				Certificate Table
+
+			******************************************************************************************************************************/
+
+			var certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
+				"data": siteData.certificates,
+				"columns": [{
+					"data": "loadbalancer",
+					"className": "loadbalancerCell",
+					"render": function (data, type, row) {
+						return renderLoadBalancer(data);
+					}
+				}, {
+					"data": "fileName"
+				}, {
+					"data": "subject.commonName"
+				}, {
+					"data": "subject.countryName",
+					"class": "certificatecountryname",
+					"render": function(data, type, row) {
+						result = '';
+						if (data) {
+							result += "<img class=\"flagicon\" src=\"images/flags/" + data.toLowerCase() + ".png\"/> ";
+						}
+						return result + " " + data;
+					}
+				}, {
+					"data": "subject.stateName"
+				}, {
+					"data": "subject.organizationName"
+				}, {
+					"data": "expirationDate",
+					"render": function(data, type, row){
+						var certificateDate = new Date(0);
+						certificateDate.setUTCSeconds(data);
+						return certificateDate.toISOString().replace("T", " ").replace(/\.[0-9]{3}Z/, "");
+					}
+				}],
+				"createdRow": function(row, data, index) {
+					// Get the days left
+					var now = new Date();
+					var certificateDate = new Date(0);
+					certificateDate.setUTCSeconds(data.expirationDate);
+					var daysLeft = dateDiffInDays(now, certificateDate);
+
+					if (daysLeft < 14) {
+						var rowClass = "certificateExpiringIn14";
+					} else if (daysLeft < 30) {
+						var rowClass = "certificateExpiringIn30";
+					} else if (daysLeft < 60) {
+						var rowClass = "certificateExpiringIn60"
+					} else {
+						var rowClass = "certificateExpiringInMoreThan60"
+					}
+					$(row).addClass(rowClass);
+				},
 				"iDisplayLength": 10,
 				"oLanguage": {
 					"sSearch": "Search all columns:"
@@ -803,6 +862,16 @@
 
 		$("div.beforedocumentready").fadeOut(1500);
 
+	}
+
+	function renderLoadBalancer(loadbalancer) {
+		var balancer;
+		if (HideLoadBalancerFQDN) {
+			balancer = loadbalancer.split('.')[0]
+		} else {
+			balancer = loadbalancer;
+		}
+		return '<a onclick="window.open(\'https://' + loadbalancer + '\',\'_blank\')">' + balancer + '</a>';
 	}
 
 	function renderVirtualServer(loadbalancer, name) {
@@ -1210,67 +1279,6 @@
 		activateMenuButton("div#certificatebutton");
 		$("div#mainholder").attr("data-activesection", "certificatedetails");
 		updateLocationHash();
-
-		var certificates = siteData.certificates;
-
-		var html = `
-				<table id="certificatedetailstable" class="bigiptable">
-					<thead>
-						<tr>
-							<th>Load Balancer</th><th>Name</th><th>Common Name</th><th>Country Name</th><th>State Name</th><th>Organization Name</th><th>Expiring</th>
-						</tr>
-					</thead>
-					<tbody>`;
-
-		for (var c in certificates) {
-
-			var certificate = certificates[c];
-			var certificateSubject = certificate.subject
-
-			// Get the expiration date of the certificate and format it in readable ISO format
-			var certificateDate = new Date(0);
-			certificateDate.setUTCSeconds(certificate.expirationDate)
-			dateString = certificateDate.toISOString().replace("T", " ").replace(/\.[0-9]{3}Z/, "");
-
-			// Get the days left
-			var now = new Date();
-			var daysLeft = dateDiffInDays(now, certificateDate);
-
-			if (daysLeft < 14) {
-				var rowClass = "certificateExpiringIn14";
-			} else if (daysLeft < 30) {
-				var rowClass = "certificateExpiringIn30";
-			} else if (daysLeft < 60) {
-				var rowClass = "certificateExpiringIn60"
-			} else {
-				var rowClass = "certificateExpiringInMoreThan60"
-			}
-
-			var countryIcon = "";
-
-			if (certificateSubject.countryName) {
-				countryIcon = "<img class=\"flagicon\" src=\"images/flags/" + certificateSubject.countryName.toLowerCase() + ".png\"/> ";
-			}
-
-			html += "<tr class=\"" + rowClass + "\"><td class=\"certificateloadbalancer\">" + certificate.loadbalancer + "</td><td>" + certificate.fileName + "</td><td>" + certificateSubject.commonName + "</td><td class=\"certificatecountryname\">" + countryIcon + certificateSubject.countryName + "</td><td>" + certificateSubject.stateName + "</td><td>" + certificateSubject.organizationName + "</td><td class=\"certificateexpiredate\">" + dateString + "</td>";
-
-		}
-
-		html += `
-					</tbody>
-				</table>`
-
-
-		$("div#certificatedetails").html(html);
-
-		var certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
-			"iDisplayLength": 10,
-			"oLanguage": {
-				"sSearch": "Search all columns:"
-			},
-			"dom": 'frtilp',
-			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
-		});
 
 		showMainSection("certificatedetails");
 
