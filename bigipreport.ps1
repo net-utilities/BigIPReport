@@ -585,7 +585,7 @@ if(-not $SaneConfig){
 	log verbose "There were errors during the config file sanity check"
 
 	if($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true){
-		log verbose "Attempting to sen an error report via mail"
+		log verbose "Attempting to send an error report via mail"
 		Send-Errors
 	}
 
@@ -2029,12 +2029,16 @@ Function Write-TemporaryFiles {
 
 #Region Check for missing data and if the report contains ASM profiles
 if(-not (Test-ReportData)){
-	log error "Missing load balancer data, no report will be written"
+	if(-not $Global:Bigipreportconfig.Settings.ErrorReportAnyway -eq $true){
+		log error "Missing load balancer data, no report will be written"
+		Send-Errors
+		Exit
+	}
+	log error "Missing load balancer data, writing report anyway"
 	Send-Errors
-	Exit
+} else {
+	log success "No missing loadbalancer data was detected, compiling the report"
 }
-
-log success "No missing loadbalancer data was detected, compiling the report"
 
 #EndRegion
 
