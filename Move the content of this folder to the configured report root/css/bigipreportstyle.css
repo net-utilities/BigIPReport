@@ -800,7 +800,7 @@ div.innerLightbox {
 div.sidemenu {
 	background-color: var(--headerbackgroundcolor);
 	width: 100%;
-	text-align: center;
+	text-align: left;
 }
 
 div.sidemenu div.menuitem {
