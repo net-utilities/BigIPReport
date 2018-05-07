@@ -465,7 +465,10 @@
 						return renderLoadBalancer(data);
 					}
 				}, {
-					"data": "fileName"
+					"data": "fileName",
+					"render": function(data, type, row) {
+						return renderCertificate(row.loadbalancer, data);
+					}
 				}, {
 					"data": "subject.commonName"
 				}, {
@@ -917,6 +920,14 @@
 		result += '</a>';
 		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
 		result += '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
+		return result;
+	}
+
+	function renderCertificate(loadbalancer, name) {
+		certName=name.replace(/^\/Common\//,'');
+		result = certName;
+		result += ' <span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?certificate_name=' + name.replace(/\//,'%2F').replace(/.crt$/,'') + '">Edit</a></span>';
 		return result;
 	}
 
