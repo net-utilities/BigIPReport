@@ -2126,6 +2126,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				<div class="menuitem" id="irulesbutton" onclick="Javascript:showiRules();"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/>iRules</div>
 				<div class="menuitem" id="deviceoverviewbutton" onclick="Javascript:showDeviceOverview();"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png" alt="overview"/> Device overview</div>
 				<div class="menuitem" id="certificatebutton" onclick="Javascript:showCertificateDetails();"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates <span id="certificatenotification"></span></div>
+				<div class="menuitem" id="datagroupbutton" onclick="Javascript:showDataGroups();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Data Groups</div>
 				<div class="menuitem" id="logsbutton" onclick="Javascript:showReportLogs();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div>
 				<div class="menuitem" id="preferencesbutton" onclick="Javascript:showPreferences();"><img id="preferencesicon" src="images/preferences.png" alt="preferences"/> Preferences</div>
 				<div class="menuitem" id="helpbutton" onclick="Javascript:showHelp();"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
@@ -2152,7 +2153,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				</div>
 			</div>
 			<div class="mainsection" id="irules" style="display: none;">
-				<table id="iRuleTable" class="iRulesTable">
+				<table id="iRuleTable" class="bigiptable">
 					<thead>
 						<tr>
 							<th>Load balancer</th>
@@ -2175,6 +2176,18 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 							<th>State Name</th>
 							<th>Organization Name</th>
 							<th>Expiring</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			<div class="mainsection" id="datagroup" style="display: none;">
+				<table id="DataGroupTable" class="bigiptable">
+					<thead>
+						<tr>
+							<th>Load balancer</th>
+							<th>Name</th>
 						</tr>
 					</thead>
 					<tbody>
