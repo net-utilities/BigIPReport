@@ -18,6 +18,8 @@
 	$(window).on("load", function () {
 		// Animate loader off screen
 
+		log("loading", "INFO");
+
 		//Prevent caching of ajax requests
 		$(document).ready(function () {
 			$.ajaxSetup({ cache: false });
@@ -621,6 +623,16 @@
 			} else {
 				$("div#consolediv").fadeIn(updateLocationHash);
 			}
+
+			log("finished" +
+				" loadbalancers:" + siteData.loadbalancers.length +
+				", virtualservers:" + siteData.virtualservers.length +
+				", pools:" + siteData.pools.length +
+				", iRules:" + siteData.irules.length +
+				", certificates:" + siteData.certificates.length +
+				", datagroups:" + siteData.datagrouplists.length +
+				", asmPolicies:" + siteData.asmPolicies.length +
+				".", "INFO");
 
 		});
 
