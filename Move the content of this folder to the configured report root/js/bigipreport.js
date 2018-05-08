@@ -523,6 +523,36 @@
 
 			/******************************************************************************************************************************
 
+				Data Group Table
+
+			******************************************************************************************************************************/
+
+			iRuleTable = $('table#DataGroupTable').DataTable({
+				"bAutoWidth": false,
+				"data": siteData.datagrouplists,
+				"columns": [{
+					"data": "loadbalancer",
+					"className": "loadbalancerCell",
+					"render": function (data, type, row) {
+						return renderLoadBalancer(data);
+					}
+				}, {
+					"data": "name",
+					"className": "iRuleCell",
+					"render": function (data, type, row) {
+						return renderDataGroup(row.loadbalancer, data);
+					}
+				}],
+				"iDisplayLength": 10,
+				"oLanguage": {
+					"sSearch": "Search all columns:"
+				},
+				"dom": 'frtilp',
+				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+			});
+
+			/******************************************************************************************************************************
+
 				Add custom data tables functions
 
 			******************************************************************************************************************************/
@@ -947,6 +977,21 @@
 		return result;
 	}
 
+	function renderDataGroup(loadbalancer, name) {
+		datagroupName=name.replace(/^\/Common\//,'');
+		result = '<a';
+		result += ' class="tooltip"';
+		result += ' data-originalvirtualservername="' + name + '"';
+		result += ' data-loadbalancer="' + loadbalancer + '"';
+		result += ' href="Javascript:showDataGroupListDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		result += datagroupName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+		result += '<p>Click to see Data Group details</p>';
+		result += '</a>';
+		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
+		return result;
+	}
+
 	function showiRules() {
 
 		activateMenuButton("div#irulesbutton");
@@ -954,6 +999,16 @@
 		updateLocationHash();
 
 		showMainSection("irules");
+		toggleAdcLinks();
+	}
+
+	function showDataGroups() {
+
+		activateMenuButton("div#datagroupbutton");
+		$("div#mainholder").attr("data-activesection", "datagroup");
+		updateLocationHash();
+
+		showMainSection("datagroup");
 		toggleAdcLinks();
 	}
 
