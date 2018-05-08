@@ -909,6 +909,9 @@
 	}
 
 	function renderPool(loadbalancer, name) {
+		if (name == "N/A") {
+			return name;
+		}
 		poolname=name.replace(/^\/Common\//,'');
 		result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
 		result += '<a';
