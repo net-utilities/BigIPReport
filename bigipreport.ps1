@@ -205,6 +205,9 @@
 #                                     button-radius, const, data-pace-option, layout, alternatetablecolor
 #        5.1.3        2018-05-02      fix: explicit array for datagroups.json, fix: utf8 logfile truncation         Tim Riker       No
 #                                     datatables layout, remove unused code, prefer / to \ in paths
+#        5.1.4        2018-05-08      migrate console menu to main screen, layout changes, more edit links          Tim Riker       Yes
+#                                     iRules all exported, certificates datatable updates, Edge fix
+#                                     upgrade jQuery and Datatables, new ErrorReportAnyway config option
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -219,7 +222,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.1.3"
+$Global:ScriptVersion = "5.1.4"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
