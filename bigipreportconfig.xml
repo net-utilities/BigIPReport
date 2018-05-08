@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="5.1.3">
+	<Settings version="5.1.4">
 
 		<!--
 		***************************************************************************
@@ -294,6 +294,20 @@
 				<Enabled>false</Enabled>
 			</ErrorReporting>
 
+
+		<!--
+			**************************************************************************************************************************************
+			*
+			*	In this section you can choose to generate a report even if there are errors
+			*	This means even if one or more of the loadbalancers is unreachable a report will still be written
+			*
+			*	Example:
+			*	<ErrorReportAnyway>true</ErrorReportAnyway>
+			*
+			**************************************************************************************************************************************
+		-->
+
+		<ErrorReportAnyway>false</ErrorReportAnyway>
 
 		<!--
 
