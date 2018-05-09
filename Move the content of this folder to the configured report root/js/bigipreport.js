@@ -670,7 +670,7 @@
 				$("div#consolediv").fadeIn(updateLocationHash);
 			}
 
-			log("finished" +
+			log("loaded:" +
 				" loadbalancers:" + siteData.loadbalancers.length +
 				", virtualservers:" + siteData.virtualservers.length +
 				", pools:" + siteData.pools.length +
