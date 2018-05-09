@@ -1565,7 +1565,7 @@ Function Get-AuthToken {
 
 	$Response  = Invoke-RestMethod -Method "POST" -Headers $Headers -Body $Body -Uri "https://$LoadBalancer/mgmt/shared/authn/login"
 
-	return $Response.token
+	return $Response.token.token
 }
 
 #EndRegion
