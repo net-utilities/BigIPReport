@@ -2183,7 +2183,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 					</tbody>
 				</table>
 			</div>
-			<div class="mainsection" id="datagroup" style="display: none;">
+			<div class="mainsection" id="datagroups" style="display: none;">
 				<table id="DataGroupTable" class="bigiptable">
 					<thead>
 						<tr>

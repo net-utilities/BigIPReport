@@ -1289,7 +1289,7 @@
 					case "certificatedetails":
 						showCertificateDetails();
 						break;
-					case "datagroups":
+					case "datagroup":
 						showDataGroups();
 						break;
 					case "reportlogs":
