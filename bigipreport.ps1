@@ -2159,6 +2159,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 							<th>Load balancer</th>
 							<th>Name</th>
 							<th>Associated Pools</th>
+							<th>Length</th>
 					</thead>
 					<tbody>
 					</tbody>
@@ -2188,6 +2189,8 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 						<tr>
 							<th>Load balancer</th>
 							<th>Name</th>
+							<th>Type</th>
+							<th>Length</th>
 						</tr>
 					</thead>
 					<tbody>
