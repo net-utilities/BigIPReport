@@ -660,6 +660,7 @@
 
 			/* highlight selected menu option */
 
+			populateSearchParameters()
 			var currentSection = $("div#mainholder").attr("data-activesection");
 
 			if (currentSection === undefined) {
@@ -718,8 +719,6 @@
 		} else {
 			log("No status VIPs has been configured", "INFO");
 			$("td#pollingstatecell").html("Disabled")
-			//Make sure that all pools are hidden
-			populateSearchParameters();
 		}
 	}
 
@@ -1281,11 +1280,8 @@
 					case "virtualservers":
 						showVirtualServers();
 						break;
-					case "preferences":
-						showPreferences();
-						break;
-					case "reportlogs":
-						showReportLogs();
+					case "irules":
+						showiRules();
 						break;
 					case "deviceoverview":
 						showDeviceOverview();
@@ -1293,11 +1289,17 @@
 					case "certificatedetails":
 						showCertificateDetails();
 						break;
+					case "datagroups":
+						showDataGroups();
+						break;
+					case "reportlogs":
+						showReportLogs();
+						break;
+					case "preferences":
+						showPreferences();
+						break;
 					case "help":
 						showHelp();
-						break;
-					case "definedirules":
-						showDefinediRules();
 						break;
 				}
 
