@@ -928,8 +928,8 @@ function Cache-LTMInformation {
 
 				$Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
-				$Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
-				$Policies = ($Response | ConvertFrom-Json).items
+				$Response = Invoke-RestMethod -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
+				$Policies = $Response.items
 
 				Foreach($Policy in $Policies){
 					$ObjTempPolicy = New-Object -Type ASMPolicy
@@ -1563,12 +1563,9 @@ Function Get-AuthToken {
 	#Convert the body to Json
 	$Body = $Body | ConvertTo-Json
 
-	$Response  = Invoke-WebRequest -Method "POST" -Headers $Headers -Body $Body -Uri "https://$LoadBalancer/mgmt/shared/authn/login"
+	$Response  = Invoke-RestMethod -Method "POST" -Headers $Headers -Body $Body -Uri "https://$LoadBalancer/mgmt/shared/authn/login"
 
-	#Extract the token from the response
-	$Token = ($Response.content | ConvertFrom-Json).Token.token
-
-	Return $Token
+	return $Response.token
 }
 
 #EndRegion
@@ -2223,9 +2220,9 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				<p>And if you like the project, please set aside some of your time to leave a <a href="https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
 				<h3>Troubleshooting</h3>
 				<p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
-				<p>To collect and download anonymized data for submitting a device overview bug report, click <a href="javascript:exportDeviceData()">here</a>.</p>
+				<p>To collect and download anonymized data for submitting a device overview bug report, <a href="javascript:exportDeviceData()">Export Device Data</a>.</p>
 				<h3>Contact</h3>
-				<p>If you need to get hold of the author, then contact information is available <a href="https://loadbalancing.se/about/">here</a>.</p>
+				<p>If you need to get hold of the author, then see <a href="https://loadbalancing.se/about/">contact information</a>.</p>
 			</div>
 		</div>
 '@)
