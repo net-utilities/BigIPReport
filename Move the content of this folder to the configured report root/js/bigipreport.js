@@ -443,6 +443,11 @@
 						}
 						return result;
 					}
+				}, {
+					"data": "definition",
+					"render": function (data, type, row) {
+						return data.length;
+					}
 				}],
 				"iDisplayLength": 10,
 				"oLanguage": {
@@ -541,6 +546,16 @@
 					"className": "iRuleCell",
 					"render": function (data, type, row) {
 						return renderDataGroup(row.loadbalancer, data);
+					}
+				}, {
+					"data": "type",
+				}, {
+					"data": "data",
+					"render": function (data, type, row) {
+						if (data) {
+							return Object.keys(data).length;
+						}
+						return 0;
 					}
 				}],
 				"iDisplayLength": 10,
@@ -988,7 +1003,7 @@
 		result += '<p>Click to see Data Group details</p>';
 		result += '</a>';
 		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
-		result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
+		result += '/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=' + name + '">Edit</a></span>';
 		return result;
 	}
 
