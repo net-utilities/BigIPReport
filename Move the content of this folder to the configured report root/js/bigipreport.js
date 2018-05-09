@@ -532,7 +532,7 @@
 
 			******************************************************************************************************************************/
 
-			iRuleTable = $('table#DataGroupTable').DataTable({
+			dataGroupTable = $('table#DataGroupTable').DataTable({
 				"bAutoWidth": false,
 				"data": siteData.datagrouplists,
 				"columns": [{
