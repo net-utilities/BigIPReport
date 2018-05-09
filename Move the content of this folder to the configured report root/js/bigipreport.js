@@ -1019,10 +1019,10 @@
 	function showDataGroups() {
 
 		activateMenuButton("div#datagroupbutton");
-		$("div#mainholder").attr("data-activesection", "datagroup");
+		$("div#mainholder").attr("data-activesection", "datagroups");
 		updateLocationHash();
 
-		showMainSection("datagroup");
+		showMainSection("datagroups");
 		toggleAdcLinks();
 	}
 
@@ -1289,7 +1289,7 @@
 					case "certificatedetails":
 						showCertificateDetails();
 						break;
-					case "datagroup":
+					case "datagroups":
 						showDataGroups();
 						break;
 					case "reportlogs":
