@@ -409,6 +409,55 @@
 
 			/******************************************************************************************************************************
 
+				Pool Table
+
+			******************************************************************************************************************************/
+
+			poolTable = $('table#poolTable').DataTable({
+				"bAutoWidth": false,
+				"data": siteData.pools,
+				"columns": [{
+					"data": "loadbalancer",
+					"className": "loadbalancerCell",
+					"render": function (data, type, row) {
+						return renderLoadBalancer(data);
+					}
+				}, {
+					"data": "name",
+					"render": function (data, type, row) {
+						return renderPool(row.loadbalancer, data);
+					}
+				}, {
+					"data": "loadbalancingmethod"
+				}, {
+					"render": function (data, type, row) {
+						if (row.members && row.members.length) {
+							return row.members.length;
+						}
+						return 0;
+					}
+				}, {
+					"data": "members",
+					"render": function (data, type, row) {
+						result='';
+						if (data) {
+							data.forEach((member) => {
+								result += renderPoolMember(member) + '<br>';
+							});
+						}
+						return result;
+					}
+				}],
+				"iDisplayLength": 10,
+				"oLanguage": {
+					"sSearch": "Search all columns:"
+				},
+				"dom": 'frtilp',
+				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+			});
+
+			/******************************************************************************************************************************
+
 				iRule Table
 
 			******************************************************************************************************************************/
@@ -463,7 +512,7 @@
 
 			******************************************************************************************************************************/
 
-			var certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
+			certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
 				"data": siteData.certificates,
 				"columns": [{
 					"data": "loadbalancer",
@@ -784,14 +833,20 @@
 		}
 	}
 
+	function renderPoolMember(member) {
+		result='';
+		if (member !== null) {
+			result += '<span data-member="' + member.ip + ':' + member.port + '">';
+			result += PoolMemberStatus(member);
+			result += '</span>&nbsp;&nbsp;';
+			result += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port;
+		}
+		return result;
+	}
+
 	function renderPoolMemberCell(member, poolnum) {
 		membercell = '<td class="PoolMember" data-pool="Pool' + poolnum + '">';
-		if (member !== null) {
-			membercell += '<span data-member="' + member.ip + ':' + member.port + '">';
-			membercell += PoolMemberStatus(member);
-			membercell += '</span>&nbsp;&nbsp;';
-			membercell += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port;
-		}
+		membercell += renderPoolMember(member);
 		membercell += '</td>'
 		return membercell;
 	}
@@ -1005,26 +1060,6 @@
 		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
 		result += '/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=' + name + '">Edit</a></span>';
 		return result;
-	}
-
-	function showiRules() {
-
-		activateMenuButton("div#irulesbutton");
-		$("div#mainholder").attr("data-activesection", "irules");
-		updateLocationHash();
-
-		showMainSection("irules");
-		toggleAdcLinks();
-	}
-
-	function showDataGroups() {
-
-		activateMenuButton("div#datagroupbutton");
-		$("div#mainholder").attr("data-activesection", "datagroups");
-		updateLocationHash();
-
-		showMainSection("datagroups");
-		toggleAdcLinks();
 	}
 
 	function resetClock() {
@@ -1320,6 +1355,35 @@
 		showMainSection("virtualservers")
 	}
 
+	function showiRules() {
+
+		activateMenuButton("div#irulesbutton");
+		$("div#mainholder").attr("data-activesection", "irules");
+		updateLocationHash();
+
+		showMainSection("irules");
+		toggleAdcLinks();
+	}
+
+	function showPools() {
+
+		activateMenuButton("div#poolsbutton");
+		$("div#mainholder").attr("data-activesection", "pools");
+		updateLocationHash();
+
+		showMainSection("pools");
+		toggleAdcLinks();
+	}
+
+	function showDataGroups() {
+
+		activateMenuButton("div#datagroupbutton");
+		$("div#mainholder").attr("data-activesection", "datagroups");
+		updateLocationHash();
+
+		showMainSection("datagroups");
+		toggleAdcLinks();
+	}
 
 	function showPreferences() {
 
@@ -1894,14 +1958,14 @@
 			table += '		</tr>';
 			table += '	</tbody>';
 			table += '</table>';
-			table += '<br/>';
+			table += '<br>';
 
 			table += '<table class="virtualserverdetailstable">';
 			table += '	<tr><th>Current Connections</th><th>Maximum Connections</th><th>5 second average CPU usage</th><th>1 minute average CPU usage</th><th>5 minute average CPU usage</th></tr>';
 			table += '	<tr><td>' + matchingvirtualserver.currentconnections + '</td><td>' + matchingvirtualserver.maximumconnections + '</td><td>' + matchingvirtualserver.cpuavg5sec + '</td><td>' + matchingvirtualserver.cpuavg1min + '</td><td>' + matchingvirtualserver.cpuavg5min + '</td></tr>';
 			table += '</table>';
 
-			table += '<br/>'
+			table += '<br>'
 
 			if (ShowiRules == true) {
 				if (matchingvirtualserver.irules.length > 0 && ShowiRules) {
