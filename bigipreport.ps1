@@ -2130,85 +2130,12 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				<div class="menuitem" id="helpbutton" onclick="Javascript:showHelp();"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
 			</div>
 
-			<div class="mainsection" id="virtualservers" style="display: none;">
-				<div id="allbigipsdiv" class="lbdiv">
-					<table id="allbigips" class="bigiptable">
-						<thead>
-							<tr>
-								<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
-								<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
-								<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
-								<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
-								<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
-								<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
-								<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
-								<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
-							</tr>
-						</thead>
-						<tbody>
-						</tbody>
-					</table>
-				</div>
-			</div>
-			<div class="mainsection" id="pools" style="display: none;">
-				<table id="poolTable" class="bigiptable">
-					<thead>
-						<tr>
-							<th>Load balancer</th>
-							<th>Name</th>
-							<th>Method</th>
-							<th>Member Count</th>
-							<th>Members</th>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
-			</div>
-			<div class="mainsection" id="irules" style="display: none;">
-				<table id="iRuleTable" class="bigiptable">
-					<thead>
-						<tr>
-							<th>Load balancer</th>
-							<th>Name</th>
-							<th>Associated Pools</th>
-							<th>Length</th>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
-			</div>
+			<div class="mainsection" id="virtualservers" style="display: none;"></div>
+			<div class="mainsection" id="pools" style="display: none;"></div>
+			<div class="mainsection" id="irules" style="display: none;"></div>
 			<div class="mainsection" id="deviceoverview" style="display: none;"></div>
-			<div class="mainsection" id="certificatedetails" style="display: none;">
-				<table id="certificatedetailstable" class="bigiptable">
-					<thead>
-						<tr>
-							<th>Load Balancer</th>
-							<th>Name</th>
-							<th>Common Name</th>
-							<th>Country Name</th>
-							<th>State Name</th>
-							<th>Organization Name</th>
-							<th>Expiring</th>
-						</tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
-			</div>
-			<div class="mainsection" id="datagroups" style="display: none;">
-				<table id="DataGroupTable" class="bigiptable">
-					<thead>
-						<tr>
-							<th>Load balancer</th>
-							<th>Name</th>
-							<th>Type</th>
-							<th>Length</th>
-						</tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
-			</div>
+			<div class="mainsection" id="certificatedetails" style="display: none;"></div>
+			<div class="mainsection" id="datagroups" style="display: none;"></div>
 			<div class="mainsection" id="preferences" style="display: none;"></div>
 
 			<div class="mainsection" id="reportlogs" style="display: none;">

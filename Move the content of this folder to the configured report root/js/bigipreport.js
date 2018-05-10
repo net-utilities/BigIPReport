@@ -7,7 +7,6 @@
 	var asInitVals = new Array();
 
 	var siteData = {};
-	var bigipTable;
 
 	/*************************************************************************************************************************************************************************************
 
@@ -140,248 +139,16 @@
 
 			/*************************************************************************************************************
 
-				Initiate data tables, add a search all columns header and save the standard table header values
+				setup main Virtual Servers table
 
-			**************************************************************************************************************/
+			*************************************************************************************************************/
 
-			$("thead input.search_init").each(function (i) {
-				asInitVals[i] = this.value;
-			});
-
-
-			bigipTable = $('table#allbigips').DataTable({
-
-				"bAutoWidth": false,
-				"data": siteData.virtualservers,
-				"createdRow": function (row, data, index) {
-					$(row).addClass('virtualserverrow');
-				},
-				"columns": [{
-					"data": "loadbalancer",
-					"className": "loadbalancerCell",
-					"render": function (data, type, row) {
-						return renderLoadBalancer(data);
-					}
-				}, {
-					"data": "name",
-					"className": "virtualServerCell",
-					"render": function (data, type, row) {
-						return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data);
-					}
-				}, {
-					"className": "centeredCell",
-					"render": function (data, type, row) {
-						result = row.ip + ':' + row.port;
-						if (siteData.NATdict[row.ip.split('%')[0]]) {
-							result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
-						}
-						return result;
-					}
-				}, {
-					"className": "centeredCell",
-					"render": function (data, type, row) {
-						if (!row.asmPolicies) {
-							return "N/A";
-						} else {
-							result = row.asmPolicies;
-							for (asm=0;asm<siteData.asmPolicies.length;asm++) {
-								if (row.loadbalancer == siteData.asmPolicies[asm].loadbalancer &&
-										row.asmPolicies[0] == siteData.asmPolicies[asm].name) {
-									if (siteData.asmPolicies[asm].enforcementMode == 'blocking') {
-										result += ' (B)';
-									} else {
-										result += ' (T)';
-									}
-								}
-							}
-							return result;
-						}
-					}
-				}, {
-					"className": "centeredCell",
-					"render": function (data, type, row) {
-						if (row.sslprofile == "None") {
-							return "No";
-						} else {
-							return "Yes";
-						}
-					}
-				}, {
-					"className": "centeredCell",
-					"render": function (data, type, row) {
-						if (row.compressionprofile == "None") {
-							return "No";
-						} else {
-							return "Yes";
-						}
-					}
-				}, {
-					"className": "centeredCell",
-					"render": function (data, type, row) {
-						if (row.persistence == "None") {
-							return "No";
-						} else {
-							return "Yes";
-						}
-					}
-				}, {
-					"data": "pools",
-					"createdCell": createdPoolCell,
-					"render": renderPoolCell
-				}],
-				"iDisplayLength": 10,
-				"oLanguage": {
-					"sSearch": "Search all columns:"
-				},
-				"dom": 'frtilp',
-				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
-			});
-
-
-			/*************************************************************************************************************
-
-				Attaches a function to the main data table column filters that
-				removes the text from the input windows when clicking on them
-				and adds the possibility to filter per column
-
-			**************************************************************************************************************/
-
-			$("thead input").focus(function () {
-				if (this.className == "search_init")
-				{
-					this.className = "search_entered";
-					this.value = "";
-				}
-			});
-
-			//Prevents sorting the columns when clicking on the sorting headers
-			$('.search_init').on('click', function (e) {
-				e.stopPropagation();
-			});
-
-			$('.search_entered').on('click', function (e) {
-				e.stopPropagation();
-			});
-
-
-			$("thead input").blur(function (i) {
-				if (this.value == "") {
-					this.className = "search_init";
-					this.value = asInitVals[$("thead input").index(this)];
-				}
-			});
+			// TODO: make things work without calling this on startup
+			setupVirtualServerTable();
 
 			/* Initiate the syntax highlighting for irules*/
 			sh_highlightDocument('js/', '.js');
 
-			/*************************************************************************************************************
-
-				This section inserts the reset filters button and it's handlers
-
-			**************************************************************************************************************/
-
-			$("#allbigips_filter").append("<a id=\"resetFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
-
-			$("#resetFiltersButton").on("click", function () {
-
-				$("input[type='search']").val("");
-
-				$("thead input").each(function () {
-					this.className = "search_init";
-					this.value = asInitVals[$("thead input").index(this)];
-				});
-
-				bigipTable.search('')
-					.columns().search('')
-					.draw();
-			});
-
-			/*************************************************************************************************************
-
-				This section inserts a button that exports the report to CSV
-
-			**************************************************************************************************************/
-
-			if (ShowExportLink) {
-				$("#allbigips_filter").append("<a id=\"exportCSVButton\" class=\"exportCSVButton\" href=\"javascript:downloadCSV();\">Export to CSV</a>");
-			}
-
-			/*************************************************************************************************************
-
-				This section inserts the column toggle buttons and attaches even handlers to it
-
-			**************************************************************************************************************/
-
-			$("#allbigips_filter").append("<div style=\"float:right\"><span id=\"toggleHeader\">Toggle columns:<span><span id=\"columnToggleButtons\"></span></div>")
-
-			$("#allbigips thead th input").each(function () {
-
-				var columnID = $(this).attr("data-setting-name");
-
-				var toggleLinkData = "";
-
-				if (localStorage.getItem(columnID) === "true") {
-					buttonClass = "visibleColumnButton";
-				} else {
-					buttonClass = "hiddenColumnButton";
-				}
-
-				toggleLinkData += "<a href=\"javascript:void(0)\" class=\"" + buttonClass + "\" id=\"" + columnID + "\">" + $(this).attr("data-column-name") + "</a>";
-
-				$("#columnToggleButtons").append(toggleLinkData);
-
-				$("#" + columnID).on("click", function () {
-
-					var preferenceName = $(this).attr("id")
-
-					if (localStorage.getItem(preferenceName) === "false") {
-						$(this).addClass("visibleColumnButton").removeClass("hiddenColumnButton");
-						localStorage.setItem(preferenceName, "true");
-					} else {
-						$(this).addClass("hiddenColumnButton").removeClass("visibleColumnButton");
-						localStorage.setItem(preferenceName, "false");
-					}
-
-					toggleColumns();
-
-				});
-
-			});
-
-			/*************************************************************************************************************
-
-				This section adds the update check button div and initiates the update checks
-
-			**************************************************************************************************************/
-
-			//Add the div containing the update available button
-			$("a#resetFiltersButton").after($('<span id="updateavailablespan"></span>'));
-
-			//Check if there's a new update every 30 minutes
-			setInterval(function () {
-				$.ajax(document.location.href, {
-					type: 'HEAD',
-					success: function (response, status, xhr) {
-
-						var currentreport = Date.parse(document.lastModified);
-						var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
-						var currenttime = new Date();
-
-						// The time since this report was generated (in minutes)
-						//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
-
-						// If there's been a new report, how long ago (in minutes)
-						timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
-
-						if (timesincerefresh > 60) {
-							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
-						} else if (timesincerefresh > 10) {
-							$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
-						}
-
-					}
-				});
-			}, 3000);
 
 			/******************************************************************************************************************************
 
@@ -409,233 +176,24 @@
 
 			/******************************************************************************************************************************
 
-				Pool Table
-
-			******************************************************************************************************************************/
-
-			poolTable = $('table#poolTable').DataTable({
-				"bAutoWidth": false,
-				"data": siteData.pools,
-				"columns": [{
-					"data": "loadbalancer",
-					"className": "loadbalancerCell",
-					"render": function (data, type, row) {
-						return renderLoadBalancer(data);
-					}
-				}, {
-					"data": "name",
-					"render": function (data, type, row) {
-						return renderPool(row.loadbalancer, data);
-					}
-				}, {
-					"data": "loadbalancingmethod"
-				}, {
-					"render": function (data, type, row) {
-						if (row.members && row.members.length) {
-							return row.members.length;
-						}
-						return 0;
-					}
-				}, {
-					"data": "members",
-					"render": function (data, type, row) {
-						result='';
-						if (data) {
-							data.forEach((member) => {
-								result += renderPoolMember(member) + '<br>';
-							});
-						}
-						return result;
-					}
-				}],
-				"iDisplayLength": 10,
-				"oLanguage": {
-					"sSearch": "Search all columns:"
-				},
-				"dom": 'frtilp',
-				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
-			});
-
-			/******************************************************************************************************************************
-
-				iRule Table
-
-			******************************************************************************************************************************/
-
-			iRuleTable = $('table#iRuleTable').DataTable({
-				"bAutoWidth": false,
-				"data": siteData.irules,
-				"columns": [{
-					"data": "loadbalancer",
-					"className": "loadbalancerCell",
-					"render": function (data, type, row) {
-						return renderLoadBalancer(data);
-					}
-				}, {
-					"data": "name",
-					"className": "iRuleCell",
-					"render": function (data, type, row) {
-						return renderRule(row.loadbalancer, data);
-					}
-				}, {
-					"render": function (data, type, row) {
-						var result = '';
-						if (row.pools && row.pools.length > 0) {
-							row.pools.forEach((pool) => {
-								if (result != '') {
-									result += '<br>';
-								}
-								result += renderPool(row.loadbalancer, pool);
-							});
-						} else {
-							result = "None";
-						}
-						return result;
-					}
-				}, {
-					"data": "definition",
-					"render": function (data, type, row) {
-						return data.length;
-					}
-				}],
-				"iDisplayLength": 10,
-				"oLanguage": {
-					"sSearch": "Search all columns:"
-				},
-				"dom": 'frtilp',
-				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
-			});
-
-			/******************************************************************************************************************************
-
-				Certificate Table
-
-			******************************************************************************************************************************/
-
-			certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
-				"data": siteData.certificates,
-				"columns": [{
-					"data": "loadbalancer",
-					"className": "loadbalancerCell",
-					"render": function (data, type, row) {
-						return renderLoadBalancer(data);
-					}
-				}, {
-					"data": "fileName",
-					"render": function(data, type, row) {
-						return renderCertificate(row.loadbalancer, data);
-					}
-				}, {
-					"data": "subject.commonName"
-				}, {
-					"data": "subject.countryName",
-					"class": "certificatecountryname",
-					"render": function(data, type, row) {
-						result = '';
-						if (data) {
-							result += "<img class=\"flagicon\" src=\"images/flags/" + data.toLowerCase() + ".png\"/> ";
-						}
-						return result + " " + data;
-					}
-				}, {
-					"data": "subject.stateName"
-				}, {
-					"data": "subject.organizationName"
-				}, {
-					"data": "expirationDate",
-					"render": function(data, type, row){
-						var certificateDate = new Date(0);
-						certificateDate.setUTCSeconds(data);
-						return certificateDate.toISOString().replace("T", " ").replace(/\.[0-9]{3}Z/, "");
-					}
-				}],
-				"createdRow": function(row, data, index) {
-					// Get the days left
-					var now = new Date();
-					var certificateDate = new Date(0);
-					certificateDate.setUTCSeconds(data.expirationDate);
-					var daysLeft = dateDiffInDays(now, certificateDate);
-
-					if (daysLeft < 14) {
-						var rowClass = "certificateExpiringIn14";
-					} else if (daysLeft < 30) {
-						var rowClass = "certificateExpiringIn30";
-					} else if (daysLeft < 60) {
-						var rowClass = "certificateExpiringIn60"
-					} else {
-						var rowClass = "certificateExpiringInMoreThan60"
-					}
-					$(row).addClass(rowClass);
-				},
-				"iDisplayLength": 10,
-				"oLanguage": {
-					"sSearch": "Search all columns:"
-				},
-				"dom": 'frtilp',
-				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
-			});
-
-			/******************************************************************************************************************************
-
-				Data Group Table
-
-			******************************************************************************************************************************/
-
-			dataGroupTable = $('table#DataGroupTable').DataTable({
-				"bAutoWidth": false,
-				"data": siteData.datagrouplists,
-				"columns": [{
-					"data": "loadbalancer",
-					"className": "loadbalancerCell",
-					"render": function (data, type, row) {
-						return renderLoadBalancer(data);
-					}
-				}, {
-					"data": "name",
-					"className": "iRuleCell",
-					"render": function (data, type, row) {
-						return renderDataGroup(row.loadbalancer, data);
-					}
-				}, {
-					"data": "type",
-				}, {
-					"data": "data",
-					"render": function (data, type, row) {
-						if (data) {
-							return Object.keys(data).length;
-						}
-						return 0;
-					}
-				}],
-				"iDisplayLength": 10,
-				"oLanguage": {
-					"sSearch": "Search all columns:"
-				},
-				"dom": 'frtilp',
-				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
-			});
-
-			/******************************************************************************************************************************
-
 				Add custom data tables functions
 
 			******************************************************************************************************************************/
 
-
 			//Expand pool matches  and hightlight them
-			bigipTable.on('draw', function () {
+			siteData.bigipTable.on('draw', function () {
 
-				var body = $(bigipTable.table().body());
+				var body = $(siteData.bigipTable.table().body());
 
-				highlightAll(bigipTable);
+				highlightAll(siteData.bigipTable);
 
 
 				hidePools();
 				toggleColumns();
 				toggleAdcLinks();
 
-				if (bigipTable.search() != "") {
-					expandPoolMatches(body, bigipTable.search());
+				if (siteData.bigipTable.search() != "") {
+					expandPoolMatches(body, siteData.bigipTable.search());
 				}
 
 				setPoolTableCellWidth();
@@ -669,13 +227,13 @@
 				delay(function () {
 					if (search != null) {
 						updateLocationHash();
-						bigipTable.search(search).draw();
+						siteData.bigipTable.search(search).draw();
 					}
 				}, 700);
 			});
 
 			//Filter columns on key update and adding search delay
-			bigipTable.columns().every(function () {
+			siteData.bigipTable.columns().every(function () {
 
 				var that = this;
 
@@ -687,8 +245,8 @@
 						that
 							.search(search)
 							.draw();
-						expandPoolMatches($(bigipTable.table().body()), search);
-						highlightAll(bigipTable);
+						expandPoolMatches($(siteData.bigipTable.table().body()), search);
+						highlightAll(siteData.bigipTable);
 					}, 700);
 				});
 
@@ -705,7 +263,7 @@
 
 			**************************************************************************************************************/
 
-			bigipTable.draw();
+			siteData.bigipTable.draw();
 
 			/* highlight selected menu option */
 
@@ -714,9 +272,6 @@
 
 			if (currentSection === undefined) {
 				showVirtualServers();
-				$("div#consolediv").fadeIn(updateLocationHash);
-			} else {
-				$("div#consolediv").fadeIn(updateLocationHash);
 			}
 
 			log("loaded:" +
@@ -1205,14 +760,14 @@
 		Highlight all matches
 	******************************************************************************************************************************/
 
-	function highlightAll(bigipTable) {
+	function highlightAll(table) {
 
-		var body = $(bigipTable.table().body());
+		var body = $(table.table().body());
 
 		body.unhighlight();
-		body.highlight(bigipTable.search());
+		body.highlight(table.search());
 
-		bigipTable.columns().every(function () {
+		table.columns().every(function () {
 
 			var that = this;
 
@@ -1252,8 +807,10 @@
 				if (key == "global_search") {
 					if ($('#allbigips_filter input[type="search"]')) {
 						$('#allbigips_filter input[type="search"]').val(vars[key]);
-						bigipTable.search(vars[key]);
-						bigipTable.draw();
+						if (siteData.bigipTable) {
+							siteData.bigipTable.search(vars[key]);
+							siteData.bigipTable.draw();
+						}
 					}
 				} else {
 					//Validate that the key is a column filter and populate it
@@ -1263,21 +820,23 @@
 				}
 			}
 
-			//Filter the table according to the column filters
-			bigipTable.columns().every(function () {
+			if (siteData.bigipTable) {
+				//Filter the table according to the column filters
+				siteData.bigipTable.columns().every(function () {
 
-				var that = this;
+					var that = this;
 
-				columnvalue = $('input', this.header()).val();
+					columnvalue = $('input', this.header()).val();
 
-				if (asInitVals.indexOf(columnvalue) == -1) {
-					$('input', this.header()).addClass('search_entered').removeClass('search_init');
-					this.search(columnvalue);
-					this.draw();
-					expandPoolMatches($(bigipTable.table().body()), columnvalue)
-					highlightAll(bigipTable);
-				}
-			});
+					if (asInitVals.indexOf(columnvalue) == -1) {
+						$('input', this.header()).addClass('search_entered').removeClass('search_init');
+						this.search(columnvalue);
+						this.draw();
+						expandPoolMatches($(siteData.bigipTable.table().body()), columnvalue)
+						highlightAll(siteData.bigipTable);
+					}
+				});
+			}
 
 			if (vars['pool']) {
 				var poolName = vars['pool'].split('@')[0];
@@ -1338,16 +897,560 @@
 						showHelp();
 						break;
 				}
+			}
+		}
+	}
 
-				$("div#consolediv").fadeIn(updateLocationHash);
+	function setupVirtualServerTable() {
+		if (siteData.bigipTable) {
+			return;
+		}
+
+		var content = `
+		<div id="allbigipsdiv" class="lbdiv">
+			<table id="allbigips" class="bigiptable">
+				<thead>
+					<tr>
+						<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
+						<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
+						<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
+						<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
+						<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
+						<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
+						<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+						<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>`;
+
+		$("div#virtualservers").html(content);
+
+
+		/*************************************************************************************************************
+
+			Initiate data tables, add a search all columns header and save the standard table header values
+
+		**************************************************************************************************************/
+
+		$("thead input.search_init").each(function (i) {
+			asInitVals[i] = this.value;
+		});
+
+
+		siteData.bigipTable = $('table#allbigips').DataTable({
+
+			"bAutoWidth": false,
+			"data": siteData.virtualservers,
+			"createdRow": function (row, data, index) {
+				$(row).addClass('virtualserverrow');
+			},
+			"columns": [{
+				"data": "loadbalancer",
+				"className": "loadbalancerCell",
+				"render": function (data, type, row) {
+					return renderLoadBalancer(data);
+				}
+			}, {
+				"data": "name",
+				"className": "virtualServerCell",
+				"render": function (data, type, row) {
+					return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data);
+				}
+			}, {
+				"className": "centeredCell",
+				"render": function (data, type, row) {
+					result = row.ip + ':' + row.port;
+					if (siteData.NATdict[row.ip.split('%')[0]]) {
+						result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
+					}
+					return result;
+				}
+			}, {
+				"className": "centeredCell",
+				"render": function (data, type, row) {
+					if (!row.asmPolicies) {
+						return "N/A";
+					} else {
+						result = row.asmPolicies;
+						for (asm=0;asm<siteData.asmPolicies.length;asm++) {
+							if (row.loadbalancer == siteData.asmPolicies[asm].loadbalancer &&
+									row.asmPolicies[0] == siteData.asmPolicies[asm].name) {
+								if (siteData.asmPolicies[asm].enforcementMode == 'blocking') {
+									result += ' (B)';
+								} else {
+									result += ' (T)';
+								}
+							}
+						}
+						return result;
+					}
+				}
+			}, {
+				"className": "centeredCell",
+				"render": function (data, type, row) {
+					if (row.sslprofile == "None") {
+						return "No";
+					} else {
+						return "Yes";
+					}
+				}
+			}, {
+				"className": "centeredCell",
+				"render": function (data, type, row) {
+					if (row.compressionprofile == "None") {
+						return "No";
+					} else {
+						return "Yes";
+					}
+				}
+			}, {
+				"className": "centeredCell",
+				"render": function (data, type, row) {
+					if (row.persistence == "None") {
+						return "No";
+					} else {
+						return "Yes";
+					}
+				}
+			}, {
+				"data": "pools",
+				"createdCell": createdPoolCell,
+				"render": renderPoolCell
+			}],
+			"iDisplayLength": 10,
+			"oLanguage": {
+				"sSearch": "Search all columns:"
+			},
+			"dom": 'frtilp',
+			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
+
+
+		/*************************************************************************************************************
+
+			Attaches a function to the main data table column filters that
+			removes the text from the input windows when clicking on them
+			and adds the possibility to filter per column
+
+		**************************************************************************************************************/
+
+		$("thead input").focus(function () {
+			if (this.className == "search_init")
+			{
+				this.className = "search_entered";
+				this.value = "";
+			}
+		});
+
+		//Prevents sorting the columns when clicking on the sorting headers
+		$('.search_init').on('click', function (e) {
+			e.stopPropagation();
+		});
+
+		$('.search_entered').on('click', function (e) {
+			e.stopPropagation();
+		});
+
+
+		$("thead input").blur(function (i) {
+			if (this.value == "") {
+				this.className = "search_init";
+				this.value = asInitVals[$("thead input").index(this)];
+			}
+		});
+
+		/*************************************************************************************************************
+
+			This section inserts the reset filters button and it's handlers
+
+		**************************************************************************************************************/
+
+		$("#allbigips_filter").append("<a id=\"resetFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
+
+		$("#resetFiltersButton").on("click", function () {
+
+			$("input[type='search']").val("");
+
+			$("thead input").each(function () {
+				this.className = "search_init";
+				this.value = asInitVals[$("thead input").index(this)];
+			});
+
+			siteData.bigipTable.search('')
+				.columns().search('')
+				.draw();
+		});
+
+		/*************************************************************************************************************
+
+			This section inserts a button that exports the report to CSV
+
+		**************************************************************************************************************/
+
+		if (ShowExportLink) {
+			$("#allbigips_filter").append("<a id=\"exportCSVButton\" class=\"exportCSVButton\" href=\"javascript:downloadCSV();\">Export to CSV</a>");
+		}
+
+		/*************************************************************************************************************
+
+			This section inserts the column toggle buttons and attaches even handlers to it
+
+		**************************************************************************************************************/
+
+		$("#allbigips_filter").append("<div style=\"float:right\"><span id=\"toggleHeader\">Toggle columns:<span><span id=\"columnToggleButtons\"></span></div>")
+
+		$("#allbigips thead th input").each(function () {
+
+			var columnID = $(this).attr("data-setting-name");
+
+			var toggleLinkData = "";
+
+			if (localStorage.getItem(columnID) === "true") {
+				buttonClass = "visibleColumnButton";
+			} else {
+				buttonClass = "hiddenColumnButton";
 			}
 
+			toggleLinkData += "<a href=\"javascript:void(0)\" class=\"" + buttonClass + "\" id=\"" + columnID + "\">" + $(this).attr("data-column-name") + "</a>";
 
+			$("#columnToggleButtons").append(toggleLinkData);
+
+			$("#" + columnID).on("click", function () {
+
+				var preferenceName = $(this).attr("id")
+
+				if (localStorage.getItem(preferenceName) === "false") {
+					$(this).addClass("visibleColumnButton").removeClass("hiddenColumnButton");
+					localStorage.setItem(preferenceName, "true");
+				} else {
+					$(this).addClass("hiddenColumnButton").removeClass("visibleColumnButton");
+					localStorage.setItem(preferenceName, "false");
+				}
+
+				toggleColumns();
+
+			});
+
+		});
+
+		/*************************************************************************************************************
+
+			This section adds the update check button div and initiates the update checks
+
+		**************************************************************************************************************/
+
+		//Add the div containing the update available button
+		$("a#resetFiltersButton").after($('<span id="updateavailablespan"></span>'));
+
+		//Check if there's a new update every 30 minutes
+		setInterval(function () {
+			$.ajax(document.location.href, {
+				type: 'HEAD',
+				success: function (response, status, xhr) {
+
+					var currentreport = Date.parse(document.lastModified);
+					var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
+					var currenttime = new Date();
+
+					// The time since this report was generated (in minutes)
+					//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
+
+					// If there's been a new report, how long ago (in minutes)
+					timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
+
+					if (timesincerefresh > 60) {
+						$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
+					} else if (timesincerefresh > 10) {
+						$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
+					}
+
+				}
+			});
+		}, 3000);
+	}
+
+	function setupiRuleTable() {
+		if (siteData.iRuleTable) {
+			return;
 		}
+
+		var content = `
+		<table id="iRuleTable" class="bigiptable">
+			<thead>
+				<tr>
+					<th>Load balancer</th>
+					<th>Name</th>
+					<th>Associated Pools</th>
+					<th>Length</th>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>`;
+
+		$("div#irules").html(content);
+
+		siteData.iRuleTable = $('table#iRuleTable').DataTable({
+			"bAutoWidth": false,
+			"data": siteData.irules,
+			"columns": [{
+				"data": "loadbalancer",
+				"className": "loadbalancerCell",
+				"render": function (data, type, row) {
+					return renderLoadBalancer(data);
+				}
+			}, {
+				"data": "name",
+				"className": "iRuleCell",
+				"render": function (data, type, row) {
+					return renderRule(row.loadbalancer, data);
+				}
+			}, {
+				"render": function (data, type, row) {
+					var result = '';
+					if (row.pools && row.pools.length > 0) {
+						row.pools.forEach((pool) => {
+							if (result != '') {
+								result += '<br>';
+							}
+							result += renderPool(row.loadbalancer, pool);
+						});
+					} else {
+						result = "None";
+					}
+					return result;
+				}
+			}, {
+				"data": "definition",
+				"render": function (data, type, row) {
+					return data.length;
+				}
+			}],
+			"iDisplayLength": 10,
+			"oLanguage": {
+				"sSearch": "Search all columns:"
+			},
+			"dom": 'frtilp',
+			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
+	}
+
+	function setupPoolTable() {
+		if (siteData.poolTable) {
+			return;
+		}
+
+		var content = `
+		<table id="poolTable" class="bigiptable">
+			<thead>
+				<tr>
+					<th>Load balancer</th>
+					<th>Name</th>
+					<th>Method</th>
+					<th>Member Count</th>
+					<th>Members</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>`;
+
+		$("div#pools").html(content);
+
+		siteData.poolTable = $('table#poolTable').DataTable({
+			"bAutoWidth": false,
+			"data": siteData.pools,
+			"columns": [{
+				"data": "loadbalancer",
+				"className": "loadbalancerCell",
+				"render": function (data, type, row) {
+					return renderLoadBalancer(data);
+				}
+			}, {
+				"data": "name",
+				"render": function (data, type, row) {
+					return renderPool(row.loadbalancer, data);
+				}
+			}, {
+				"data": "loadbalancingmethod"
+			}, {
+				"render": function (data, type, row) {
+					if (row.members && row.members.length) {
+						return row.members.length;
+					}
+					return 0;
+				}
+			}, {
+				"data": "members",
+				"render": function (data, type, row) {
+					result='';
+					if (data) {
+						data.forEach((member) => {
+							result += renderPoolMember(member) + '<br>';
+						});
+					}
+					return result;
+				}
+			}],
+			"iDisplayLength": 10,
+			"oLanguage": {
+				"sSearch": "Search all columns:"
+			},
+			"dom": 'frtilp',
+			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
+	}
+
+	function setupDataGroupTable() {
+		if (siteData.dataGroupTable) {
+			return;
+		}
+
+		var content = `
+		<table id="DataGroupTable" class="bigiptable">
+			<thead>
+				<tr>
+					<th>Load balancer</th>
+					<th>Name</th>
+					<th>Type</th>
+					<th>Length</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>`;
+
+		$("div#certificatedetails").html(content);
+
+		siteData.dataGroupTable = $('table#DataGroupTable').DataTable({
+			"bAutoWidth": false,
+			"data": siteData.datagrouplists,
+			"columns": [{
+				"data": "loadbalancer",
+				"className": "loadbalancerCell",
+				"render": function (data, type, row) {
+					return renderLoadBalancer(data);
+				}
+			}, {
+				"data": "name",
+				"className": "iRuleCell",
+				"render": function (data, type, row) {
+					return renderDataGroup(row.loadbalancer, data);
+				}
+			}, {
+				"data": "type",
+			}, {
+				"data": "data",
+				"render": function (data, type, row) {
+					if (data) {
+						return Object.keys(data).length;
+					}
+					return 0;
+				}
+			}],
+			"iDisplayLength": 10,
+			"oLanguage": {
+				"sSearch": "Search all columns:"
+			},
+			"dom": 'frtilp',
+			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
+	}
+
+	function setupCertificateTable() {
+
+		if (siteData.certificateTable) {
+			return;
+		}
+
+		var content = `
+		<table id="certificatedetailstable" class="bigiptable">
+			<thead>
+				<tr>
+					<th>Load Balancer</th>
+					<th>Name</th>
+					<th>Common Name</th>
+					<th>Country Name</th>
+					<th>State Name</th>
+					<th>Organization Name</th>
+					<th>Expiring</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>`;
+
+		$("div#certificatedetails").html(content);
+
+		siteData.certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
+			"data": siteData.certificates,
+			"columns": [{
+				"data": "loadbalancer",
+				"className": "loadbalancerCell",
+				"render": function (data, type, row) {
+					return renderLoadBalancer(data);
+				}
+			}, {
+				"data": "fileName",
+				"render": function(data, type, row) {
+					return renderCertificate(row.loadbalancer, data);
+				}
+			}, {
+				"data": "subject.commonName"
+			}, {
+				"data": "subject.countryName",
+				"class": "certificatecountryname",
+				"render": function(data, type, row) {
+					result = '';
+					if (data) {
+						result += "<img class=\"flagicon\" src=\"images/flags/" + data.toLowerCase() + ".png\"/> ";
+					}
+					return result + " " + data;
+				}
+			}, {
+				"data": "subject.stateName"
+			}, {
+				"data": "subject.organizationName"
+			}, {
+				"data": "expirationDate",
+				"render": function(data, type, row){
+					var certificateDate = new Date(0);
+					certificateDate.setUTCSeconds(data);
+					return certificateDate.toISOString().replace("T", " ").replace(/\.[0-9]{3}Z/, "");
+				}
+			}],
+			"createdRow": function(row, data, index) {
+				// Get the days left
+				var now = new Date();
+				var certificateDate = new Date(0);
+				certificateDate.setUTCSeconds(data.expirationDate);
+				var daysLeft = dateDiffInDays(now, certificateDate);
+
+				if (daysLeft < 14) {
+					var rowClass = "certificateExpiringIn14";
+				} else if (daysLeft < 30) {
+					var rowClass = "certificateExpiringIn30";
+				} else if (daysLeft < 60) {
+					var rowClass = "certificateExpiringIn60"
+				} else {
+					var rowClass = "certificateExpiringInMoreThan60"
+				}
+				$(row).addClass(rowClass);
+			},
+			"iDisplayLength": 10,
+			"oLanguage": {
+				"sSearch": "Search all columns:"
+			},
+			"dom": 'frtilp',
+			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
 	}
 
 	function showVirtualServers() {
 
+		setupVirtualServerTable();
 		activateMenuButton("div#virtualserversbutton");
 		$("div#mainholder").attr("data-activesection", "virtualservers");
 		updateLocationHash();
@@ -1357,6 +1460,7 @@
 
 	function showiRules() {
 
+		setupiRuleTable();
 		activateMenuButton("div#irulesbutton");
 		$("div#mainholder").attr("data-activesection", "irules");
 		updateLocationHash();
@@ -1367,6 +1471,7 @@
 
 	function showPools() {
 
+		setupPoolTable();
 		activateMenuButton("div#poolsbutton");
 		$("div#mainholder").attr("data-activesection", "pools");
 		updateLocationHash();
@@ -1377,6 +1482,7 @@
 
 	function showDataGroups() {
 
+		setupDataGroupTable();
 		activateMenuButton("div#datagroupbutton");
 		$("div#mainholder").attr("data-activesection", "datagroups");
 		updateLocationHash();
@@ -1419,13 +1525,17 @@
 		//Event handler for auto expand pools
 		$("#autoExpandPools").on("click", function () {
 			localStorage.setItem("autoExpandPools", this.checked);
-			bigipTable.draw();
+			if (siteData.bigipTable) {
+				siteData.bigipTable.draw();
+			}
 		});
 
 		//Event handler for showing ADC edit links
 		$("#adcLinks").on("click", function () {
 			localStorage.setItem("showAdcLinks", this.checked);
-			bigipTable.draw();
+			if (siteData.bigipTable) {
+				siteData.bigipTable.draw();
+			}
 		});
 
 		//Make sure that the check boxes are checked according to the settings
@@ -1440,6 +1550,7 @@
 
 	function showCertificateDetails() {
 
+		setupCertificateTable();
 		activateMenuButton("div#certificatebutton");
 		$("div#mainholder").attr("data-activesection", "certificatedetails");
 		updateLocationHash();
