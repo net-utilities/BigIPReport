@@ -1322,7 +1322,7 @@
 			</tbody>
 		</table>`;
 
-		$("div#certificatedetails").html(content);
+		$("div#datagroups").html(content);
 
 		siteData.dataGroupTable = $('table#DataGroupTable').DataTable({
 			"bAutoWidth": false,
