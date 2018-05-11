@@ -394,7 +394,11 @@
 			result += '<span data-member="' + member.ip + ':' + member.port + '">';
 			result += PoolMemberStatus(member);
 			result += '</span>&nbsp;&nbsp;';
-			result += member.name.split('/')[2] + ':' + member.port + ' - ' + member.ip + ':' + member.port;
+			name = member.name.split('/')[2];
+			if (name != member.ip) {
+				result += name + ':' + member.port + ' - ';
+			}
+			result += member.ip + ':' + member.port;
 		}
 		return result;
 	}
