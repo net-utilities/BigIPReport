@@ -1981,7 +1981,7 @@ Function Write-TemporaryFiles {
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data ( $Global:ReportObjects.Values.Pools.Values | Sort-Object loadbalancer, name )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data ( $Global:ReportObjects.Values.Monitors.Values | Sort-Object loadbalancer, name )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data ( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data ( $Global:ReportObjects.Values.VirtualServers.Values + $Global:ReportObjects.Values.OrphanPools | Sort-Object loadbalancer,name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data ( $Global:ReportObjects.Values.VirtualServers.Values | Sort-Object loadbalancer,name )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data ( $Global:ReportObjects.Values.Certificates.Values | Sort-Object loadbalancer, fileName )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data ( $Global:DeviceGroups | Sort-Object name | ConvertTo-Array )
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
