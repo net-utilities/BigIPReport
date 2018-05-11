@@ -411,6 +411,13 @@
 		return membercell;
 	}
 	function renderPoolCell(data, type, row, meta) {
+		if (type == 'sort') {
+			if (row.pools) {
+				return row.pools.length;
+			} else {
+				return 0;
+			}
+		}
 		if (!row.pools) {
 			return "N/A";
 		}
@@ -1022,6 +1029,7 @@
 				}
 			}, {
 				"data": "pools",
+				"type": "html-num",
 				"createdCell": createdPoolCell,
 				"render": renderPoolCell
 			}],
@@ -1189,7 +1197,6 @@
 					<th style="min-width: 6em;">Load Balancer</th>
 					<th>Name</th>
 					<th>Associated Pools</th>
-					<th style="width: 4em;">Pool Count</th>
 					<th style="width: 4em;">Length</th>
 			</thead>
 			<tbody>
@@ -1214,7 +1221,14 @@
 					return renderRule(row.loadbalancer, data);
 				}
 			}, {
+				"type": "html-num",
 				"render": function (data, type, row) {
+					if (type == 'sort') {
+						if (row.pools && row.pools.length) {
+							return row.pools.length;
+						}
+						return 0;
+					}
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
 						row.pools.forEach((pool) => {
@@ -1227,13 +1241,6 @@
 						result = "None";
 					}
 					return result;
-				}
-			}, {
-				"render": function (data, type, row) {
-					if (row.pools && row.pools.length) {
-						return row.pools.length;
-					}
-					return 0;
 				}
 			}, {
 				"data": "definition",
@@ -1295,7 +1302,6 @@
 					<th>Name</th>
 					<th>Orphan</th>
 					<th>Method</th>
-					<th>Member Count</th>
 					<th>Members</th>
 				</tr>
 			</thead>
@@ -1324,15 +1330,16 @@
 			}, {
 				"data": "loadbalancingmethod"
 			}, {
-				"render": function (data, type, row) {
-					if (row.members && row.members.length) {
-						return row.members.length;
-					}
-					return 0;
-				}
-			}, {
 				"data": "members",
+				"type": "html-num",
 				"render": function (data, type, row) {
+					// column sort sorts by number of members
+					if (type == 'sort') {
+						if (data && data.length) {
+							return data.length;
+						}
+						return 0;
+					}
 					result='';
 					if (data) {
 						data.forEach((member) => {
