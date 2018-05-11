@@ -911,7 +911,7 @@
 			<table id="allbigips" class="bigiptable">
 				<thead>
 					<tr>
-						<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load balancer" data-setting-name="showLoadBalancerColumn"/></th>
+						<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load Balancer" data-setting-name="showLoadBalancerColumn"/></th>
 						<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
 						<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
 						<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
@@ -1181,7 +1181,7 @@
 		<table id="iRuleTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th>Load balancer</th>
+					<th>Load Balancer</th>
 					<th>Name</th>
 					<th>Pool Count</th>
 					<th>Associated Pools</th>
@@ -1254,7 +1254,7 @@
 		<table id="poolTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th>Load balancer</th>
+					<th>Load Balancer</th>
 					<th>Name</th>
 					<th>Orphan</th>
 					<th>Method</th>
@@ -1323,7 +1323,7 @@
 		<table id="DataGroupTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th>Load balancer</th>
+					<th>Load Balancer</th>
 					<th>Name</th>
 					<th>Type</th>
 					<th>Length</th>
