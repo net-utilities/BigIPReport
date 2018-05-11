@@ -48,10 +48,11 @@
 }
 
 .search {
-	background: var(--headerbackgroundcolor);
+	background: white;
 	border: none;
+	padding: 0px;
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	font-weight: normal;
+	font-weight: bold;
 	font-size: 14px;
 	width: 100%;
 	text-align: center;
@@ -62,7 +63,7 @@
 }
 
 .search::placeholder {
-	font-weight: bold;
+	background: var(--headerbackgroundcolor);
 	color: var(--headerfontcolor);
 }
 
