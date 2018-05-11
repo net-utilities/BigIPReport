@@ -395,10 +395,11 @@
 			result += PoolMemberStatus(member);
 			result += '</span>&nbsp;&nbsp;';
 			name = member.name.split('/')[2];
+			result += name
 			if (name != member.ip) {
-				result += name + ':' + member.port + ' - ';
+				result += '(' + member.ip + ')';
 			}
-			result += member.ip + ':' + member.port;
+			result += ':' + member.port;
 		}
 		return result;
 	}
@@ -939,7 +940,7 @@
 
 		**************************************************************************************************************/
 
-		$("thead input.search_init").each(function (i) {
+		$("table#allbigips thead input.search_init").each(function (i) {
 			asInitVals[i] = this.value;
 		});
 
@@ -1041,7 +1042,7 @@
 
 		**************************************************************************************************************/
 
-		$("thead input").focus(function () {
+		$("table#allbigips thead input").focus(function () {
 			if (this.className == "search_init")
 			{
 				this.className = "search_entered";
@@ -1050,16 +1051,16 @@
 		});
 
 		//Prevents sorting the columns when clicking on the sorting headers
-		$('.search_init').on('click', function (e) {
+		$('table#allbigips .search_init').on('click', function (e) {
 			e.stopPropagation();
 		});
 
-		$('.search_entered').on('click', function (e) {
+		$('table#allbigips .search_entered').on('click', function (e) {
 			e.stopPropagation();
 		});
 
 
-		$("thead input").blur(function (i) {
+		$("table#allbigips thead input").blur(function (i) {
 			if (this.value == "") {
 				this.className = "search_init";
 				this.value = asInitVals[$("thead input").index(this)];
@@ -1076,11 +1077,11 @@
 
 		$("#resetFiltersButton").on("click", function () {
 
-			$("input[type='search']").val("");
+			$("table#allbigips thead th input[type='search']").val("");
 
-			$("thead input").each(function () {
+			$("table#allbigips thead th input").each(function () {
 				this.className = "search_init";
-				this.value = asInitVals[$("thead input").index(this)];
+				this.value = asInitVals[$("table#allbigips thead input").index(this)];
 			});
 
 			siteData.bigipTable.search('')
@@ -1185,11 +1186,11 @@
 		<table id="iRuleTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th>Load Balancer</th>
+					<th style="min-width: 6em;">Load Balancer</th>
 					<th>Name</th>
-					<th>Pool Count</th>
 					<th>Associated Pools</th>
-					<th>Length</th>
+					<th style="width: 4em;">pCount</th>
+					<th style="width: 4em;">Length</th>
 			</thead>
 			<tbody>
 			</tbody>
@@ -1214,13 +1215,6 @@
 				}
 			}, {
 				"render": function (data, type, row) {
-					if (row.pools && row.pools.length) {
-						return row.pools.length;
-					}
-					return 0;
-				}
-			}, {
-				"render": function (data, type, row) {
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
 						row.pools.forEach((pool) => {
@@ -1235,6 +1229,13 @@
 					return result;
 				}
 			}, {
+				"render": function (data, type, row) {
+					if (row.pools && row.pools.length) {
+						return row.pools.length;
+					}
+					return 0;
+				}
+			}, {
 				"data": "definition",
 				"render": function (data, type, row) {
 					return data.length;
@@ -1246,6 +1247,34 @@
 			},
 			"dom": 'frtilp',
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
+
+		$('table#iRuleTable thead th').each( function () {
+			var title = $(this).text();
+			$(this).html( '<input type="text" class="search_init" placeholder="'+title+'" />' );
+		} );
+
+		// Apply the search
+		siteData.iRuleTable.columns().every( function () {
+			var that = this;
+			$( 'input', this.header() ).on( 'keyup change', function () {
+				if ( that.search() !== this.value ) {
+					that
+						.search( this.value )
+						.draw();
+				}
+			} );
+		} );
+
+		// reset filters button and handlers
+
+		$("#iRuleTable_filter").append("<a id=\"resetiRuleFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
+
+		$("#resetiRuleFiltersButton").on("click", function () {
+			$("table#iRuleTable thead th input").val("");
+			siteData.iRuleTable.search('')
+				.columns().search('')
+				.draw();
 		});
 	}
 
@@ -1536,6 +1565,10 @@
 		//Populate the settings according to the local storage or default settings of none exist
 		$("#autoExpandPools").prop("checked", localStorage.getItem("autoExpandPools") === "true");
 		$("#adcLinks").prop("checked", localStorage.getItem("showAdcLinks") === "true");
+
+		// if we change content rendering rules, we can redraw with:
+		// siteData.bigipTable.clear().rows.add(siteData.virtualservers).draw();
+		// we could make HideLoadBalancerFQDN dynamic this way. Might want to redraw all tables.
 
 		//Event handler for auto expand pools
 		$("#autoExpandPools").on("click", function () {
