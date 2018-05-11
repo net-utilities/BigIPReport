@@ -48,7 +48,7 @@
 }
 
 .search {
-	background-color: white;
+	background-color: var(--headerbackgroundcolor);
 	border: none;
 	padding: 0px;
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -64,6 +64,9 @@
 
 .search::placeholder {
 	background-color: var(--headerbackgroundcolor);
+	background-image: url(../images/filter.png);
+	background-repeat: no-repeat;
+	background-position: right;
 	color: var(--headerfontcolor);
 }
 
