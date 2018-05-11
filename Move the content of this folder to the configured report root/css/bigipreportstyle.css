@@ -48,7 +48,7 @@
 }
 
 .search {
-	background: white;
+	background-color: white;
 	border: none;
 	padding: 0px;
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -63,7 +63,7 @@
 }
 
 .search::placeholder {
-	background: var(--headerbackgroundcolor);
+	background-color: var(--headerbackgroundcolor);
 	color: var(--headerfontcolor);
 }
 
