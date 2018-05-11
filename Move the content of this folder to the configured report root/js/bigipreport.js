@@ -1183,6 +1183,7 @@
 				<tr>
 					<th>Load balancer</th>
 					<th>Name</th>
+					<th>Pool Count</th>
 					<th>Associated Pools</th>
 					<th>Length</th>
 			</thead>
@@ -1206,6 +1207,13 @@
 				"className": "iRuleCell",
 				"render": function (data, type, row) {
 					return renderRule(row.loadbalancer, data);
+				}
+			}, {
+				"render": function (data, type, row) {
+					if (row.pools && row.pools.length) {
+						return row.pools.length;
+					}
+					return 0;
 				}
 			}, {
 				"render": function (data, type, row) {
