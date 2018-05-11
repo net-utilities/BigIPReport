@@ -1189,7 +1189,7 @@
 					<th style="min-width: 6em;">Load Balancer</th>
 					<th>Name</th>
 					<th>Associated Pools</th>
-					<th style="width: 4em;">pCount</th>
+					<th style="width: 4em;">Pool Count</th>
 					<th style="width: 4em;">Length</th>
 			</thead>
 			<tbody>
@@ -1251,8 +1251,13 @@
 
 		$('table#iRuleTable thead th').each( function () {
 			var title = $(this).text();
-			$(this).html( '<input type="text" class="search_init" placeholder="'+title+'" />' );
-		} );
+			$(this).html( '<input type="text" class="search" placeholder="'+title+'" />' );
+		});
+
+		//Prevents sorting the columns when clicking on the sorting headers
+		$('table#allbigips thead th input').on('click', function (e) {
+			e.stopPropagation();
+		});
 
 		// Apply the search
 		siteData.iRuleTable.columns().every( function () {
@@ -1263,11 +1268,10 @@
 						.search( this.value )
 						.draw();
 				}
-			} );
-		} );
+			});
+		});
 
 		// reset filters button and handlers
-
 		$("#iRuleTable_filter").append("<a id=\"resetiRuleFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
 
 		$("#resetiRuleFiltersButton").on("click", function () {

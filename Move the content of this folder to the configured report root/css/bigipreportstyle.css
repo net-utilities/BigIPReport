@@ -47,6 +47,25 @@
 	color: var(--headerfontcolor);
 }
 
+.search {
+	background: var(--headerbackgroundcolor);
+	border: none;
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-weight: normal;
+	font-size: 14px;
+	width: 100%;
+	text-align: center;
+	background-image: url(../images/filter.png);
+	background-repeat: no-repeat;
+	background-position: right;
+	color: var(--headerfontcolor);
+}
+
+.search::placeholder {
+	font-weight: bold;
+	color: var(--headerfontcolor);
+}
+
 /* This style controls how the search results should be highlighted */
 .highlight {
 	background-color: yellow;
