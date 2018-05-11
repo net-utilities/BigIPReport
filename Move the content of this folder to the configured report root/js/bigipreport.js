@@ -1255,7 +1255,7 @@
 		});
 
 		//Prevents sorting the columns when clicking on the sorting headers
-		$('table#allbigips thead th input').on('click', function (e) {
+		$('table#iRuleTable thead th input').on('click', function (e) {
 			e.stopPropagation();
 		});
 
