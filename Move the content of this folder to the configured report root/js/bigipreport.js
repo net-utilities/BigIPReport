@@ -1256,6 +1256,7 @@
 				<tr>
 					<th>Load balancer</th>
 					<th>Name</th>
+					<th>Orphan</th>
 					<th>Method</th>
 					<th>Member Count</th>
 					<th>Members</th>
@@ -1281,6 +1282,8 @@
 				"render": function (data, type, row) {
 					return renderPool(row.loadbalancer, data);
 				}
+			}, {
+				"data": "orphaned"
 			}, {
 				"data": "loadbalancingmethod"
 			}, {
