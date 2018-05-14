@@ -208,6 +208,9 @@
 #        5.1.4        2018-05-08      migrate console menu to main screen, layout changes, more edit links          Tim Riker       Yes
 #                                     iRules all exported, certificates datatable updates, Edge fix
 #                                     upgrade jQuery and Datatables, new ErrorReportAnyway config option
+#        5.1.5        2018-05-14      delay loading tables until used, data group table, pool table w/ orphans      Tim Riker       No
+#                                     SSL server profile, column filters for all tables, simplify member display
+#                                     pool / member columns sort by count when clicked, some stats in log tab
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -222,7 +225,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.1.4"
+$Global:ScriptVersion = "5.1.5"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -890,10 +893,10 @@ if($Global:Bigipreportconfig.Settings.NATFilePath -ne ""){
 	}
 }
 
-#Region function Cache-LTMInformation
+#Region function Get-LTMInformation
 
 #Function used to gather data from the load balancers
-function Cache-LTMInformation {
+function Get-LTMInformation {
 	Param(
 		$F5,
 		$LoadBalancerObjects
@@ -1735,7 +1738,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 		#Don't continue if this loabalancer is not active
 		If($ObjLoadBalancer.active -or $IsOnlyDevice){
 			log verbose "Caching LTM information from $BigIPHostname"
-			Cache-LTMInformation -f5 $F5 -LoadBalancer $LoadBalancerObjects
+			Get-LTMInformation -f5 $F5 -LoadBalancer $LoadBalancerObjects
 		} else {
 			log info "This load balancer is not active, and won't be indexed"
 			Continue
@@ -2179,7 +2182,6 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 #Initiate variables used for showing progress (in case the debug is set)
 
 #Initiate variables to give unique id's to pools and members
-$xPool = 0
 $RealTimeStatusDetected = ($Global:ReportObjects.Values.LoadBalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
 if($RealTimeStatusDetected){
 	log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
