@@ -172,18 +172,6 @@
 				$("div#secondlayerdiv").trigger("click");
 			});
 
-			// Set-up search delays
-
-			var delay = (function () {
-
-				var timer = 0;
-
-				return function (callback, ms) {
-					clearTimeout(timer);
-					timer = setTimeout(callback, ms);
-				};
-			})();
-
 			for (var i in siteData.loggedErrors) {
 				var logLine = siteData.loggedErrors[i];
 				log(logLine.message, logLine.severity, logLine.date, logLine.time)
@@ -1108,6 +1096,17 @@
 
 		//This section handles the global search
 		$('div#allbigips_filter.dataTables_filter input').off('keyup.DT input.DT');
+
+		// Set-up search delays
+		var delay = (function () {
+
+			var timer = 0;
+
+			return function (callback, ms) {
+				clearTimeout(timer);
+				timer = setTimeout(callback, ms);
+			};
+		})();
 
 		$('div#allbigips_filter.dataTables_filter input').on('keyup', function () {
 			var search = $('div#allbigips_filter.dataTables_filter input').val();
