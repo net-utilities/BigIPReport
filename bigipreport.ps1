@@ -303,7 +303,7 @@ Function log {
 }
 
 
-#Enable case sensitive dictonaries
+#Enable case sensitive dictionaries
 function c@ {
 	New-Object Collections.Hashtable ([StringComparer]::CurrentCulture)
 }
@@ -639,7 +639,8 @@ Add-Type @'
 		public string ip;
 		public string port;
 		public string defaultpool;
-		public string sslprofile;
+		public string sslprofileclient;
+		public string sslprofileserver;
 		public string compressionprofile;
 		public string persistence;
 		public string[] irules;
@@ -1354,18 +1355,16 @@ function Cache-LTMInformation {
 
 		#Set the ssl profile to None by default, then check if there's an SSL profile and
 
-		$ObjTempVirtualServer.sslprofile = "None";
-
-		$VirtualServerProfiles[$i] | ForEach-Object {
-			if([string]($_.profile_type) -eq "PROFILE_TYPE_CLIENT_SSL"){
-				$ObjTempVirtualServer.sslprofile = $_.profile_name;
-			}
-		}
-
+		$ObjTempVirtualServer.sslprofileclient = "None";
+		$ObjTempVirtualServer.sslprofileserver = "None";
 		$ObjTempVirtualServer.compressionprofile = "None";
 
 		$VirtualServerProfiles[$i] | ForEach-Object {
-			if([string]($_.profile_type) -eq "PROFILE_TYPE_HTTPCOMPRESSION"){
+			if([string]($_.profile_type) -eq "PROFILE_TYPE_CLIENT_SSL"){
+				$ObjTempVirtualServer.sslprofileclient = $_.profile_name;
+			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_SERVER_SSL"){
+				$ObjTempVirtualServer.sslprofileserver = $_.profile_name;
+			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_HTTPCOMPRESSION"){
 				$ObjTempVirtualServer.compressionprofile = $_.profile_name;
 			}
 		}
@@ -1482,7 +1481,8 @@ function Cache-LTMInformation {
 			$ObjTempVirtualServer.name = $PoolName + "(Orphan)"
 			$ObjTempVirtualServer.ip = "N"
 			$ObjTempVirtualServer.port = "A"
-			$ObjTempVirtualServer.sslprofile = "None"
+			$ObjTempVirtualServer.sslprofileclient = "None"
+			$ObjTempVirtualServer.sslprofileserver = "None"
 			$ObjTempVirtualServer.compressionprofile = "None"
 			$ObjTempVirtualServer.persistence = "None"
 			$ObjTempVirtualServer.irules = @()
