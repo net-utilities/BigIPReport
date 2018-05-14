@@ -137,14 +137,6 @@
 
 			initializeStatusVIPs();
 
-			/*************************************************************************************************************
-
-				setup main Virtual Servers table
-
-			*************************************************************************************************************/
-
-			// TODO: make things work without calling this on startup
-			setupVirtualServerTable();
 
 			/* Initiate the syntax highlighting for irules*/
 			sh_highlightDocument('js/', '.js');
@@ -173,33 +165,6 @@
 				return this;
 			}
 
-
-			/******************************************************************************************************************************
-
-				Add custom data tables functions
-
-			******************************************************************************************************************************/
-
-			//Expand pool matches  and hightlight them
-			siteData.bigipTable.on('draw', function () {
-
-				var body = $(siteData.bigipTable.table().body());
-
-				highlightAll(siteData.bigipTable);
-
-
-				hidePools();
-				toggleColumns();
-				toggleAdcLinks();
-
-				if (siteData.bigipTable.search() != "") {
-					expandPoolMatches(body, siteData.bigipTable.search());
-				}
-
-				setPoolTableCellWidth();
-
-			});
-
 			$("a#closefirstlayerbutton").on("click", function () {
 				$("div#firstlayerdiv").trigger("click");
 			});
@@ -219,51 +184,10 @@
 				};
 			})();
 
-			//This section handles the global search
-			$('div#allbigips_filter.dataTables_filter input').off('keyup.DT input.DT');
-
-			$('div#allbigips_filter.dataTables_filter input').on('keyup', function () {
-				var search = $('div#allbigips_filter.dataTables_filter input').val();
-				delay(function () {
-					if (search != null) {
-						updateLocationHash();
-						siteData.bigipTable.search(search).draw();
-					}
-				}, 700);
-			});
-
-			//Filter columns on key update and adding search delay
-			siteData.bigipTable.columns().every(function () {
-
-				var that = this;
-
-				$('input', this.header()).on('keyup change', function () {
-
-					var search = this.value
-					delay(function () {
-						updateLocationHash();
-						that
-							.search(search)
-							.draw();
-						expandPoolMatches($(siteData.bigipTable.table().body()), search);
-						highlightAll(siteData.bigipTable);
-					}, 700);
-				});
-
-			});
-
 			for (var i in siteData.loggedErrors) {
 				var logLine = siteData.loggedErrors[i];
 				log(logLine.message, logLine.severity, logLine.date, logLine.time)
 			}
-
-			/*************************************************************************************************************
-
-				If any search parameters has been sent, populate the search
-
-			**************************************************************************************************************/
-
-			siteData.bigipTable.draw();
 
 			/* highlight selected menu option */
 
@@ -913,6 +837,12 @@
 		}
 	}
 
+	/*************************************************************************************************************
+
+		setup main Virtual Servers table
+
+	*************************************************************************************************************/
+
 	function setupVirtualServerTable() {
 		if (siteData.bigipTable) {
 			return;
@@ -1042,6 +972,32 @@
 		});
 
 
+		/******************************************************************************************************************************
+
+			Add custom data tables functions
+
+		******************************************************************************************************************************/
+
+		//Expand pool matches  and hightlight them
+		siteData.bigipTable.on('draw', function () {
+
+			var body = $(siteData.bigipTable.table().body());
+
+			highlightAll(siteData.bigipTable);
+
+
+			hidePools();
+			toggleColumns();
+			toggleAdcLinks();
+
+			if (siteData.bigipTable.search() != "") {
+				expandPoolMatches(body, siteData.bigipTable.search());
+			}
+
+			setPoolTableCellWidth();
+
+		});
+
 		/*************************************************************************************************************
 
 			Attaches a function to the main data table column filters that
@@ -1149,6 +1105,47 @@
 
 		});
 
+		//This section handles the global search
+		$('div#allbigips_filter.dataTables_filter input').off('keyup.DT input.DT');
+
+		$('div#allbigips_filter.dataTables_filter input').on('keyup', function () {
+			var search = $('div#allbigips_filter.dataTables_filter input').val();
+			delay(function () {
+				if (search != null) {
+					updateLocationHash();
+					siteData.bigipTable.search(search).draw();
+				}
+			}, 700);
+		});
+
+		//Filter columns on key update and adding search delay
+		siteData.bigipTable.columns().every(function () {
+
+			var that = this;
+
+			$('input', this.header()).on('keyup change', function () {
+
+				var search = this.value
+				delay(function () {
+					updateLocationHash();
+					that
+						.search(search)
+						.draw();
+					expandPoolMatches($(siteData.bigipTable.table().body()), search);
+					highlightAll(siteData.bigipTable);
+				}, 700);
+			});
+
+		});
+
+		/*************************************************************************************************************
+
+			If any search parameters has been sent, populate the search
+
+		**************************************************************************************************************/
+
+		//siteData.bigipTable.draw();
+
 		/*************************************************************************************************************
 
 			This section adds the update check button div and initiates the update checks
@@ -1194,7 +1191,7 @@
 		<table id="iRuleTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th style="min-width: 6em;"><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
 					<th><input type="text" class="search" placeholder="Name" /></th>
 					<th><input type="text" class="search" placeholder="Associated Pools" /></th>
 					<th style="width: 4em;"><input type="text" class="search" placeholder="Length" /></th>
@@ -1293,7 +1290,7 @@
 		<table id="poolTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
 					<th><input type="text" class="search" placeholder="Name" /></th>
 					<th><input type="text" class="search" placeholder="Orphan" /></th>
 					<th><input type="text" class="search" placeholder="Method" /></th>
@@ -1389,7 +1386,7 @@
 		<table id="dataGroupTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
 					<th><input type="text" class="search" placeholder="Name" /></th>
 					<th><input type="text" class="search" placeholder="Type" /></th>
 					<th><input type="text" class="search" placeholder="Length" /></th>
@@ -1473,7 +1470,7 @@
 		<table id="certificatedetailstable" class="bigiptable">
 			<thead>
 				<tr>
-					<th>Load Balancer</th>
+					<th class="loadbalancerHeaderCell">Load Balancer</th>
 					<th>Name</th>
 					<th>Common Name</th>
 					<th>Country Name</th>
@@ -1678,7 +1675,15 @@
 				<table id="deviceoverviewtable" class="bigiptable">
 					<thead>
 						<tr>
-							<th></th><th>Device Group</th><th>Name</th><th>Model</th><th>Type</th><th>Version</th><th>Serial</th><th>Management IP</th><th>Polling</th>
+							<th>Icon</th>
+							<th>Device Group</th>
+							<th>Name</th>
+							<th>Model</th>
+							<th>Type</th>
+							<th>Version</th>
+							<th>Serial</th>
+							<th>Management IP</th>
+							<th>Polling</th>
 						</tr>
 					</thead>
 					<tbody>`;
@@ -2190,7 +2195,7 @@
 					table += '<table class="virtualserverdetailstable">';
 
 					if (ShowiRuleLinks) {
-						table += '	<tr><th>iRule name</th><th>Matched data group lists</td></tr>';
+						table += '	<tr><th>iRule name</th><th>Matched data group lists</th></tr>';
 					} else {
 						table += '	<tr><th>iRule name</th></tr>';
 					}
