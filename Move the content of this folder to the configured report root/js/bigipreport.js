@@ -1194,10 +1194,10 @@
 		<table id="iRuleTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th style="min-width: 6em;">Load Balancer</th>
-					<th>Name</th>
-					<th>Associated Pools</th>
-					<th style="width: 4em;">Length</th>
+					<th style="min-width: 6em;"><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><input type="text" class="search" placeholder="Name" /></th>
+					<th><input type="text" class="search" placeholder="Associated Pools" /></th>
+					<th style="width: 4em;"><input type="text" class="search" placeholder="Length" /></th>
 			</thead>
 			<tbody>
 			</tbody>
@@ -1256,11 +1256,6 @@
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
-		$('table#iRuleTable thead th').each( function () {
-			var title = $(this).text();
-			$(this).html( '<input type="text" class="search" placeholder="'+title+'" />' );
-		});
-
 		//Prevents sorting the columns when clicking on the sorting headers
 		$('table#iRuleTable thead th input').on('click', function (e) {
 			e.stopPropagation();
@@ -1298,11 +1293,11 @@
 		<table id="poolTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th>Load Balancer</th>
-					<th>Name</th>
-					<th>Orphan</th>
-					<th>Method</th>
-					<th>Members</th>
+					<th><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><input type="text" class="search" placeholder="Name" /></th>
+					<th><input type="text" class="search" placeholder="Orphan" /></th>
+					<th><input type="text" class="search" placeholder="Method" /></th>
+					<th><input type="text" class="search" placeholder="Members" /></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -1356,6 +1351,33 @@
 			"dom": 'frtilp',
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
+
+		//Prevents sorting the columns when clicking on the sorting headers
+		$('table#poolTable thead th input').on('click', function (e) {
+			e.stopPropagation();
+		});
+
+		// Apply the search
+		siteData.poolTable.columns().every( function () {
+			var that = this;
+			$( 'input', this.header() ).on( 'keyup change', function () {
+				if ( that.search() !== this.value ) {
+					that
+						.search( this.value )
+						.draw();
+				}
+			});
+		});
+
+		// reset filters button and handlers
+		$("#poolTable_filter").append("<a id=\"resetPoolFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
+
+		$("#resetPoolFiltersButton").on("click", function () {
+			$("table#poolTable thead th input").val("");
+			siteData.poolTable.search('')
+				.columns().search('')
+				.draw();
+		});
 	}
 
 	function setupDataGroupTable() {
@@ -1364,13 +1386,13 @@
 		}
 
 		var content = `
-		<table id="DataGroupTable" class="bigiptable">
+		<table id="dataGroupTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th>Load Balancer</th>
-					<th>Name</th>
-					<th>Type</th>
-					<th>Length</th>
+					<th><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><input type="text" class="search" placeholder="Name" /></th>
+					<th><input type="text" class="search" placeholder="Type" /></th>
+					<th><input type="text" class="search" placeholder="Length" /></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -1379,7 +1401,7 @@
 
 		$("div#datagroups").html(content);
 
-		siteData.dataGroupTable = $('table#DataGroupTable').DataTable({
+		siteData.dataGroupTable = $('table#dataGroupTable').DataTable({
 			"bAutoWidth": false,
 			"data": siteData.datagrouplists,
 			"columns": [{
@@ -1411,6 +1433,33 @@
 			},
 			"dom": 'frtilp',
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
+
+		//Prevents sorting the columns when clicking on the sorting headers
+		$('table#dataGroupTable thead th input').on('click', function (e) {
+			e.stopPropagation();
+		});
+
+		// Apply the search
+		siteData.dataGroupTable.columns().every( function () {
+			var that = this;
+			$( 'input', this.header() ).on( 'keyup change', function () {
+				if ( that.search() !== this.value ) {
+					that
+						.search( this.value )
+						.draw();
+				}
+			});
+		});
+
+		// reset filters button and handlers
+		$("#dataGroupTable_filter").append("<a id=\"resetDataGroupFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
+
+		$("#resetDataGroupFiltersButton").on("click", function () {
+			$("table#dataGroupTable thead th input").val("");
+			siteData.dataGroupTable.search('')
+				.columns().search('')
+				.draw();
 		});
 	}
 
@@ -1592,9 +1641,7 @@
 		//Event handler for showing ADC edit links
 		$("#adcLinks").on("click", function () {
 			localStorage.setItem("showAdcLinks", this.checked);
-			if (siteData.bigipTable) {
-				siteData.bigipTable.draw();
-			}
+			toggleAdcLinks();
 		});
 
 		//Make sure that the check boxes are checked according to the settings
@@ -1779,7 +1826,7 @@
 
 	}
 
-	function toggleAdcLinks () {
+	function toggleAdcLinks() {
 		if (localStorage.getItem("showAdcLinks") === "false") {
 			$(".adcLinkSpan").hide();
 		} else {
