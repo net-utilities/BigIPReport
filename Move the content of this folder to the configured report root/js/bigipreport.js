@@ -922,7 +922,7 @@
 			}, {
 				"className": "centeredCell",
 				"render": function (data, type, row) {
-					if (row.sslprofile == "None") {
+					if (row.sslprofileclient == "None") {
 						return "No";
 					} else {
 						return "Yes";
@@ -2188,8 +2188,8 @@
 			//Subtable 2
 			table += '			<td valign="top">';
 			table += '				<table class="virtualserverdetailstable">';
-			table += '					<tr><th>Client SSL Profile</th><td>' + matchingvirtualserver.sslprofile + '</td></tr>';
-			table += '					<tr><th>Server SSL Profile</th><td>' + matchingvirtualserver.sslprofile + '</td></tr>';
+			table += '					<tr><th>Client SSL Profile</th><td>' + matchingvirtualserver.sslprofileclient + '</td></tr>';
+			table += '					<tr><th>Server SSL Profile</th><td>' + matchingvirtualserver.sslprofileserver + '</td></tr>';
 			table += '					<tr><th>Compression Profile</th><td>' + matchingvirtualserver.compressionprofile + '</td></tr>';
 			table += '					<tr><th>Persistence Profile</th><td>' + matchingvirtualserver.persistence + '</td></tr>';
 			table += '					<tr><th>Source Translation</th><td>' + xlate + '</td></tr>';
@@ -2931,7 +2931,7 @@
 
 				var vs = getVirtualServer(vsname, loadbalancer)
 
-				var line = vs.name + ";" + (vs.description || "") + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofile || "None") + ";" + (vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" + vs.cpuavg5sec + ";" + vs.cpuavg1min + ";" + vs.cpuavg5min + ";" + (vs.defaultpool || "None") + ";";
+				var line = vs.name + ";" + (vs.description || "") + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofileclient || "None") + ";" + (vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" + vs.cpuavg5sec + ";" + vs.cpuavg1min + ";" + vs.cpuavg5min + ";" + (vs.defaultpool || "None") + ";";
 
 				var firstpool = true;
 
