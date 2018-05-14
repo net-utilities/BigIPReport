@@ -1553,8 +1553,18 @@
 		});
 	}
 
+	function hideMainSection() {
+		$("div.mainsection").hide();
+	}
+
+	function showMainSection(section) {
+		hideMainSection();
+		$("div#" + section).fadeIn(10, updateLocationHash);
+	}
+
 	function showVirtualServers() {
 
+		hideMainSection();
 		setupVirtualServerTable();
 		activateMenuButton("div#virtualserversbutton");
 		$("div#mainholder").attr("data-activesection", "virtualservers");
@@ -1565,6 +1575,7 @@
 
 	function showiRules() {
 
+		hideMainSection();
 		setupiRuleTable();
 		activateMenuButton("div#irulesbutton");
 		$("div#mainholder").attr("data-activesection", "irules");
@@ -1576,6 +1587,7 @@
 
 	function showPools() {
 
+		hideMainSection();
 		setupPoolTable();
 		activateMenuButton("div#poolsbutton");
 		$("div#mainholder").attr("data-activesection", "pools");
@@ -1587,6 +1599,7 @@
 
 	function showDataGroups() {
 
+		hideMainSection();
 		setupDataGroupTable();
 		activateMenuButton("div#datagroupbutton");
 		$("div#mainholder").attr("data-activesection", "datagroups");
@@ -1598,6 +1611,7 @@
 
 	function showPreferences() {
 
+		hideMainSection();
 		activateMenuButton($("div#preferencesbutton"));
 		$("div#mainholder").attr("data-activesection", "preferences");
 		updateLocationHash();
@@ -1657,6 +1671,7 @@
 
 	function showCertificateDetails() {
 
+		hideMainSection();
 		setupCertificateTable();
 		activateMenuButton("div#certificatebutton");
 		$("div#mainholder").attr("data-activesection", "certificatedetails");
@@ -1668,6 +1683,7 @@
 
 	function showDeviceOverview() {
 
+		hideMainSection();
 		activateMenuButton("div#deviceoverviewbutton");
 		$("div#mainholder").attr("data-activesection", "deviceoverview");
 		updateLocationHash();
@@ -1777,13 +1793,9 @@
 
 	}
 
-	function showMainSection(section) {
-		$("div.mainsection").hide();
-		$("div#" + section).fadeIn(10, updateLocationHash);
-	}
-
 	function showReportLogs() {
 
+		hideMainSection();
 		activateMenuButton($("div#logsbutton"));
 		$("div#mainholder").attr("data-activesection", "reportlogs");
 
@@ -1795,6 +1807,7 @@
 
 	function showHelp() {
 
+		hideMainSection();
 		activateMenuButton("div#helpbutton");
 		$("div#mainholder").attr("data-activesection", "help");
 		updateLocationHash();
@@ -1873,8 +1886,9 @@
 			}
 		});
 
-		if ($('#allbigips_filter label input').val() != "") {
-			parameters.push("global_search" + '=' + $('#allbigips_filter label input').val())
+		var global_search = $('#allbigips_filter label input').val();
+		if (global_search && global_search != "") {
+			parameters.push("global_search" + '=' + global_search);
 		}
 
 		$("div.lightboxcontent:visible").each(function (i, e) {
