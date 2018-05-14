@@ -885,6 +885,7 @@
 		siteData.bigipTable = $('table#allbigips').DataTable({
 
 			"bAutoWidth": false,
+			"deferRender": true,
 			"data": siteData.virtualservers,
 			"createdRow": function (row, data, index) {
 				$(row).addClass('virtualserverrow');
@@ -1204,6 +1205,7 @@
 
 		siteData.iRuleTable = $('table#iRuleTable').DataTable({
 			"bAutoWidth": false,
+			"deferRender": true,
 			"data": siteData.irules,
 			"columns": [{
 				"data": "loadbalancer",
@@ -1305,6 +1307,7 @@
 
 		siteData.poolTable = $('table#poolTable').DataTable({
 			"bAutoWidth": false,
+			"deferRender": true,
 			"data": siteData.pools,
 			"columns": [{
 				"data": "loadbalancer",
@@ -1400,6 +1403,7 @@
 
 		siteData.dataGroupTable = $('table#dataGroupTable').DataTable({
 			"bAutoWidth": false,
+			"deferRender": true,
 			"data": siteData.datagrouplists,
 			"columns": [{
 				"data": "loadbalancer",
@@ -1486,6 +1490,7 @@
 		$("div#certificatedetails").html(content);
 
 		siteData.certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
+			"deferRender": true,
 			"data": siteData.certificates,
 			"columns": [{
 				"data": "loadbalancer",
