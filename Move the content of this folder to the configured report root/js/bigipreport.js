@@ -1280,6 +1280,12 @@
 				.columns().search('')
 				.draw();
 		});
+
+		// highlight matches
+		siteData.iRuleTable.on('draw', function () {
+			highlightAll(siteData.iRuleTable);
+			toggleAdcLinks();
+		});
 	}
 
 	function setupPoolTable() {
@@ -1377,6 +1383,12 @@
 				.columns().search('')
 				.draw();
 		});
+
+		// highlight matches
+		siteData.poolTable.on('draw', function () {
+			highlightAll(siteData.poolTable);
+			toggleAdcLinks();
+		});
 	}
 
 	function setupDataGroupTable() {
@@ -1461,6 +1473,12 @@
 				.columns().search('')
 				.draw();
 		});
+
+		// highlight matches
+		siteData.dataGroupTable.on('draw', function () {
+			highlightAll(siteData.dataGroupTable);
+			toggleAdcLinks();
+		});
 	}
 
 	function setupCertificateTable() {
@@ -1470,16 +1488,16 @@
 		}
 
 		var content = `
-		<table id="certificatedetailstable" class="bigiptable">
+		<table id="certificateTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th class="loadbalancerHeaderCell">Load Balancer</th>
-					<th>Name</th>
-					<th>Common Name</th>
-					<th>Country Name</th>
-					<th>State Name</th>
-					<th>Organization Name</th>
-					<th>Expiring</th>
+					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><input type="text" class="search" placeholder="Name" /></th>
+					<th><input type="text" class="search" placeholder="Common Name" /></th>
+					<th><input type="text" class="search" placeholder="Country Name" /></th>
+					<th><input type="text" class="search" placeholder="State Name" /></th>
+					<th><input type="text" class="search" placeholder="Organization Name" /></th>
+					<th><input type="text" class="search" placeholder="Expiring" /></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -1488,7 +1506,7 @@
 
 		$("div#certificatedetails").html(content);
 
-		siteData.certificateTable = $("div#certificatedetails table#certificatedetailstable").DataTable({
+		siteData.certificateTable = $("div#certificatedetails table#certificateTable").DataTable({
 			"deferRender": true,
 			"data": siteData.certificates,
 			"columns": [{
@@ -1550,6 +1568,39 @@
 			},
 			"dom": 'frtilp',
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+		});
+
+		//Prevents sorting the columns when clicking on the sorting headers
+		$('table#certifcateTable thead th input').on('click', function (e) {
+			e.stopPropagation();
+		});
+
+		// Apply the search
+		siteData.certificateTable.columns().every( function () {
+			var that = this;
+			$( 'input', this.header() ).on( 'keyup change', function () {
+				if ( that.search() !== this.value ) {
+					that
+						.search( this.value )
+						.draw();
+				}
+			});
+		});
+
+		// reset filters button and handlers
+		$("#certificateTable_filter").append("<a id=\"resetCertificateFiltersButton\" class=\"resetFiltersButton\" href=\"javascript:void(0);\">Reset filters</a>")
+
+		$("#resetCertificateFiltersButton").on("click", function () {
+			$("table#certifcateTable thead th input").val("");
+			siteData.certificateTable.search('')
+				.columns().search('')
+				.draw();
+		});
+
+		// highlight matches
+		siteData.certificateTable.on('draw', function () {
+			highlightAll(siteData.certificateTable);
+			toggleAdcLinks();
 		});
 	}
 
