@@ -62,7 +62,40 @@
 			$("#firstlayerdiv").fadeIn();
 		}
 
-		$.when(
+		/******************************************************************************************************************************
+
+			Lightbox related functions
+
+		******************************************************************************************************************************/
+
+		/* Hide the lightbox if clicking outside the information box*/
+		$('body').on('click', function (e) {
+			if (e.target.className == "lightbox") {
+				$("div#" + e.target.id).fadeOut(function () {
+					updateLocationHash();
+				});
+			}
+		});
+
+		/* Center the lightbox */
+		jQuery.fn.center = function () {
+			this.css("position", "absolute");
+			//this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) + $(window).scrollTop()) + "px");
+			this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) + $(window).scrollLeft()) + "px");
+			return this;
+		}
+
+		$("a#closefirstlayerbutton").on("click", function () {
+			$("div#firstlayerdiv").trigger("click");
+		});
+		$("a#closesecondlayerbutton").on("click", function () {
+			$("div#secondlayerdiv").trigger("click");
+		});
+
+		/* syntax highlighting */
+		sh_highlightDocument('js/', '.js');
+
+	$.when(
 			// Get pools
 			$.getJSON("json/pools.json", function (result) {
 				siteData.pools = result;
@@ -86,8 +119,8 @@
 				siteData.irules = result;
 			}).fail(addJSONLoadingFailure),
 			//Get the datagroup list data
-			$.getJSON("json/datagrouplists.json", function (result) {
-				siteData.datagrouplists = result;
+			$.getJSON("json/datagroups.json", function (result) {
+				siteData.datagroups = result;
 			}).fail(addJSONLoadingFailure),
 			$.getJSON("json/loadbalancers.json", function (result) {
 				siteData.loadbalancers = result;
@@ -117,7 +150,7 @@
 
 			/********************************************************************************************************************************************************************************************
 
-				All pre-requisite things has loaded
+				All pre-requisite things have loaded
 
 			********************************************************************************************************************************************************************************************/
 
@@ -136,41 +169,6 @@
 			*************************************************************************************************************/
 
 			initializeStatusVIPs();
-
-
-			/* Initiate the syntax highlighting for irules*/
-			sh_highlightDocument('js/', '.js');
-
-
-			/******************************************************************************************************************************
-
-				Lightbox related functions
-
-			******************************************************************************************************************************/
-
-			/* Hide the lightbox if clicking outside the information box*/
-			$('body').on('click', function (e) {
-				if (e.target.className == "lightbox") {
-					$("div#" + e.target.id).fadeOut(function () {
-						updateLocationHash();
-					});
-				}
-			});
-
-			/* Center the lightbox */
-			jQuery.fn.center = function () {
-				this.css("position", "absolute");
-				//this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) + $(window).scrollTop()) + "px");
-				this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) + $(window).scrollLeft()) + "px");
-				return this;
-			}
-
-			$("a#closefirstlayerbutton").on("click", function () {
-				$("div#firstlayerdiv").trigger("click");
-			});
-			$("a#closesecondlayerbutton").on("click", function () {
-				$("div#secondlayerdiv").trigger("click");
-			});
 
 			for (var i in siteData.loggedErrors) {
 				var logLine = siteData.loggedErrors[i];
@@ -192,7 +190,7 @@
 				", pools:" + siteData.pools.length +
 				", iRules:" + siteData.irules.length +
 				", certificates:" + siteData.certificates.length +
-				", datagroups:" + siteData.datagrouplists.length +
+				", datagroups:" + siteData.datagroups.length +
 				", asmPolicies:" + siteData.asmPolicies.length +
 				".", "INFO");
 
@@ -479,7 +477,7 @@
 		result += vsName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
 		result += '<p>Click to see virtual server details</p>';
 		result += '</a>';
-		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
 		result += '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + name + '">Edit</a></span>';
 		return result;
 	}
@@ -494,7 +492,7 @@
 		result += ruleName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
 		result += '<p>Click to see iRule details</p>';
 		result += '</a>';
-		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
 		result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
 		return result;
 	}
@@ -513,7 +511,7 @@
 		result += poolname + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
 		result += '<p>Click to see pool details</p>';
 		result += '</a>';
-		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
 		result += '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
 		return result;
 	}
@@ -521,7 +519,7 @@
 	function renderCertificate(loadbalancer, name) {
 		certName=name.replace(/^\/Common\//,'');
 		result = certName;
-		result += ' <span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += ' <span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
 		result += '/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?certificate_name=' + name.replace(/\//,'%2F').replace(/.crt$/,'') + '">Edit</a></span>';
 		return result;
 	}
@@ -532,11 +530,11 @@
 		result += ' class="tooltip"';
 		result += ' data-originalvirtualservername="' + name + '"';
 		result += ' data-loadbalancer="' + loadbalancer + '"';
-		result += ' href="Javascript:showDataGroupListDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		result += ' href="Javascript:showDataGroupDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
 		result += datagroupName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
 		result += '<p>Click to see Data Group details</p>';
 		result += '</a>';
-		result += '<span class="adcLinkSpan"><a href="https://' + loadbalancer;
+		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
 		result += '/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=' + name + '">Edit</a></span>';
 		return result;
 	}
@@ -776,11 +774,11 @@
 				showVirtualServerDetails(virtualServerName, loadBalancer);
 			}
 
-			if (vars['datagrouplist']) {
-				var dataGroupListName = vars['datagrouplist'].split('@')[0];
-				var loadBalancer = vars['datagrouplist'].split('@')[1];
+			if (vars['datagroup']) {
+				var dataGroupName = vars['datagroup'].split('@')[0];
+				var loadBalancer = vars['datagroup'].split('@')[1];
 
-				showDataGroupListDetails(dataGroupListName, loadBalancer);
+				showDataGroupDetails(dataGroupName, loadBalancer);
 			}
 
 
@@ -1422,7 +1420,7 @@
 		siteData.dataGroupTable = $('table#dataGroupTable').DataTable({
 			"autoWidth": false,
 			"deferRender": true,
-			"data": siteData.datagrouplists,
+			"data": siteData.datagroups,
 			"columns": [{
 				"data": "loadbalancer",
 				"className": "loadbalancerCell",
@@ -2289,31 +2287,31 @@
 								table += '	<tr><td>' + matchingvirtualserver.irules[i] + '</td><td>N/A (empty rule)</td></tr>';
 							} else {
 
-								var matcheddatagrouplists = ParseDataGroupLists(iruleobj);
+								var matcheddatagroups = ParseDataGroups(iruleobj);
 
-								if (Object.keys(matcheddatagrouplists).length == 0) {
-									var datagrouplistdata = ["N/A"];
+								if (Object.keys(matcheddatagroups).length == 0) {
+									var datagroupdata = ["N/A"];
 								} else {
 
-									var datagrouplistdata = [];
+									var datagroupdata = [];
 
-									for (var dg in matcheddatagrouplists) {
+									for (var dg in matcheddatagroups) {
 
-										var name = matcheddatagrouplists[dg].name;
+										var name = matcheddatagroups[dg].name;
 
 										if (name.indexOf("/") >= 0) {
 											name = name.split("/")[2];
 										}
 
-										if (ShowDataGroupListsLinks) {
-											datagrouplistdata.push('<a href="Javascript:showDataGroupListDetails(\'' + matcheddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + name + '</a>');
+										if (ShowDataGroupLinks) {
+											datagroupdata.push('<a href="Javascript:showDataGroupDetails(\'' + matcheddatagroups[dg].name + '\', \'' + loadbalancer + '\')">' + name + '</a>');
 										} else {
-											datagrouplistdata.push(name)
+											datagroupdata.push(name)
 										}
 									}
 								}
 
-								table += '	<tr><td>' + renderRule(loadbalancer, iruleobj.name) + '</td><td>' + datagrouplistdata.join("<br>") + '</td></tr>';
+								table += '	<tr><td>' + renderRule(loadbalancer, iruleobj.name) + '</td><td>' + datagroupdata.join("<br>") + '</td></tr>';
 							}
 						} else {
 							table += '	<tr><td>' + matchingvirtualserver.irules[i] + '</td></tr>';
@@ -2394,19 +2392,19 @@
 			definition = definition.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
 			//Check if data group list links are wanted. Parse and create links if that's the base
-			if (ShowDataGroupListsLinks == true) {
+			if (ShowDataGroupLinks == true) {
 
 				//Then get the matching data group lists, if any
-				connecteddatagrouplists = ParseDataGroupLists(matchingirule)
+				connecteddatagroups = ParseDataGroups(matchingirule)
 
 				//Check if any data group lists was detected in the irule
-				if (Object.keys(connecteddatagrouplists).length > 0) {
+				if (Object.keys(connecteddatagroups).length > 0) {
 					//There was, let's loop through each
-					for (var dg in connecteddatagrouplists) {
+					for (var dg in connecteddatagroups) {
 						//First, prepare a regexp to replace all instances of the data group list with a link
 						var regexp = new RegExp("\\s" + dg + "(\\s|\])", "g");
 						//Prepare the link
-						var dglink = ' <a href="Javascript:showDataGroupListDetails(\'' + connecteddatagrouplists[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a> ';
+						var dglink = ' <a href="Javascript:showDataGroupDetails(\'' + connecteddatagroups[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a> ';
 						//Do the actual replacement
 						definition = definition.replace(regexp, dglink);
 					}
@@ -2429,7 +2427,7 @@
 		$("a#closesecondlayerbutton").text("Close irule details");
 		//Add the div content to the page
 		$("#secondlayerdetailscontentdiv").html(html);
-		//Add syntax highlighting
+		/* redo syntax highlighting */
 		sh_highlightDocument('js/', '.js');
 		//Show the div
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
@@ -2442,7 +2440,7 @@
 	**********************************************************************************************************************/
 
 
-	function ParseDataGroupLists(irule) {
+	function ParseDataGroups(irule) {
 
 		/*
 			Disclaimer. I know this one is very ugly, but since the commands potentially can do multiple levels
@@ -2540,25 +2538,25 @@
 
 							if (dg != "") {
 
-								if (ShowDataGroupListsLinks == false) {
-									var matchingdatagrouplist = {};
-									matchingdatagrouplist["name"] = dg;
+								if (ShowDataGroupLinks == false) {
+									var matchingdatagroup = {};
+									matchingdatagroup["name"] = dg;
 								} else if (dg.indexOf("/") >= 0) {
 									//Check if a full path to a data group list has been specified and if it's legit
 
 									//Possible match of a data group list with full pathname
-									matchingdatagrouplist = getDataGroupList(dg, loadbalancer);
+									matchingdatagroup = getDataGroup(dg, loadbalancer);
 
-									if (matchingdatagrouplist == "") {
+									if (matchingdatagroup == "") {
 										//This did not match an existing data group list
 										continue
 									}
-								} else if (getDataGroupList("/" + irulepartition + "/" + dg, loadbalancer) != "") {
+								} else if (getDataGroup("/" + irulepartition + "/" + dg, loadbalancer) != "") {
 									//It existed in the irule partition
-									matchingdatagrouplist = getDataGroupList("/" + irulepartition + "/" + dg, loadbalancer);
-								} else if (getDataGroupList("/Common/" + dg, loadbalancer) != "") {
+									matchingdatagroup = getDataGroup("/" + irulepartition + "/" + dg, loadbalancer);
+								} else if (getDataGroup("/Common/" + dg, loadbalancer) != "") {
 									//It existed in the Common partition
-									matchingdatagrouplist = getDataGroupList("/Common/" + dg, loadbalancer);
+									matchingdatagroup = getDataGroup("/Common/" + dg, loadbalancer);
 								} else {
 									//No data group list was matched
 									continue
@@ -2566,11 +2564,11 @@
 
 								//Check if the data group list has been detected before
 								//If it hasn't, add it to the array of detected data group lists
-								if (matchingdatagrouplist.name in detecteddict) {
+								if (matchingdatagroup.name in detecteddict) {
 									continue;
 								} else {
 									//Update the dictionary
-									detecteddict[matchingdatagrouplist.name] = matchingdatagrouplist;
+									detecteddict[matchingdatagroup.name] = matchingdatagroup;
 								}
 							}
 						}
@@ -2596,19 +2594,19 @@
 		Returns a matching data group list object from the data group list json data
 	**********************************************************************************************************************/
 
-	function getDataGroupList(datagrouplist, loadbalancer) {
+	function getDataGroup(datagroup, loadbalancer) {
 
-		var datagrouplists = siteData.datagrouplists;
-		var matchingdatagrouplist = "";
+		var datagroups = siteData.datagroups;
+		var matchingdatagroup = "";
 
 		//Find the matching data group list from the JSON object
-		for (var i in datagrouplists) {
-			if (datagrouplists[i].name == datagrouplist && datagrouplists[i].loadbalancer == loadbalancer) {
-				matchingdatagrouplist = datagrouplists[i];
+		for (var i in datagroups) {
+			if (datagroups[i].name == datagroup && datagroups[i].loadbalancer == loadbalancer) {
+				matchingdatagroup = datagroups[i];
 			}
 		}
 
-		return matchingdatagrouplist;
+		return matchingdatagroup;
 	}
 
 
@@ -2616,33 +2614,33 @@
 		Displays a data group list in a lightbox
 	**********************************************************************************************************************/
 
-	function showDataGroupListDetails(datagrouplist, loadbalancer) {
+	function showDataGroupDetails(datagroup, loadbalancer) {
 
 		//Get a matching data group list from the json data
-		matchingdatagrouplist = getDataGroupList(datagrouplist, loadbalancer)
+		matchingdatagroup = getDataGroup(datagroup, loadbalancer)
 
 		//If a pool was found, populate the pool details table and display it on the page
-		if (matchingdatagrouplist != "") {
+		if (matchingdatagroup != "") {
 
-			var html = "<div class=\"datagrouplistdetailsheader\"><span>Data group list: " + matchingdatagrouplist.name + "</span></div>";
-			$("div#secondlayerdetailscontentdiv").attr("data-type", "datagrouplist");
-			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingdatagrouplist.name);
-			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingdatagrouplist.loadbalancer);
+			var html = "<div class=\"datagroupdetailsheader\"><span>Data group list: " + matchingdatagroup.name + "</span></div>";
+			$("div#secondlayerdetailscontentdiv").attr("data-type", "datagroup");
+			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingdatagroup.name);
+			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingdatagroup.loadbalancer);
 
-			html += "<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
-			"<span class=\"dgtype\">Type: " + matchingdatagrouplist.type + "</span><br><br>";
+			html += "<span class=\"dgtype\">Type: " + matchingdatagroup.type + "</span><br><br>";
+			"<span class=\"dgtype\">Type: " + matchingdatagroup.type + "</span><br><br>";
 
-			html += "<table class=\"datagrouplisttable\">\
+			html += "<table class=\"datagrouptable\">\
 								<thead>\
 									<tr><th class=\"keyheader\">Key</th><th class=\"valueheader\">Value</th></tr>\
 								</thead>\
 								<tbody>"
 
-			if (Object.keys(matchingdatagrouplist).length == 0) {
+			if (Object.keys(matchingdatagroup).length == 0) {
 				html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group list</td></tr>"
 			} else {
-				for (var i in matchingdatagrouplist.data) {
-					html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagrouplist.data[i] + "</td></tr>";
+				for (var i in matchingdatagroup.data) {
+					html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagroup.data[i] + "</td></tr>";
 				}
 			}
 

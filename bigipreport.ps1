@@ -489,12 +489,12 @@ if($Global:Bigipreportconfig.Settings.iRules -eq $null -or $Global:Bigipreportco
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $null){
+if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $null){
 	log error "Missing options for showing data group list links in the global irules section defined in the configuration file. Old config version of the configuration file?"
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
+if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
 	log error "You can't show data group lists without showing irules in the current version."
 	$SaneConfig = $false
 }
@@ -623,7 +623,7 @@ $Global:poolsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/po
 $Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
 $Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/virtualservers.json"
 $Global:irulesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/irules.json"
-$Global:datagrouplistjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/datagrouplists.json"
+$Global:datagroupjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/datagroups.json"
 $Global:devicegroupsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/devicegroups.json"
 $Global:loadbalancersjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/loadbalancers.json"
 $Global:certificatesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/certificates.json"
@@ -716,7 +716,7 @@ Add-Type @'
 		public string timeout;
 	}
 
-	public class Datagrouplist {
+	public class Datagroup {
 		public string name;
 		public string type;
 		public Hashtable data;
@@ -1103,7 +1103,7 @@ function Get-LTMInformation {
 
 	log verbose "Caching data group lists"
 
-	$LoadBalancerObjects.DataGroupLists = c@{}
+	$LoadBalancerObjects.DataGroups = c@{}
 
 	[array]$AddressClassList = $F5.LocalLBClass.get_address_class_list()
 	[array]$AddressClassKeys = $F5.LocalLBClass.get_address_class($AddressClassList)
@@ -1111,9 +1111,9 @@ function Get-LTMInformation {
 
 	#Get address type data group lists data
 	For($i = 0;$i -lt $AddressClassList.Count;$i++){
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $AddressClassList[$i]
-		$ObjTempDataGroupList.type = "Address"
+		$ObjTempDataGroup = New-Object -Type DataGroup
+		$ObjTempDataGroup.name = $AddressClassList[$i]
+		$ObjTempDataGroup.type = "Address"
 
 		$Dgdata = New-Object System.Collections.Hashtable
 
@@ -1124,10 +1124,10 @@ function Get-LTMInformation {
 			$Dgdata.add($Key, $Value)
 		}
 
-		$ObjTempDataGroupList.data = $Dgdata
-		$objTempDataGroupList.loadbalancer = $LoadBalancerName
+		$ObjTempDataGroup.data = $Dgdata
+		$objTempDataGroup.loadbalancer = $LoadBalancerName
 
-		$LoadBalancerObjects.DataGroupLists.add($ObjTempDataGroupList.name, $ObjTempDataGroupList)
+		$LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
 	}
 
 	$StringClassList = $F5.LocalLBClass.get_string_class_list()
@@ -1135,9 +1135,9 @@ function Get-LTMInformation {
 	$StringClassValues = $F5.LocalLBClass.get_string_class_member_data_value($StringClassKeys)
 
 	For($i = 0;$i -lt $StringClassList.Count;$i++){
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $StringClassList[$i]
-		$ObjTempDataGroupList.type = "String"
+		$ObjTempDataGroup = New-Object -Type DataGroup
+		$ObjTempDataGroup.name = $StringClassList[$i]
+		$ObjTempDataGroup.type = "String"
 
 		$Dgdata = New-Object System.Collections.Hashtable
 
@@ -1148,10 +1148,10 @@ function Get-LTMInformation {
 			$Dgdata.add($Key, $Value)
 		}
 
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $LoadBalancerName
+		$ObjTempDataGroup.data = $Dgdata
+		$ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
-		$LoadBalancerObjects.DataGroupLists.add($ObjTempDataGroupList.name, $ObjTempDataGroupList)
+		$LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
 	}
 
 	$ValueClassList = $F5.LocalLBClass.get_value_class_list()
@@ -1159,9 +1159,9 @@ function Get-LTMInformation {
 	$ValueClassValues = $F5.LocalLBClass.get_value_class_member_data_value($ValueClassKeys)
 
 	For($i = 0;$i -lt $ValueClassList.Count;$i++){
-		$ObjTempDataGroupList = New-Object -Type DataGroupList
-		$ObjTempDataGroupList.name = $ValueClassList[$i]
-		$ObjTempDataGroupList.type = "String"
+		$ObjTempDataGroup = New-Object -Type DataGroup
+		$ObjTempDataGroup.name = $ValueClassList[$i]
+		$ObjTempDataGroup.type = "String"
 
 		$Dgdata = New-Object System.Collections.Hashtable
 
@@ -1172,10 +1172,10 @@ function Get-LTMInformation {
 			$Dgdata.add($Key, $Value)
 		}
 
-		$ObjTempDataGroupList.data = $Dgdata
-		$ObjTempDataGroupList.loadbalancer = $LoadBalancerName
+		$ObjTempDataGroup.data = $Dgdata
+		$ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
-		$LoadBalancerObjects.DataGroupLists.add($ObjTempDataGroupList.name, $ObjTempDataGroupList)
+		$LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
 	}
 
 	#EndRegion
@@ -1789,12 +1789,12 @@ function Test-ReportData {
 						log error "$LoadBalancerName does not have any Nodes data"
 						$NoneMissing = $false
 					}
-					#Verify that the $Global:DataGroupLists contains the $LoadBalancerName
-					if($LoadBalancerObjects.DataGroupLists.Count -eq 0){
+					#Verify that the $Global:DataGroups contains the $LoadBalancerName
+					if($LoadBalancerObjects.DataGroups.Count -eq 0){
 						log error "$LoadBalancerName does not have any Data group lists data"
 						$NoneMissing = $false
 					}
-					#Verify that the $Global:DataGroupLists contains the $LoadBalancerName
+					#Verify that the $Global:Certificates contains the $LoadBalancerName
 					if($LoadBalancerObjects.Certificates.Count -eq 0){
 						log error "$LoadBalancerName does not have any Certificates data"
 						$NoneMissing = $false
@@ -1856,7 +1856,7 @@ Function Update-ReportData {
 		$Status  = $false
 	}
 
-	Move-Item -Force $($Global:datagrouplistjsonpath + ".tmp") $Global:datagrouplistjsonpath
+	Move-Item -Force $($Global:datagroupjsonpath + ".tmp") $Global:datagroupjsonpath
 
 	if(!$?){
 		log error "Failed to update the data group lists json file"
@@ -2019,10 +2019,10 @@ Function Write-TemporaryFiles {
 
 	$StreamWriter.dispose()
 
-	if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
-		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data $Global:ReportObjects.Values.DataGroupLists.Values
+	if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data $Global:ReportObjects.Values.DataGroups.Values
 	} else {
-		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagrouplistjsonpath -Data @()
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data @()
 	}
 	$StreamWriter.dispose()
 	Return -not $( $WriteStatuses -Contains $false)
@@ -2086,10 +2086,10 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 		} else {
 			[void]$Global:HTML.AppendLine("const ShowiRuleLinks = false;")
 		}
-		if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupListsLinks -eq $true){
-			[void]$Global:HTML.AppendLine("const ShowDataGroupListsLinks = true;")
+		if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
+			[void]$Global:HTML.AppendLine("const ShowDataGroupLinks = true;")
 		} else {
-			[void]$Global:HTML.AppendLine("const ShowDataGroupListsLinks = false;")
+			[void]$Global:HTML.AppendLine("const ShowDataGroupLinks = false;")
 		}
 		if($Global:Bigipreportconfig.Settings.ExportLink.Enabled -eq $true){
 			[void]$Global:HTML.AppendLine("const ShowExportLink = true;")
@@ -2191,7 +2191,6 @@ if($RealTimeStatusDetected){
 		<div class="lightbox" id="firstlayerdiv">
 			<div class="innerLightbox">
 				<div class="lightboxcontent" id="firstlayerdetailscontentdiv">
-
 				</div>
 			</div>
 			<div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"><a class="lightboxbutton" id="closefirstlayerbutton" href="javascript:void(0);">Close div</a></div>

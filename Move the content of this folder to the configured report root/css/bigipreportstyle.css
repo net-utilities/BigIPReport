@@ -559,7 +559,7 @@ div#firstlayerdetailscontent {
 
 /*Header with the pool name */
 
-div.virtualserverdetailsheader, div.iruledetailsheader, div.datagrouplistdetailsheader {
+div.virtualserverdetailsheader, div.iruledetailsheader, div.datagroupdetailsheader {
 	font-family: Cambria;
 	font-size: 24px;
 	font-weight: bold;
@@ -700,25 +700,25 @@ div#secondlayerdetailscontent {
 	color: red;
 }
 
-.datagrouplisttable {
+.datagrouptable {
 	border-collapse: collapse;
 	font-family: Calibri;
 	padding: 10px;
 	width: 100%;
 }
 
-.datagrouplisttable td,th {
+.datagrouptable td,th {
 	/*border: 1px solid #000;*/
 	padding: 10px;
 }
 
-.datagrouplisttable tbody>tr>td {
+.datagrouptable tbody>tr>td {
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
 }
 
-.datagrouplisttable thead>tr>th {
+.datagrouptable thead>tr>th {
 	text-align: center;
 	background-color: var(--headerbackgroundcolor);
 	width: 70px;
@@ -726,7 +726,7 @@ div#secondlayerdetailscontent {
 	white-space: nowrap;
 }
 
-.datagrouplisttable tbody>tr:nth-child(even)>td {
+.datagrouptable tbody>tr:nth-child(even)>td {
 	background-color: var(--alternatetablecolor);
 	border-collapse: collapse;
 	white-space: nowrap;
