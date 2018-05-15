@@ -354,20 +354,20 @@
 			*	<iRules>
 			*		<Enabled>true</Enabled>
 			*		<ShowiRuleLinks>true</ShowiRuleLinks>
-			*		<ShowDataGroupListLinks>true</ShowDataGroupListLinks>
+			*		<ShowDataGroupLinks>true</ShowDataGroupLinks>
 			*	</iRules>
 			*
 			*	Example of when irules are showing in the virtual server details, irules are available, but not the data group lists:
 			*	<iRules>
 			*		<Enabled>true</Enabled>
 			*		<ShowiRuleLinks>true</ShowiRuleLinks>
-			*		<ShowDataGroupListLinks>false</ShowDataGroupListLinks>
+			*		<ShowDataGroupLinks>false</ShowDataGroupLinks>
 			*	</iRules>
 			*	Example of when no iRules or data group lists is shown at all in the virtual server details:
 			*	<iRules>
 			*		<Enabled>false</Enabled>
 			*		<ShowiRuleLinks>false</ShowiRuleLinks>
-			*		<ShowDataGroupListLinks>false</ShowDataGroupListLinks>
+			*		<ShowDataGroupLinks>false</ShowDataGroupLinks>
 			*	</iRules>
 			*
 			************************************************************************************************************************************************
@@ -377,7 +377,7 @@
 			<iRules>
 				<Enabled>true</Enabled>
 				<ShowiRuleLinks>true</ShowiRuleLinks>
-				<ShowDataGroupListsLinks>true</ShowDataGroupListsLinks>
+				<ShowDataGroupLinks>true</ShowDataGroupLinks>
 			</iRules>
 
 		<!--
