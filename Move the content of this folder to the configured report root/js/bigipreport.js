@@ -2619,37 +2619,60 @@
 		//Get a matching data group from the json data
 		matchingdatagroup = getDataGroup(datagroup, loadbalancer)
 
+		if (siteData.datagroupdetailsTable) {
+			siteData.datagroupdetailsTable.destroy();
+		}
+
 		//If a pool was found, populate the pool details table and display it on the page
 		if (matchingdatagroup != "") {
 
-			var html = "<div class=\"datagroupdetailsheader\"><span>Data group: " + matchingdatagroup.name + "</span></div>";
 			$("div#secondlayerdetailscontentdiv").attr("data-type", "datagroup");
 			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingdatagroup.name);
 			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingdatagroup.loadbalancer);
 
-			html += "<span class=\"dgtype\">Type: " + matchingdatagroup.type + "</span><br><br>";
-			"<span class=\"dgtype\">Type: " + matchingdatagroup.type + "</span><br><br>";
+			var html = "<div class=\"datagroupdetailsheader\">";
+			html += "<span>Data group: " + matchingdatagroup.name + "</span><br>"
+			html += "<span>Load Balancer: " + loadbalancer + "</span><br>";
+			html += "<span class=\"dgtype\">Type: " + matchingdatagroup.type + "</span>";
+			html += "</div>";
 
-			html += "<table class=\"datagrouptable\">\
-								<thead>\
-									<tr><th class=\"keyheader\">Key</th><th class=\"valueheader\">Value</th></tr>\
-								</thead>\
-								<tbody>"
+			html += `<table id="datagroupdetailsTable" class="datagrouptable">
+						<thead>
+							<tr>
+								<th class="keyheader">Key</th>
+								<th class="valueheader">Value</th>
+							</tr>
+						</thead>
+						<tbody>`;
 
 			if (Object.keys(matchingdatagroup).length == 0) {
-				html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group</td></tr>"
+				html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group</td></tr>";
 			} else {
 				for (var i in matchingdatagroup.data) {
 					html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagroup.data[i] + "</td></tr>";
 				}
 			}
 
-			html += "</tbody></table\">"
+			html += '</tbody></table>'
 
+			$("#secondlayerdetailscontentdiv").html(html);
+
+			siteData.datagroupdetailsTable = $('table#datagroupdetailsTable').DataTable({
+				"autoWidth": false,
+				"pageLength": 10,
+				"order": [],
+				"language": {
+					"search": "Search all columns:"
+				},
+				"dom": 'frtilp',
+				"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+			});
+
+		} else {
+			$("#secondlayerdetailscontentdiv").html('');
 		}
 
 		$("a#closesecondlayerbutton").text("Close data group details");
-		$("#secondlayerdetailscontentdiv").html(html);
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
 
 	}
