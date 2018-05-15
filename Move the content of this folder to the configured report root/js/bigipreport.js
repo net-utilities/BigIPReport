@@ -2270,7 +2270,7 @@
 					table += '<table class="virtualserverdetailstable">';
 
 					if (ShowiRuleLinks) {
-						table += '	<tr><th>iRule name</th><th>Matched data group lists</th></tr>';
+						table += '	<tr><th>iRule name</th><th>Matched data groups</th></tr>';
 					} else {
 						table += '	<tr><th>iRule name</th></tr>';
 					}
@@ -2278,7 +2278,7 @@
 					for (var i in matchingvirtualserver.irules) {
 
 						// If iRules linking has been set to true show iRule links
-						// and parse data group lists
+						// and parse data groups
 						if (ShowiRuleLinks) {
 
 							var iruleobj = getiRule(matchingvirtualserver.irules[i], loadbalancer);
@@ -2391,17 +2391,17 @@
 			//Replace those tags with to be sure that the content won't be interpreted as HTML by the browser
 			definition = definition.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
-			//Check if data group list links are wanted. Parse and create links if that's the base
+			//Check if data group links are wanted. Parse and create links if that's the base
 			if (ShowDataGroupLinks == true) {
 
-				//Then get the matching data group lists, if any
+				//Then get the matching data groups, if any
 				connecteddatagroups = ParseDataGroups(matchingirule)
 
-				//Check if any data group lists was detected in the irule
+				//Check if any data groups was detected in the irule
 				if (Object.keys(connecteddatagroups).length > 0) {
 					//There was, let's loop through each
 					for (var dg in connecteddatagroups) {
-						//First, prepare a regexp to replace all instances of the data group list with a link
+						//First, prepare a regexp to replace all instances of the data group with a link
 						var regexp = new RegExp("\\s" + dg + "(\\s|\])", "g");
 						//Prepare the link
 						var dglink = ' <a href="Javascript:showDataGroupDetails(\'' + connecteddatagroups[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a> ';
@@ -2436,7 +2436,7 @@
 
 
 	/**********************************************************************************************************************
-		Parse data group lists
+		Parse data groups
 	**********************************************************************************************************************/
 
 
@@ -2514,19 +2514,19 @@
 								case "exists":
 								case "size":
 								case "startsearch":
-									//These types always has the data group list in the last element
+									//These types always have the data group in the last element
 									var dg = commandarray[commandarray.length - 1]
 									break;
 								case "anymore":
 								case "donesearch":
-									//These types always has the data group list in the third element
+									//These types always have the data group in the third element
 									var dg = commandarray[2]
 									break;
 								case "search":
 								case "names":
 								case "get":
 								case "nextelement":
-									//Exclude options and find the data group list
+									//Exclude options and find the data group
 									for (x = 2; x < commandarray.length; x++) {
 										if (commandarray[x][0] != "-") {
 											dg = commandarray[x];
@@ -2542,13 +2542,13 @@
 									var matchingdatagroup = {};
 									matchingdatagroup["name"] = dg;
 								} else if (dg.indexOf("/") >= 0) {
-									//Check if a full path to a data group list has been specified and if it's legit
+									//Check if a full path to a data group has been specified and if it's legit
 
-									//Possible match of a data group list with full pathname
+									//Possible match of a data group with full pathname
 									matchingdatagroup = getDataGroup(dg, loadbalancer);
 
 									if (matchingdatagroup == "") {
-										//This did not match an existing data group list
+										//This did not match an existing data group
 										continue
 									}
 								} else if (getDataGroup("/" + irulepartition + "/" + dg, loadbalancer) != "") {
@@ -2558,12 +2558,12 @@
 									//It existed in the Common partition
 									matchingdatagroup = getDataGroup("/Common/" + dg, loadbalancer);
 								} else {
-									//No data group list was matched
+									//No data group was matched
 									continue
 								}
 
-								//Check if the data group list has been detected before
-								//If it hasn't, add it to the array of detected data group lists
+								//Check if the data group has been detected before
+								//If it hasn't, add it to the array of detected data groups
 								if (matchingdatagroup.name in detecteddict) {
 									continue;
 								} else {
@@ -2591,7 +2591,7 @@
 
 
 	/**********************************************************************************************************************
-		Returns a matching data group list object from the data group list json data
+		Returns a matching data group object from the data group json data
 	**********************************************************************************************************************/
 
 	function getDataGroup(datagroup, loadbalancer) {
@@ -2599,7 +2599,7 @@
 		var datagroups = siteData.datagroups;
 		var matchingdatagroup = "";
 
-		//Find the matching data group list from the JSON object
+		//Find the matching data group from the JSON object
 		for (var i in datagroups) {
 			if (datagroups[i].name == datagroup && datagroups[i].loadbalancer == loadbalancer) {
 				matchingdatagroup = datagroups[i];
@@ -2611,18 +2611,18 @@
 
 
 	/**********************************************************************************************************************
-		Displays a data group list in a lightbox
+		Displays a data group in a lightbox
 	**********************************************************************************************************************/
 
 	function showDataGroupDetails(datagroup, loadbalancer) {
 
-		//Get a matching data group list from the json data
+		//Get a matching data group from the json data
 		matchingdatagroup = getDataGroup(datagroup, loadbalancer)
 
 		//If a pool was found, populate the pool details table and display it on the page
 		if (matchingdatagroup != "") {
 
-			var html = "<div class=\"datagroupdetailsheader\"><span>Data group list: " + matchingdatagroup.name + "</span></div>";
+			var html = "<div class=\"datagroupdetailsheader\"><span>Data group: " + matchingdatagroup.name + "</span></div>";
 			$("div#secondlayerdetailscontentdiv").attr("data-type", "datagroup");
 			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingdatagroup.name);
 			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingdatagroup.loadbalancer);
@@ -2637,7 +2637,7 @@
 								<tbody>"
 
 			if (Object.keys(matchingdatagroup).length == 0) {
-				html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group list</td></tr>"
+				html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group</td></tr>"
 			} else {
 				for (var i in matchingdatagroup.data) {
 					html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagroup.data[i] + "</td></tr>";
@@ -2648,7 +2648,7 @@
 
 		}
 
-		$("a#closesecondlayerbutton").text("Close data group list details");
+		$("a#closesecondlayerbutton").text("Close data group details");
 		$("#secondlayerdetailscontentdiv").html(html);
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
 

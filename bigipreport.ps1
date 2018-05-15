@@ -94,22 +94,22 @@
 #        4.1.4        2016-07-11      Fixed a problem with the javascript files not referring the correct folder    Patrik Jonsson  -
 #        4.2.0        2016-07-18      Added support to show virtual server details                                  Patrik Jonsson  -
 #                                     Added support for showing irules
-#                                     Added support for scanning data group lists
+#                                     Added support for scanning data groups
 #                                     Changed value of irules on Virtual servers without irules to an empty
 #                                     array instead of none.
 #        4.2.1        2016-07-19      Added an additional possible status to the pool details view                  Patrik Jonsson  -
 #        4.2.2        2016-08-10      Fixed a bug with error reporting                                              Patrik Jonsson  -
 #                                     Made it easier to close larger irules
 #                     2016-08-19      Cleaning up CSS
-#                     2016-08-19      Fixed a bug in the data group list parser function
-#        4.2.3        2016-08-29      Adding data group list parsing to json files
+#                     2016-08-19      Fixed a bug in the data group parser function
+#        4.2.3        2016-08-29      Adding data group parsing to json files
 #                                     Fixed so you can hide the compression column
-#        4.2.4        2016-08-30      Fixed a bug in the data group list parser                                     Patrik Jonsson  -
-#                                     Showing data group lists now works
+#        4.2.4        2016-08-30      Fixed a bug in the data group parser                                          Patrik Jonsson  -
+#                                     Showing data groups now works
 #        4.2.5        2016-08-31      Rewrote the parser to use dictionaries instead                                Patrik Jonsson  -
-#                                     Parsing data group lists in irules now works
-#        4.2.6        2016-09-01      Fixing css for data group list lightbox to match the rest                     Patrik Jonsson  -
-#        4.2.7        2016-09-06      Improving data group list parsing by skipping content in comments             Patrik Jonsson  -
+#                                     Parsing data groups in irules now works
+#        4.2.6        2016-09-01      Fixing css for data group lightbox to match the rest                          Patrik Jonsson  -
+#        4.2.7        2016-09-06      Improving data group parsing by skipping content in comments                  Patrik Jonsson  -
 #        4.2.8        2016-09-12      Added support for showing priority groups                                     Patrik Jonsson  -
 #        4.2.9        2016-09-12      Showing persistence profile in virtual server details                         Patrik Jonsson  -
 #        4.3.0        2016-01-10      Fixing support for partitions single configuration objects
@@ -148,7 +148,7 @@
 #                                     Also defining iRulesLX as a known module
 #        4.6.6        2017-09-11      Adding virtual server and pool statistics                                     Patrik Jonsson  No
 #        4.6.7        2017-09-12      Small CSS fix to make the pool details prettier                               Patrik Jonsson  No
-#        4.6.8        2017-09-20      Adding fix for duplicate detected data group lists                            Patrik Jonsson  No
+#        4.6.8        2017-09-20      Adding fix for duplicate detected data groups                                 Patrik Jonsson  No
 #        4.6.9        2017-09-25      Preventing caching of Json                                                    Patrik Jonsson  No
 #        4.7.0        2017-12-20      Adding options to export to the report to CSV                                 Patrik Jonsson  Yes
 #        4.7.1        2017-12-20      Adding support for monitors using HEAD                                        Patrik Jonsson  No
@@ -490,12 +490,12 @@ if($Global:Bigipreportconfig.Settings.iRules -eq $null -or $Global:Bigipreportco
 }
 
 if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $null){
-	log error "Missing options for showing data group list links in the global irules section defined in the configuration file. Old config version of the configuration file?"
+	log error "Missing options for showing data group links in the global irules section defined in the configuration file. Old config version of the configuration file?"
 	$SaneConfig = $false
 }
 
 if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
-	log error "You can't show data group lists without showing irules in the current version."
+	log error "You can't show data group links without showing irules in the current version."
 	$SaneConfig = $false
 }
 
@@ -1099,9 +1099,9 @@ function Get-LTMInformation {
 
 	#EndRegion
 
-	#Region Cache Data group lists
+	#Region Cache Data groups
 
-	log verbose "Caching data group lists"
+	log verbose "Caching data groups"
 
 	$LoadBalancerObjects.DataGroups = c@{}
 
@@ -1109,7 +1109,7 @@ function Get-LTMInformation {
 	[array]$AddressClassKeys = $F5.LocalLBClass.get_address_class($AddressClassList)
 	[array]$AddressClassValues = $F5.LocalLBClass.get_address_class_member_data_value($AddressClassKeys)
 
-	#Get address type data group lists data
+	#Get address type data groups data
 	For($i = 0;$i -lt $AddressClassList.Count;$i++){
 		$ObjTempDataGroup = New-Object -Type DataGroup
 		$ObjTempDataGroup.name = $AddressClassList[$i]
@@ -1781,22 +1781,22 @@ function Test-ReportData {
 					}
 					#Verify that the $Global:irules contains the $LoadBalancerName
 					If ($LoadBalancerObjects.iRules.Count -eq 0) {
-						log error "$LoadBalancerName does not have any iRules data"
+						log error "$LoadBalancerName does not have any iRule data"
 						$NoneMissing = $false
 					}
 					#Verify that the $Global:nodes contains the $LoadBalancerName
 					if($LoadBalancerObjects.Nodes.Count -eq 0){
-						log error "$LoadBalancerName does not have any Nodes data"
+						log error "$LoadBalancerName does not have any Node data"
 						$NoneMissing = $false
 					}
 					#Verify that the $Global:DataGroups contains the $LoadBalancerName
 					if($LoadBalancerObjects.DataGroups.Count -eq 0){
-						log error "$LoadBalancerName does not have any Data group lists data"
+						log error "$LoadBalancerName does not have any Data group data"
 						$NoneMissing = $false
 					}
 					#Verify that the $Global:Certificates contains the $LoadBalancerName
 					if($LoadBalancerObjects.Certificates.Count -eq 0){
-						log error "$LoadBalancerName does not have any Certificates data"
+						log error "$LoadBalancerName does not have any Certificate data"
 						$NoneMissing = $false
 					}
 				}
@@ -1859,14 +1859,14 @@ Function Update-ReportData {
 	Move-Item -Force $($Global:datagroupjsonpath + ".tmp") $Global:datagroupjsonpath
 
 	if(!$?){
-		log error "Failed to update the data group lists json file"
+		log error "Failed to update the data groups json file"
 		$Status  = $false
 	}
 
 	Move-Item -Force $($Global:loadbalancersjsonpath + ".tmp") $Global:loadbalancersjsonpath
 
 	if(!$?){
-		log error "Failed to update the data group lists json file"
+		log error "Failed to update the load balancers json file"
 		$Status  = $false
 	}
 

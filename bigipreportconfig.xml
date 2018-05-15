@@ -341,29 +341,29 @@
 			***********************************************************************************************************************************************
 			*
 			*	Global irules configuration
-			*	Here you can configure if virtual server irules and data group lists should be listed and if they should be linked
+			*	Here you can configure if virtual server irules and data groups should be listed and if they should be linked
 			*
 			*	Note:
 			*	If you set any of these options to from true to false the report will clear any information in the next update from the json files
 			*	in order to make sure that no unwanted data is available to clients
 			*
-			*	Right now you can't configure data group list links unless irules are enabled.
+			*	Right now you can't configure data group links unless irules are enabled.
 			*	Let me know if this is an issue and I'll see if I can fix it in a future version.
 			*
-			*	Example of when irules are showing in the virtual server details and both irules + data group lists are available for clients to see:
+			*	Example of when irules are showing in the virtual server details and both irules + data groups are available for clients to see:
 			*	<iRules>
 			*		<Enabled>true</Enabled>
 			*		<ShowiRuleLinks>true</ShowiRuleLinks>
 			*		<ShowDataGroupLinks>true</ShowDataGroupLinks>
 			*	</iRules>
 			*
-			*	Example of when irules are showing in the virtual server details, irules are available, but not the data group lists:
+			*	Example of when irules are showing in the virtual server details, irules are available, but not the data groups:
 			*	<iRules>
 			*		<Enabled>true</Enabled>
 			*		<ShowiRuleLinks>true</ShowiRuleLinks>
 			*		<ShowDataGroupLinks>false</ShowDataGroupLinks>
 			*	</iRules>
-			*	Example of when no iRules or data group lists is shown at all in the virtual server details:
+			*	Example of when no iRules or data groups is shown at all in the virtual server details:
 			*	<iRules>
 			*		<Enabled>false</Enabled>
 			*		<ShowiRuleLinks>false</ShowiRuleLinks>
