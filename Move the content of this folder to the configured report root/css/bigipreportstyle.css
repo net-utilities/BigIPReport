@@ -716,7 +716,6 @@ div#secondlayerdetailscontent {
 	border: 1px solid var(--bordercolor);
 	border-collapse: collapse;
 	white-space: nowrap;
-	text-align: center;
 }
 
 .datagrouplisttable thead>tr>th {
