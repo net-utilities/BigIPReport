@@ -70,6 +70,14 @@
 	color: var(--headerfontcolor);
 }
 
+.search:focus::placeholder {
+	background-color: white;
+	color: #c0c0c0;
+}
+.search:focus {
+	background-color: white;
+}
+
 /* This style controls how the search results should be highlighted */
 .highlight {
 	background-color: yellow;
