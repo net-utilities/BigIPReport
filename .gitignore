@@ -1,13 +1,13 @@
-*.xml
 *.log
 *.txt
+*.xml
 !bigipreportconfig.xml
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/*.tmp
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/index.html
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/*.tmp
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/asmpolicies.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/certificates.json
-Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/datagrouplists.json
+Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/datagroups.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/devicegroups.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/irules.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/loadbalancers.json
@@ -16,6 +16,5 @@ Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/mon
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/nat.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/pools.json
 Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/json/virtualservers.json
-output
+Move\ the\ content\ of\ this\ folder\ to\ the\ configured\ report\ root/web.config
 .vscode
-Move the content of this folder to the configured report root/web.config
