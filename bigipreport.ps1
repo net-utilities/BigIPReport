@@ -720,6 +720,7 @@ Add-Type @'
 		public string name;
 		public string type;
 		public Hashtable data;
+		public string[] pools;
 		public string loadbalancer;
 	}
 
@@ -1275,7 +1276,7 @@ function Get-LTMInformation {
 
 		$ObjiRule.name = $_.rule_name
 
-		$partition = $ObjiRule.name.split("/")[1]
+		$Partition = $ObjiRule.name.split("/")[1]
 
 		$ObjiRule.loadbalancer = $LoadBalancerName
 
@@ -1287,7 +1288,7 @@ function Get-LTMInformation {
 			$TempPool = $_.Groups[1].value
 
 			if(-not $TempPool.contains("/")){
-				$TempPool = "/$partition/$TempPool"
+				$TempPool = "/$Partition/$TempPool"
 			}
 
 			if($LoadBalancerObjects.Pools.ContainsKey($TempPool)) {
@@ -1411,7 +1412,7 @@ function Get-LTMInformation {
 
 			if($iRule){
 				if($iRule.pools.Count -gt 0){
-					$ObjTempVirtualServer.pools += [array]$iRule.pools | Select-Object -uniq
+					$ObjTempVirtualServer.pools += [array]$iRule.pools | Sort-Object -Unique
 				}
 			}
 		}
@@ -1420,7 +1421,7 @@ function Get-LTMInformation {
 			$ObjTempVirtualServer.pools += $ObjTempVirtualServer.defaultpool
 		}
 
-		$ObjTempVirtualServer.pools = $ObjTempVirtualServer.pools | Select-Object -Unique
+		$ObjTempVirtualServer.pools = $ObjTempVirtualServer.pools | Sort-Object -Unique
 
 		Try{
 			$ObjTempVirtualServer.sourcexlatetype = [string]$VirtualServerSourceAddressTranslationTypes[$i]
@@ -1482,14 +1483,46 @@ function Get-LTMInformation {
 	#EndRegion
 
 	#Region Get Orphaned Pools
+	log verbose "Detecting pools referenced by datagroups"
+
+	$Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object
+
+	Foreach($DataGroup in $LoadBalancerObjects.DataGroups.Values){
+
+		$TempPools = @()
+
+		$Partition = $DataGroup.name.split("/")[1]
+
+		Foreach($TempPool in $DataGroup.data.Values) {
+
+			if(-not $TempPool.contains("/")){
+				$TempPool = "/$Partition/$TempPool"
+			}
+
+			if ($Pools -contains $TempPool) {
+				$TempPools += $TempPool
+			}
+		}
+
+		if ($TempPools.Count -gt 0) {
+			$LoadBalancerObjects.DataGroups[$DataGroup.name].pools = @($TempPools | Sort-Object -Unique)
+			$LoadBalancerObjects.DataGroups[$DataGroup.name].type = "Pools"
+		}
+	}
+
+	#EndRegion
+
+	#Region Get Orphaned Pools
 	log verbose "Detecting orphaned pools"
 
 	$LoadBalancerObjects.OrphanPools = @()
 
-	$VirtualServerPools = $LoadBalancerObjects.VirtualServers.Values.Pools
+	$VirtualServerPools = $LoadBalancerObjects.VirtualServers.Values.Pools | Sort-Object -Unique
+	$DataGroupPools = $LoadBalancerObjects.DataGroups.Values.pools | Sort-Object -Unique
 
 	Foreach($PoolName in $LoadBalancerObjects.Pools.Keys){
-		If ($VirtualServerPools -NotContains $PoolName ){
+		If ($VirtualServerPools -NotContains $PoolName -and
+				$DataGroupPools -NotContains $PoolName){
 			$LoadBalancerObjects.Pools[$PoolName].orphaned = $true
 
 			$ObjTempVirtualServer = New-Object -TypeName "VirtualServer"
