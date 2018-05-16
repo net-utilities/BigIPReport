@@ -1108,12 +1108,17 @@ function Get-LTMInformation {
 	[array]$AddressClassList = $F5.LocalLBClass.get_address_class_list()
 	[array]$AddressClassKeys = $F5.LocalLBClass.get_address_class($AddressClassList)
 	[array]$AddressClassValues = $F5.LocalLBClass.get_address_class_member_data_value($AddressClassKeys)
+	[array]$ExternalClassList = $F5.LocalLBClass.get_external_class_list_v2()
 
 	#Get address type data groups data
 	For($i = 0;$i -lt $AddressClassList.Count;$i++){
 		$ObjTempDataGroup = New-Object -Type DataGroup
 		$ObjTempDataGroup.name = $AddressClassList[$i]
-		$ObjTempDataGroup.type = "Address"
+		If ($ExternalClassList -Contains $ObjTempDataGroup.name){
+			$ObjTempDataGroup.type = "External Address"
+		} else {
+			$ObjTempDataGroup.type = "Address"
+		}
 
 		$Dgdata = New-Object System.Collections.Hashtable
 
@@ -1137,7 +1142,11 @@ function Get-LTMInformation {
 	For($i = 0;$i -lt $StringClassList.Count;$i++){
 		$ObjTempDataGroup = New-Object -Type DataGroup
 		$ObjTempDataGroup.name = $StringClassList[$i]
-		$ObjTempDataGroup.type = "String"
+		If ($ExternalClassList -Contains $ObjTempDataGroup.name){
+			$ObjTempDataGroup.type = "External String"
+		} else {
+			$ObjTempDataGroup.type = "String"
+		}
 
 		$Dgdata = New-Object System.Collections.Hashtable
 
@@ -1161,7 +1170,11 @@ function Get-LTMInformation {
 	For($i = 0;$i -lt $ValueClassList.Count;$i++){
 		$ObjTempDataGroup = New-Object -Type DataGroup
 		$ObjTempDataGroup.name = $ValueClassList[$i]
-		$ObjTempDataGroup.type = "String"
+		If ($ExternalClassList -Contains $ObjTempDataGroup.name){
+			$ObjTempDataGroup.type = "External Integer"
+		} else {
+			$ObjTempDataGroup.type = "Integer"
+		}
 
 		$Dgdata = New-Object System.Collections.Hashtable
 
