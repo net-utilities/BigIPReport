@@ -17,7 +17,7 @@
 	$(window).on("load", function () {
 		// Animate loader off screen
 
-		log("loading", "INFO");
+		log("Starting window on load", "INFO");
 
 		//Prevent caching of ajax requests
 		$(document).ready(function () {
@@ -118,7 +118,7 @@
 			$.getJSON("json/irules.json", function (result) {
 				siteData.irules = result;
 			}).fail(addJSONLoadingFailure),
-			//Get the datagroup list data
+			//Get the datagroup data
 			$.getJSON("json/datagroups.json", function (result) {
 				siteData.datagroups = result;
 			}).fail(addJSONLoadingFailure),
@@ -1408,6 +1408,7 @@
 					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
 					<th><input type="text" class="search" placeholder="Name" /></th>
 					<th><input type="text" class="search" placeholder="Type" /></th>
+					<th><input type="text" class="search" placeholder="Associated Pools" /></th>
 					<th><input type="text" class="search" placeholder="Length" /></th>
 				</tr>
 			</thead>
@@ -1435,6 +1436,28 @@
 				}
 			}, {
 				"data": "type",
+			}, {
+				"type": "html-num",
+				"render": function (data, type, row) {
+					if (type == 'sort') {
+						if (row.pools && row.pools.length) {
+							return row.pools.length;
+						}
+						return 0;
+					}
+					var result = '';
+					if (row.pools && row.pools.length > 0) {
+						row.pools.forEach((pool) => {
+							if (result != '') {
+								result += '<br>';
+							}
+							result += renderPool(row.loadbalancer, pool);
+						});
+					} else {
+						result = "None";
+					}
+					return result;
+				}
 			}, {
 				"data": "data",
 				"render": function (data, type, row) {
