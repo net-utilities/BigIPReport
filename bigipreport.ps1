@@ -927,7 +927,7 @@ function Get-LTMInformation {
 			$ErrorActionPreference = "SilentlyContinue"
 
 			Try {
-				log info "Version 12 or higher detected together with the ASM module. Getting authentication token for the REST API to be able to fetch ASM information"
+				log info "Version 12+ with ASM. Getting REST token for ASM information"
 				$AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
 
 				log verbose "Getting ASM Policy information"
