@@ -1199,6 +1199,7 @@
 					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
 					<th><input type="text" class="search" placeholder="Name" /></th>
 					<th><input type="text" class="search" placeholder="Associated Pools" /></th>
+					<th><input type="text" class="search" placeholder="Associated Datagroups" /></th>
 					<th style="width: 4em;"><input type="text" class="search" placeholder="Length" /></th>
 			</thead>
 			<tbody>
@@ -1239,6 +1240,28 @@
 								result += '<br>';
 							}
 							result += renderPool(row.loadbalancer, pool);
+						});
+					} else {
+						result = "None";
+					}
+					return result;
+				}
+			}, {
+				"type": "html-num",
+				"render": function (data, type, row) {
+					if (type == 'sort') {
+						if (row.datagroups && row.datagroups.length) {
+							return row.datagroups.length;
+						}
+						return 0;
+					}
+					var result = '';
+					if (row.datagroups && row.datagroups.length > 0) {
+						row.datagroups.forEach((datagroup) => {
+							if (result != '') {
+								result += '<br>';
+							}
+							result += renderDataGroup(row.loadbalancer, datagroup);
 						});
 					} else {
 						result = "None";
