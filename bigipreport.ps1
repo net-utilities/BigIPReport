@@ -695,6 +695,7 @@ Add-Type @'
 	public class iRule {
 		public string name;
 		public string[] pools;
+		public string[] datagroups;
 		public string definition;
 		public string loadbalancer;
 	}
@@ -1265,11 +1266,44 @@ function Get-LTMInformation {
 
 	#EndRegion
 
+	#Region Get Datagroup Pools
+	log verbose "Detecting pools referenced by datagroups"
+
+	$Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object -Unique
+
+	Foreach($DataGroup in $LoadBalancerObjects.DataGroups.Values){
+
+		$TempPools = @()
+
+		$Partition = $DataGroup.name.split("/")[1]
+
+		Foreach($TempPool in $DataGroup.data.Values) {
+
+			if(-not $TempPool.contains("/")){
+				$TempPool = "/$Partition/$TempPool"
+			}
+
+			if ($Pools -contains $TempPool) {
+				$TempPools += $TempPool
+			}
+		}
+
+		if ($TempPools.Count -gt 0) {
+			$LoadBalancerObjects.DataGroups[$DataGroup.name].pools = @($TempPools | Sort-Object -Unique)
+			$LoadBalancerObjects.DataGroups[$DataGroup.name].type = "Pools"
+		}
+	}
+	#EndRegion
+
 	#Region Cache information about irules
 
 	log verbose "Caching iRules"
 
+	$DataGroups = $LoadBalancerObjects.DataGroups.Keys | Sort-Object -Unique
+
 	$LoadBalancerObjects.iRules = c@{}
+
+	$LastPartition = ''
 
 	$F5.LocalLBRule.query_all_rules() | ForEach-Object {
 		$ObjiRule = New-Object iRule
@@ -1278,13 +1312,29 @@ function Get-LTMInformation {
 
 		$Partition = $ObjiRule.name.split("/")[1]
 
+		if ($Partition -ne $LastPartition) {
+			$SearchPools = $Pools -replace "/$Partition/",""
+			$SearchDataGroups = $DataGroups -replace "/$Partition/",""
+		}
+
+		$LastPartition = $Partition
+
 		$ObjiRule.loadbalancer = $LoadBalancerName
 
-		$ObjiRule.definition = $($_.rule_definition)
+		$Definition = $($_.rule_definition)
+		$ObjiRule.definition = $Definition
+
+		$MatchedPools = @($SearchPools | Where-Object {$Definition.Contains($_)} | Sort-Object -Unique)
+		$MatchedPools = $MatchedPools -replace "^([^/])","/$Partition/`$1"
+		$ObjiRule.pools = $MatchedPools
+
+		$MatchedDataGroups = @($SearchDataGroups | Where-Object {$Definition.Contains($_)} | Sort-Object -Unique)
+		$MatchedDataGroups = $MatchedDataGroups -replace "^([^/])","/$Partition/`$1"
+		$ObjiRule.datagroups = $MatchedDataGroups
 
 		$TempPools = @()
 
-		$poolregexp.Matches($ObjiRule.definition) | ForEach-Object {
+		$Poolregexp.Matches($ObjiRule.definition) | ForEach-Object {
 			$TempPool = $_.Groups[1].value
 
 			if(-not $TempPool.contains("/")){
@@ -1296,7 +1346,7 @@ function Get-LTMInformation {
 			}
 		}
 
-		$ObjiRule.pools = $TempPools | Select-Object -Unique
+		#$ObjiRule.pools = $TempPools | Select-Object -Unique
 
 		$LoadBalancerObjects.iRules.add($ObjiRule.name, $ObjiRule)
 	}
@@ -1478,36 +1528,6 @@ function Get-LTMInformation {
 		}
 
 		$LoadBalancerObjects.VirtualServers.add($ObjTempVirtualServer.name, $ObjTempVirtualServer)
-	}
-
-	#EndRegion
-
-	#Region Get Orphaned Pools
-	log verbose "Detecting pools referenced by datagroups"
-
-	$Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object
-
-	Foreach($DataGroup in $LoadBalancerObjects.DataGroups.Values){
-
-		$TempPools = @()
-
-		$Partition = $DataGroup.name.split("/")[1]
-
-		Foreach($TempPool in $DataGroup.data.Values) {
-
-			if(-not $TempPool.contains("/")){
-				$TempPool = "/$Partition/$TempPool"
-			}
-
-			if ($Pools -contains $TempPool) {
-				$TempPools += $TempPool
-			}
-		}
-
-		if ($TempPools.Count -gt 0) {
-			$LoadBalancerObjects.DataGroups[$DataGroup.name].pools = @($TempPools | Sort-Object -Unique)
-			$LoadBalancerObjects.DataGroups[$DataGroup.name].type = "Pools"
-		}
 	}
 
 	#EndRegion
@@ -2042,7 +2062,7 @@ Function Write-TemporaryFiles {
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:natjsonpath -Data $Global:NATdict
 
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
-		$WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data $Global:ReportObjects.Values.iRules.Values
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data ($Global:ReportObjects.Values.iRules.Values | Sort-Object loadbalancer, name )
 	} else {
 		log verbose "iRule links disabled in config. Writing empty json object to $($Global:irulesjsonpath + ".tmp")"
 
@@ -2066,7 +2086,7 @@ Function Write-TemporaryFiles {
 	$StreamWriter.dispose()
 
 	if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
-		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data $Global:ReportObjects.Values.DataGroups.Values
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data ( $Global:ReportObjects.Values.DataGroups.Values | Sort-Object loadbalancer, name )
 	} else {
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data @()
 	}
@@ -2323,3 +2343,18 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
 		$LogContent | Select-Object -Last $MaximumLines | Out-File $LogFile -Encoding UTF8
 	}
 }
+
+# Record some stats
+
+$DoneMsg = "Done."
+$DoneMsg += " G:" + $Global:DeviceGroups.Count
+$DoneMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
+$DoneMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Count
+$DoneMsg += " R:" + $Global:ReportObjects.Values.iRules.Count
+$DoneMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Count
+$DoneMsg += " P:" + $Global:ReportObjects.Values.Pools.Count
+$DoneMsg += " M:" + $Global:ReportObjects.Values.Monitors.Count
+$DoneMsg += " C:" + $Global:ReportObjects.Values.Certificates.Count
+$DoneMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
+
+log verbose $DoneMsg
