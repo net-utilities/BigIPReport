@@ -2316,7 +2316,7 @@
 					table += '<table class="virtualserverdetailstable">';
 
 					if (ShowiRuleLinks) {
-						table += '	<tr><th>iRule name</th><th>Matched data groups</th></tr>';
+						table += '	<tr><th>iRule name</th><th>Data groups</th></tr>';
 					} else {
 						table += '	<tr><th>iRule name</th></tr>';
 					}
@@ -2447,10 +2447,12 @@
 				if (Object.keys(connecteddatagroups).length > 0) {
 					//There was, let's loop through each
 					for (var dg in connecteddatagroups) {
+						// rule might not include partition which causes the replace to fail
+						dgopt=dg.replace(/\/.*\//,'($&)?');
 						//First, prepare a regexp to replace all instances of the data group with a link
-						var regexp = new RegExp("\\s" + dg + "(\\s|\])", "g");
+						var regexp = new RegExp("(\\s)(" + dgopt + ")(\\s|\])", "g");
 						//Prepare the link
-						var dglink = ' <a href="Javascript:showDataGroupDetails(\'' + connecteddatagroups[dg].name + '\', \'' + loadbalancer + '\')">' + dg + '</a> ';
+						var dglink = '$1<a href="Javascript:showDataGroupDetails(\'' + connecteddatagroups[dg].name + '\', \'' + loadbalancer + '\')">$2</a>$4';
 						//Do the actual replacement
 						definition = definition.replace(regexp, dglink);
 					}
