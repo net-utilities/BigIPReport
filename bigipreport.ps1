@@ -2349,12 +2349,12 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
 $DoneMsg = "Done."
 $DoneMsg += " G:" + $Global:DeviceGroups.Count
 $DoneMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
-$DoneMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Count
-$DoneMsg += " R:" + $Global:ReportObjects.Values.iRules.Count
-$DoneMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Count
-$DoneMsg += " P:" + $Global:ReportObjects.Values.Pools.Count
-$DoneMsg += " M:" + $Global:ReportObjects.Values.Monitors.Count
-$DoneMsg += " C:" + $Global:ReportObjects.Values.Certificates.Count
+$DoneMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Keys.Count
+$DoneMsg += " R:" + $Global:ReportObjects.Values.iRules.Keys.Count
+$DoneMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Keys.Count
+$DoneMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
+$DoneMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
+$DoneMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
 $DoneMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
 
 log verbose $DoneMsg
