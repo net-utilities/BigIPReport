@@ -1456,13 +1456,18 @@ function Get-LTMInformation {
 			$ObjTempVirtualServer.persistence = "None"
 		}
 
-		#$ObjTempVirtualServer.irules
 		$ObjTempVirtualServer.irules | ForEach-Object {
 			$iRule = $LoadBalancerObjects.iRules[$_]
 
 			if($iRule){
 				if($iRule.pools.Count -gt 0){
 					$ObjTempVirtualServer.pools += [array]$iRule.pools | Sort-Object -Unique
+				}
+				Foreach($DatagroupName in $iRule.datagroups ) {
+					$Datagroup = $LoadBalancerObjects.DataGroups[$DatagroupName]
+					if ($Datagroup -and $Datagroup.pools.Count -gt 0) {
+						$ObjTempVirtualServer.pools += [array]$Datagroup.pools | Sort-Object -Unique
+					}
 				}
 			}
 		}
