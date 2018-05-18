@@ -1328,11 +1328,11 @@ function Get-LTMInformation {
 		$Definition = $($_.rule_definition)
 		$ObjiRule.definition = $Definition
 
-		$MatchedPools = @($SearchPools | Where-Object {$Definition.Contains($_)} | Sort-Object -Unique)
+		$MatchedPools = @($SearchPools | Where-Object {$Definition -match '\b' + [regex]::Escape($_) + '\b'} | Sort-Object -Unique)
 		$MatchedPools = $MatchedPools -replace "^([^/])","/$Partition/`$1"
 		$ObjiRule.pools = $MatchedPools
 
-		$MatchedDataGroups = @($SearchDataGroups | Where-Object {$Definition.Contains($_)} | Sort-Object -Unique)
+		$MatchedDataGroups = @($SearchDataGroups | Where-Object {$Definition -match '\b' + [regex]::Escape($_) + '\b'} | Sort-Object -Unique)
 		$MatchedDataGroups = $MatchedDataGroups -replace "^([^/])","/$Partition/`$1"
 		$ObjiRule.datagroups = $MatchedDataGroups
 
