@@ -211,10 +211,11 @@
 #        5.1.5        2018-05-14      delay loading tables until used, data group table, pool table w/ orphans      Tim Riker       No
 #                                     SSL server profile, column filters for all tables, simplify member display
 #                                     pool / member columns sort by count when clicked, some stats in log tab
-#        5.1.6        2018-05-17      Process Datagroups to build more pool links, track more Datagroup types       Tim Riker       No
+#        5.1.6        2018-05-18      Process Datagroups to build more pool links, track more Datagroup types       Tim Riker       No
 #                                     Datagroup links in iRules when no partition is specified
 #                                     adcLinks open in new window, show referenced datagroups in iRule table
-#                                     write some stats at the end of the build log
+#                                     write some stats at the end of the build, force arrays for more json files
+#                                     update regular expressions, iRules have pools and datagroup links
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
