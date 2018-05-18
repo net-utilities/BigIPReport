@@ -2250,7 +2250,8 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 
 [void]$Global:HTML.AppendLine(@"
 		<div class="footer">
-			The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
+			The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).
+			Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
 			BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
 		</div>
 "@)
