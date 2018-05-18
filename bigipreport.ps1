@@ -1994,7 +1994,7 @@ function ConvertTo-Array
 		$Output += $_;
 	}
 	end {
-		return ,$output;
+		return ,$Output;
 	}
 }
 
@@ -2056,22 +2056,22 @@ Function Write-TemporaryFiles {
 
 	$StreamWriter.dispose()
 
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data ( $Global:ReportObjects.Values.Pools.Values | Sort-Object loadbalancer, name )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data ( $Global:ReportObjects.Values.Monitors.Values | Sort-Object loadbalancer, name )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data ( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data ( $Global:ReportObjects.Values.VirtualServers.Values | Sort-Object loadbalancer,name )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data ( $Global:ReportObjects.Values.Certificates.Values | Sort-Object loadbalancer, fileName )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data ( $Global:DeviceGroups | Sort-Object name | ConvertTo-Array )
-	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data $Global:ReportObjects.LoggedErrors
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data @( $Global:ReportObjects.Values.Pools.Values | Sort-Object loadbalancer, name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data @( $Global:ReportObjects.Values.Monitors.Values | Sort-Object loadbalancer, name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data @( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:virtualserversjsonpath -Data @( $Global:ReportObjects.Values.VirtualServers.Values | Sort-Object loadbalancer,name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:certificatesjsonpath -Data @( $Global:ReportObjects.Values.Certificates.Values | Sort-Object loadbalancer, fileName )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:devicegroupsjsonpath -Data @( $Global:DeviceGroups | Sort-Object name )
+	$WriteStatuses += Write-JSONFile -DestinationFile $Global:loggederrorsjsonpath -Data @( $Global:ReportObjects.LoggedErrors )
 	If ($Global:ReportObjects.Values.ASMPolicies.Keys.Count -gt 0) {
-		$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data ( $Global:ReportObjects.Values.ASMPolicies.Values | Sort-Object loadbalancer, name )
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data @( $Global:ReportObjects.Values.ASMPolicies.Values | Sort-Object loadbalancer, name )
 	} else {
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:asmpoliciesjsonpath -Data @()
 	}
 	$WriteStatuses += Write-JSONFile -DestinationFile $Global:natjsonpath -Data $Global:NATdict
 
 	if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
-		$WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data ($Global:ReportObjects.Values.iRules.Values | Sort-Object loadbalancer, name )
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:irulesjsonpath -Data @($Global:ReportObjects.Values.iRules.Values | Sort-Object loadbalancer, name )
 	} else {
 		log verbose "iRule links disabled in config. Writing empty json object to $($Global:irulesjsonpath + ".tmp")"
 
