@@ -992,6 +992,15 @@
 
 		});
 
+		// is wheelmouse paging useful?
+		/*
+		$('table#allbigips tbody').bind('wheel', (e) => {
+			var dir = e.originalEvent.deltaY < 0 ? 'previous' : 'next';
+			siteData.bigipTable.page(dir).draw(false);
+			return false;
+		});
+		*/
+
 		/*************************************************************************************************************
 
 			Attaches a function to the main data table column filters that
