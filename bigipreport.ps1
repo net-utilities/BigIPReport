@@ -211,6 +211,10 @@
 #        5.1.5        2018-05-14      delay loading tables until used, data group table, pool table w/ orphans      Tim Riker       No
 #                                     SSL server profile, column filters for all tables, simplify member display
 #                                     pool / member columns sort by count when clicked, some stats in log tab
+#        5.1.6        2018-05-17      Process Datagroups to build more pool links, track more Datagroup types       Tim Riker       No
+#                                     Datagroup links in iRules when no partition is specified
+#                                     adcLinks open in new window, show referenced datagroups in iRule table
+#                                     write some stats at the end of the build log
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -225,7 +229,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.1.5"
+$Global:ScriptVersion = "5.1.6"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
