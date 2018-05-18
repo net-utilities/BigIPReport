@@ -2333,28 +2333,19 @@
 								table += '	<tr><td>' + matchingvirtualserver.irules[i] + '</td><td>N/A (empty rule)</td></tr>';
 							} else {
 
-								var matcheddatagroups = ParseDataGroups(iruleobj);
-
-								if (Object.keys(matcheddatagroups).length == 0) {
-									var datagroupdata = ["N/A"];
-								} else {
-
-									var datagroupdata = [];
-
-									for (var dg in matcheddatagroups) {
-
-										var name = matcheddatagroups[dg].name;
-
-										if (name.indexOf("/") >= 0) {
-											name = name.split("/")[2];
-										}
+								var datagroupdata = [];
+								if (iruleobj.datagroups && iruleobj.datagroups.length > 0) {
+									iruleobj.datagroups.forEach((datagroup) => {
+										name = datagroup.split("/")[2];
 
 										if (ShowDataGroupLinks) {
-											datagroupdata.push('<a href="Javascript:showDataGroupDetails(\'' + matcheddatagroups[dg].name + '\', \'' + loadbalancer + '\')">' + name + '</a>');
+											datagroupdata.push('<a href="Javascript:showDataGroupDetails(\'' + datagroup + '\', \'' + loadbalancer + '\')">' + name + '</a>');
 										} else {
 											datagroupdata.push(name)
 										}
-									}
+									});
+								} else {
+									datagroupdata.push("N/A");
 								}
 
 								table += '	<tr><td>' + renderRule(loadbalancer, iruleobj.name) + '</td><td>' + datagroupdata.join("<br>") + '</td></tr>';
@@ -2439,24 +2430,26 @@
 
 			//Check if data group links are wanted. Parse and create links if that's the base
 			if (ShowDataGroupLinks == true) {
-
-				//Then get the matching data groups, if any
-				connecteddatagroups = ParseDataGroups(matchingirule)
-
-				//Check if any data groups was detected in the irule
-				if (Object.keys(connecteddatagroups).length > 0) {
-					//There was, let's loop through each
-					for (var dg in connecteddatagroups) {
-						// rule might not include partition which causes the replace to fail
-						dgopt=dg.replace(/\/.*\//,'($&)?');
-						//First, prepare a regexp to replace all instances of the data group with a link
-						var regexp = new RegExp("(\\s)(" + dgopt + ")(\\s|\])", "g");
-						//Prepare the link
-						var dglink = '$1<a href="Javascript:showDataGroupDetails(\'' + connecteddatagroups[dg].name + '\', \'' + loadbalancer + '\')">$2</a>$4';
-						//Do the actual replacement
-						definition = definition.replace(regexp, dglink);
-					}
-				}
+				matchingirule.datagroups.forEach((dg) => {
+					// rule might not include partition which causes the replace to fail
+					var opt=dg.replace(/\/.*\//,'($&|\\b)+');
+					// prepare a regexp to replace all instances
+					var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					// Prepare the link
+					var link = '<a href="Javascript:showDataGroupDetails(\'' + dg + '\', \'' + loadbalancer + '\')">$1</a>';
+					// Do the actual replacement
+					definition = definition.replace(regexp, link);
+				})
+				matchingirule.pools.forEach((pool) => {
+					// rule might not include partition which causes the replace to fail
+					var opt=pool.replace(/\/.*\//,'($&|\\b)+');
+					// prepare a regexp to replace all instances
+					var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					// Prepare the link
+					var link = '<a href="Javascript:showPoolDetails(\'' + pool + '\', \'' + loadbalancer + '\')">$1</a>';
+					// Do the actual replacement
+					definition = definition.replace(regexp, link);
+				})
 			}
 
 			//Prepare the div content
@@ -2479,24 +2472,6 @@
 		sh_highlightDocument('js/', '.js');
 		//Show the div
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
-	}
-
-
-
-	/**********************************************************************************************************************
-		Parse data groups
-	**********************************************************************************************************************/
-
-
-	function ParseDataGroups(irule) {
-
-		var detecteddict = {};
-
-		irule.datagroups.forEach((datagroup) => {
-			detecteddict[datagroup] = getDataGroup(datagroup, irule.loadbalancer);
-		});
-
-		return (detecteddict);
 	}
 
 
