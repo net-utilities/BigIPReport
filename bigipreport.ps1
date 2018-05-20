@@ -1337,22 +1337,6 @@ function Get-LTMInformation {
 		$MatchedDataGroups = $MatchedDataGroups -replace "^([^/])","/$Partition/`$1"
 		$ObjiRule.datagroups = $MatchedDataGroups
 
-		$TempPools = @()
-
-		$Poolregexp.Matches($ObjiRule.definition) | ForEach-Object {
-			$TempPool = $_.Groups[1].value
-
-			if(-not $TempPool.contains("/")){
-				$TempPool = "/$Partition/$TempPool"
-			}
-
-			if($LoadBalancerObjects.Pools.ContainsKey($TempPool)) {
-				$TempPools += $TempPool
-			}
-		}
-
-		#$ObjiRule.pools = $TempPools | Select-Object -Unique
-
 		$LoadBalancerObjects.iRules.add($ObjiRule.name, $ObjiRule)
 	}
 
