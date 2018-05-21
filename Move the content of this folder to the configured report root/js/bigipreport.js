@@ -203,7 +203,7 @@
 
 		// Also initialize the ajaxQueue
 		siteData.memberStates = {}
-		siteData.memberStates.ajaxQueue = 0;
+		siteData.memberStates.ajaxQueue = [];
 		siteData.memberStates.ajaxFailures = [];
 
 		var loadbalancers = siteData.loadbalancers;
@@ -387,9 +387,9 @@
 
 		} else {
 
-			siteData.memberStates.ajaxQueue++;
-
 			var testURL = loadbalancer.statusvip.url + pool.name;
+
+			increaseAjaxQueue(testURL);
 
 			$.ajax({
 					dataType: "json",
@@ -399,7 +399,7 @@
 						log("Statusvip test <a href=\"" + testURL + "\">" + testURL + "</a> was successful on loadbalancer: <b>" + loadbalancer.name + "</b>", "INFO");
 						loadbalancer.statusvip.working = true;
 						loadbalancer.statusvip.reason = "";
-						siteData.memberStates.ajaxQueue--;
+						decreaseAjaxQueue(testURL);
 					},
 					timeout: 2000
 				})
@@ -408,11 +408,11 @@
 					$("span#realtimetestfailed").text(parseInt($("span#realtimetestfailed").text()) + 1);
 					loadbalancer.statusvip.working = false;
 					loadbalancer.statusvip.reason = jqxhr.statusText;
-					siteData.memberStates.ajaxQueue--;
+					decreaseAjaxQueue(testURL);
 				})
 				.always(function () {
 
-					if (siteData.memberStates.ajaxQueue === 0) {
+					if (siteData.memberStates.ajaxQueue.length == 0) {
 
 						//Tests done, restore the view of the original URL
 						populateSearchParameters();
@@ -429,16 +429,24 @@
 							//Initiate pool status updates
 							var pollCurrentView = function () {
 								resetClock();
-								$("span#ajaxqueue").text($("table.pooltable tr td.poolname:visible").length);
-								$("table.pooltable tr td.poolname:visible").each(function () {
-									getPoolStatus(this);
-								});
+								var length = $("table.pooltable tr td.poolname:visible").length;
+								if (length == 0 || length > AJAXMAXPOOLS) {
+									$("span#ajaxqueue").text(0);
+									$("td#pollingstatecell").html('Disabled, ' + length + ' of ' + AJAXMAXPOOLS + ' pools open<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
+								} else {
+									$("td#pollingstatecell").html('<span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
+
+									$("span#ajaxqueue").text(length);
+									$("table.pooltable tr td.poolname:visible").each(function () {
+										getPoolStatus(this);
+									});
+								}
 							}
 
 							pollCurrentView()
 
 							setInterval(function () {
-								if (siteData.memberStates.ajaxQueue === 0) {
+								if (siteData.memberStates.ajaxQueue.length == 0) {
 									pollCurrentView();
 								} else {
 									resetClock();
@@ -450,12 +458,9 @@
 							$("td#pollingstatecell").html("Disabled")
 						}
 					}
-
 				});
 		}
-
 		$("div.beforedocumentready").fadeOut(1500);
-
 	}
 
 	function renderLoadBalancer(loadbalancer) {
@@ -544,14 +549,12 @@
 
 		var countDown = AJAXREFRESHRATE;
 
-		$("span#realtimenextrefresh").html(", refresh in <span id=\"refreshcountdown\">" + countDown + "</span> seconds");
-
 		var clock = setInterval(function () {
 			countDown--;
 			if (countDown === 0) {
 				clearTimeout(clock)
 			}
-			$("span#realtimenextrefresh").html(", refresh in <b>" + countDown + "</b> seconds");
+			$("span#refreshcountdown").html(countDown);
 
 		}, 1000);
 
@@ -559,7 +562,7 @@
 
 	function getPoolStatus(poolCell) {
 
-		if (siteData.memberStates.ajaxQueue >= AJAXMAXQUEUE) {
+		if (siteData.memberStates.ajaxQueue.length >= AJAXMAXQUEUE) {
 			setTimeout(function () {
 				getPoolStatus(poolCell)
 			}, 200);
@@ -571,8 +574,6 @@
 
 			var loadbalancer = getLoadbalancer(loadbalancerName);
 
-			increaseAjaxQueue();
-
 			if (loadbalancer && loadbalancer.statusvip.working === true) {
 
 				var poolName = $(poolLink).attr("data-originalpoolname");
@@ -580,13 +581,14 @@
 				var pool = getPool(poolName, loadbalancerName);
 				var url = loadbalancer.statusvip.url + pool.name
 
-				$.ajax({
+				if (increaseAjaxQueue(url)) {
+					$.ajax({
 						dataType: "json",
 						url: url,
 						success: function (data) {
 							if (data.success) {
 
-								decreaseAjaxQueue();
+								decreaseAjaxQueue(url);
 
 								for (var memberStatus in data.memberstatuses) {
 
@@ -605,7 +607,6 @@
 										}
 									}
 								}
-
 							}
 						},
 						timeout: 2000
@@ -613,27 +614,32 @@
 					.fail(function (jqxhr) {
 						// To be used later in the console
 						// siteData.memberStates.ajaxFailures.push({ url: url, code: jqxhr.status, reason: jqxhr.statusText })
-						decreaseAjaxQueue()
+						decreaseAjaxQueue(url)
 						return false;
 					});
-
-			} else {
-				decreaseAjaxQueue();
+				}
 			}
 		}
-
 	}
 
-	function decreaseAjaxQueue() {
+	function decreaseAjaxQueue(url) {
 
-		siteData.memberStates.ajaxQueue--;
+		var index = siteData.memberStates.ajaxQueue.indexOf(url);
+		if (index > -1) {
+			siteData.memberStates.ajaxQueue.splice(index,1);
+		}
 
 		//Decrease the total queue
-		$("span#ajaxqueue").text($("span#ajaxqueue").text() - 1);
+		$("span#ajaxqueue").text(siteData.memberStates.ajaxQueue.length);
 	}
 
-	function increaseAjaxQueue() {
-		siteData.memberStates.ajaxQueue++;
+	function increaseAjaxQueue(url) {
+		if (siteData.memberStates.ajaxQueue.indexOf(url) == -1) {
+			siteData.memberStates.ajaxQueue.push(url);
+			$("span#ajaxqueue").text(siteData.memberStates.ajaxQueue.length);
+			return true;
+		}
+		return false;
 	}
 
 	function setMemberState(statusSpan, memberStatus) {
@@ -1166,9 +1172,6 @@
 
 		**************************************************************************************************************/
 
-		//Add the div containing the update available button
-		$("a#resetFiltersButton").after($('<span id="updateavailablespan"></span>'));
-
 		//Check if there's a new update every 30 minutes
 		setInterval(function () {
 			$.ajax(document.location.href, {
@@ -1186,9 +1189,9 @@
 					timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
 
 					if (timesincerefresh > 60) {
-						$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
+						$("#updateavailablediv").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
 					} else if (timesincerefresh > 10) {
-						$("#updateavailablespan").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
+						$("#updateavailablediv").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
 					}
 
 				}

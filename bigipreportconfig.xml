@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 	<!--Leave the version information intact-->
-	<Settings version="5.1.6">
+	<Settings version="5.1.7">
 
 		<!--
 		***************************************************************************
@@ -415,8 +415,11 @@
 			*	More information about this is available here:
 			*	https://loadbalancing.se/bigip-report/#Realtime_Pool_Member_State
 			*
-			*	Update a maximum of 5 members at the same time.
+			*	Update a maximum of 10 pools, 5 at a time.
 			*	<RealTimeMemberStates>
+			*		<MaxPools>
+			*			10
+			*		</MaxPools>
 			*		<MaxQueue>
 			*			5
 			*		</MaxQueue>
@@ -430,6 +433,7 @@
 		-->
 
 			<RealTimeMemberStates>
+				<MaxPools>2</MaxPools>
 				<MaxQueue>1</MaxQueue>
 				<RefreshRate>60</RefreshRate>
 			</RealTimeMemberStates>

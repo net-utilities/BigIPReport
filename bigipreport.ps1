@@ -216,7 +216,8 @@
 #                                     adcLinks open in new window, show referenced datagroups in iRule table
 #                                     write some stats at the end of the build, force arrays for more json files
 #                                     update regular expressions, iRules have pools and datagroup links
-#
+#        5.1.7        2018-05-21      MaxPools setting to limit pool status requests if too many pools open         Tim Riker       Yes
+#                                     Update alerts to upper right
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
 #
@@ -230,7 +231,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.1.6"
+$Global:ScriptVersion = "5.1.7"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
@@ -2161,6 +2162,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 		} else {
 			[void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = false;")
 		}
+		[void]$Global:HTML.AppendLine("const AJAXMAXPOOLS = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxPools + ";")
 		[void]$Global:HTML.AppendLine("const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";")
 		[void]$Global:HTML.AppendLine("const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";")
 
@@ -2180,6 +2182,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				</tr>
 			</table>
 		</div>
+		<div class="updateavailablediv"></div>
 		<div id="mainholder">
 			<div class="sidemenu">
 				<div class="menuitem" id="virtualserversbutton" onclick="Javascript:showVirtualServers();"><img id="virtualserverviewicon" src="images/virtualservericon.png" alt="virtual servers"/> Virtual Servers</div>

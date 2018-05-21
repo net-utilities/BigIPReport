@@ -223,6 +223,14 @@ span#refreshcountdown {
 	font-weight: bold;
 }
 
+/* Containing style for the top right information box */
+
+div#updateavailablediv {
+	position: absolute;
+	top: 15px;
+	right: 25px;
+}
+
 /* Containing the chevrons used to collapse and expand the pool*/
 
 div.expand, div.collapse {
