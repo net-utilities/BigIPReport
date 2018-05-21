@@ -2185,7 +2185,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				<div class="menuitem" id="virtualserversbutton" onclick="Javascript:showVirtualServers();"><img id="virtualserverviewicon" src="images/virtualservericon.png" alt="virtual servers"/> Virtual Servers</div>
 				<div class="menuitem" id="poolsbutton" onclick="Javascript:showPools();"><img id="poolsicon" src="images/poolsicon.png" alt="pools"/> Pools</div>
 				<div class="menuitem" id="irulesbutton" onclick="Javascript:showiRules();"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/> iRules</div>
-				<div class="menuitem" id="datagroupbutton" onclick="Javascript:showDataGroups();"><img id="logsicon" src="images/datagroupicon.png" alt="logs"/> Data Groups</div>
+				<div class="menuitem" id="datagroupbutton" onclick="Javascript:showDataGroups();"><img id="datagroupsicon" src="images/datagroupicon.png" alt="logs"/> Data Groups</div>
 				<div class="menuitem" id="deviceoverviewbutton" onclick="Javascript:showDeviceOverview();"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png" alt="overview"/> Device overview</div>
 				<div class="menuitem" id="certificatebutton" onclick="Javascript:showCertificateDetails();"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates<span id="certificatenotification"></span></div>
 				<div class="menuitem" id="logsbutton" onclick="Javascript:showReportLogs();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div>
@@ -2213,7 +2213,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 
 			<div class="mainsection" id="helpcontent" style="display: none;">
 				<h3>Filtering for pool members being down</h3>
-				<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<font color="red"><b>DOWN</b></font>", "<font color="green"><b>UP</b></font>" and "<b>DISABLED</b>".</p>
+				<p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<span style="color:red"><b>DOWN</b></span>", "<span style="color:green"><b>UP</b></span>" and "<b>DISABLED</b>".</p>
 				<p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
 				<h3>Column filtering</h3>
 				<p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>

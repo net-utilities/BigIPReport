@@ -102,6 +102,7 @@
 				siteData.poolsMap = new Map();
 				let poolNum = 0;
 				result.forEach((pool) => {
+					pool.poolNum = poolNum;
 					siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
 					poolNum++;
 				})
@@ -314,8 +315,8 @@
 		return result;
 	}
 
-	function renderPoolMemberCell(member, poolnum) {
-		membercell = '<td class="PoolMember" data-pool="Pool' + poolnum + '">';
+	function renderPoolMemberCell(member, poolNum) {
+		membercell = '<td class="PoolMember" data-pool="' + poolNum + '">';
 		membercell += renderPoolMember(member);
 		membercell += '</td>'
 		return membercell;
@@ -339,23 +340,23 @@
 			'<div id="PoolInformation-' + meta.row + '" class="pooltablediv" style="display: block;">';
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
-			pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
-			p = pool.poolNum;
-			poolinformation += '<tr class="Pool-' + p + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
+			var pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
+			var poolClass = 'Pool-' + pool.poolNum;
+			poolinformation += '<tr class="' + poolClass + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
 			poolinformation += '<td';
 			if (pool.members !== null) {
 				poolinformation += ' rowspan="' + pool.members.length + '"';
 			}
-			poolinformation += ' data-vsid="' + meta.row + '" class="poolname" id="Pool' + p + '">';
+			poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
 			poolinformation += renderPool(pool.loadbalancer, pool.name);
 			poolinformation += '</td>';
 			if (pool.members !== null) {
-				poolinformation += renderPoolMemberCell(pool.members[0], p);
+				poolinformation += renderPoolMemberCell(pool.members[0], pool.poolNum);
 			}
 			poolinformation += '</tr>';
 			if (pool.members !== null) {
 				for (var m=1; m<pool.members.length; m++) {
-					poolinformation += '<tr class="Pool-' + p + '">' + renderPoolMemberCell(pool.members[m], p) + '</tr>';
+					poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(pool.members[m], pool.poolNum) + '</tr>';
 				}
 			}
 		}
@@ -575,7 +576,6 @@
 			if (loadbalancer && loadbalancer.statusvip.working === true) {
 
 				var poolName = $(poolLink).attr("data-originalpoolname");
-				var poolId = $(poolCell).attr("id");
 
 				var pool = getPool(poolName, loadbalancerName);
 				var url = loadbalancer.statusvip.url + pool.name
@@ -590,7 +590,7 @@
 
 								for (var memberStatus in data.memberstatuses) {
 
-									var statusSpan = $("td.PoolMember[data-pool=\"" + poolId + "\"] span[data-member=\"" + memberStatus + "\"]");
+									var statusSpan = $("td.PoolMember[data-pool=\"" + pool.poolNum + "\"] span[data-member=\"" + memberStatus + "\"]");
 
 									setMemberState(statusSpan, data.memberstatuses[memberStatus])
 
@@ -666,7 +666,7 @@
 				break;
 		}
 
-		var html = "<span class=\"statusicon\"><img src=\"images/" + icon + "\" title=\"" + title + "\"/></span><span class=\"textstatus\">" + textStatus + "</span>";
+		var html = "<span class=\"statusicon\"><img src=\"images/" + icon + "\" title=\"" + title + "\" alt=\"" + textStatus + "\"/></span><span class=\"textstatus\">" + textStatus + "</span>";
 		$(statusIcon).fadeOut(200).html(html).fadeIn(200);
 
 	}
@@ -1589,7 +1589,7 @@
 				"render": function(data, type, row) {
 					result = '';
 					if (data) {
-						result += "<img class=\"flagicon\" src=\"images/flags/" + data.toLowerCase() + ".png\"/> ";
+						result += "<img class=\"flagicon\" alt=\"" + data.toLowerCase() + "\" src=\"images/flags/" + data.toLowerCase() + ".png\"/> ";
 					}
 					return result + " " + data;
 				}
@@ -1884,13 +1884,14 @@
 				}
 
 				if (firstDevice) {
-					html += "<tr><td rowspan=\"" + deviceGroup.ips.length + "\" class=\"deviceiconcell\"><img class=\"deviceicon\" src=\"" + icon + "\"/></td><td class=\"devicenamecell\" rowspan=\"" + deviceGroup.ips.length + "\">" + deviceGroup.name + "</td>";
+					html += "<tr><td rowspan=\"" + deviceGroup.ips.length + "\" class=\"deviceiconcell\"><img class=\"deviceicon\" alt=\"deviceicon\" src=\"" + icon + "\"/></td><td class=\"devicenamecell\" rowspan=\"" + deviceGroup.ips.length + "\">" + deviceGroup.name + "</td>";
 					firstDevice = false;
 				} else {
 					html += "<tr>";
 				}
 
-				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" src=\"images/devicestatus" + (loadbalancer.color || "red") + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
+				var devicestatus = (loadbalancer.color || "red");
+				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" alt=\"" + devicestatus + "\" src=\"images/devicestatus" + devicestatus + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
 
 			}
 
@@ -2280,12 +2281,12 @@
 			var description = matchingvirtualserver.description || ""
 
 			//Build the table and headers
-			var table = '<table width="100%">';
+			var table = '<table class="virtualserverdetailstablewrapper">';
 			table += '	<tbody>';
 
 			//First row containing simple properties in two cells which in turn contains subtables
 			table += '		<tr>';
-			table += '			<td valign="top">';
+			table += '			<td>';
 
 			//Subtable 1
 			table += '				<table class="virtualserverdetailstable">';
@@ -2298,7 +2299,7 @@
 			table += '			</td>';
 
 			//Subtable 2
-			table += '			<td valign="top">';
+			table += '			<td>';
 			table += '				<table class="virtualserverdetailstable">';
 			table += '					<tr><th>Client SSL Profile</th><td>' + matchingvirtualserver.sslprofileclient + '</td></tr>';
 			table += '					<tr><th>Server SSL Profile</th><td>' + matchingvirtualserver.sslprofileserver + '</td></tr>';
