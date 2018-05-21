@@ -2182,7 +2182,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				</tr>
 			</table>
 		</div>
-		<div class="updateavailablediv"></div>
+		<div id="updateavailablediv"></div>
 		<div id="mainholder">
 			<div class="sidemenu">
 				<div class="menuitem" id="virtualserversbutton" onclick="Javascript:showVirtualServers();"><img id="virtualserverviewicon" src="images/virtualservericon.png" alt="virtual servers"/> Virtual Servers</div>
