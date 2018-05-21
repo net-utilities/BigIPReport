@@ -244,6 +244,9 @@ div.expand, div.collapse {
 	This section contains the style for the virtual server details lightbox div
 *****************************************************************************************************************************/
 
+.virtualserverdetailstablewrapper {
+	width: 100%;
+}
 
 /* Contains the pool details table (the one with members and status) */
 
