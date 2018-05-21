@@ -1188,7 +1188,6 @@
 					// If there's been a new report, how long ago (in minutes)
 					timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
 
-					timesincerefresh = 150;
 					if (timesincerefresh > 60) {
 						$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
 					} else if (timesincerefresh > 10) {
