@@ -327,7 +327,7 @@
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
 		if (rowData.pools) {
 			$(cell).addClass('PoolInformation');
-			$(cell).attr('data-visid', rowIndex);
+			$(cell).attr('data-vsid', rowIndex);
 		}
 	}
 
