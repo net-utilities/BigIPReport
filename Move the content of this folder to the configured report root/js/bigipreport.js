@@ -35,7 +35,8 @@
 				<h3>Possible reasons</h3>
 
 				<h4>The web server hosting the report is IIS7.x or older</h4>
-				If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME files settings.<br><a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">Detailed instructions are available here</a>.<br>
+				If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME files settings.<br>
+				<a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">Detailed instructions are available here</a>.<br>
 
 				<h4>File permissions or network issues</h4>
 				Script has had issues when creating the files due to lack of permissions or network issues.<br>
@@ -309,17 +310,25 @@
 		var vsStatus = row.enabled.split('_')[2] + ':' + row.availability.split('_')[2];
 
 		if (vsStatus == "ENABLED:GREEN") {
-			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Available (Enabled) - The virtual server is available"/></span><span class="textstatus">UP</span>';
+			return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"' +
+				' title="Available (Enabled) - The virtual server is available"/></span><span class="textstatus">UP</span>';
 		} else if (vsStatus == "ENABLED:BLUE") {
-			return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)" title="Unknown (Enabled) - The children pool member(s) either don\'t have service checking enabled, or service check results are not available yet"/></span><span class="textstatus">UNKNOWN</span>';
+			return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"' +
+				' title="Unknown (Enabled) - The children pool member(s) either don\'t have service checking enabled,' +
+				' or service check results are not available yet"/></span><span class="textstatus">UNKNOWN</span>';
 		} else if (vsStatus == "ENABLED:RED") {
-			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Offline (Enabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>';
+			return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"' +
+				' title="Offline (Enabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>';
 		} else if (vsStatus == "DISABLED:GREEN") {
-			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)" title="Available (Disabled) - The virtual server is disabled"/></span><span class="textstatus">DISABLED</span>'
+			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)"' +
+				' title="Available (Disabled) - The virtual server is disabled"/></span><span class="textstatus">DISABLED</span>'
 		} else if (vsStatus == "DISABLED:BLUE") {
-			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Unknown (Disabled) - The children pool member(s) either don\'t have service checking enabled, or service check results are not available yet"/></span><span class="textstatus">DISABLED</span>';
+			return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"' +
+				' title="Unknown (Disabled) - The children pool member(s) either don\'t have service checking enabled,' +
+				' or service check results are not available yet"/></span><span class="textstatus">DISABLED</span>';
 		} else if (vsStatus == "DISABLED:RED") {
-			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)" title="Offline (Disabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>'
+			return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)"' +
+				' title="Offline (Disabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>'
 		}
 		return vsStatus;
 	}
@@ -368,7 +377,8 @@
 			'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
 		poolinformation += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
 			'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-		poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '" id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
+		poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
+			' id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
 			'<div id="PoolInformation-' + meta.row + '" class="pooltablediv" style="display: block;">';
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
@@ -436,7 +446,9 @@
 					timeout: 2000
 				})
 				.fail(function (jqxhr) {
-					log("Statusvip test <a href=\"" + testURL + "\">" + testURL + "</a> failed on loadbalancer: <b>" + loadbalancer.name + "</b><br>Information about troubleshooting status VIPs is available <a href=\"https://loadbalancing.se/bigip-report/#One_or_more_status_endpoints_has_been_marked_as_failed\">here</a>", "ERROR");
+					log('Statusvip test <a href="' + testURL + '">' + testURL + '</a> failed on loadbalancer: <b>' +
+						loadbalancer.name + '</b><br>Information about troubleshooting status VIPs is available' +
+						' <a href="https://loadbalancing.se/bigip-report/#One_or_more_status_endpoints_has_been_marked_as_failed">here</a>', "ERROR");
 					$("span#realtimetestfailed").text(parseInt($("span#realtimetestfailed").text()) + 1);
 					loadbalancer.statusvip.working = false;
 					loadbalancer.statusvip.reason = jqxhr.statusText;
@@ -464,9 +476,12 @@
 								var length = $("table.pooltable tr td.poolname:visible").length;
 								if (length == 0 || length > AJAXMAXPOOLS) {
 									$("span#ajaxqueue").text(0);
-									$("td#pollingstatecell").html('Disabled, ' + length + ' of ' + AJAXMAXPOOLS + ' pools open<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
+									$("td#pollingstatecell").html('Disabled, ' + length + ' of ' + AJAXMAXPOOLS +
+										' pools open<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' +
+										AJAXREFRESHRATE + '</span> seconds</span>');
 								} else {
-									$("td#pollingstatecell").html('<span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
+									$("td#pollingstatecell").html('<span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh">,' +
+										' refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
 
 									$("span#ajaxqueue").text(length);
 									$("table.pooltable tr td.poolname:visible").each(function () {
@@ -486,7 +501,9 @@
 								}
 							}, (AJAXREFRESHRATE * 1000));
 						} else {
-							log("No functioning status VIPs detected, scanning disabled<br>More information about why this happens is available <a href=\"https://loadbalancing.se/bigip-report/#The_member_status_polling_says_it8217s_disabled\">here</a>", "ERROR");
+							log("No functioning status VIPs detected, scanning disabled<br>" +
+								"More information about why this happens is available" +
+								" <a href=\"https://loadbalancing.se/bigip-report/#The_member_status_polling_says_it8217s_disabled\">here</a>", "ERROR");
 							$("td#pollingstatecell").html("Disabled")
 						}
 					}
@@ -877,14 +894,21 @@
 			<table id="allbigips" class="bigiptable">
 				<thead>
 					<tr>
-						<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer" class="search_init" data-column-name="Load Balancer" data-setting-name="showLoadBalancerColumn"/></th>
-						<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server" data-setting-name="showVirtualServerColumn"/></th>
+						<th class="loadbalancerHeaderCell"><input type="text" name="loadBalancer" value="Load Balancer"
+							class="search_init" data-column-name="Load Balancer" data-setting-name="showLoadBalancerColumn"/></th>
+						<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server"
+							data-setting-name="showVirtualServerColumn"/></th>
 						<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
-						<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies" data-setting-name="showASMPoliciesColumn"/></th>
-						<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL C/S" class="search_init" data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
-						<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression" class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
-						<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence" class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
-						<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members" data-setting-name="showPoolsMembersColumn"/></th>
+						<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies"
+							data-setting-name="showASMPoliciesColumn"/></th>
+						<th class="sslProfileHeaderCell"><input type="text" name="sslProfile" size="6" value="SSL C/S" class="search_init"
+							data-column-name="SSL Profile" data-setting-name="showSSLProfileColumn"/></th>
+						<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression"
+							class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
+						<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence"
+							class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+						<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members"
+							data-setting-name="showPoolsMembersColumn"/></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -1888,14 +1912,18 @@
 				}
 
 				if (firstDevice) {
-					html += "<tr><td rowspan=\"" + deviceGroup.ips.length + "\" class=\"deviceiconcell\"><img class=\"deviceicon\" alt=\"deviceicon\" src=\"" + icon + "\"/></td><td class=\"devicenamecell\" rowspan=\"" + deviceGroup.ips.length + "\">" + deviceGroup.name + "</td>";
+					html += "<tr><td rowspan=\"" + deviceGroup.ips.length + "\" class=\"deviceiconcell\"><img class=\"deviceicon\" alt=\"deviceicon\" src=\"" + icon +
+						"\"/></td><td class=\"devicenamecell\" rowspan=\"" + deviceGroup.ips.length + "\">" + deviceGroup.name + "</td>";
 					firstDevice = false;
 				} else {
 					html += "<tr>";
 				}
 
 				var devicestatus = (loadbalancer.color || "red");
-				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" alt=\"" + devicestatus + "\" src=\"images/devicestatus" + devicestatus + ".png\"/>" + (loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" + (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" + loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
+				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" alt=\"" + devicestatus + "\" src=\"images/devicestatus" + devicestatus + ".png\"/>" +
+					(loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" +
+					(loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" +
+					loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
 
 			}
 
@@ -2318,8 +2346,10 @@
 			table += '<br>';
 
 			table += '<table class="virtualserverdetailstable">';
-			table += '	<tr><th>Current Connections</th><th>Maximum Connections</th><th>5 second average CPU usage</th><th>1 minute average CPU usage</th><th>5 minute average CPU usage</th></tr>';
-			table += '	<tr><td>' + matchingvirtualserver.currentconnections + '</td><td>' + matchingvirtualserver.maximumconnections + '</td><td>' + matchingvirtualserver.cpuavg5sec + '</td><td>' + matchingvirtualserver.cpuavg1min + '</td><td>' + matchingvirtualserver.cpuavg5min + '</td></tr>';
+			table += '	<tr><th>Current Connections</th><th>Maximum Connections</th><th>5 second average CPU usage</th><th>1 minute average CPU usage</th>' +
+						'<th>5 minute average CPU usage</th></tr>';
+			table += '	<tr><td>' + matchingvirtualserver.currentconnections + '</td><td>' + matchingvirtualserver.maximumconnections + '</td><td>' +
+					matchingvirtualserver.cpuavg5sec + '</td><td>' + matchingvirtualserver.cpuavg1min + '</td><td>' + matchingvirtualserver.cpuavg5min + '</td></tr>';
 			table += '</table>';
 
 			table += '<br>'
@@ -2383,7 +2413,8 @@
 				When clicking the report it will parse the JSON data to find the matching Virtual Server and display the details. However, in this case it was not able to find any matching Virtual Server.
 
 				<h4>Possible reason</h4>
-				This might happen if the report is being updated as you navigate to the page. If you see this page often though, please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
+				This might happen if the report is being updated as you navigate to the page.
+				If you see this page often, please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
 
 				<h4>Possible solutions</h4>
 				Refresh the page and try again.
@@ -2604,13 +2635,15 @@
 					<tr><th>Description</th><th>Load Balancing Method</th><th>Action On Service Down</th><th>Allow NAT</th><th>Allow SNAT</th></tr>
 				</thead>
 				<tbody>
-					<tr><td>` + (matchingpool.description || "") + "</td><td>" + matchingpool.loadbalancingmethod + "</td><td>" + matchingpool.actiononservicedown + "</td><td>" + matchingpool.allownat + "</td><td>" + matchingpool.allowsnat + `</td></tr>
+					<tr><td>` + (matchingpool.description || "") + "</td><td>" + matchingpool.loadbalancingmethod + "</td><td>" +
+					matchingpool.actiononservicedown + "</td><td>" + matchingpool.allownat + "</td><td>" + matchingpool.allowsnat + `</td></tr>
 				</tbody>
 				</table>
 				<br>
 				<div class="monitordetailsheader">Member details</div>
 					<table class="pooldetailstable">
-					<thead><tr><th>Member Name</th><th>Member IP</th><th>Port</th><th>Priority Group</th><th>Connections</th><th>Max Connections</th><th>Member Availability</th><th>Enabled</th><th>Member Status Description</th><th>Realtime Availability</th></tr></thead><tbody>`
+					<thead><tr><th>Member Name</th><th>Member IP</th><th>Port</th><th>Priority Group</th><th>Connections</th>
+					<th>Max Connections</th><th>Member Availability</th><th>Enabled</th><th>Member Status Description</th><th>Realtime Availability</th></tr></thead><tbody>`
 
 			poolmonitors = matchingpool.monitors
 
@@ -2634,7 +2667,9 @@
 				var member = members[i];
 				var memberstatus = translateStatus(member);
 
-				table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + member.priority + "</td><td>" + member.currentconnections + "</td><td>" + member.maximumconnections + "</td><td>" + memberstatus["availability"] + "</td><td>" + memberstatus["enabled"] + "</td><td>" + member.status + "</td><td>" + memberstatus.realtime + "</td></tr>";
+				table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + member.priority + "</td><td>" +
+					member.currentconnections + "</td><td>" + member.maximumconnections + "</td><td>" + memberstatus["availability"] + "</td><td>" +
+					memberstatus["enabled"] + "</td><td>" + member.status + "</td><td>" + memberstatus.realtime + "</td></tr>";
 
 			}
 
@@ -2710,11 +2745,14 @@
 
 								var url = protocol + "://" + member.ip + ":" + member.port + requestparameters["uri"];
 
-								var httplink = '<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)" data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="' + url + '"></p></a>';
+								var httplink = '<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"' +
+									' data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="' + url + '"></p></a>';
 
-								var curllink = '<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)" data-type="curl">Curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="' + curlcommand + '"></p></a>';
+								var curllink = '<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"' +
+									' data-type="curl">Curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="' + curlcommand + '"></p></a>';
 
-								var netcatlink = '<a href="javascript:void(0); target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)" data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'' + netcatcommand + '\'></p></a>';
+								var netcatlink = '<a href="javascript:void(0); target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"' +
+									' data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'' + netcatcommand + '\'></p></a>';
 
 								table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + httplink + "</td><td>" + curllink + "</td><td>" + netcatlink + "</td></tr>";
 
@@ -2743,10 +2781,12 @@
 				<h1>No matching Pool was found</h1>
 
 				<h4>What happened?</h4>
-				When clicking the report it will parse the JSON data to find the matching pool and display the details. However, in this case it was not able to find any matching pool.
+				When clicking the report it will parse the JSON data to find the matching pool and display the details.
+				However, in this case it was not able to find any matching pool.
 
 				<h4>Possible reason</h4>
-				This might happen if the report is being updated as you navigate to the page. If you see this page often though, please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
+				This might happen if the report is being updated as you navigate to the page. If you see this page often,
+				please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
 
 				<h4>Possible solutions</h4>
 				Refresh the page and try again.
@@ -2878,7 +2918,8 @@
 
 	function generateCSV() {
 
-		var csv = "name;description;ip;port;sslprofile;compressionprofile;persistenceprofile;availability;enabled;currentconnections;cpuavg5sec;cpuavg1min;cpuavg5min;defaultpool;associated-pools;loadbalancer\n";
+		var csv = "name;description;ip;port;sslprofile;compressionprofile;persistenceprofile;availability;enabled;" +
+			"currentconnections;cpuavg5sec;cpuavg1min;cpuavg5min;defaultpool;associated-pools;loadbalancer\n";
 
 
 		var getMembers = function (pool) {
@@ -2910,7 +2951,9 @@
 
 				var vs = getVirtualServer(vsname, loadbalancer)
 
-				var line = vs.name + ";" + (vs.description || "") + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofileclient || "None") + ";" + (vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" + vs.cpuavg5sec + ";" + vs.cpuavg1min + ";" + vs.cpuavg5min + ";" + (vs.defaultpool || "None") + ";";
+				var line = vs.name + ";" + (vs.description || "") + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofileclient || "None") + ";" +
+					(vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" +
+					vs.cpuavg5sec + ";" + vs.cpuavg1min + ";" + vs.cpuavg5min + ";" + (vs.defaultpool || "None") + ";";
 
 				var firstpool = true;
 
@@ -2932,7 +2975,8 @@
 				var poolname = $(this).find("td.poolname a").attr("data-originalpoolname");
 				var loadbalancer = $(this).find("td.poolname a").attr("data-loadbalancer");
 
-				line = "N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);";
+				line = "N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);" +
+					"N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);";
 
 				pool = getPool(poolname, loadbalancer);
 
