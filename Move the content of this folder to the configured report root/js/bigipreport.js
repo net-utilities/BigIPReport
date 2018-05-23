@@ -185,6 +185,38 @@
 				showVirtualServers();
 			}
 
+			/*************************************************************************************************************
+
+				This section adds the update check button div and initiates the update checks
+
+			**************************************************************************************************************/
+
+			//Check if there's a new update every 30 minutes
+			setInterval(function () {
+				$.ajax(document.location.href, {
+					type: 'HEAD',
+					success: function (response, status, xhr) {
+
+						var currentreport = Date.parse(document.lastModified);
+						var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
+						var currenttime = new Date();
+
+						// The time since this report was generated (in minutes)
+						//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
+
+						// If there's been a new report, how long ago (in minutes)
+						timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
+
+						if (timesincerefresh > 60) {
+							$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
+						} else if (timesincerefresh > 10) {
+							$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
+						}
+
+					}
+				});
+			}, 3000);
+
 			log("loaded:" +
 				" loadbalancers:" + siteData.loadbalancers.length +
 				", virtualservers:" + siteData.virtualservers.length +
@@ -1166,37 +1198,6 @@
 
 		siteData.bigipTable.draw();
 
-		/*************************************************************************************************************
-
-			This section adds the update check button div and initiates the update checks
-
-		**************************************************************************************************************/
-
-		//Check if there's a new update every 30 minutes
-		setInterval(function () {
-			$.ajax(document.location.href, {
-				type: 'HEAD',
-				success: function (response, status, xhr) {
-
-					var currentreport = Date.parse(document.lastModified);
-					var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
-					var currenttime = new Date();
-
-					// The time since this report was generated (in minutes)
-					//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
-
-					// If there's been a new report, how long ago (in minutes)
-					timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
-
-					if (timesincerefresh > 60) {
-						$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
-					} else if (timesincerefresh > 10) {
-						$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
-					}
-
-				}
-			});
-		}, 3000);
 	}
 
 	function setupiRuleTable() {
