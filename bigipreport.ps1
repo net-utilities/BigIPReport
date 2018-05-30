@@ -2189,7 +2189,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 				<div class="menuitem" id="poolsbutton" onclick="Javascript:showPools();"><img id="poolsicon" src="images/poolsicon.png" alt="pools"/> Pools</div>
 				<div class="menuitem" id="irulesbutton" onclick="Javascript:showiRules();"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/> iRules</div>
 				<div class="menuitem" id="datagroupbutton" onclick="Javascript:showDataGroups();"><img id="datagroupsicon" src="images/datagroupicon.png" alt="logs"/> Data Groups</div>
-				<div class="menuitem" id="deviceoverviewbutton" onclick="Javascript:showDeviceOverview();"><img id="devicesoverviewicon" src="images/deviceicons/viprion_c2400.png" alt="overview"/> Device overview</div>
+				<div class="menuitem" id="deviceoverviewbutton" onclick="Javascript:showDeviceOverview();"><img id="devicesoverviewicon" src="images/devicesicon.png" alt="overview"/> Device overview</div>
 				<div class="menuitem" id="certificatebutton" onclick="Javascript:showCertificateDetails();"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates<span id="certificatenotification"></span></div>
 				<div class="menuitem" id="logsbutton" onclick="Javascript:showReportLogs();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div>
 				<div class="menuitem" id="preferencesbutton" onclick="Javascript:showPreferences();"><img id="preferencesicon" src="images/preferences.png" alt="preferences"/> Preferences</div>
