@@ -1921,7 +1921,8 @@
 
 				var devicestatus = (loadbalancer.color || "red");
 				html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" alt=\"" + devicestatus + "\" src=\"images/devicestatus" + devicestatus + ".png\"/>" +
-					(loadbalancer.name || "<span class=\"devicefailed\">Failed to index</span>") + "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" +
+					(loadbalancer.name ? '<a href="https://' + loadbalancer.name + '" target="_blank">' + loadbalancer.name + '</a>' : "<span class=\"devicefailed\">Failed to index</span>") +
+					"</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" +
 					(loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" +
 					loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
 
