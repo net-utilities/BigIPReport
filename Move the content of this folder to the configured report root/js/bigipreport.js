@@ -93,10 +93,24 @@
 			$("div#secondlayerdiv").trigger("click");
 		});
 
+		/**
+		 * Example use:
+		 * $('div:icontains("Text in page")');
+		 * Will return jQuery object containing any/all of the following:
+		 * <div>text in page</div>
+		 * <div>TEXT in PAGE</div>
+		 * <div>Text in page</div>
+		 */
+		$.expr[':'].icontains = $.expr.createPseudo(function(text) {
+			return function(e) {
+				return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
+			};
+		});
+
 		/* syntax highlighting */
 		sh_highlightDocument('js/', '.js');
 
-	$.when(
+		$.when(
 			// Get pools
 			$.getJSON("json/pools.json", function (result) {
 				siteData.pools = result;
@@ -2060,7 +2074,7 @@
 	function expandPoolMatches(resultset, searchstring) {
 
 		if (localStorage.autoExpandPools !== "true") {
-			$(resultset).children().children().filter("td:contains('" + searchstring + "')").each(function () {
+			$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
 				if (this.className == "PoolInformation") {
 					togglePool(this);
 				}
