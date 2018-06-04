@@ -526,14 +526,17 @@
 		$("div.beforedocumentready").fadeOut(1500);
 	}
 
-	function renderLoadBalancer(loadbalancer) {
+	function renderLoadBalancer(loadbalancer, type) {
 		var balancer;
 		if (HideLoadBalancerFQDN) {
 			balancer = loadbalancer.split('.')[0]
 		} else {
 			balancer = loadbalancer;
 		}
-		return '<a onclick="window.open(\'https://' + loadbalancer + '\',\'_blank\')">' + balancer + '</a>';
+		if (type == 'display') {
+			return '<a onclick="window.open(\'https://' + loadbalancer + '\',\'_blank\')">' + balancer + '</a>';
+		}
+		return balancer;
 	}
 
 	function renderVirtualServer(loadbalancer, name, type) {
@@ -1606,7 +1609,7 @@
 				"data": "loadbalancer",
 				"className": "loadbalancerCell",
 				"render": function (data, type, row) {
-					return renderLoadBalancer(data);
+					return renderLoadBalancer(data, type);
 				}
 			}, {
 				"data": "name",
@@ -1749,7 +1752,7 @@
 				"data": "loadbalancer",
 				"className": "loadbalancerCell",
 				"render": function (data, type, row) {
-					return renderLoadBalancer(data);
+					return renderLoadBalancer(data, type);
 				}
 			}, {
 				"data": "fileName",
