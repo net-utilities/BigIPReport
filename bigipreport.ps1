@@ -2117,13 +2117,20 @@ $Global:HTML = [System.Text.StringBuilder]::new()
 	<head>
 		<title>BIG-IP Report</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+		<link href="css/pace.css" rel="stylesheet" type="text/css"/>
+		<link href="css/jquery.dataTables.css" rel="stylesheet" type="text/css">
+		<link href="css/buttons.dataTables.min.css" rel="stylesheet" type="text/css">
+		<link href="css/bigipreportstyle.css" rel="stylesheet" type="text/css">
+		<link href="css/sh_style.css" rel="stylesheet" type="text/css">
+
 		<script src="js/pace.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;: false }"></script>
 		<script src="js/jquery.min.js"></script>
 		<script src="js/jquery.dataTables.min.js"></script>
-		<link href="css/pace.css" rel="stylesheet" type="text/css"/>
-		<link href="css/jquery.dataTables.css" rel="stylesheet" type="text/css">
-		<link href="css/bigipreportstyle.css" rel="stylesheet" type="text/css">
-		<link href="css/sh_style.css" rel="stylesheet" type="text/css">
+		<script src="js/dataTables.buttons.min.js"></script>
+		<script src="js/buttons.colVis.min.js"></script>
+		<script src="js/buttons.html5.min.js"></script>
+		<script src="js/buttons.print.min.js"></script>
 		<script src="js/jquery.highlight.js"></script>
 		<script src="js/bigipreport.js"></script>
 		<script src="js/sh_main.js"></script>
