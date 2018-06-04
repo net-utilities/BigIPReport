@@ -404,7 +404,7 @@
 				poolinformation += ' rowspan="' + pool.members.length + '"';
 			}
 			poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
-			poolinformation += renderPool(pool.loadbalancer, pool.name);
+			poolinformation += renderPool(pool.loadbalancer, pool.name, type);
 			poolinformation += '</td>';
 			if (pool.members !== null) {
 				poolinformation += renderPoolMemberCell(pool.members[0], pool.poolNum);
@@ -536,75 +536,101 @@
 		return '<a onclick="window.open(\'https://' + loadbalancer + '\',\'_blank\')">' + balancer + '</a>';
 	}
 
-	function renderVirtualServer(loadbalancer, name) {
+	function renderVirtualServer(loadbalancer, name, type) {
 		vsName=name.replace(/^\/Common\//,'');
-		result = '<a';
-		result += ' class="tooltip"';
-		result += ' data-originalvirtualservername="' + name + '"';
-		result += ' data-loadbalancer="' + loadbalancer + '"';
-		result += ' href="Javascript:showVirtualServerDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
-		result += vsName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
-		result += '<p>Click to see virtual server details</p>';
-		result += '</a>';
-		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-		result += '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + name + '">Edit</a></span>';
+		result = '';
+		if (type == 'display') {
+			result += '<a';
+			result += ' class="tooltip"';
+			result += ' data-originalvirtualservername="' + name + '"';
+			result += ' data-loadbalancer="' + loadbalancer + '"';
+			result += ' href="Javascript:showVirtualServerDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		}
+		result += vsName;
+		if (type == 'display') {
+			result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+			result += '<p>Click to see virtual server details</p>';
+			result += '</a>';
+			result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+			result += '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + name + '">Edit</a></span>';
+		}
 		return result;
 	}
 
-	function renderRule(loadbalancer, name) {
+	function renderRule(loadbalancer, name, type) {
+		console.log('renderRule:' + type);
 		ruleName=name.replace(/^\/Common\//,'');
-		result = '<a';
-		result += ' class="tooltip"';
-		result += ' data-originalvirtualservername="' + name + '"';
-		result += ' data-loadbalancer="' + loadbalancer + '"';
-		result += ' href="Javascript:showiRuleDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
-		result += ruleName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
-		result += '<p>Click to see iRule details</p>';
-		result += '</a>';
-		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-		result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
+		result='';
+		if (type == 'display') {
+			result += '<a';
+			result += ' class="tooltip"';
+			result += ' data-originalvirtualservername="' + name + '"';
+			result += ' data-loadbalancer="' + loadbalancer + '"';
+			result += ' href="Javascript:showiRuleDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		}
+		result += ruleName;
+		if (type == 'display') {
+			result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+			result += '<p>Click to see iRule details</p>';
+			result += '</a>';
+			result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+			result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
+		}
 		return result;
 	}
 
-	function renderPool(loadbalancer, name) {
+	function renderPool(loadbalancer, name, type) {
 		if (name == "N/A") {
 			return name;
 		}
-		poolname=name.replace(/^\/Common\//,'');
+		poolName=name.replace(/^\/Common\//,'');
 		result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
-		result += '<a';
-		result += ' class="tooltip"';
-		result += ' data-originalpoolname="' + name + '"';
-		result += ' data-loadbalancer="' + loadbalancer + '"';
-		result += ' href="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
-		result += poolname + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
-		result += '<p>Click to see pool details</p>';
-		result += '</a>';
-		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-		result += '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
+		if (type == 'display') {
+			result += '<a';
+			result += ' class="tooltip"';
+			result += ' data-originalpoolname="' + name + '"';
+			result += ' data-loadbalancer="' + loadbalancer + '"';
+			result += ' href="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		}
+		result += poolName;
+		if (type == 'display') {
+			result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+			result += '<p>Click to see pool details</p>';
+			result += '</a>';
+			result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+			result += '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
+		}
 		return result;
 	}
 
-	function renderCertificate(loadbalancer, name) {
+	function renderCertificate(loadbalancer, name, type) {
 		certName=name.replace(/^\/Common\//,'');
 		result = certName;
-		result += ' <span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-		result += '/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?certificate_name=' + name.replace(/\//,'%2F').replace(/.crt$/,'') + '">Edit</a></span>';
+		if (type == 'display') {
+			result += ' <span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+			result += '/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?certificate_name=' + name.replace(/\//,'%2F').replace(/.crt$/,'') + '">Edit</a></span>';
+		}
 		return result;
 	}
 
-	function renderDataGroup(loadbalancer, name) {
+	function renderDataGroup(loadbalancer, name, type) {
 		datagroupName=name.replace(/^\/Common\//,'');
-		result = '<a';
-		result += ' class="tooltip"';
-		result += ' data-originalvirtualservername="' + name + '"';
-		result += ' data-loadbalancer="' + loadbalancer + '"';
-		result += ' href="Javascript:showDataGroupDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
-		result += datagroupName + '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
-		result += '<p>Click to see Data Group details</p>';
-		result += '</a>';
-		result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-		result += '/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=' + name + '">Edit</a></span>';
+		result = '';
+		if (type == 'display') {
+			result = '<a';
+			result += ' class="tooltip"';
+			result += ' data-originalvirtualservername="' + name + '"';
+			result += ' data-loadbalancer="' + loadbalancer + '"';
+			result += ' href="Javascript:showDataGroupDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+		}
+		result += datagroupName;
+		if (type == 'display') {
+			result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
+			result += '<p>Click to see Data Group details</p>';
+			result += '</a>';
+			result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+			result += '/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=' + name + '">Edit</a></span>';
+		}
 		return result;
 	}
 
@@ -961,7 +987,7 @@
 				"data": "name",
 				"className": "virtualServerCell",
 				"render": function (data, type, row) {
-					return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data);
+					return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data, type);
 				}
 			}, {
 				"className": "centeredCell",
@@ -1039,9 +1065,30 @@
 			},
 			"dom": 'fBrtilp',
 			"buttons": [
-				"copyHtml5",
-				"print",
-				"csvHtml5"
+				{
+					"extend": "copyHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "print",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "csvHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				}
 			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
@@ -1278,7 +1325,7 @@
 				"data": "name",
 				"className": "iRuleCell",
 				"render": function (data, type, row) {
-					return renderRule(row.loadbalancer, data);
+					return renderRule(row.loadbalancer, data, type);
 				}
 			}, {
 				"type": "html-num",
@@ -1295,7 +1342,7 @@
 							if (result != '') {
 								result += '<br>';
 							}
-							result += renderPool(row.loadbalancer, pool);
+							result += renderPool(row.loadbalancer, pool, type);
 						});
 					} else {
 						result = "None";
@@ -1317,7 +1364,7 @@
 							if (result != '') {
 								result += '<br>';
 							}
-							result += renderDataGroup(row.loadbalancer, datagroup);
+							result += renderDataGroup(row.loadbalancer, datagroup, type);
 						});
 					} else {
 						result = "None";
@@ -1335,14 +1382,33 @@
 				"sSearch": "Search all columns:"
 			},
 			"dom": 'fBrtilp',
-			"buttons": {
-				"buttons": [
-					"columnsToggle",
-					"copyHtml5",
-					"print",
-					"csvHtml5"
-				]
-			},
+			"buttons": [
+				"columnsToggle",
+				{
+					"extend": "copyHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "print",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "csvHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				}
+			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -1415,7 +1481,7 @@
 			}, {
 				"data": "name",
 				"render": function (data, type, row) {
-					return renderPool(row.loadbalancer, data);
+					return renderPool(row.loadbalancer, data, type);
 				}
 			}, {
 				"data": "orphaned"
@@ -1446,14 +1512,33 @@
 				"sSearch": "Search all columns:"
 			},
 			"dom": 'fBrtilp',
-			"buttons": {
-				"buttons": [
-					"columnsToggle",
-					"copyHtml5",
-					"print",
-					"csvHtml5"
-				]
-			},
+			"buttons": [
+				"columnsToggle",
+				{
+					"extend": "copyHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "print",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "csvHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				}
+			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -1527,7 +1612,7 @@
 				"data": "name",
 				"className": "iRuleCell",
 				"render": function (data, type, row) {
-					return renderDataGroup(row.loadbalancer, data);
+					return renderDataGroup(row.loadbalancer, data, type);
 				}
 			}, {
 				"data": "type",
@@ -1546,7 +1631,7 @@
 							if (result != '') {
 								result += '<br>';
 							}
-							result += renderPool(row.loadbalancer, pool);
+							result += renderPool(row.loadbalancer, pool, type);
 						});
 					} else {
 						result = "None";
@@ -1567,14 +1652,33 @@
 				"sSearch": "Search all columns:"
 			},
 			"dom": 'fBrtilp',
-			"buttons": {
-				"buttons": [
-					"columnsToggle",
-					"copyHtml5",
-					"print",
-					"csvHtml5"
-				]
-			},
+			"buttons": [
+				"columnsToggle",
+				{
+					"extend": "copyHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "print",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "csvHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				}
+			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -1650,7 +1754,7 @@
 			}, {
 				"data": "fileName",
 				"render": function(data, type, row) {
-					return renderCertificate(row.loadbalancer, data);
+					return renderCertificate(row.loadbalancer, data, type);
 				}
 			}, {
 				"data": "subject.commonName"
@@ -1699,14 +1803,33 @@
 				"sSearch": "Search all columns:"
 			},
 			"dom": 'fBrtilp',
-			"buttons": {
-				"buttons": [
-					"columnsToggle",
-					"copyHtml5",
-					"print",
-					"csvHtml5"
-				]
-			},
+			"buttons": [
+				"columnsToggle",
+				{
+					"extend": "copyHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "print",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				},
+				{
+					"extend": "csvHtml5",
+					"exportOptions": {
+						"columns": ":visible",
+						"stripHtml": false,
+						"orthogonal": "export"
+					}
+				}
+			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -2376,7 +2499,7 @@
 			table += '				<table class="virtualserverdetailstable">';
 			table += '					<tr><th>Name</th><td>' + matchingvirtualserver.name + '</td></tr>';
 			table += '					<tr><th>IP:Port</th><td>' + matchingvirtualserver.ip + ':' + matchingvirtualserver.port + '</td></tr>';
-			table += '					<tr><th>Default pool</th><td>' + renderPool(loadbalancer,defaultPool) + '</td></tr>';
+			table += '					<tr><th>Default pool</th><td>' + renderPool(loadbalancer,defaultPool, 'display') + '</td></tr>';
 			table += '					<tr><th>Traffic Group</th><td>' + trafficGroup + '</td></tr>';
 			table += '					<tr><th>Description</th><td>' + description + '</td></tr>';
 			table += '				</table>';
@@ -2444,7 +2567,7 @@
 									datagroupdata.push("N/A");
 								}
 
-								table += '	<tr><td>' + renderRule(loadbalancer, iruleobj.name) + '</td><td>' + datagroupdata.join("<br>") + '</td></tr>';
+								table += '	<tr><td>' + renderRule(loadbalancer, iruleobj.name, 'display') + '</td><td>' + datagroupdata.join("<br>") + '</td></tr>';
 							}
 						} else {
 							table += '	<tr><td>' + matchingvirtualserver.irules[i] + '</td></tr>';
