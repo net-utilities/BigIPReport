@@ -1037,7 +1037,12 @@
 			"oLanguage": {
 				"sSearch": "Search all columns:"
 			},
-			"dom": 'frtilp',
+			"dom": 'fBrtilp',
+			"buttons": [
+				"copyHtml5",
+				"print",
+				"csvHtml5"
+			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -1247,11 +1252,11 @@
 		<table id="iRuleTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
-					<th><input type="text" class="search" placeholder="Name" /></th>
-					<th><input type="text" class="search" placeholder="Associated Pools" /></th>
-					<th><input type="text" class="search" placeholder="Associated Datagroups" /></th>
-					<th style="width: 4em;"><input type="text" class="search" placeholder="Length" /></th>
+					<th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
+					<th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
+					<th><span style="display: none;">Datagroups</span><input type="text" class="search" placeholder="Associated Datagroups" /></th>
+					<th style="width: 4em;"><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
 			</thead>
 			<tbody>
 			</tbody>
@@ -1329,7 +1334,15 @@
 			"oLanguage": {
 				"sSearch": "Search all columns:"
 			},
-			"dom": 'frtilp',
+			"dom": 'fBrtilp',
+			"buttons": {
+				"buttons": [
+					"columnsToggle",
+					"copyHtml5",
+					"print",
+					"csvHtml5"
+				]
+			},
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -1376,11 +1389,11 @@
 		<table id="poolTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
-					<th><input type="text" class="search" placeholder="Name" /></th>
-					<th><input type="text" class="search" placeholder="Orphan" /></th>
-					<th><input type="text" class="search" placeholder="Method" /></th>
-					<th><input type="text" class="search" placeholder="Members" /></th>
+					<th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
+					<th><span style="display: none;">Orphan</span><input type="text" class="search" placeholder="Orphan" /></th>
+					<th><span style="display: none;">Method</span><input type="text" class="search" placeholder="Method" /></th>
+					<th><span style="display: none;">Members</span><input type="text" class="search" placeholder="Members" /></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -1432,7 +1445,15 @@
 			"oLanguage": {
 				"sSearch": "Search all columns:"
 			},
-			"dom": 'frtilp',
+			"dom": 'fBrtilp',
+			"buttons": {
+				"buttons": [
+					"columnsToggle",
+					"copyHtml5",
+					"print",
+					"csvHtml5"
+				]
+			},
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -1479,11 +1500,11 @@
 		<table id="dataGroupTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
-					<th><input type="text" class="search" placeholder="Name" /></th>
-					<th><input type="text" class="search" placeholder="Type" /></th>
-					<th><input type="text" class="search" placeholder="Associated Pools" /></th>
-					<th><input type="text" class="search" placeholder="Length" /></th>
+					<th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
+					<th><span style="display: none;">Type</span><input type="text" class="search" placeholder="Type" /></th>
+					<th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
+					<th><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -1545,7 +1566,15 @@
 			"oLanguage": {
 				"sSearch": "Search all columns:"
 			},
-			"dom": 'frtilp',
+			"dom": 'fBrtilp',
+			"buttons": {
+				"buttons": [
+					"columnsToggle",
+					"copyHtml5",
+					"print",
+					"csvHtml5"
+				]
+			},
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
@@ -1593,13 +1622,13 @@
 		<table id="certificateTable" class="bigiptable">
 			<thead>
 				<tr>
-					<th class="loadbalancerHeaderCell"><input type="text" class="search" placeholder="Load Balancer" /></th>
-					<th><input type="text" class="search" placeholder="Name" /></th>
-					<th><input type="text" class="search" placeholder="Common Name" /></th>
-					<th><input type="text" class="search" placeholder="Country Name" /></th>
-					<th><input type="text" class="search" placeholder="State Name" /></th>
-					<th><input type="text" class="search" placeholder="Organization Name" /></th>
-					<th><input type="text" class="search" placeholder="Expiring" /></th>
+					<th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
+					<th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
+					<th><span style="display: none;">Common Name</span><input type="text" class="search" placeholder="Common Name" /></th>
+					<th><span style="display: none;">Country</span><input type="text" class="search" placeholder="Country Name" /></th>
+					<th><span style="display: none;">State</span><input type="text" class="search" placeholder="State Name" /></th>
+					<th><span style="display: none;">Org</span><input type="text" class="search" placeholder="Organization Name" /></th>
+					<th><span style="display: none;">Expiring</span><input type="text" class="search" placeholder="Expiring" /></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -1669,7 +1698,15 @@
 			"oLanguage": {
 				"sSearch": "Search all columns:"
 			},
-			"dom": 'frtilp',
+			"dom": 'fBrtilp',
+			"buttons": {
+				"buttons": [
+					"columnsToggle",
+					"copyHtml5",
+					"print",
+					"csvHtml5"
+				]
+			},
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
 		});
 
