@@ -994,7 +994,7 @@
 				"data": "loadbalancer",
 				"className": "loadbalancerCell",
 				"render": function (data, type, row) {
-					return renderLoadBalancer(data);
+					return renderLoadBalancer(data, type);
 				}
 			}, {
 				"data": "name",
@@ -1332,7 +1332,7 @@
 				"data": "loadbalancer",
 				"className": "loadbalancerCell",
 				"render": function (data, type, row) {
-					return renderLoadBalancer(data);
+					return renderLoadBalancer(data, type);
 				}
 			}, {
 				"data": "name",
@@ -1489,7 +1489,7 @@
 				"data": "loadbalancer",
 				"className": "loadbalancerCell",
 				"render": function (data, type, row) {
-					return renderLoadBalancer(data);
+					return renderLoadBalancer(data, type);
 				}
 			}, {
 				"data": "name",
@@ -2649,7 +2649,10 @@
 		if (matchingirule != "") {
 
 			//Populate the header
-			var html = "<div class=\"iruledetailsheader\"><span>iRule: " + matchingirule.name + "</span></div>";
+			var html = '<div class="iruledetailsheader">';
+			html += '<span>iRule: ' + matchingirule.name + '</span><br>';
+			html += "<span>Load Balancer: " + renderLoadBalancer(loadbalancer, 'display') + "</span>";
+			html += '</div>';
 
 			$("div#secondlayerdetailscontentdiv").attr("data-type", "irule");
 			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingirule.name);
@@ -2748,11 +2751,11 @@
 			$("div#secondlayerdetailscontentdiv").attr("data-objectname", matchingdatagroup.name);
 			$("div#secondlayerdetailscontentdiv").attr("data-loadbalancer", matchingdatagroup.loadbalancer);
 
-			var html = "<div class=\"datagroupdetailsheader\">";
-			html += "<span>Data group: " + matchingdatagroup.name + "</span><br>"
-			html += "<span>Load Balancer: " + loadbalancer + "</span><br>";
-			html += "<span class=\"dgtype\">Type: " + matchingdatagroup.type + "</span>";
-			html += "</div>";
+			var html = '<div class="datagroupdetailsheader">';
+			html += "<span>Data group: " + matchingdatagroup.name + "</span><br>";
+			html += "<span>Load Balancer: " + renderLoadBalancer(loadbalancer, 'display') + '</span><br>';
+			html += '<span class="dgtype">Type: ' + matchingdatagroup.type + "</span>";
+			html += '</div>';
 
 			html += `<table id="datagroupdetailsTable" class="datagrouptable">
 						<thead>
@@ -2815,7 +2818,10 @@
 			$("#" + layer + "layerdetailscontentdiv").attr("data-objectname", matchingpool.name);
 			$("#" + layer + "layerdetailscontentdiv").attr("data-loadbalancer", matchingpool.loadbalancer);
 
-			var html = "<div class=\"pooldetailsheader\"><span>Pool: " + matchingpool.name + "</span></div>";
+			var html = '<div class="pooldetailsheader">';
+			html += '<span>Pool: ' + matchingpool.name + '</span><br>';
+			html += '<span>Load Balancer: ' + renderLoadBalancer(loadbalancer, 'display') + '</span>';
+			html += '</div>';
 
 			var table = `
 			<table class="pooldetailstable">
