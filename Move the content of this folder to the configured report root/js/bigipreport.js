@@ -3099,8 +3099,8 @@
 
 	function generateCSV() {
 
-		var csv = "name;description;ip;port;sslprofile;compressionprofile;persistenceprofile;availability;enabled;" +
-			"currentconnections;cpuavg5sec;cpuavg1min;cpuavg5min;defaultpool;associated-pools;loadbalancer\n";
+		var csv = "name,description,ip,port,sslprofileclient,sslprofileserver,compressionprofile,persistenceprofile,availability,enabled," +
+			"currentconnections,cpuavg5sec,cpuavg1min,cpuavg5min,defaultpool,associated-pools,loadbalancer\n";
 
 
 		var getMembers = function (pool) {
@@ -3113,7 +3113,7 @@
 			for (var m in pool.members) {
 				if (!firstmember){ returnStr += ", "} else { firstmember = false;}
 				var member = pool.members[m]
-				returnStr += member.name + ":" + member.port + " (" + member.ip + ":" + member.port + ")";
+				returnStr += member.name + " (" + member.ip + ":" + member.port + ")";
 			}
 
 			return returnStr;
@@ -3127,9 +3127,9 @@
 
 			if (vs.name !== "N/A (Orphan pool)") {
 
-				var line = vs.name + ";" + (vs.description || "") + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofileclient || "None") + ";" +
-					(vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" +
-					vs.cpuavg5sec + ";" + vs.cpuavg1min + ";" + vs.cpuavg5min + ";" + (vs.defaultpool || "None") + ";";
+				var line = vs.name + "," + (vs.description || "") + "," + (vs.ip || "") + "," + (vs.port || "") + "," + (vs.sslprofileclient || "None") + "," +
+					(vs.sslprofileserver || "None") + "," +(vs.compressionprofile || "None") + "," + (vs.persistenceprofile || "None") + "," + vs.availability + "," +
+					vs.enabled + "," + vs.currentconnections + "," + vs.cpuavg5sec + "," + vs.cpuavg1min + "," + vs.cpuavg5min + "," + (vs.defaultpool || "None") + ",";
 
 				var firstpool = true;
 
@@ -3138,12 +3138,12 @@
 					if (!firstpool){ line += "|"} else { firstpool = false }
 
 					var pool = getPool(vs.pools[p], vs.loadbalancer);
-					line += pool.name + ": ";
+					line += '"' + pool.name + ": ";
 
-					line += getMembers(pool);
+					line += getMembers(pool) + '"';
 				}
 
-				line += ";" + vs.loadbalancer;
+				line += "," + vs.loadbalancer;
 
 			}
 
