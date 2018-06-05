@@ -387,18 +387,25 @@
 		if (!row.pools) {
 			return "N/A";
 		}
-		poolinformation = '<div class="expand" id="expand-' + meta.row + '" style="display: none;">' +
-			'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-		poolinformation += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
-			'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-		poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
-			' id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
-			'<div id="PoolInformation-' + meta.row + '" class="pooltablediv" style="display: block;">';
+		poolinformation = '';
+		if (type == 'display') {
+			poolinformation += '<div class="expand" id="expand-' + meta.row + '" style="display: none;">' +
+				'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+			poolinformation += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
+				'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+			poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
+				' id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
+				'<div id="PoolInformation-' + meta.row + '" class="pooltablediv" style="display: block;">';
+		}
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
 			var pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
 			var poolClass = 'Pool-' + pool.poolNum;
-			poolinformation += '<tr class="' + poolClass + '" onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);" style="">'
+			poolinformation += '<tr class="' + poolClass + '" ';
+			if (type == 'display') {
+				poolinformation += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
+			}
+			poolinformation += 'style="">';
 			poolinformation += '<td';
 			if (pool.members !== null) {
 				poolinformation += ' rowspan="' + pool.members.length + '"';
