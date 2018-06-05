@@ -71,7 +71,7 @@
 
 		/* Hide the lightbox if clicking outside the information box*/
 		$('body').on('click', function (e) {
-			if (e.target.className == "lightbox") {
+			if (e.target.classList.contains("lightbox")) {
 				$("div#" + e.target.id).fadeOut(function () {
 					updateLocationHash();
 				});
@@ -1151,8 +1151,7 @@
 		**************************************************************************************************************/
 
 		$("table#allbigips thead input").focus(function () {
-			if (this.className == "search_init")
-			{
+			if (this.classList.contains("search_init")) {
 				this.className = "search_entered";
 				this.value = "";
 			}
@@ -2248,7 +2247,7 @@
 
 		if (localStorage.autoExpandPools !== "true") {
 			$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
-				if (this.className == "PoolInformation") {
+				if (this.classList.contains("PoolInformation")) {
 					togglePool(this);
 				}
 			});
