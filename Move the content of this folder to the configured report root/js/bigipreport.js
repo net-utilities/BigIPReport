@@ -587,7 +587,10 @@
 			return name;
 		}
 		poolName=name.replace(/^\/Common\//,'');
-		result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
+		result = '';
+		if (type == 'display' || type == 'print') {
+			result += PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
+		}
 		if (type == 'display') {
 			result += '<a';
 			result += ' class="tooltip"';
@@ -1081,7 +1084,7 @@
 					"exportOptions": {
 						"columns": ":visible",
 						"stripHtml": false,
-						"orthogonal": "export"
+						"orthogonal": "print"
 					}
 				},
 				{
@@ -1194,7 +1197,7 @@
 		**************************************************************************************************************/
 
 		if (ShowExportLink) {
-			$("#allbigips_filter").append("<a id=\"exportCSVButton\" class=\"exportCSVButton\" href=\"javascript:downloadCSV();\">Export to CSV</a>");
+			$("#allbigips_filter").append('<a id="exportCSVButton" class="exportCSVButton" href="javascript:downloadCSV();">Export to CSV</a>');
 		}
 
 		/*************************************************************************************************************
@@ -1400,7 +1403,7 @@
 					"exportOptions": {
 						"columns": ":visible",
 						"stripHtml": false,
-						"orthogonal": "export"
+						"orthogonal": "print"
 					}
 				},
 				{
@@ -1530,7 +1533,7 @@
 					"exportOptions": {
 						"columns": ":visible",
 						"stripHtml": false,
-						"orthogonal": "export"
+						"orthogonal": "print"
 					}
 				},
 				{
@@ -1670,7 +1673,7 @@
 					"exportOptions": {
 						"columns": ":visible",
 						"stripHtml": false,
-						"orthogonal": "export"
+						"orthogonal": "print"
 					}
 				},
 				{
@@ -1821,7 +1824,7 @@
 					"exportOptions": {
 						"columns": ":visible",
 						"stripHtml": false,
-						"orthogonal": "export"
+						"orthogonal": "print"
 					}
 				},
 				{
@@ -3117,17 +3120,12 @@
 		}
 
 
-		$("#allbigips tbody tr.virtualserverrow").each(function () {
+		//$("#allbigips tbody tr.virtualserverrow").each(function () {
+		siteData.bigipTable.rows({filter:'applied'}).data().each(function (vs) {
 
 			var line = "";
 
-			vsname = $(this).find("td.virtualServerCell a").attr("data-originalvirtualservername") || "N/A (Orphan pool)"
-
-			if (vsname !== "N/A (Orphan pool)") {
-
-				var loadbalancer = $(this).find("td.virtualServerCell a").attr("data-loadbalancer");
-
-				var vs = getVirtualServer(vsname, loadbalancer)
+			if (vs.name !== "N/A (Orphan pool)") {
 
 				var line = vs.name + ";" + (vs.description || "") + ";" + (vs.ip || "") + ";" + (vs.port || "") + ";" + (vs.sslprofileclient || "None") + ";" +
 					(vs.compressionprofile || "None") + ";" + (vs.persistenceprofile || "None") + ";" + vs.availability + ";" + vs.enabled + ";" + vs.currentconnections + ";" +
@@ -3147,19 +3145,6 @@
 
 				line += ";" + vs.loadbalancer;
 
-
-			} else {
-
-				var poolname = $(this).find("td.poolname a").attr("data-originalpoolname");
-				var loadbalancer = $(this).find("td.poolname a").attr("data-loadbalancer");
-
-				line = "N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);" +
-					"N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);N/A (Orphan pool);";
-
-				pool = getPool(poolname, loadbalancer);
-
-				line += pool.name + ": ";
-				line += getMembers(pool);
 			}
 
 			csv += line + "\n";
