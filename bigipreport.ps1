@@ -651,8 +651,8 @@ Add-Type @'
 		public string ip;
 		public string port;
 		public string defaultpool;
-		public string sslprofileclient;
-		public string sslprofileserver;
+		public string[] sslprofileclient;
+		public string[] sslprofileserver;
 		public string compressionprofile;
 		public string persistence;
 		public string[] irules;
@@ -1415,18 +1415,23 @@ function Get-LTMInformation {
 
 		#Set the ssl profile to None by default, then check if there's an SSL profile and
 
-		$ObjTempVirtualServer.sslprofileclient = "None";
-		$ObjTempVirtualServer.sslprofileserver = "None";
 		$ObjTempVirtualServer.compressionprofile = "None";
 
 		$VirtualServerProfiles[$i] | ForEach-Object {
 			if([string]($_.profile_type) -eq "PROFILE_TYPE_CLIENT_SSL"){
-				$ObjTempVirtualServer.sslprofileclient = $_.profile_name;
+				$ObjTempVirtualServer.sslprofileclient += $_.profile_name;
 			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_SERVER_SSL"){
-				$ObjTempVirtualServer.sslprofileserver = $_.profile_name;
+				$ObjTempVirtualServer.sslprofileserver += $_.profile_name;
 			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_HTTPCOMPRESSION"){
 				$ObjTempVirtualServer.compressionprofile = $_.profile_name;
 			}
+		}
+
+		if ($null -eq $ObjTempVirtualServer.sslprofileclient) {
+			$ObjTempVirtualServer.sslprofileclient += "None";
+		}
+		if ($null -eq $ObjTempVirtualServer.sslprofileserver) {
+			$ObjTempVirtualServer.sslprofileserver += "None";
 		}
 
 		#Get the iRules of the Virtual server
@@ -1548,8 +1553,8 @@ function Get-LTMInformation {
 			$ObjTempVirtualServer.name = $PoolName + "(Orphan)"
 			$ObjTempVirtualServer.ip = "N"
 			$ObjTempVirtualServer.port = "A"
-			$ObjTempVirtualServer.sslprofileclient = "None"
-			$ObjTempVirtualServer.sslprofileserver = "None"
+			$ObjTempVirtualServer.sslprofileclient += "None"
+			$ObjTempVirtualServer.sslprofileserver += "None"
 			$ObjTempVirtualServer.compressionprofile = "None"
 			$ObjTempVirtualServer.persistence = "None"
 			$ObjTempVirtualServer.irules = @()
