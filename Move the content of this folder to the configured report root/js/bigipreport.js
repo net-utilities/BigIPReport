@@ -2472,7 +2472,10 @@
 		//If a pool was found, populate the pool details table and display it on the page
 		if (matchingvirtualserver != "") {
 
-			var html = "<div class=\"virtualserverdetailsheader\"><span>Virtual Server: " + matchingvirtualserver.name + "</span></div>";
+			var html = '<div class="virtualserverdetailsheader">'
+			html += '<span>Virtual Server: ' + matchingvirtualserver.name + "</span><br>";
+			html += "<span>Load Balancer: " + renderLoadBalancer(matchingvirtualserver.loadbalancer, 'display') + "</span>";
+			html += "</div>";
 
 			$("div#firstlayerdetailscontentdiv").attr("data-type", "virtualserver");
 			$("div#firstlayerdetailscontentdiv").attr("data-objectname", matchingvirtualserver.name);
@@ -2520,8 +2523,8 @@
 			//Subtable 2
 			table += '			<td>';
 			table += '				<table class="virtualserverdetailstable">';
-			table += '					<tr><th>Client SSL Profile</th><td>' + matchingvirtualserver.sslprofileclient + '</td></tr>';
-			table += '					<tr><th>Server SSL Profile</th><td>' + matchingvirtualserver.sslprofileserver + '</td></tr>';
+			table += '					<tr><th>Client SSL Profile</th><td>' + matchingvirtualserver.sslprofileclient.join('<br>') + '</td></tr>';
+			table += '					<tr><th>Server SSL Profile</th><td>' + matchingvirtualserver.sslprofileserver.join('<br>') + '</td></tr>';
 			table += '					<tr><th>Compression Profile</th><td>' + matchingvirtualserver.compressionprofile + '</td></tr>';
 			table += '					<tr><th>Persistence Profile</th><td>' + matchingvirtualserver.persistence + '</td></tr>';
 			table += '					<tr><th>Source Translation</th><td>' + xlate + '</td></tr>';
@@ -3139,8 +3142,8 @@
 
 			if (vs.name !== "N/A (Orphan pool)") {
 
-				var line = vs.name + "," + (vs.description || "") + "," + (vs.ip || "") + "," + (vs.port || "") + "," + (vs.sslprofileclient || "None") + "," +
-					(vs.sslprofileserver || "None") + "," +(vs.compressionprofile || "None") + "," + (vs.persistenceprofile || "None") + "," + vs.availability + "," +
+				var line = vs.name + "," + (vs.description || "") + "," + (vs.ip || "") + "," + (vs.port || "") + ',"' + (vs.sslprofileclient || "None") + '","' +
+					(vs.sslprofileserver || "None") + '",' +(vs.compressionprofile || "None") + "," + (vs.persistenceprofile || "None") + "," + vs.availability + "," +
 					vs.enabled + "," + vs.currentconnections + "," + vs.cpuavg5sec + "," + vs.cpuavg1min + "," + vs.cpuavg5min + "," + (vs.defaultpool || "None") + ",";
 
 				var firstpool = true;
