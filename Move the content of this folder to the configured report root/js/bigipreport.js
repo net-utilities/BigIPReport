@@ -568,7 +568,6 @@
 	}
 
 	function renderRule(loadbalancer, name, type) {
-		console.log('renderRule:' + type);
 		ruleName=name.replace(/^\/Common\//,'');
 		result='';
 		if (type == 'display') {
