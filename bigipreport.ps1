@@ -1683,7 +1683,10 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 			log success "iControl session successfully established"
 			$ErrorActionPreference = "Continue"
 		} Else {
+			$F5 = Get-F5.iControl
+
 			log error "The script failed to connect to $Device, run the report manually to determine if this was due to a timeout of bad credentials"
+			log errro $F5.LastException.Message
 
 			$ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
 
@@ -2089,7 +2092,7 @@ Function Write-TemporaryFiles {
 	$StreamWriter.dispose()
 
 	if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
-		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data ( $Global:ReportObjects.Values.DataGroups.Values | Sort-Object loadbalancer, name )
+		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data @( $Global:ReportObjects.Values.DataGroups.Values | Sort-Object loadbalancer, name )
 	} else {
 		$WriteStatuses += Write-JSONFile -DestinationFile $Global:datagroupjsonpath -Data @()
 	}
