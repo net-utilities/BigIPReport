@@ -1261,7 +1261,7 @@
 			};
 		})();
 
-		$('div#allbigips_filter.dataTables_filter input').on('keyup', function () {
+		$('div#allbigips_filter.dataTables_filter input').on('keyup input', function () {
 			var search = $('div#allbigips_filter.dataTables_filter input').val();
 			delay(function () {
 				if (search != null) {
