@@ -220,6 +220,7 @@
 #                                     Update alerts to upper right
 #        5.1.8        2018-06-04      column toggles, copy, print, csv buttons on tables using datatables buttons   Tim Riker       No
 #                                     pools expand on search now case insensitve, new icons for tabs
+#        5.1.9        2018-06-27      minor bug fixes, csv cleanup, mutiple ssl profiles                            Tim Riker       No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -234,7 +235,7 @@ Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.1.8"
+$Global:ScriptVersion = "5.1.9"
 
 #Variable for storing handled errors
 $Global:LoggedErrors = @()
