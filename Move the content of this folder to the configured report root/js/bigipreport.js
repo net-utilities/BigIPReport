@@ -224,7 +224,7 @@
 
 						if (timesincerefresh > 60) {
 							$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
-						} else if (timesincerefresh > 10) {
+						} else if (timesincerefresh > 0) {
 							$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
 						}
 
