@@ -14,7 +14,7 @@ body:before {
   -webkit-transition: background-color 200ms;
   -moz-transtition: background-color 200ms;
   -ms-transition: background-color 200ms;
-  -o-transition: background-color: 200ms;
+  -o-transition: background-color 200ms;
   transition: background-color 200ms;
 }
 
