@@ -10,8 +10,12 @@ Installation instructions are available here:
 
 [https://loadbalancing.se/bigip-report/](https://loadbalancing.se/bigip-report/)
 
+DevCentral codeshare:
+
+[https://devcentral.f5.com/codeshare/bigip-report](https://devcentral.f5.com/codeshare/bigip-report)
+
 ### Some components used for this project
 * [jQuery](https://jquery.com/)
 * [Data tables](https://datatables.net/)
 * [jQuery hightlight plugin](http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html)
-* [SHJS](http://shjs.sourceforge.net/doc/gplv3.html)
+* [SHJS](http://shjs.sourceforge.net)
