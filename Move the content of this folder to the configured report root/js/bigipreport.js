@@ -206,7 +206,7 @@
 
 			**************************************************************************************************************/
 
-			//Check if there's a new update every 30 minutes
+			//Check if there's a new update
 			setInterval(function () {
 				$.ajax(document.location.href, {
 					type: 'HEAD',
@@ -214,7 +214,7 @@
 
 						var currentreport = Date.parse(document.lastModified);
 						var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
-						var currenttime = new Date();
+						//var currenttime = new Date();
 
 						// The time since this report was generated (in minutes)
 						//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
@@ -227,7 +227,6 @@
 						} else if (timesincerefresh > 0) {
 							$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
 						}
-
 					}
 				});
 			}, 3000);
