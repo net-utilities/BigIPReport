@@ -957,7 +957,7 @@
 						<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression"
 							class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
 						<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence"
-							class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+							class="search_init" data-column-name="Persistence Profiles" data-setting-name="showPersistenceProfileColumn"/></th>
 						<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members"
 							data-setting-name="showPoolsMembersColumn"/></th>
 					</tr>
@@ -2524,7 +2524,7 @@
 			table += '					<tr><th>Client SSL Profile</th><td>' + matchingvirtualserver.sslprofileclient.join('<br>') + '</td></tr>';
 			table += '					<tr><th>Server SSL Profile</th><td>' + matchingvirtualserver.sslprofileserver.join('<br>') + '</td></tr>';
 			table += '					<tr><th>Compression Profile</th><td>' + matchingvirtualserver.compressionprofile + '</td></tr>';
-			table += '					<tr><th>Persistence Profile</th><td>' + matchingvirtualserver.persistence + '</td></tr>';
+			table += '					<tr><th>Persistence Profiles</th><td>' + matchingvirtualserver.persistence.join('<br>') + '</td></tr>';
 			table += '					<tr><th>Source Translation</th><td>' + xlate + '</td></tr>';
 			table += '				</table>';
 			table += '			</td>';
