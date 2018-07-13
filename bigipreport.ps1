@@ -655,7 +655,7 @@ Add-Type @'
 		public string[] sslprofileclient;
 		public string[] sslprofileserver;
 		public string compressionprofile;
-		public string persistence;
+		public string[] persistence;
 		public string[] irules;
 		public string[] pools;
 		public string[] vlans;
@@ -1375,6 +1375,7 @@ function Get-LTMInformation {
 	[array]$VirtualServerProfiles = $F5.LocalLBVirtualServer.get_profile($VirtualServers)
 	[array]$VirtualServeriRules = $F5.LocalLBVirtualServer.get_rule($VirtualServers)
 	[array]$VirtualServerPersistenceProfiles = $F5.LocalLBVirtualServer.get_persistence_profile($VirtualServers)
+	[array]$VirtualServerFallbackPersistenceProfiles = $F5.LocalLBVirtualServer.get_fallback_persistence_profile($VirtualServers)
 	[array]$VirtualServerVlans = $F5.LocalLBVirtualServer.get_vlan($VirtualServers);
 	[array]$VirtualServerStates = $F5.LocalLBVirtualServer.get_object_status($VirtualServers)
 	[array]$VirtualServerStatistics = $F5.LocalLBVirtualServer.get_statistics($VirtualServers)
@@ -1450,9 +1451,12 @@ function Get-LTMInformation {
 		#Get the persistence profile of the Virtual server
 
 		if($VirtualServerPersistenceProfiles[$i] -ne $null){
-			$ObjTempVirtualServer.persistence = [string]($VirtualServerPersistenceProfiles[$i].profile_name)
+			$ObjTempVirtualServer.persistence += [string]($VirtualServerPersistenceProfiles[$i].profile_name)
 		} else {
-			$ObjTempVirtualServer.persistence = "None"
+			$ObjTempVirtualServer.persistence += "None"
+		}
+		if($VirtualServerFallbackPersistenceProfiles[$i] -ne $null){
+			$ObjTempVirtualServer.persistence += [string]($VirtualServerFallbackPersistenceProfiles[$i])
 		}
 
 		$ObjTempVirtualServer.irules | ForEach-Object {
