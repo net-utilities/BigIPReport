@@ -2668,9 +2668,9 @@
 			if (ShowDataGroupLinks == true) {
 				matchingirule.datagroups.forEach((dg) => {
 					// rule might not include partition which causes the replace to fail
-					var opt=dg.replace(/\/.*\//,'($&|\\b)+');
+					var opt=dg.replace(/\/.*\//,'($&)?');
 					// prepare a regexp to replace all instances
-					var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					var regexp = new RegExp("((?<![\w-])" + opt + "(?![\w-]))", "gi");
 					// Prepare the link
 					var link = '<a href="Javascript:showDataGroupDetails(\'' + dg + '\', \'' + loadbalancer + '\')">$1</a>';
 					// Do the actual replacement
@@ -2678,9 +2678,9 @@
 				})
 				matchingirule.pools.forEach((pool) => {
 					// rule might not include partition which causes the replace to fail
-					var opt=pool.replace(/\/.*\//,'($&|\\b)+');
+					var opt=pool.replace(/\/.*\//,'($&)?');
 					// prepare a regexp to replace all instances
-					var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					var regexp = new RegExp("((?<![\w-])" + opt + "(?![\w-]))", "gi");
 					// Prepare the link
 					var link = '<a href="Javascript:showPoolDetails(\'' + pool + '\', \'' + loadbalancer + '\')">$1</a>';
 					// Do the actual replacement
