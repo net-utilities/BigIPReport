@@ -423,13 +423,13 @@ Function Send-Errors {
 log verbose "Configuring the console window"
 
 #Make the console larger and increase the buffer
-$PShost = Get-Host
-$PSWindow = $PShost.ui.rawui
-$PSWindowSize = $PSWindow.buffersize
+#$PShost = Get-Host
+#$PSWindow = $PShost.ui.rawui
+#$PSWindowSize = $PSWindow.buffersize
 #$PSWindowSize.height = 3000
 #$PSWindowSize.width = [math]::floor([decimal]$PSWindow.MaxPhysicalWindowSize.width)-5
 #$PSwindow.buffersize = $PSWindowSize
-$PSWindowSize = $PSWindow.windowsize
+#$PSWindowSize = $PSWindow.windowsize
 #$PSWindowSize.height = 50
 #$PSWindowSize.width = $PSWindowSize.width = [math]::floor([decimal]$PSWindow.MaxPhysicalWindowSize.width)-5
 #$PSWindow.windowsize = $PSWindowSize
@@ -444,39 +444,39 @@ log verbose "Pre-execution checks"
 
 $SaneConfig = $true
 
-if($Global:Bigipreportconfig.Settings.Credentials.Username -eq $null -or $Global:Bigipreportconfig.Credentials.Username -eq ""){
+if($null -eq $Global:Bigipreportconfig.Settings.Credentials.Username -or "" -eq $Global:Bigipreportconfig.Credentials.Username){
 	log error "No username configured"
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.Credentials.Password -eq $null -or $Global:Bigipreportconfig.Credentials.Password -eq ""){
+if($null -eq $Global:Bigipreportconfig.Settings.Credentials.Password -or "" -eq $Global:Bigipreportconfig.Credentials.Password){
 	log error "No password configured"
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -eq $null -or $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device.Count -eq 0 ){
+if($null -eq $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -or 0 -eq $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device.Count){
 	log error "No load balancers configured"
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.DefaultDocument -eq $null -or $Global:Bigipreportconfig.Settings.DefaultDocument-eq ""){
+if($null -eq $Global:Bigipreportconfig.Settings.DefaultDocument -or "" -eq $Global:Bigipreportconfig.Settings.DefaultDocument){
 	log error "No default document cofigured"
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.LogSettings -eq $null -or $Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $null ){
+if($null -eq $Global:Bigipreportconfig.Settings.LogSettings -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled){
 	log error "Mandatory fields from the LogSettings section has been removed"
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq "true" ){
-	if($Global:Bigipreportconfig.Settings.LogSettings.LogFilePath -eq $null -or $Global:Bigipreportconfig.Settings.LogSettings.LogLevel -eq $null -or $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines -eq $null) {
+if("true" -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled){
+	if($null -eq $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.LogLevel -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines) {
 		log error "Logging has been enabled but all logging fields has not been configured"
 		$SaneConfig = $false
 	}
 }
 
-if($Global:Bigipreportconfig.Settings.Outputlevel -eq $null -or $Global:Bigipreportconfig.Settings.Outputlevel -eq ""){
+if($null -eq $Global:Bigipreportconfig.Settings.Outputlevel -or "" -eq $Global:Bigipreportconfig.Settings.Outputlevel){
 	log error "No Outputlevel configured"
 	$SaneConfig = $false
 }
@@ -494,12 +494,12 @@ Foreach($Share in $Global:Bigipreportconfig.Settings.Shares.Share){
 	}
 }
 
-if($Global:Bigipreportconfig.Settings.iRules -eq $null -or $Global:Bigipreportconfig.Settings.iRules.Enabled -eq $null -or $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $null){
+if($null -eq $Global:Bigipreportconfig.Settings.iRules -or $null -eq $Global:Bigipreportconfig.Settings.iRules.Enabled -or $null -eq $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks){
 	log error "Missing options in the global iRule section defined in the configuration file. Old config version of the configuration file?"
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $null){
+if($null -eq $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks){
 	log error "Missing options for showing data group links in the global irules section defined in the configuration file. Old config version of the configuration file?"
 	$SaneConfig = $false
 }
@@ -509,12 +509,12 @@ if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigi
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.RealTimeMemberStates -eq $null){
+if($null -eq $Global:Bigipreportconfig.Settings.RealTimeMemberStates){
 	log error "Real time member states is missing from the configuration file. Update the the latest version of the file and try again."
 	$SaneConfig = $false
 }
 
-if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigipreportconfig.Settings.ReportRoot -eq ""){
+if($null -eq $Global:Bigipreportconfig.Settings.ReportRoot -or $Global:Bigipreportconfig.Settings.ReportRoot -eq ""){
 	log error "No report root configured"
 	$SaneConfig = $false
 } else {
@@ -562,12 +562,12 @@ if($Global:Bigipreportconfig.Settings.ReportRoot -eq $null -or $Global:Bigiprepo
 }
 
 Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup){
-	If ($DeviceGroup.name -eq $null -or $DeviceGroup.name -eq "") {
+	If ($null -eq $DeviceGroup.name -or $DeviceGroup.name -eq "") {
 		log error "A device group does not have any name. Please check the latest version of the configuration file."
 		$SaneConfig = $false
 	}
 
-	If ($DeviceGroup.Device -eq $null -or ($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
+	If ($null -eq $DeviceGroup.Device -or ($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
 		log error "A device group does not have any devices, please re-check your configuration"
 		$SaneConfig = $false
 	}
@@ -914,20 +914,17 @@ function Get-LTMInformation {
 		$LoadBalancerObjects
 	)
 
-	$VersionInfo = $F5.SystemSystemInfo.get_product_information()
+	#$VersionInfo = $F5.SystemSystemInfo.get_product_information()
 
 	#Set some variables to make the code nicer to read
 	$LoadBalancerName = $LoadBalancerObjects.LoadBalancer.name
 	$LoadBalancerIP =  $LoadBalancerObjects.LoadBalancer.ip
 
-	#Regexp for parsing monitors from iRule definitions
-	[regex]$Poolregexp = "pool\s+([a-zA-Z0-9_\-\./]+)"
-
 	$F5.SystemSession.set_active_folder("/");
 	$F5.SystemSession.set_recursive_query_state("STATE_ENABLED");
 
 	$MajorVersion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[0]
-	$Minorversion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[1]
+	#$Minorversion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[1]
 
 	$LoadBalancerObjects.ASMPolicies = c@{}
 
@@ -1450,12 +1447,12 @@ function Get-LTMInformation {
 
 		#Get the persistence profile of the Virtual server
 
-		if($VirtualServerPersistenceProfiles[$i] -ne $null){
+		if($null -ne $VirtualServerPersistenceProfiles[$i].profile_name){
 			$ObjTempVirtualServer.persistence += [string]($VirtualServerPersistenceProfiles[$i].profile_name)
 		} else {
 			$ObjTempVirtualServer.persistence += "None"
 		}
-		if($VirtualServerFallbackPersistenceProfiles[$i] -ne $null){
+		if("" -ne $VirtualServerFallbackPersistenceProfiles[$i]){
 			$ObjTempVirtualServer.persistence += [string]($VirtualServerFallbackPersistenceProfiles[$i])
 		}
 
@@ -1507,7 +1504,7 @@ function Get-LTMInformation {
 
 		$VirtualServerSASMPolicies = $LoadBalancerObjects.ASMPolicies.values | Where-Object { $_.virtualServers -contains $VirtualServerName }
 
-		if($VirtualServerSASMPolicies -ne $null){
+		if($null -ne $VirtualServerSASMPolicies){
 			$ObjTempVirtualServer.asmPolicies = $VirtualServerSASMPolicies.name
 		}
 
