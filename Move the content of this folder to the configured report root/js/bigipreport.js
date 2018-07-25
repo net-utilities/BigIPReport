@@ -2687,6 +2687,7 @@
 					definition = definition.replace(regexp, link);
 				})
 			}
+			virtualServers = siteData.virtualservers.filter(vs => vs.irules.includes(matchingirule.name));
 
 			//Prepare the div content
 			html += `<table class="bigiptable">
@@ -2694,10 +2695,15 @@
 							<tr><th>iRule definiton</th></tr>
 						</thead>
 						<tbody>
-						<tr><td><pre class="sh_tcl">` + definition + `</pre></td></tr>
-						</tbody>
-					</table>`
+						<tr><td><pre class="sh_tcl">` + definition + `</pre></td></tr>`
 
+			if (virtualServers.length > 0) {
+				html += `<tr><td>Used by ` + virtualServers.length + ` Virtual Servers:<br>` +
+						virtualServers.map(vs => renderVirtualServer(vs.loadbalancer, vs.name, 'display')).join('<br>') + `</td></tr>`
+			}
+
+			html +=		`</tbody>
+					</table>`
 		}
 
 		//Add the close button to the footer
@@ -2708,6 +2714,7 @@
 		sh_highlightDocument('js/', '.js');
 		//Show the div
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
+		toggleAdcLinks();
 	}
 
 
