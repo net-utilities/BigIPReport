@@ -2374,5 +2374,5 @@ $DoneMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
 $DoneMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
 $DoneMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
 $DoneMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
-
+$DoneMsg += " T:" + $($(Get-Date)-$StartTime).totalminutes
 log verbose $DoneMsg
