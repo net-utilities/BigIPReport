@@ -1317,6 +1317,7 @@
 					<th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
 					<th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
 					<th><span style="display: none;">Datagroups</span><input type="text" class="search" placeholder="Associated Datagroups" /></th>
+					<th><span style="display: none;">Virtualservers</span><input type="text" class="search" placeholder="Associated Virtual Servers" /></th>
 					<th style="width: 4em;"><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
 			</thead>
 			<tbody>
@@ -1379,6 +1380,28 @@
 								result += '<br>';
 							}
 							result += renderDataGroup(row.loadbalancer, datagroup, type);
+						});
+					} else {
+						result = "None";
+					}
+					return result;
+				}
+			}, {
+				"type": "html-num",
+				"render": function (data, type, row) {
+					if (type == 'sort') {
+						if (row.virtualservers && row.virtualservers.length) {
+							return row.virtualservers.length;
+						}
+						return 0;
+					}
+					var result = '';
+					if (row.virtualservers && row.virtualservers.length > 0) {
+						row.virtualservers.forEach((virtualserver) => {
+							if (result != '') {
+								result += '<br>';
+							}
+							result += renderVirtualServer(row.loadbalancer, virtualserver, type);
 						});
 					} else {
 						result = "None";
@@ -2691,7 +2714,6 @@
 					definition = definition.replace(regexp, link);
 				})
 			}
-			virtualServers = siteData.virtualservers.filter(vs => vs.irules.includes(matchingirule.name));
 
 			//Prepare the div content
 			html += `<table class="bigiptable">
@@ -2701,9 +2723,9 @@
 						<tbody>
 						<tr><td><pre class="sh_tcl">` + definition + `</pre></td></tr>`
 
-			if (virtualServers.length > 0) {
-				html += `<tr><td>Used by ` + virtualServers.length + ` Virtual Servers:<br>` +
-						virtualServers.map(vs => renderVirtualServer(vs.loadbalancer, vs.name, 'display')).join('<br>') + `</td></tr>`
+			if (matchingirule.virtualservers && matchingirule.virtualservers.length > 0) {
+				html += `<tr><td>Used by ` + matchingirule.virtualservers.length + ` Virtual Servers:<br>` +
+						matchingirule.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display')).join('<br>') + `</td></tr>`
 			}
 
 			html +=		`</tbody>
