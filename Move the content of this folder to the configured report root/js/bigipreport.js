@@ -1033,16 +1033,20 @@
 				"className": "centeredCell",
 				"render": function (data, type, row) {
 					result = '';
-					if (row.sslprofileclient == "None") {
-						result += "No";
+					if (row.profiletype == "Fast L4") {
+						result += row.profiletype;
 					} else {
-						result += "Yes";
-					}
-					result += '/';
-					if (row.sslprofileserver == "None") {
-						result += "No";
-					} else {
-						result += "Yes";
+						if (row.sslprofileclient == "None") {
+							result += "No";
+						} else {
+							result += "Yes";
+						}
+						result += '/';
+						if (row.sslprofileserver == "None") {
+							result += "No";
+						} else {
+							result += "Yes";
+						}
 					}
 					return result;
 				}
