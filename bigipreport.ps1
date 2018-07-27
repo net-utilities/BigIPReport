@@ -651,6 +651,7 @@ Add-Type @'
 		public string description;
 		public string ip;
 		public string port;
+		public string profiletype;
 		public string defaultpool;
 		public string[] sslprofileclient;
 		public string[] sslprofileserver;
@@ -706,6 +707,7 @@ Add-Type @'
 		public string name;
 		public string[] pools;
 		public string[] datagroups;
+		public string[] virtualservers;
 		public string definition;
 		public string loadbalancer;
 	}
@@ -1415,6 +1417,7 @@ function Get-LTMInformation {
 		#Set the ssl profile to None by default, then check if there's an SSL profile and
 
 		$ObjTempVirtualServer.compressionprofile = "None";
+		$ObjTempVirtualServer.profiletype = "Standard";
 
 		$VirtualServerProfiles[$i] | ForEach-Object {
 			if([string]($_.profile_type) -eq "PROFILE_TYPE_CLIENT_SSL"){
@@ -1423,6 +1426,10 @@ function Get-LTMInformation {
 				$ObjTempVirtualServer.sslprofileserver += $_.profile_name;
 			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_HTTPCOMPRESSION"){
 				$ObjTempVirtualServer.compressionprofile = $_.profile_name;
+			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_FAST_L4"){
+				$ObjTempVirtualServer.profiletype = "Fast L4";
+			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_FAST_HTTP"){
+				$ObjTempVirtualServer.profiletype = "Fast HTTP";
 			}
 		}
 
