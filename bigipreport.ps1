@@ -1341,6 +1341,8 @@ function Get-LTMInformation {
 		$MatchedDataGroups = $MatchedDataGroups -replace "^([^/])","/$Partition/`$1"
 		$ObjiRule.datagroups = $MatchedDataGroups
 
+		$ObjiRule.virtualservers = @()
+
 		$LoadBalancerObjects.iRules.add($ObjiRule.name, $ObjiRule)
 	}
 
