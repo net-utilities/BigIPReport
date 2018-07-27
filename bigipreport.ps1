@@ -1444,6 +1444,7 @@ function Get-LTMInformation {
 		$VirtualServeriRules[$i] | Sort-Object -Property priority | ForEach-Object {
 			$tempName = $_.rule_name
 			$ObjTempVirtualServer.irules += [string]$tempName
+			$LoadBalancerObjects.iRules[$tempName].virtualservers += $VirtualServerName
 		}
 
 		if([string]($ObjTempVirtualServer.irules) -eq ""){
