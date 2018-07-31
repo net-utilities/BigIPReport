@@ -2700,7 +2700,13 @@
 					// rule might not include partition which causes the replace to fail
 					var opt=dg.replace(/\/.*\//,'($&)?');
 					// prepare a regexp to replace all instances
-					var regexp = new RegExp("((?<![\w-])" + opt + "(?![\w-]))", "gi");
+					try {
+						// negative look behind is part of ES2018
+						// https://github.com/tc39/proposal-regexp-lookbehind
+						var regexp = new RegExp("((?<![\w-])" + opt + "(?![\w-]))", "gi");
+					} catch (e) {
+						var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					}
 					// Prepare the link
 					var link = '<a href="Javascript:showDataGroupDetails(\'' + dg + '\', \'' + loadbalancer + '\')">$1</a>';
 					// Do the actual replacement
