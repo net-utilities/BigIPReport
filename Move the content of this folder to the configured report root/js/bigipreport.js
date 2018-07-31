@@ -399,26 +399,29 @@
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
 			var pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
-			var poolClass = 'Pool-' + pool.poolNum;
-			poolinformation += '<tr class="' + poolClass + '" ';
-			if (type == 'display') {
-				poolinformation += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
-			}
-			poolinformation += 'style="">';
-			poolinformation += '<td';
-			if (pool.members !== null) {
-				poolinformation += ' rowspan="' + pool.members.length + '"';
-			}
-			poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
-			poolinformation += renderPool(pool.loadbalancer, pool.name, type);
-			poolinformation += '</td>';
-			if (pool.members !== null) {
-				poolinformation += renderPoolMemberCell(pool.members[0], pool.poolNum);
-			}
-			poolinformation += '</tr>';
-			if (pool.members !== null) {
-				for (var m=1; m<pool.members.length; m++) {
-					poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(pool.members[m], pool.poolNum) + '</tr>';
+			// report dumps pools before virtualhosts, so pool might not exist
+			if (pool) {
+				var poolClass = 'Pool-' + pool.poolNum;
+				poolinformation += '<tr class="' + poolClass + '" ';
+				if (type == 'display') {
+					poolinformation += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
+				}
+				poolinformation += 'style="">';
+				poolinformation += '<td';
+				if (pool.members !== null) {
+					poolinformation += ' rowspan="' + pool.members.length + '"';
+				}
+				poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
+				poolinformation += renderPool(pool.loadbalancer, pool.name, type);
+				poolinformation += '</td>';
+				if (pool.members !== null) {
+					poolinformation += renderPoolMemberCell(pool.members[0], pool.poolNum);
+				}
+				poolinformation += '</tr>';
+				if (pool.members !== null) {
+					for (var m=1; m<pool.members.length; m++) {
+						poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(pool.members[m], pool.poolNum) + '</tr>';
+					}
 				}
 			}
 		}
