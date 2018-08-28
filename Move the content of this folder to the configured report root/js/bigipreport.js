@@ -2703,7 +2703,7 @@
 					try {
 						// negative look behind is part of ES2018
 						// https://github.com/tc39/proposal-regexp-lookbehind
-						var regexp = new RegExp("((?<![\w-])" + opt + "(?![\w-]))", "gi");
+						var regexp = new RegExp("((?<![\\w-])" + opt + "(?![\\w-]))", "gi");
 					} catch (e) {
 						var regexp = new RegExp("(" + opt + ")\\b", "gi");
 					}
@@ -2719,7 +2719,7 @@
 					try {
 						// negative look behind is part of ES2018
 						// https://github.com/tc39/proposal-regexp-lookbehind
-						var regexp = new RegExp("((?<![\w-])" + opt + "(?![\w-]))", "gi");
+						var regexp = new RegExp("((?<![\\w-])" + opt + "(?![\\w-]))", "gi");
 					} catch (e) {
 						var regexp = new RegExp("(" + opt + ")\\b", "gi");
 					}
