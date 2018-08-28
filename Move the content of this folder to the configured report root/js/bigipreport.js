@@ -193,11 +193,11 @@
 
 			/* highlight selected menu option */
 
-			populateSearchParameters()
+			populateSearchParameters(false)
 			var currentSection = $("div#mainholder").attr("data-activesection");
 
 			if (currentSection === undefined) {
-				showVirtualServers();
+				showVirtualServers(true);
 			}
 
 			/*************************************************************************************************************
@@ -814,7 +814,7 @@
 		Gets the query strings and populate the table
 	******************************************************************************************************************************/
 
-	function populateSearchParameters() {
+	function populateSearchParameters(updatehash) {
 
 		var vars = {};
 		var hash;
@@ -829,9 +829,39 @@
 				vars[hash[0]] = hash[1];
 			}
 
+			if (vars['mainsection']) {
+				var activeSection = vars['mainsection'];
+
+				switch (activeSection) {
+					case "virtualservers":
+						showVirtualServers(updatehash);
+						break;
+					case "irules":
+						showiRules(updatehash);
+						break;
+					case "deviceoverview":
+						showDeviceOverview(updatehash);
+						break;
+					case "certificatedetails":
+						showCertificateDetails(updatehash);
+						break;
+					case "datagroups":
+						showDataGroups(updatehash);
+						break;
+					case "reportlogs":
+						showReportLogs(updatehash);
+						break;
+					case "preferences":
+						showPreferences(updatehash);
+						break;
+					case "help":
+						showHelp(updatehash);
+						break;
+				}
+			}
+
 			//Populate the search and column filters
 			for (var key in vars) {
-
 				value = vars[key];
 
 				//If it's provided, populate and search with the global string
@@ -896,38 +926,6 @@
 				var loadBalancer = vars['irule'].split('@')[1];
 
 				showiRuleDetails(iruleName, loadBalancer);
-			}
-
-			if (vars['mainsection']) {
-
-				var activeSection = vars['mainsection'];
-
-				switch (activeSection) {
-					case "virtualservers":
-						showVirtualServers();
-						break;
-					case "irules":
-						showiRules();
-						break;
-					case "deviceoverview":
-						showDeviceOverview();
-						break;
-					case "certificatedetails":
-						showCertificateDetails();
-						break;
-					case "datagroups":
-						showDataGroups();
-						break;
-					case "reportlogs":
-						showReportLogs();
-						break;
-					case "preferences":
-						showPreferences();
-						break;
-					case "help":
-						showHelp();
-						break;
-				}
 			}
 		}
 	}
@@ -1199,6 +1197,8 @@
 			siteData.bigipTable.search('')
 				.columns().search('')
 				.draw();
+
+			updateLocationHash();
 		});
 
 		/*************************************************************************************************************
@@ -1916,59 +1916,59 @@
 		$("div#" + section).fadeIn(10, updateLocationHash);
 	}
 
-	function showVirtualServers() {
+	function showVirtualServers(updatehash) {
 
 		hideMainSection();
 		setupVirtualServerTable();
 		activateMenuButton("div#virtualserversbutton");
 		$("div#mainholder").attr("data-activesection", "virtualservers");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("virtualservers")
 	}
 
-	function showiRules() {
+	function showiRules(updatehash) {
 
 		hideMainSection();
 		setupiRuleTable();
 		activateMenuButton("div#irulesbutton");
 		$("div#mainholder").attr("data-activesection", "irules");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("irules");
 		toggleAdcLinks();
 	}
 
-	function showPools() {
+	function showPools(updatehash) {
 
 		hideMainSection();
 		setupPoolTable();
 		activateMenuButton("div#poolsbutton");
 		$("div#mainholder").attr("data-activesection", "pools");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("pools");
 		toggleAdcLinks();
 	}
 
-	function showDataGroups() {
+	function showDataGroups(updatehash) {
 
 		hideMainSection();
 		setupDataGroupTable();
 		activateMenuButton("div#datagroupbutton");
 		$("div#mainholder").attr("data-activesection", "datagroups");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("datagroups");
 		toggleAdcLinks();
 	}
 
-	function showPreferences() {
+	function showPreferences(updatehash) {
 
 		hideMainSection();
 		activateMenuButton($("div#preferencesbutton"));
 		$("div#mainholder").attr("data-activesection", "preferences");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		//Prepare the content
 		var settingsContent = `
@@ -2020,7 +2020,6 @@
 		});
 
 		showMainSection("preferences");
-
 	}
 
 	function showCertificateDetails() {
@@ -2153,24 +2152,24 @@
 
 	}
 
-	function showReportLogs() {
+	function showReportLogs(updatehash) {
 
 		hideMainSection();
 		activateMenuButton($("div#logsbutton"));
 		$("div#mainholder").attr("data-activesection", "reportlogs");
 
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("reportlogs");
 
 	}
 
-	function showHelp() {
+	function showHelp(updatehash) {
 
 		hideMainSection();
 		activateMenuButton("div#helpbutton");
 		$("div#mainholder").attr("data-activesection", "help");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("helpcontent")
 
@@ -2236,9 +2235,12 @@
 	}
 
 
-	function updateLocationHash(pool = null, virtualServer = null) {
+	function updateLocationHash(updatehash = true) {
 
 		var parameters = [];
+
+		var activeSection = $("div#mainholder").attr("data-activesection");
+		parameters.push("mainsection=" + activeSection);
 
 		$('.search_entered').each(function () {
 			if (asInitVals.indexOf(this.value) == -1) {
@@ -2259,11 +2261,9 @@
 			parameters.push(type + "=" + objectName + "@" + loadbalancer);
 		});
 
-		var activeSection = $("div#mainholder").attr("data-activesection");
-		parameters.push("mainsection=" + activeSection);
-
-		window.location.hash = parameters.join("&");
-
+		if (updatehash) {
+			window.location.hash = parameters.join("&");
+		}
 	}
 
 	/******************************************************************************************************************************
@@ -2837,7 +2837,6 @@
 
 		$("a#closesecondlayerbutton").text("Close data group details");
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
-
 	}
 
 
@@ -2850,7 +2849,7 @@
 		var pools = siteData.pools;
 		var matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
 
-		updateLocationHash(pool + "@loadbalancer", null)
+		updateLocationHash()
 
 		//If a pool was found, populate the pool details table and display it on the page
 		if (matchingpool != "") {
