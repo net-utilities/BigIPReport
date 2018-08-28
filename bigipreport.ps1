@@ -221,6 +221,10 @@
 #        5.1.8        2018-06-04      column toggles, copy, print, csv buttons on tables using datatables buttons   Tim Riker       No
 #                                     pools expand on search now case insensitve, new icons for tabs
 #        5.1.9        2018-06-27      minor bug fixes, csv cleanup, mutiple ssl profiles                            Tim Riker       No
+#        5.2.0        2018-08-28      unused code, better pool/datagroup highlighting in iRules                     Tim Riker       No
+#                                     show virtual servers using iRule, show fallback persistence profile
+#                                     fix processing of hash on refresh, handle pools created during report run
+#                                     force virtualservers to array, show layer4 vips, update sooner
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
