@@ -193,11 +193,11 @@
 
 			/* highlight selected menu option */
 
-			populateSearchParameters()
+			populateSearchParameters(false)
 			var currentSection = $("div#mainholder").attr("data-activesection");
 
 			if (currentSection === undefined) {
-				showVirtualServers();
+				showVirtualServers(true);
 			}
 
 			/*************************************************************************************************************
@@ -206,7 +206,7 @@
 
 			**************************************************************************************************************/
 
-			//Check if there's a new update every 30 minutes
+			//Check if there's a new update
 			setInterval(function () {
 				$.ajax(document.location.href, {
 					type: 'HEAD',
@@ -214,7 +214,7 @@
 
 						var currentreport = Date.parse(document.lastModified);
 						var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
-						var currenttime = new Date();
+						//var currenttime = new Date();
 
 						// The time since this report was generated (in minutes)
 						//timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
@@ -227,7 +227,6 @@
 						} else if (timesincerefresh > 0) {
 							$("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
 						}
-
 					}
 				});
 			}, 3000);
@@ -400,26 +399,29 @@
 		poolinformation += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
 			var pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
-			var poolClass = 'Pool-' + pool.poolNum;
-			poolinformation += '<tr class="' + poolClass + '" ';
-			if (type == 'display') {
-				poolinformation += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
-			}
-			poolinformation += 'style="">';
-			poolinformation += '<td';
-			if (pool.members !== null) {
-				poolinformation += ' rowspan="' + pool.members.length + '"';
-			}
-			poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
-			poolinformation += renderPool(pool.loadbalancer, pool.name, type);
-			poolinformation += '</td>';
-			if (pool.members !== null) {
-				poolinformation += renderPoolMemberCell(pool.members[0], pool.poolNum);
-			}
-			poolinformation += '</tr>';
-			if (pool.members !== null) {
-				for (var m=1; m<pool.members.length; m++) {
-					poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(pool.members[m], pool.poolNum) + '</tr>';
+			// report dumps pools before virtualhosts, so pool might not exist
+			if (pool) {
+				var poolClass = 'Pool-' + pool.poolNum;
+				poolinformation += '<tr class="' + poolClass + '" ';
+				if (type == 'display') {
+					poolinformation += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
+				}
+				poolinformation += 'style="">';
+				poolinformation += '<td';
+				if (pool.members !== null) {
+					poolinformation += ' rowspan="' + pool.members.length + '"';
+				}
+				poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
+				poolinformation += renderPool(pool.loadbalancer, pool.name, type);
+				poolinformation += '</td>';
+				if (pool.members !== null) {
+					poolinformation += renderPoolMemberCell(pool.members[0], pool.poolNum);
+				}
+				poolinformation += '</tr>';
+				if (pool.members !== null) {
+					for (var m=1; m<pool.members.length; m++) {
+						poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(pool.members[m], pool.poolNum) + '</tr>';
+					}
 				}
 			}
 		}
@@ -812,7 +814,7 @@
 		Gets the query strings and populate the table
 	******************************************************************************************************************************/
 
-	function populateSearchParameters() {
+	function populateSearchParameters(updatehash) {
 
 		var vars = {};
 		var hash;
@@ -827,9 +829,39 @@
 				vars[hash[0]] = hash[1];
 			}
 
+			if (vars['mainsection']) {
+				var activeSection = vars['mainsection'];
+
+				switch (activeSection) {
+					case "virtualservers":
+						showVirtualServers(updatehash);
+						break;
+					case "irules":
+						showiRules(updatehash);
+						break;
+					case "deviceoverview":
+						showDeviceOverview(updatehash);
+						break;
+					case "certificatedetails":
+						showCertificateDetails(updatehash);
+						break;
+					case "datagroups":
+						showDataGroups(updatehash);
+						break;
+					case "reportlogs":
+						showReportLogs(updatehash);
+						break;
+					case "preferences":
+						showPreferences(updatehash);
+						break;
+					case "help":
+						showHelp(updatehash);
+						break;
+				}
+			}
+
 			//Populate the search and column filters
 			for (var key in vars) {
-
 				value = vars[key];
 
 				//If it's provided, populate and search with the global string
@@ -895,38 +927,6 @@
 
 				showiRuleDetails(iruleName, loadBalancer);
 			}
-
-			if (vars['mainsection']) {
-
-				var activeSection = vars['mainsection'];
-
-				switch (activeSection) {
-					case "virtualservers":
-						showVirtualServers();
-						break;
-					case "irules":
-						showiRules();
-						break;
-					case "deviceoverview":
-						showDeviceOverview();
-						break;
-					case "certificatedetails":
-						showCertificateDetails();
-						break;
-					case "datagroups":
-						showDataGroups();
-						break;
-					case "reportlogs":
-						showReportLogs();
-						break;
-					case "preferences":
-						showPreferences();
-						break;
-					case "help":
-						showHelp();
-						break;
-				}
-			}
 		}
 	}
 
@@ -958,7 +958,7 @@
 						<th class="compressionProfileHeaderCell"><input type="text" name="compressionProfile" size="6" value="Compression"
 							class="search_init" data-column-name="Compression Profile" data-setting-name="showCompressionProfileColumn" /></th>
 						<th class="persistenceProfileHeaderCell"><input type="text" name="persistenceProfile" size="6" value="Persistence"
-							class="search_init" data-column-name="Persistence Profile" data-setting-name="showPersistenceProfileColumn"/></th>
+							class="search_init" data-column-name="Persistence Profiles" data-setting-name="showPersistenceProfileColumn"/></th>
 						<th><input type="text" name="pool_members" value="Pool/Members" class="search_init" data-column-name="Pools/Members"
 							data-setting-name="showPoolsMembersColumn"/></th>
 					</tr>
@@ -1034,16 +1034,20 @@
 				"className": "centeredCell",
 				"render": function (data, type, row) {
 					result = '';
-					if (row.sslprofileclient == "None") {
-						result += "No";
+					if (row.profiletype == "Fast L4") {
+						result += row.profiletype;
 					} else {
-						result += "Yes";
-					}
-					result += '/';
-					if (row.sslprofileserver == "None") {
-						result += "No";
-					} else {
-						result += "Yes";
+						if (row.sslprofileclient == "None") {
+							result += "No";
+						} else {
+							result += "Yes";
+						}
+						result += '/';
+						if (row.sslprofileserver == "None") {
+							result += "No";
+						} else {
+							result += "Yes";
+						}
 					}
 					return result;
 				}
@@ -1193,6 +1197,8 @@
 			siteData.bigipTable.search('')
 				.columns().search('')
 				.draw();
+
+			updateLocationHash();
 		});
 
 		/*************************************************************************************************************
@@ -1314,6 +1320,7 @@
 					<th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
 					<th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
 					<th><span style="display: none;">Datagroups</span><input type="text" class="search" placeholder="Associated Datagroups" /></th>
+					<th><span style="display: none;">Virtualservers</span><input type="text" class="search" placeholder="Associated Virtual Servers" /></th>
 					<th style="width: 4em;"><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
 			</thead>
 			<tbody>
@@ -1376,6 +1383,28 @@
 								result += '<br>';
 							}
 							result += renderDataGroup(row.loadbalancer, datagroup, type);
+						});
+					} else {
+						result = "None";
+					}
+					return result;
+				}
+			}, {
+				"type": "html-num",
+				"render": function (data, type, row) {
+					if (type == 'sort') {
+						if (row.virtualservers && row.virtualservers.length) {
+							return row.virtualservers.length;
+						}
+						return 0;
+					}
+					var result = '';
+					if (row.virtualservers && row.virtualservers.length > 0) {
+						row.virtualservers.forEach((virtualserver) => {
+							if (result != '') {
+								result += '<br>';
+							}
+							result += renderVirtualServer(row.loadbalancer, virtualserver, type);
 						});
 					} else {
 						result = "None";
@@ -1887,59 +1916,59 @@
 		$("div#" + section).fadeIn(10, updateLocationHash);
 	}
 
-	function showVirtualServers() {
+	function showVirtualServers(updatehash) {
 
 		hideMainSection();
 		setupVirtualServerTable();
 		activateMenuButton("div#virtualserversbutton");
 		$("div#mainholder").attr("data-activesection", "virtualservers");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("virtualservers")
 	}
 
-	function showiRules() {
+	function showiRules(updatehash) {
 
 		hideMainSection();
 		setupiRuleTable();
 		activateMenuButton("div#irulesbutton");
 		$("div#mainholder").attr("data-activesection", "irules");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("irules");
 		toggleAdcLinks();
 	}
 
-	function showPools() {
+	function showPools(updatehash) {
 
 		hideMainSection();
 		setupPoolTable();
 		activateMenuButton("div#poolsbutton");
 		$("div#mainholder").attr("data-activesection", "pools");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("pools");
 		toggleAdcLinks();
 	}
 
-	function showDataGroups() {
+	function showDataGroups(updatehash) {
 
 		hideMainSection();
 		setupDataGroupTable();
 		activateMenuButton("div#datagroupbutton");
 		$("div#mainholder").attr("data-activesection", "datagroups");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("datagroups");
 		toggleAdcLinks();
 	}
 
-	function showPreferences() {
+	function showPreferences(updatehash) {
 
 		hideMainSection();
 		activateMenuButton($("div#preferencesbutton"));
 		$("div#mainholder").attr("data-activesection", "preferences");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		//Prepare the content
 		var settingsContent = `
@@ -1991,7 +2020,6 @@
 		});
 
 		showMainSection("preferences");
-
 	}
 
 	function showCertificateDetails() {
@@ -2124,24 +2152,24 @@
 
 	}
 
-	function showReportLogs() {
+	function showReportLogs(updatehash) {
 
 		hideMainSection();
 		activateMenuButton($("div#logsbutton"));
 		$("div#mainholder").attr("data-activesection", "reportlogs");
 
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("reportlogs");
 
 	}
 
-	function showHelp() {
+	function showHelp(updatehash) {
 
 		hideMainSection();
 		activateMenuButton("div#helpbutton");
 		$("div#mainholder").attr("data-activesection", "help");
-		updateLocationHash();
+		updateLocationHash(updatehash);
 
 		showMainSection("helpcontent")
 
@@ -2207,9 +2235,12 @@
 	}
 
 
-	function updateLocationHash(pool = null, virtualServer = null) {
+	function updateLocationHash(updatehash = true) {
 
 		var parameters = [];
+
+		var activeSection = $("div#mainholder").attr("data-activesection");
+		parameters.push("mainsection=" + activeSection);
 
 		$('.search_entered').each(function () {
 			if (asInitVals.indexOf(this.value) == -1) {
@@ -2230,11 +2261,9 @@
 			parameters.push(type + "=" + objectName + "@" + loadbalancer);
 		});
 
-		var activeSection = $("div#mainholder").attr("data-activesection");
-		parameters.push("mainsection=" + activeSection);
-
-		window.location.hash = parameters.join("&");
-
+		if (updatehash) {
+			window.location.hash = parameters.join("&");
+		}
 	}
 
 	/******************************************************************************************************************************
@@ -2525,7 +2554,7 @@
 			table += '					<tr><th>Client SSL Profile</th><td>' + matchingvirtualserver.sslprofileclient.join('<br>') + '</td></tr>';
 			table += '					<tr><th>Server SSL Profile</th><td>' + matchingvirtualserver.sslprofileserver.join('<br>') + '</td></tr>';
 			table += '					<tr><th>Compression Profile</th><td>' + matchingvirtualserver.compressionprofile + '</td></tr>';
-			table += '					<tr><th>Persistence Profile</th><td>' + matchingvirtualserver.persistence + '</td></tr>';
+			table += '					<tr><th>Persistence Profiles</th><td>' + matchingvirtualserver.persistence.join('<br>') + '</td></tr>';
 			table += '					<tr><th>Source Translation</th><td>' + xlate + '</td></tr>';
 			table += '				</table>';
 			table += '			</td>';
@@ -2669,9 +2698,15 @@
 			if (ShowDataGroupLinks == true) {
 				matchingirule.datagroups.forEach((dg) => {
 					// rule might not include partition which causes the replace to fail
-					var opt=dg.replace(/\/.*\//,'($&|\\b)+');
+					var opt=dg.replace(/\/.*\//,'($&)?');
 					// prepare a regexp to replace all instances
-					var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					try {
+						// negative look behind is part of ES2018
+						// https://github.com/tc39/proposal-regexp-lookbehind
+						var regexp = new RegExp("((?<![\\w-])" + opt + "(?![\\w-]))", "gi");
+					} catch (e) {
+						var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					}
 					// Prepare the link
 					var link = '<a href="Javascript:showDataGroupDetails(\'' + dg + '\', \'' + loadbalancer + '\')">$1</a>';
 					// Do the actual replacement
@@ -2679,9 +2714,15 @@
 				})
 				matchingirule.pools.forEach((pool) => {
 					// rule might not include partition which causes the replace to fail
-					var opt=pool.replace(/\/.*\//,'($&|\\b)+');
+					var opt=pool.replace(/\/.*\//,'($&)?');
 					// prepare a regexp to replace all instances
-					var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					try {
+						// negative look behind is part of ES2018
+						// https://github.com/tc39/proposal-regexp-lookbehind
+						var regexp = new RegExp("((?<![\\w-])" + opt + "(?![\\w-]))", "gi");
+					} catch (e) {
+						var regexp = new RegExp("(" + opt + ")\\b", "gi");
+					}
 					// Prepare the link
 					var link = '<a href="Javascript:showPoolDetails(\'' + pool + '\', \'' + loadbalancer + '\')">$1</a>';
 					// Do the actual replacement
@@ -2695,10 +2736,15 @@
 							<tr><th>iRule definiton</th></tr>
 						</thead>
 						<tbody>
-						<tr><td><pre class="sh_tcl">` + definition + `</pre></td></tr>
-						</tbody>
-					</table>`
+						<tr><td><pre class="sh_tcl">` + definition + `</pre></td></tr>`
 
+			if (matchingirule.virtualservers && matchingirule.virtualservers.length > 0) {
+				html += `<tr><td>Used by ` + matchingirule.virtualservers.length + ` Virtual Servers:<br>` +
+						matchingirule.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display')).join('<br>') + `</td></tr>`
+			}
+
+			html +=		`</tbody>
+					</table>`
 		}
 
 		//Add the close button to the footer
@@ -2709,6 +2755,7 @@
 		sh_highlightDocument('js/', '.js');
 		//Show the div
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
+		toggleAdcLinks();
 	}
 
 
@@ -2796,7 +2843,6 @@
 
 		$("a#closesecondlayerbutton").text("Close data group details");
 		$("#secondlayerdiv").fadeIn(updateLocationHash);
-
 	}
 
 
@@ -2809,7 +2855,7 @@
 		var pools = siteData.pools;
 		var matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
 
-		updateLocationHash(pool + "@loadbalancer", null)
+		updateLocationHash()
 
 		//If a pool was found, populate the pool details table and display it on the page
 		if (matchingpool != "") {
