@@ -353,12 +353,14 @@
 		}
 	}
 
-	function renderPoolMember(member) {
-		result='';
+	function renderPoolMember(type, member) {
+		var result='';
 		if (member !== null) {
-			result += '<span data-member="' + member.ip + ':' + member.port + '">';
-			result += PoolMemberStatus(member);
-			result += '</span>&nbsp;&nbsp;';
+			if (type == 'display' || type == 'print') {
+				result += '<span data-member="' + member.ip + ':' + member.port + '">';
+				result += PoolMemberStatus(member);
+				result += '</span>&nbsp;&nbsp;';
+			}
 			name = member.name.split('/')[2];
 			result += name
 			if (name != member.ip) {
@@ -369,9 +371,9 @@
 		return result;
 	}
 
-	function renderPoolMemberCell(member, poolNum) {
+	function renderPoolMemberCell(type, member, poolNum) {
 		membercell = '<td class="PoolMember" data-pool="' + poolNum + '">';
-		membercell += renderPoolMember(member);
+		membercell += renderPoolMember(type, member);
 		membercell += '</td>'
 		return membercell;
 	}
@@ -415,12 +417,12 @@
 				poolinformation += renderPool(pool.loadbalancer, pool.name, type);
 				poolinformation += '</td>';
 				if (pool.members !== null) {
-					poolinformation += renderPoolMemberCell(pool.members[0], pool.poolNum);
+					poolinformation += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
 				}
 				poolinformation += '</tr>';
 				if (pool.members !== null) {
 					for (var m=1; m<pool.members.length; m++) {
-						poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(pool.members[m], pool.poolNum) + '</tr>';
+						poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(type, pool.members[m], pool.poolNum) + '</tr>';
 					}
 				}
 			}
@@ -570,8 +572,8 @@
 	}
 
 	function renderRule(loadbalancer, name, type) {
-		ruleName=name.replace(/^\/Common\//,'');
-		result='';
+		var ruleName=name.replace(/^\/Common\//,'');
+		var result='';
 		if (type == 'display') {
 			result += '<a';
 			result += ' class="tooltip"';
@@ -594,8 +596,8 @@
 		if (name == "N/A") {
 			return name;
 		}
-		poolName=name.replace(/^\/Common\//,'');
-		result = '';
+		var poolName=name.replace(/^\/Common\//,'');
+		var result = '';
 		if (type == 'display' || type == 'print') {
 			result += PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
 		}
@@ -618,8 +620,8 @@
 	}
 
 	function renderCertificate(loadbalancer, name, type) {
-		certName=name.replace(/^\/Common\//,'');
-		result = certName;
+		var certName=name.replace(/^\/Common\//,'');
+		var result = certName;
 		if (type == 'display') {
 			result += ' <span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
 			result += '/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?certificate_name=' + name.replace(/\//,'%2F').replace(/.crt$/,'') + '">Edit</a></span>';
@@ -628,10 +630,10 @@
 	}
 
 	function renderDataGroup(loadbalancer, name, type) {
-		datagroupName=name.replace(/^\/Common\//,'');
-		result = '';
+		var datagroupName=name.replace(/^\/Common\//,'');
+		var result = '';
 		if (type == 'display') {
-			result = '<a';
+			result += '<a';
 			result += ' class="tooltip"';
 			result += ' data-originalvirtualservername="' + name + '"';
 			result += ' data-loadbalancer="' + loadbalancer + '"';
@@ -999,12 +1001,15 @@
 				"data": "name",
 				"className": "virtualServerCell",
 				"render": function (data, type, row) {
+					if (type == 'export' || type == 'sort') {
+						return renderVirtualServer(row.loadbalancer, data, type);
+					}
 					return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data, type);
 				}
 			}, {
 				"className": "centeredCell",
 				"render": function (data, type, row) {
-					result = row.ip + ':' + row.port;
+					var result = row.ip + ':' + row.port;
 					if (siteData.NATdict[row.ip.split('%')[0]]) {
 						result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
 					}
@@ -1016,7 +1021,7 @@
 					if (!row.asmPolicies) {
 						return "N/A";
 					} else {
-						result = row.asmPolicies;
+						var result = row.asmPolicies;
 						for (asm=0;asm<siteData.asmPolicies.length;asm++) {
 							if (row.loadbalancer == siteData.asmPolicies[asm].loadbalancer &&
 									row.asmPolicies[0] == siteData.asmPolicies[asm].name) {
@@ -1033,7 +1038,7 @@
 			}, {
 				"className": "centeredCell",
 				"render": function (data, type, row) {
-					result = '';
+					var result = '';
 					if (row.profiletype == "Fast L4") {
 						result += row.profiletype;
 					} else {
@@ -1103,7 +1108,8 @@
 						"columns": ":visible",
 						"stripHtml": false,
 						"orthogonal": "export"
-					}
+					},
+					"customize": customizeCSV
 				}
 			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
@@ -1446,7 +1452,8 @@
 						"columns": ":visible",
 						"stripHtml": false,
 						"orthogonal": "export"
-					}
+					},
+					"customize": customizeCSV
 				}
 			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
@@ -1538,11 +1545,17 @@
 						}
 						return 0;
 					}
-					result='';
+					var result='';
 					if (data) {
+						var members = [];
 						data.forEach((member) => {
-							result += renderPoolMember(member) + '<br>';
+							members.push(renderPoolMember(type, member));
 						});
+						if (type == 'print' || type == 'display') {
+							result = members.join('<br>');
+						} else {
+							result = members.join(' ');
+						}
 					}
 					return result;
 				}
@@ -1576,7 +1589,8 @@
 						"columns": ":visible",
 						"stripHtml": false,
 						"orthogonal": "export"
-					}
+					},
+					"customize": customizeCSV
 				}
 			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
@@ -1716,7 +1730,8 @@
 						"columns": ":visible",
 						"stripHtml": false,
 						"orthogonal": "export"
-					}
+					},
+					"customize": customizeCSV
 				}
 			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
@@ -1867,7 +1882,8 @@
 						"columns": ":visible",
 						"stripHtml": false,
 						"orthogonal": "export"
-					}
+					},
+					"customize": customizeCSV
 				}
 			],
 			"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
@@ -3155,6 +3171,15 @@
 	function activateMenuButton(b) {
 		$("div.menuitem").removeClass("menuitemactive");
 		$(b).addClass("menuitemactive");
+	}
+
+	function customizeCSV(csv, button, datatable) {
+		var csvRows = csv.split('\n');
+		// bigip table uses value
+		csvRows[0] = csvRows[0].replace(/<[^>]* value=""([^"]*)""[^>]*>/gi, '$1')
+		// the rest of the tables have a span and a placeholder
+		csvRows[0] = csvRows[0].replace(/<span[^>]*>[^<]*<\/span><[^>]* placeholder=""([^"]*)""[^>]*>/gi, '$1')
+		return csvRows.join('\n');
 	}
 
 	function generateCSV() {
