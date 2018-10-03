@@ -116,7 +116,7 @@
 				siteData.pools = result;
 				siteData.poolsMap = new Map();
 				let poolNum = 0;
-				result.forEach((pool) => {
+				siteData.pools.forEach((pool) => {
 					pool.poolNum = poolNum;
 					siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
 					poolNum++;
@@ -349,7 +349,7 @@
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
 		if (rowData.pools) {
 			$(cell).addClass('PoolCell');
-			$(cell).attr('data-vsid', rowIndex);
+			$(cell).id = "vs-" + rowIndex;
 		}
 	}
 
@@ -390,13 +390,14 @@
 		}
 		var poolCell = '';
 		if (type == 'display') {
-			poolCell += '<div class="expand" id="expand-' + meta.row + '" style="display: none;">' +
-				'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-			poolCell += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
-				'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-			poolCell +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
-				' id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Show ' + row.pools.length + ' associated pools</div>' +
-				'<div id="PoolCell-' + meta.row + '" class="pooltablediv" style="display: block;">';
+			var tid = "vs-" + meta.row;
+			poolCell += '<div class="expand" id="expand-' + tid + '" style="display: none;">' +
+				'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+			poolCell += '<div class="collapse" id="collapse-' + tid + '" style="display: block;">' +
+				'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+			poolCell +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool(\'' + tid + '\')"' +
+				' id="AssociatedPoolsInfo-' + tid + '" style="display: none;"> Show ' + row.pools.length + ' associated pools</div>' +
+				'<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: block;">';
 		}
 		poolCell += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
@@ -413,7 +414,7 @@
 				if (pool.members !== null) {
 					poolCell += ' rowspan="' + pool.members.length + '"';
 				}
-				poolCell += ' data-vsid="' + meta.row + '" class="poolname">';
+				poolCell += ' class="poolname">';
 				poolCell += renderPool(pool.loadbalancer, pool.name, type);
 				poolCell += '</td>';
 				if (pool.members !== null) {
@@ -1364,13 +1365,14 @@
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
 						if (type == 'display') {
-							result += '<div class="expand" id="expand-' + meta.row + '" style="display: block;">' +
-								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-							result += '<div class="collapse" id="collapse-' + meta.row + '" style="display: none;">' +
-								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-							result += '<div onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
-								' id="AssociatedPoolsInfo-' + meta.row + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
-								'<div id="PoolCell-' + meta.row + '" class="pooltablediv" style="display: none;">';
+							var tid = "i-" + meta.row;
+							result += '<div class="expand" id="expand-' + tid + '" style="display: block;">' +
+								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div class="collapse" id="collapse-' + tid + '" style="display: none;">' +
+								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div onclick="Javascript:togglePool(\'' + tid + '\')"' +
+								' id="AssociatedPoolsInfo-' + tid + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
+								'<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: none;">';
 						}
 						var poolList = '';
 						row.pools.forEach((pool) => {
@@ -1504,6 +1506,7 @@
 		// highlight matches
 		siteData.iRuleTable.on('draw', function () {
 			highlightAll(siteData.iRuleTable);
+			expandPoolMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
 			toggleAdcLinks();
 		});
 	}
@@ -1698,13 +1701,14 @@
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
 						if (type == 'display') {
-							result += '<div class="expand" id="expand-' + meta.row + '" style="display: block;">' +
-								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-							result += '<div class="collapse" id="collapse-' + meta.row + '" style="display: none;">' +
-								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-							result += '<div onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
-								' id="AssociatedPoolsInfo-' + meta.row + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
-								'<div id="PoolCell-' + meta.row + '" class="pooltablediv" style="display: none;">';
+							var tid="dg-" + meta.row;
+							result += '<div class="expand" id="expand-' + tid + '" style="display: block;">' +
+								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div class="collapse" id="collapse-' + tid + '" style="display: none;">' +
+								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div onclick="Javascript:togglePool(\'' + tid + '\'"' +
+								' id="AssociatedPoolsInfo-' + tid + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
+								'<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: none;">';
 						}
 						var poolList = '';
 						row.pools.forEach((pool) => {
@@ -2318,11 +2322,10 @@
 
 
 	function expandPoolMatches(resultset, searchstring) {
-
 		if (localStorage.autoExpandPools !== "true") {
 			$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
 				if (this.classList.contains("PoolCell")) {
-					togglePool(this);
+					togglePool(this.id);
 				}
 			});
 		}
@@ -2350,9 +2353,7 @@
 		Expands/collapses a pool cell based on the id
 	******************************************************************************************************************************/
 
-	function togglePool(e) {
-
-		var id = $(e).attr('data-vsid');
+	function togglePool(id) {
 
 		//Store the current window selection
 		var selection = window.getSelection();
@@ -2371,7 +2372,6 @@
 				$('#PoolCell-' + id).fadeIn(300);
 			}
 		}
-
 	}
 
 	/******************************************************************************************************************************
