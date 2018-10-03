@@ -348,7 +348,7 @@
 
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
 		if (rowData.pools) {
-			$(cell).addClass('PoolInformation');
+			$(cell).addClass('PoolCell');
 			$(cell).attr('data-vsid', rowIndex);
 		}
 	}
@@ -388,48 +388,48 @@
 		if (!row.pools) {
 			return "N/A";
 		}
-		poolinformation = '';
+		var poolCell = '';
 		if (type == 'display') {
-			poolinformation += '<div class="expand" id="expand-' + meta.row + '" style="display: none;">' +
+			poolCell += '<div class="expand" id="expand-' + meta.row + '" style="display: none;">' +
 				'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-			poolinformation += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
+			poolCell += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
 				'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-			poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
-				' id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
-				'<div id="PoolInformation-' + meta.row + '" class="pooltablediv" style="display: block;">';
+			poolCell +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
+				' id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Show ' + row.pools.length + ' associated pools</div>' +
+				'<div id="PoolCell-' + meta.row + '" class="pooltablediv" style="display: block;">';
 		}
-		poolinformation += '<table class="pooltable"><tbody>';
+		poolCell += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
 			var pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
 			// report dumps pools before virtualhosts, so pool might not exist
 			if (pool) {
 				var poolClass = 'Pool-' + pool.poolNum;
-				poolinformation += '<tr class="' + poolClass + '" ';
+				poolCell += '<tr class="' + poolClass + '" ';
 				if (type == 'display') {
-					poolinformation += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
+					poolCell += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
 				}
-				poolinformation += 'style="">';
-				poolinformation += '<td';
+				poolCell += 'style="">';
+				poolCell += '<td';
 				if (pool.members !== null) {
-					poolinformation += ' rowspan="' + pool.members.length + '"';
+					poolCell += ' rowspan="' + pool.members.length + '"';
 				}
-				poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
-				poolinformation += renderPool(pool.loadbalancer, pool.name, type);
-				poolinformation += '</td>';
+				poolCell += ' data-vsid="' + meta.row + '" class="poolname">';
+				poolCell += renderPool(pool.loadbalancer, pool.name, type);
+				poolCell += '</td>';
 				if (pool.members !== null) {
-					poolinformation += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
+					poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
 				}
-				poolinformation += '</tr>';
+				poolCell += '</tr>';
 				if (pool.members !== null) {
 					for (var m=1; m<pool.members.length; m++) {
-						poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(type, pool.members[m], pool.poolNum) + '</tr>';
+						poolCell += '<tr class="' + poolClass + '">' + renderPoolMemberCell(type, pool.members[m], pool.poolNum) + '</tr>';
 					}
 				}
 			}
 		}
-		poolinformation += '</tbody></table>';
-		poolinformation += "</div>";
-		return poolinformation;
+		poolCell += '</tbody></table>';
+		poolCell += "</div>";
+		return poolCell;
 	}
 
 	function testStatusVIP(loadbalancer) {
@@ -1353,7 +1353,8 @@
 				}
 			}, {
 				"type": "html-num",
-				"render": function (data, type, row) {
+				"className": "relative",
+				"render": function (data, type, row, meta) {
 					if (type == 'sort') {
 						if (row.pools && row.pools.length) {
 							return row.pools.length;
@@ -1362,12 +1363,26 @@
 					}
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
+						if (type == 'display') {
+							result += '<div class="expand" id="expand-' + meta.row + '" style="display: block;">' +
+								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+							result += '<div class="collapse" id="collapse-' + meta.row + '" style="display: none;">' +
+								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+							result += '<div onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
+								' id="AssociatedPoolsInfo-' + meta.row + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
+								'<div id="PoolCell-' + meta.row + '" class="pooltablediv" style="display: none;">';
+						}
+						var poolList = '';
 						row.pools.forEach((pool) => {
-							if (result != '') {
-								result += '<br>';
+							if (poolList != '') {
+								poolList += '<br>';
 							}
-							result += renderPool(row.loadbalancer, pool, type);
+							poolList += renderPool(row.loadbalancer, pool, type);
 						});
+						result += poolList;
+						if (type == 'display') {
+							result += '</div>';
+						}
 					} else {
 						result = "None";
 					}
@@ -2291,7 +2306,7 @@
 
 		if (localStorage.autoExpandPools !== "true") {
 			$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
-				if (this.classList.contains("PoolInformation")) {
+				if (this.classList.contains("PoolCell")) {
 					togglePool(this);
 				}
 			});
@@ -2329,16 +2344,16 @@
 
 		//If no text is selected, go ahead and expand or collapse the pool
 		if (selection.type != "Range") {
-			if ($("#PoolInformation-" + id).is(":visible")) {
+			if ($("#PoolCell-" + id).is(":visible")) {
 				$('#AssociatedPoolsInfo-' + id).show();
 				$('#expand-' + id).show();
 				$('#collapse-' + id).hide();
-				$('#PoolInformation-' + id).hide();
+				$('#PoolCell-' + id).hide();
 			} else {
 				$('#AssociatedPoolsInfo-' + id).hide();
 				$('#expand-' + id).hide();
 				$('#collapse-' + id).show();
-				$('#PoolInformation-' + id).fadeIn(300);
+				$('#PoolCell-' + id).fadeIn(300);
 			}
 		}
 

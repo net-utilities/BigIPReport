@@ -83,6 +83,10 @@
 	background-color: yellow;
 }
 
+.relative {
+	position: relative;
+}
+
 /****************************************************************************************************************************
 	Styles related to the main bigip data table
 *****************************************************************************************************************************/
@@ -148,7 +152,7 @@
 
 /*The cell that contains the pool table */
 
-.PoolInformation {
+.PoolCell {
 	padding: 0px 0px !important;
 	position: relative;
 	vertical-align: middle;
@@ -161,7 +165,6 @@ table.pooltable {
 	border-collapse: collapse;
 	width: 100%;
 	border-top: 1px solid var(--bordercolor);
-	border-collapse: collapse;
 }
 
 table.pooltable tr td {
