@@ -1475,12 +1475,12 @@ function Get-LTMInformation {
 
 			if($iRule){
 				if($iRule.pools.Count -gt 0){
-					$ObjTempVirtualServer.pools += [array]$iRule.pools | Sort-Object -Unique
+					$ObjTempVirtualServer.pools += [array]$iRule.pools
 				}
 				Foreach($DatagroupName in $iRule.datagroups ) {
 					$Datagroup = $LoadBalancerObjects.DataGroups[$DatagroupName]
 					if ($Datagroup -and $Datagroup.pools.Count -gt 0) {
-						$ObjTempVirtualServer.pools += [array]$Datagroup.pools | Sort-Object -Unique
+						$ObjTempVirtualServer.pools += [array]$Datagroup.pools
 					}
 				}
 			}
