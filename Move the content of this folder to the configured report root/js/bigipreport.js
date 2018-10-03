@@ -1687,7 +1687,8 @@
 				"data": "type",
 			}, {
 				"type": "html-num",
-				"render": function (data, type, row) {
+				"className": "relative",
+				"render": function (data, type, row, meta) {
 					if (type == 'sort') {
 						if (row.pools && row.pools.length) {
 							return row.pools.length;
@@ -1696,12 +1697,26 @@
 					}
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
+						if (type == 'display') {
+							result += '<div class="expand" id="expand-' + meta.row + '" style="display: block;">' +
+								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+							result += '<div class="collapse" id="collapse-' + meta.row + '" style="display: none;">' +
+								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
+							result += '<div onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
+								' id="AssociatedPoolsInfo-' + meta.row + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
+								'<div id="PoolCell-' + meta.row + '" class="pooltablediv" style="display: none;">';
+						}
+						var poolList = '';
 						row.pools.forEach((pool) => {
-							if (result != '') {
-								result += '<br>';
+							if (poolList != '') {
+								poolList += '<br>';
 							}
-							result += renderPool(row.loadbalancer, pool, type);
+							poolList += renderPool(row.loadbalancer, pool, type);
 						});
+						result += poolList;
+						if (type == 'display') {
+							result += '</div>';
+						}
 					} else {
 						result = "None";
 					}
