@@ -1576,6 +1576,8 @@
 						} else {
 							result = members.join(' ');
 						}
+					} else {
+						result += 'None'
 					}
 					return result;
 				}
