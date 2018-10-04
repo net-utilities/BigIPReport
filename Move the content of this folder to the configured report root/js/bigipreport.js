@@ -411,13 +411,15 @@
 				}
 				poolCell += 'style="">';
 				poolCell += '<td';
-				if (pool.members !== null) {
+				if (pool.members !== null && pool.members.length > 1) {
 					poolCell += ' rowspan="' + pool.members.length + '"';
 				}
 				poolCell += ' class="poolname">';
 				poolCell += renderPool(pool.loadbalancer, pool.name, type);
 				poolCell += '</td>';
-				if (pool.members !== null) {
+				if (pool.members == null) {
+					poolCell += '<td>None</td>'
+				} else {
 					poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
 				}
 				poolCell += '</tr>';
@@ -2350,26 +2352,26 @@
 	}
 
 	/******************************************************************************************************************************
-		Expands/collapses a pool cell based on the id
+		Expands/collapses a pool cell based on the tid (toggle id)
 	******************************************************************************************************************************/
 
-	function togglePool(id) {
+	function togglePool(tid) {
 
 		//Store the current window selection
 		var selection = window.getSelection();
 
 		//If no text is selected, go ahead and expand or collapse the pool
 		if (selection.type != "Range") {
-			if ($("#PoolCell-" + id).is(":visible")) {
-				$('#AssociatedPoolsInfo-' + id).show();
-				$('#expand-' + id).show();
-				$('#collapse-' + id).hide();
-				$('#PoolCell-' + id).hide();
+			if ($("#PoolCell-" + tid).is(":visible")) {
+				$('#AssociatedPoolsInfo-' + tid).show();
+				$('#expand-' + tid).show();
+				$('#collapse-' + tid).hide();
+				$('#PoolCell-' + tid).hide();
 			} else {
-				$('#AssociatedPoolsInfo-' + id).hide();
-				$('#expand-' + id).hide();
-				$('#collapse-' + id).show();
-				$('#PoolCell-' + id).fadeIn(300);
+				$('#AssociatedPoolsInfo-' + tid).hide();
+				$('#expand-' + tid).hide();
+				$('#collapse-' + tid).show();
+				$('#PoolCell-' + tid).fadeIn(300);
 			}
 		}
 	}
