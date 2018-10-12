@@ -2328,7 +2328,7 @@
 	function expandPoolMatches(resultset, searchstring) {
 		if (localStorage.autoExpandPools !== "true") {
 			$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
-				if (this.classList.contains("PoolCell")) {
+				if (this.classList.contains("PoolCell") || this.classList.contains("relative")) {
 					togglePool(this.id);
 				}
 			});
