@@ -116,7 +116,7 @@
 				siteData.pools = result;
 				siteData.poolsMap = new Map();
 				let poolNum = 0;
-				result.forEach((pool) => {
+				siteData.pools.forEach((pool) => {
 					pool.poolNum = poolNum;
 					siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
 					poolNum++;
@@ -348,8 +348,8 @@
 
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
 		if (rowData.pools) {
-			$(cell).addClass('PoolInformation');
-			$(cell).attr('data-vsid', rowIndex);
+			$(cell).addClass('PoolCell');
+			$(cell).id = "vs-" + rowIndex;
 		}
 	}
 
@@ -388,48 +388,51 @@
 		if (!row.pools) {
 			return "N/A";
 		}
-		poolinformation = '';
+		var poolCell = '';
 		if (type == 'display') {
-			poolinformation += '<div class="expand" id="expand-' + meta.row + '" style="display: none;">' +
-				'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-			poolinformation += '<div class="collapse" id="collapse-' + meta.row + '" style="display: block;">' +
-				'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"></a></div>';
-			poolinformation +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool($(this))" data-vsid="' + meta.row + '"' +
-				' id="AssociatedPoolsInfo-' + meta.row + '" style="display: none;"> Click here to show ' + row.pools.length + ' associated pools</div>' +
-				'<div id="PoolInformation-' + meta.row + '" class="pooltablediv" style="display: block;">';
+			var tid = "vs-" + meta.row;
+			poolCell += '<div class="expand" id="expand-' + tid + '" style="display: none;">' +
+				'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+			poolCell += '<div class="collapse" id="collapse-' + tid + '" style="display: block;">' +
+				'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+			poolCell +=	'<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool(\'' + tid + '\')"' +
+				' id="AssociatedPoolsInfo-' + tid + '" style="display: none;"> Show ' + row.pools.length + ' associated pools</div>' +
+				'<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: block;">';
 		}
-		poolinformation += '<table class="pooltable"><tbody>';
+		poolCell += '<table class="pooltable"><tbody>';
 		for (var i=0; i<row.pools.length; i++) {
 			var pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
 			// report dumps pools before virtualhosts, so pool might not exist
 			if (pool) {
 				var poolClass = 'Pool-' + pool.poolNum;
-				poolinformation += '<tr class="' + poolClass + '" ';
+				poolCell += '<tr class="' + poolClass + '" ';
 				if (type == 'display') {
-					poolinformation += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
+					poolCell += 'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
 				}
-				poolinformation += 'style="">';
-				poolinformation += '<td';
-				if (pool.members !== null) {
-					poolinformation += ' rowspan="' + pool.members.length + '"';
+				poolCell += 'style="">';
+				poolCell += '<td';
+				if (pool.members !== null && pool.members.length > 1) {
+					poolCell += ' rowspan="' + pool.members.length + '"';
 				}
-				poolinformation += ' data-vsid="' + meta.row + '" class="poolname">';
-				poolinformation += renderPool(pool.loadbalancer, pool.name, type);
-				poolinformation += '</td>';
-				if (pool.members !== null) {
-					poolinformation += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
+				poolCell += ' class="poolname">';
+				poolCell += renderPool(pool.loadbalancer, pool.name, type);
+				poolCell += '</td>';
+				if (pool.members == null) {
+					poolCell += '<td>None</td>'
+				} else {
+					poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
 				}
-				poolinformation += '</tr>';
+				poolCell += '</tr>';
 				if (pool.members !== null) {
 					for (var m=1; m<pool.members.length; m++) {
-						poolinformation += '<tr class="' + poolClass + '">' + renderPoolMemberCell(type, pool.members[m], pool.poolNum) + '</tr>';
+						poolCell += '<tr class="' + poolClass + '">' + renderPoolMemberCell(type, pool.members[m], pool.poolNum) + '</tr>';
 					}
 				}
 			}
 		}
-		poolinformation += '</tbody></table>';
-		poolinformation += "</div>";
-		return poolinformation;
+		poolCell += '</tbody></table>';
+		poolCell += "</div>";
+		return poolCell;
 	}
 
 	function testStatusVIP(loadbalancer) {
@@ -1353,7 +1356,8 @@
 				}
 			}, {
 				"type": "html-num",
-				"render": function (data, type, row) {
+				"className": "relative",
+				"render": function (data, type, row, meta) {
 					if (type == 'sort') {
 						if (row.pools && row.pools.length) {
 							return row.pools.length;
@@ -1362,12 +1366,27 @@
 					}
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
+						if (type == 'display') {
+							var tid = "i-" + meta.row;
+							result += '<div class="expand" id="expand-' + tid + '" style="display: block;">' +
+								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div class="collapse" id="collapse-' + tid + '" style="display: none;">' +
+								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div onclick="Javascript:togglePool(\'' + tid + '\')"' +
+								' id="AssociatedPoolsInfo-' + tid + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
+								'<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: none;">';
+						}
+						var poolList = '';
 						row.pools.forEach((pool) => {
-							if (result != '') {
-								result += '<br>';
+							if (poolList != '') {
+								poolList += '<br>';
 							}
-							result += renderPool(row.loadbalancer, pool, type);
+							poolList += renderPool(row.loadbalancer, pool, type);
 						});
+						result += poolList;
+						if (type == 'display') {
+							result += '</div>';
+						}
 					} else {
 						result = "None";
 					}
@@ -1489,6 +1508,7 @@
 		// highlight matches
 		siteData.iRuleTable.on('draw', function () {
 			highlightAll(siteData.iRuleTable);
+			expandPoolMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
 			toggleAdcLinks();
 		});
 	}
@@ -1556,6 +1576,8 @@
 						} else {
 							result = members.join(' ');
 						}
+					} else {
+						result += 'None'
 					}
 					return result;
 				}
@@ -1672,7 +1694,8 @@
 				"data": "type",
 			}, {
 				"type": "html-num",
-				"render": function (data, type, row) {
+				"className": "relative",
+				"render": function (data, type, row, meta) {
 					if (type == 'sort') {
 						if (row.pools && row.pools.length) {
 							return row.pools.length;
@@ -1681,12 +1704,27 @@
 					}
 					var result = '';
 					if (row.pools && row.pools.length > 0) {
+						if (type == 'display') {
+							var tid="dg-" + meta.row;
+							result += '<div class="expand" id="expand-' + tid + '" style="display: block;">' +
+								'<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div class="collapse" id="collapse-' + tid + '" style="display: none;">' +
+								'<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
+							result += '<div onclick="Javascript:togglePool(\'' + tid + '\'"' +
+								' id="AssociatedPoolsInfo-' + tid + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
+								'<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: none;">';
+						}
+						var poolList = '';
 						row.pools.forEach((pool) => {
-							if (result != '') {
-								result += '<br>';
+							if (poolList != '') {
+								poolList += '<br>';
 							}
-							result += renderPool(row.loadbalancer, pool, type);
+							poolList += renderPool(row.loadbalancer, pool, type);
 						});
+						result += poolList;
+						if (type == 'display') {
+							result += '</div>';
+						}
 					} else {
 						result = "None";
 					}
@@ -2288,11 +2326,10 @@
 
 
 	function expandPoolMatches(resultset, searchstring) {
-
 		if (localStorage.autoExpandPools !== "true") {
 			$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
-				if (this.classList.contains("PoolInformation")) {
-					togglePool(this);
+				if (this.classList.contains("PoolCell") || this.classList.contains("relative")) {
+					togglePool(this.id);
 				}
 			});
 		}
@@ -2317,31 +2354,28 @@
 	}
 
 	/******************************************************************************************************************************
-		Expands/collapses a pool cell based on the id
+		Expands/collapses a pool cell based on the tid (toggle id)
 	******************************************************************************************************************************/
 
-	function togglePool(e) {
-
-		var id = $(e).attr('data-vsid');
+	function togglePool(tid) {
 
 		//Store the current window selection
 		var selection = window.getSelection();
 
 		//If no text is selected, go ahead and expand or collapse the pool
 		if (selection.type != "Range") {
-			if ($("#PoolInformation-" + id).is(":visible")) {
-				$('#AssociatedPoolsInfo-' + id).show();
-				$('#expand-' + id).show();
-				$('#collapse-' + id).hide();
-				$('#PoolInformation-' + id).hide();
+			if ($("#PoolCell-" + tid).is(":visible")) {
+				$('#AssociatedPoolsInfo-' + tid).show();
+				$('#expand-' + tid).show();
+				$('#collapse-' + tid).hide();
+				$('#PoolCell-' + tid).hide();
 			} else {
-				$('#AssociatedPoolsInfo-' + id).hide();
-				$('#expand-' + id).hide();
-				$('#collapse-' + id).show();
-				$('#PoolInformation-' + id).fadeIn(300);
+				$('#AssociatedPoolsInfo-' + tid).hide();
+				$('#expand-' + tid).hide();
+				$('#collapse-' + tid).show();
+				$('#PoolCell-' + tid).fadeIn(300);
 			}
 		}
-
 	}
 
 	/******************************************************************************************************************************
