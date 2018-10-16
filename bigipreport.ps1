@@ -657,6 +657,7 @@ Add-Type @'
 		public string port;
 		public string profiletype;
 		public string defaultpool;
+		public string httpprofile;
 		public string[] sslprofileclient;
 		public string[] sslprofileserver;
 		public string compressionprofile;
@@ -1422,11 +1423,14 @@ function Get-LTMInformation {
 
 		#Set the ssl profile to None by default, then check if there's an SSL profile and
 
+		$ObjTempVirtualServer.httpprofile = "None";
 		$ObjTempVirtualServer.compressionprofile = "None";
 		$ObjTempVirtualServer.profiletype = "Standard";
 
 		$VirtualServerProfiles[$i] | ForEach-Object {
-			if([string]($_.profile_type) -eq "PROFILE_TYPE_CLIENT_SSL"){
+			if([string]($_.profile_type) -eq "PROFILE_TYPE_HTTP"){
+				$ObjTempVirtualServer.httpprofile = $_.profile_name;
+			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_CLIENT_SSL"){
 				$ObjTempVirtualServer.sslprofileclient += $_.profile_name;
 			} elseif([string]($_.profile_type) -eq "PROFILE_TYPE_SERVER_SSL"){
 				$ObjTempVirtualServer.sslprofileserver += $_.profile_name;
@@ -1475,12 +1479,12 @@ function Get-LTMInformation {
 
 			if($iRule){
 				if($iRule.pools.Count -gt 0){
-					$ObjTempVirtualServer.pools += [array]$iRule.pools | Sort-Object -Unique
+					$ObjTempVirtualServer.pools += [array]$iRule.pools
 				}
 				Foreach($DatagroupName in $iRule.datagroups ) {
 					$Datagroup = $LoadBalancerObjects.DataGroups[$DatagroupName]
 					if ($Datagroup -and $Datagroup.pools.Count -gt 0) {
-						$ObjTempVirtualServer.pools += [array]$Datagroup.pools | Sort-Object -Unique
+						$ObjTempVirtualServer.pools += [array]$Datagroup.pools
 					}
 				}
 			}
@@ -1569,6 +1573,7 @@ function Get-LTMInformation {
 			$ObjTempVirtualServer.name = $PoolName + "(Orphan)"
 			$ObjTempVirtualServer.ip = "N"
 			$ObjTempVirtualServer.port = "A"
+			$ObjTempVirtualServer.httpprofile = "None"
 			$ObjTempVirtualServer.sslprofileclient += "None"
 			$ObjTempVirtualServer.sslprofileserver += "None"
 			$ObjTempVirtualServer.compressionprofile = "None"
