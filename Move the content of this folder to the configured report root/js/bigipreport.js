@@ -279,8 +279,8 @@
 			}
 		} else {
 			log("No status VIPs has been configured", "INFO");
-			$("td#pollingstatecell").html("Disabled")
--			$("div.beforedocumentready").fadeOut(1500);
+			$("td#pollingstatecell").html("Disabled");
+			$("div.beforedocumentready").fadeOut(1500);
 		}
 	}
 
