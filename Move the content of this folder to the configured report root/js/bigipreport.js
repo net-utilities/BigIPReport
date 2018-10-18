@@ -1013,19 +1013,17 @@
 				}
 			}, {
 				"className": "centeredCell",
+				"data": "description"
+			}, {
+				"className": "centeredCell",
 				"render": function (data, type, row) {
-					return row.description;
+					var result = row.ip + ':' + row.port;
+					if (siteData.NATdict[row.ip.split('%')[0]]) {
+						result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
+					}
+					return result;
 				}
 			}, {
-					"className": "centeredCell",
-					"render": function (data, type, row) {
-						var result = row.ip + ':' + row.port;
-						if (siteData.NATdict[row.ip.split('%')[0]]) {
-							result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
-						}
-						return result;
-					}
-				}, {
 				"className": "centeredCell",
 				"render": function (data, type, row) {
 					if (!row.asmPolicies) {
