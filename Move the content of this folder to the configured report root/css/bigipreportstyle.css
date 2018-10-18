@@ -135,15 +135,15 @@
 }
 
 .persistenceProfileHeaderCell {
-	min-width: 110px;
+	min-width: 30px;
 }
 
 .sslProfileHeaderCell {
-	min-width: 60px;
+	min-width: 35px;
 }
 
 .compressionProfileHeaderCell {
-	min-width: 124px;
+	min-width: 30px;
 }
 
 /******************************************************************************************
