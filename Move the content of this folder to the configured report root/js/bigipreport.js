@@ -256,7 +256,7 @@
 
 		//Check if there is any functioning pool status vips
 		var hasConfiguredStatusVIP = loadbalancers.some(function (e) {
-			return e.statusvip.url !== "";
+			return /[a-b0-9]+/.test(e.statusvip.url);
 		})
 
 		if (hasConfiguredStatusVIP) {
@@ -279,8 +279,8 @@
 			}
 		} else {
 			log("No status VIPs has been configured", "INFO");
-			$("td#pollingstatecell").html("Disabled")
--			$("div.beforedocumentready").fadeOut(1500);
+			$("td#pollingstatecell").html("Disabled");
+			$("div.beforedocumentready").fadeOut(1500);
 		}
 	}
 
@@ -955,6 +955,8 @@
 							class="search_init" data-column-name="Load Balancer" data-setting-name="showLoadBalancerColumn"/></th>
 						<th><input type="text" name="vipName" value="VIP Name" class="search_init" data-column-name="Virtual server"
 							data-setting-name="showVirtualServerColumn"/></th>
+						<th><input type="text" name="vipDescription" value="Description" class="search_init" data-column-name="Description"
+							data-setting-name="showDescriptionColumn"/></th>
 						<th><input type="text" name="ipPort" value="IP:Port" class="search_init" data-column-name="IP:Port" data-setting-name="showIPPortColumn" /></th>
 						<th><input type="text" name="asmPolicies" size="6" value="ASM" class="search_init" data-column-name="ASM Policies"
 							data-setting-name="showASMPoliciesColumn"/></th>
@@ -1009,6 +1011,9 @@
 					}
 					return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data, type);
 				}
+			}, {
+				"className": "centeredCell",
+				"data": "description"
 			}, {
 				"className": "centeredCell",
 				"render": function (data, type, row) {
@@ -3154,8 +3159,6 @@
 		}
 
 		deviceGroupsForExport.push(newDeviceGroup);
-
-		console.log();
 
 		downLoadTextFile(JSON.stringify(deviceGroupsForExport, null, 4), "devicegroups.json");
 	}
