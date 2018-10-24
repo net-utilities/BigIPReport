@@ -2656,7 +2656,7 @@
 										name = datagroup.split("/")[2];
 
 										if (ShowDataGroupLinks) {
-											datagroupdata.push('<a href="Javascript:showDataGroupDetails(\'' + datagroup + '\', \'' + loadbalancer + '\')">' + name + '</a>');
+											datagroupdata.push(renderDataGroup(loadbalancer, datagroup, 'display'));
 										} else {
 											datagroupdata.push(name)
 										}
