@@ -349,7 +349,7 @@
 	function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
 		if (rowData.pools) {
 			$(cell).addClass('PoolCell');
-			$(cell).id = "vs-" + rowIndex;
+			$(cell).attr('id', "vs-" + rowIndex);
 		}
 	}
 
