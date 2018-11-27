@@ -228,7 +228,8 @@
 #        5.2.1        2018-10-16      Fixing non-pool list expansions.                                              Tim Riker       No
 #        5.2.2        2018-10-18      Fixing bug with failed load balancer making the report not load.              Patrik Jonsson  No
 #									  Adding description column.                                                    Patrik Jonsson
-#                                     Fixing type, improving CSS.                                                   Tim Riker
+#                                     Fixing typo, improving CSS.                                                   Tim Riker
+#        5.2.3        2018-10-26      Fixing typo that broke the data group list generation.                        Tim Riker       No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
