@@ -227,7 +227,7 @@
 #                                     force virtualservers to array, show layer4 vips, update sooner
 #        5.2.1        2018-10-16      Fixing non-pool list expansions.                                              Tim Riker       No
 #        5.2.2        2018-10-18      Fixing bug with failed load balancer making the report not load.              Patrik Jonsson  No
-#									  Adding description column.                                                    Patrik Jonsson
+#                                     Adding description column.                                                    Patrik Jonsson
 #                                     Fixing typo, improving CSS.                                                   Tim Riker
 #        5.2.3        2018-10-26      Fixing typo that broke the data group list generation.                        Tim Riker       No
 #
