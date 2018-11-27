@@ -1,12 +1,12 @@
 {
-	"autoExpandPools" : false,
-	"showAdcLinks" : false,
-	"showLoadBalancerColumn" : true,
-	"showVirtualServerColumn" : true,
-	"showIPPortColumn" : true,
-	"showSSLProfileColumn" : true,
-	"showCompressionProfileColumn" : true,
-	"showPersistenceProfileColumn" : true,
-	"showPoolsMembersColumn" : true,
-	"showASMPoliciesColumn" : true
+  "autoExpandPools": false,
+  "showASMPoliciesColumn": true,
+  "showAdcLinks": false,
+  "showCompressionProfileColumn": true,
+  "showIPPortColumn": true,
+  "showLoadBalancerColumn": true,
+  "showPersistenceProfileColumn": true,
+  "showPoolsMembersColumn": true,
+  "showSSLProfileColumn": true,
+  "showVirtualServerColumn": true
 }
