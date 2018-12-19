@@ -433,8 +433,8 @@
         -->
 
             <RealTimeMemberStates>
-                <MaxPools>2</MaxPools>
-                <MaxQueue>1</MaxQueue>
+                <MaxPools>50</MaxPools>
+                <MaxQueue>2</MaxQueue>
                 <RefreshRate>60</RefreshRate>
             </RealTimeMemberStates>
 
