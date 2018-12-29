@@ -1,3 +1,4 @@
+#! /usr/bin/pwsh
 #Requires -Version 5
 ######################################################################################################################################
 #
@@ -239,7 +240,7 @@
 #
 ######################################################################################################################################
 
-Param($ConfigurationFile = "$PSScriptRoot\bigipreportconfig.xml")
+Param($ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml")
 
 Set-StrictMode -Version 1.0
 
