@@ -498,26 +498,6 @@
 
                             log("Status VIPs tested, starting the polling functions", "INFO");
 
-                            //Initiate pool status updates
-                            var pollCurrentView = function () {
-                                resetClock();
-                                var length = $("table.pooltable tr td.poolname:visible").length;
-                                if (length == 0 || length > AJAXMAXPOOLS) {
-                                    $("span#ajaxqueue").text(0);
-                                    $("td#pollingstatecell").html('Disabled, ' + length + ' of ' + AJAXMAXPOOLS +
-                                        ' pools open<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' +
-                                        AJAXREFRESHRATE + '</span> seconds</span>');
-                                } else {
-                                    $("td#pollingstatecell").html('<span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh">,' +
-                                        ' refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
-
-                                    $("span#ajaxqueue").text(length);
-                                    $("table.pooltable tr td.poolname:visible").each(function () {
-                                        getPoolStatus(this);
-                                    });
-                                }
-                            }
-
                             pollCurrentView()
 
                             setInterval(function () {
@@ -538,6 +518,26 @@
                 });
         }
         $("div.beforedocumentready").fadeOut(1500);
+    }
+
+    //Initiate pool status updates
+    function pollCurrentView() {
+        resetClock();
+        var length = $("table.pooltable tr td.poolname:visible").length;
+        if (length == 0 || length > AJAXMAXPOOLS) {
+            $("span#ajaxqueue").text(0);
+            $("td#pollingstatecell").html('Disabled, ' + length + ' of ' + AJAXMAXPOOLS +
+                ' pools open<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' +
+                AJAXREFRESHRATE + '</span> seconds</span>');
+        } else {
+            $("td#pollingstatecell").html('<span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh">,' +
+                ' refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
+
+            $("span#ajaxqueue").text(length);
+            $("table.pooltable tr td.poolname:visible").each(function () {
+                getPoolStatus(this);
+            });
+        }
     }
 
     function renderLoadBalancer(loadbalancer, type) {
