@@ -56,11 +56,18 @@ function F5 {
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 "@
+#        <virtual_servers type="ns2:Array" ns2:arrayType="xsd:string[300]">
+#            <item xsi:type="xsd:string">VSchem16001</item>
+#        </virtual_servers>
+#<virtual_servers soapenc:arrayType="xsd:string[ 1 ]" xsi:type="soapenc:Array">
+#s:type="A:Array" A:arrayType="y:string[48]"
+#            <item xsi:type="xsd:string">VSchem16001</item>
+#        </virtual_servers>
 
     $URI="https://${server}/iControl/iControlPortal.cgi"
     $response = Invoke-RestMethod -URI $URI –ContentType "text/xml" -Headers $Global:Headers –Method POST -Body $Body
-    #$response.InnerXml
-    
+    $response.InnerXml | Out-Host
+
     $retval = @($response.SelectNodes("//item").InnerText)
     if ($null -eq $retval[0]) {
         $retval = $($response.SelectNodes("//return").InnerText)
@@ -69,13 +76,31 @@ function F5 {
     return $retval
 }
 
+function WriteXmlToScreen ([xml]$xml)
+{
+    $StringWriter = New-Object System.IO.StringWriter;
+    $XmlWriter = New-Object System.Xml.XmlTextWriter $StringWriter;
+    $XmlWriter.Formatting = "indented";
+    $xml.WriteTo($XmlWriter);
+    $XmlWriter.Flush();
+    $StringWriter.Flush();
+    Write-Output $StringWriter.ToString();
+}
+
 $Server = $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup[0].Device[0]
+
+$VersionInformation = F5 -server $Server -uri "System/SoftwareManagement" -method "get_all_software_status"
+$VersionInformation | ConvertTo-Json
+break
 "Virtual Servers"
-$list = F5 -server $Server -uri "LocalLB/VirtualServer" -method "get_list"
-$list | ConvertTo-Json
+$VirtualServers = F5 -server $Server -uri "LocalLB/VirtualServer" -method "get_list" | Sort-Object
+$VSXML = $VirtualServers | ConvertTo-Xml
+WriteXmlToScreen $VSXML
 "Pools"
-$list = F5 -server $Server -uri "LocalLB/Pool" -method "get_list"
-$list | ConvertTo-Json
+$Poollist = F5 -server $Server -uri "LocalLB/Pool" -method "get_list" | Sort-Object
+$Poollist | ConvertTo-Json
 "hostname"
-$hostname = F5 -server $Server -uri "System/Inet" -method "get_hostname"
-$hostname | ConvertTo-Json
+$BigIPHostname = F5 -server $Server -uri "System/Inet" -method "get_hostname"
+$BigIPHostname | ConvertTo-Json
+"profiles"
+$VirtualServerProfiles = F5 -server $Server -uri "LocalLB/VirtualServer" -method "get_profile" -param $VirtualServers
