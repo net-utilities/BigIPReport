@@ -2114,7 +2114,7 @@
                             <th>Type</th>
                             <th>Version</th>
                             <th>Serial</th>
-                            <th>Management IP</th>
+                            <th>Management</th>
                             <th>Polling</th>
                         </tr>
                     </thead>
@@ -2193,7 +2193,7 @@
 
                 var devicestatus = (loadbalancer.color || "red");
                 html += "<td class=\"devicenamecell\"><img class=\"devicestatusicon\" alt=\"" + devicestatus + "\" src=\"images/devicestatus" + devicestatus + ".png\"/>" +
-                    (loadbalancer.name ? '<a href="https://' + loadbalancer.name + '" target="_blank">' + loadbalancer.name + '</a>' : "<span class=\"devicefailed\">Failed to index</span>") +
+                    (loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') : "<span class=\"devicefailed\">Failed to index</span>") +
                     "</td><td>" + (loadbalancer.category || "N/A") + "</td><td>" +
                     (loadbalancer.model || "N/A") + "</td><td>" + (loadbalancer.version || "N/A") + "</td><td>" + loadbalancer.serial + "</td><td>" +
                     loadbalancer.ip + "</td><td>" + pollingStatus + "</td></tr>";
