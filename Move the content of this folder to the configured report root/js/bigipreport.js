@@ -164,11 +164,21 @@
             }).fail(addJSONLoadingFailure)
         ).then(function () {
 
-            /********************************************************************************************************************************************************************************************
+            /*************************************************************************************************************
 
                 All pre-requisite things have loaded
 
-            ********************************************************************************************************************************************************************************************/
+            **************************************************************************************************************/
+
+            log("loaded:" +
+                " loadbalancers:" + siteData.loadbalancers.length +
+                ", virtualservers:" + siteData.virtualservers.length +
+                ", pools:" + siteData.pools.length +
+                ", iRules:" + siteData.irules.length +
+                ", certificates:" + siteData.certificates.length +
+                ", datagroups:" + siteData.datagroups.length +
+                ", asmPolicies:" + siteData.asmPolicies.length +
+                ".", "INFO");
 
             /*************************************************************************************************************
 
@@ -188,7 +198,7 @@
 
             for (var i in siteData.loggedErrors) {
                 var logLine = siteData.loggedErrors[i];
-                log(logLine.message, logLine.severity, logLine.date, logLine.time)
+                log(logLine.message, logLine.severity, logLine.date, logLine.time, false)
             }
 
             /* highlight selected menu option */
@@ -230,16 +240,6 @@
                     }
                 });
             }, 3000);
-
-            log("loaded:" +
-                " loadbalancers:" + siteData.loadbalancers.length +
-                ", virtualservers:" + siteData.virtualservers.length +
-                ", pools:" + siteData.pools.length +
-                ", iRules:" + siteData.irules.length +
-                ", certificates:" + siteData.certificates.length +
-                ", datagroups:" + siteData.datagroups.length +
-                ", asmPolicies:" + siteData.asmPolicies.length +
-                ".", "INFO");
 
         });
 
@@ -2235,7 +2235,7 @@
     }
 
 
-    function log(message, severity = null, date = null, time = null) {
+    function log(message, severity = null, date = null, time = null, prepend = true) {
 
         if (!date || !time) {
             var now = new Date();
@@ -2260,9 +2260,25 @@
                 severityClass = "logseverityinfo";
         }
 
-        $("table#reportlogstable tbody").prepend(
-            "<tr><td class=\"reportlogdate\">" + date + "</td><td class=\"reportlogtime\">" + time + "</td><td class=\"" + severityClass + "\">" + severity + "</td><td>" + message + "</td></tr>"
-        );
+	if (prepend) {
+		$("table#reportlogstable tbody").prepend(
+		    "<tr><td class=\"reportlogdate\">"
+			+ date + "</td><td class=\"reportlogtime\">"
+			+ time + "</td><td class=\""
+			+ severityClass + "\">"
+			+ severity + "</td><td>"
+			+ message + "</td></tr>"
+		);
+	} else {
+		$("table#reportlogstable tbody").append(
+		    "<tr><td class=\"reportlogdate\">"
+			+ date + "</td><td class=\"reportlogtime\">"
+			+ time + "</td><td class=\""
+			+ severityClass + "\">"
+			+ severity + "</td><td>"
+			+ message + "</td></tr>"
+		);
+	}
 
     }
 
