@@ -1,8 +1,8 @@
 pre.sh_tcl {
-    background-color: white;
-    color: black;
-    font-style: normal;
-    font-weight: normal;
+  background-color: white;
+  color: black;
+  font-style: normal;
+  font-weight: normal;
 }
 
 pre.sh_tcl .sh_keyword { color: blue; font-weight: bold; }           /* language keywords */
