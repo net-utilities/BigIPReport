@@ -2996,13 +2996,13 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
 
                 table += `
                         <table class="monitordetailstable">
-                            <thead><tr><th colspan=2>` + matchingmonitor.name + `</th></thead>
+                            <thead><tr><th colspan=2>${matchingmonitor.name}</th></thead>
                             <tbody>
-                                <tr><td class="monitordetailstablerowheader"><b>Type</td><td>` + matchingmonitor.type + `</b></td></tr>
-                                <tr><td class="monitordetailstablerowheader"><b>Send string</td><td>` + matchingmonitor.sendstring + `</b></td></tr>
-                                <tr><td class="monitordetailstablerowheader"><b>Receive string</b></td><td>` + matchingmonitor.receivestring + `</td></tr>
-                                <tr><td class="monitordetailstablerowheader"><b>Interval</b></td><td>` + matchingmonitor.interval + `</td></tr>
-                                <tr><td class="monitordetailstablerowheader"><b>Timeout</b></td><td>` + matchingmonitor.timeout + `</td></tr>
+                                <tr><td class="monitordetailstablerowheader"><b>Type</td><td>${matchingmonitor.type}</b></td></tr>
+                                <tr><td class="monitordetailstablerowheader"><b>Send string</td><td>${matchingmonitor.sendstring}</b></td></tr>
+                                <tr><td class="monitordetailstablerowheader"><b>Receive string</b></td><td>${matchingmonitor.receivestring}</td></tr>
+                                <tr><td class="monitordetailstablerowheader"><b>Interval</b></td><td>${matchingmonitor.interval}</td></tr>
+                                <tr><td class="monitordetailstablerowheader"><b>Timeout</b></td><td>${matchingmonitor.timeout}</td></tr>
                             </table>
 
                 <table class="membermonitortable">
@@ -3013,62 +3013,64 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
 
                 for (var x in members) {
 
-                    member = members[x];
-                    memberstatus = translateStatus(member);
+                    let member = members[x];
+                    let memberstatus = translateStatus(member);
 
-                    var protocol = "";
+                    let protocol = matchingmonitors[i].type.replace(/^TTYPE_/, '');
 
-                    if (matchingmonitors[i].type.indexOf("HTTPS") >= 0) {
-                        protocol = "https";
-                    } else if (matchingmonitors[i].type.indexOf("HTTP") >= 0) {
-                        protocol = "http";
-                    }
+                    if(['HTTP', 'HTTPS', 'TCP', 'TCP_HALF_OPEN'].includes(protocol)){
 
-                    if (protocol != "") {
+                        let curllink, netcatlink, httplink
+                        let sendstring = matchingmonitors[i].sendstring;
 
-                        sendstring = matchingmonitors[i].sendstring;
+                        if(["HTTP", "HTTPS"].includes(protocol)){
+                        
+                            requestparameters = getMonitorRequestParameters(sendstring)
+                            globheader = requestparameters;
 
-                        requestparameters = getMonitorRequestParameters(sendstring)
-                        globheader = requestparameters;
-                        if (requestparameters["verb"] === "GET" || requestparameters["verb"] === "HEAD") {
+                            if (requestparameters["verb"] === "GET" || requestparameters["verb"] === "HEAD") {
 
-                            var curlcommand = "curl";
+                                var curlcommand = "curl";
 
-                            if (requestparameters["verb"] === "HEAD") {
-                                curlcommand += " -I"
+                                if (requestparameters["verb"] === "HEAD") {
+                                    curlcommand += " -I"
+                                }
+
+                                for (var x in requestparameters["headers"]) {
+
+                                    header = requestparameters["headers"][x];
+                                    headerarr = header.split(":");
+                                    headername = headerarr[0].trim();
+                                    headervalue = headerarr[1].trim();
+
+                                    curlcommand += " --header &quot;" + headername + ": " + headervalue + "&quot;";
+                                }
+
+                                curlcommand += " " + protocol + "://" + member.ip + ":" + member.port + requestparameters["uri"];
+                            
                             }
 
-                            for (var x in requestparameters["headers"]) {
-                                header = requestparameters["headers"][x];
-                                headerarr = header.split(":");
-                                headername = headerarr[0].trim();
-                                headervalue = headerarr[1].trim();
-
-                                curlcommand += " --header &quot;" + headername + ": " + headervalue + "&quot;";
-                            }
-
-                            curlcommand += " " + protocol + "://" + member.ip + ":" + member.port + requestparameters["uri"];
-
-                            var netcatcommand = "echo -ne \"" + sendstring + "\" | nc " + member.ip + " " + member.port;
-
-                            var url = protocol + "://" + member.ip + ":" + member.port + requestparameters["uri"];
-
-                            var httplink = '<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"' +
-                                ' data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="' + url + '"></p></a>';
-
-                            var curllink = '<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"' +
-                                ' data-type="curl">Curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="' + curlcommand + '"></p></a>';
-
-                            var netcatlink = '<a href="javascript:void(0); target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"' +
-                                ' data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'' + netcatcommand + '\'></p></a>';
-
-                            table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + httplink + "</td><td>" + curllink + "</td><td>" + netcatlink + "</td></tr>";
-
-                        } else {
-                            table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>";
+                            curllink = `<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            ' data-type="curl">Curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
+                            
                         }
+
+                        if(protocol === 'HTTP' || protocol === 'TCP' || protocol === 'TCP_HALF_OPEN'){
+                            var netcatcommand = `echo -ne "${sendstring}" | nc ${member.ip} ${member.port}`;
+                            netcatlink = `<a href="javascript:void(0); target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            ' data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'${netcatcommand}\'></p></a>`;
+                        }
+
+                        if(protocol === "HTTP" || protocol === "HTTPS"){
+                            var url = `${protocol}://${member.ip}:${member.port}${requestparameters["uri"]}`;
+                            httplink = `<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${url}"></p></a>`
+                        }
+
+                        table += `<tr><td>${member.name}</td><td>${member.ip}</td><td>${member.port}</td><td>${httplink || 'N/A'}</td><td>${curllink || 'N/A'}</td><td>${netcatlink || 'N/A'}</td></tr>`;
+
                     } else {
-                        table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>";
+                        table += `<tr><td>${member.name}</td><td>${member.ip}</td><td>${member.port}</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>`;
                     }
                 }
 
