@@ -2917,7 +2917,7 @@ function showDataGroupDetails(datagroup, loadbalancer) {
     Shows the pool details light box
 **********************************************************************************************************************/
 
-function showPoolDetails(pool, loadbalancer, layer = "first") {
+function showPoolDetails(pool, loadbalancer, layer = 'first') {
 
     var pools = siteData.pools;
     var matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
@@ -2925,17 +2925,17 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
     updateLocationHash()
 
     //If a pool was found, populate the pool details table and display it on the page
-    if (matchingpool != "") {
+    if (matchingpool != '') {
 
         //Build the table and headers
-        $("#" + layer + "layerdetailscontentdiv").attr("data-type", "pool");
-        $("#" + layer + "layerdetailscontentdiv").attr("data-objectname", matchingpool.name);
-        $("#" + layer + "layerdetailscontentdiv").attr("data-loadbalancer", matchingpool.loadbalancer);
+        $(`#${layer}layerdetailscontentdiv`).attr("data-type", "pool");
+        $(`#${layer}layerdetailscontentdiv`).attr("data-objectname", matchingpool.name);
+        $(`#${layer}layerdetailscontentdiv`).attr("data-loadbalancer", matchingpool.loadbalancer);
 
-        var html = '<div class="pooldetailsheader">';
-        html += '<span>Pool: ' + matchingpool.name + '</span><br>';
-        html += '<span>Load Balancer: ' + renderLoadBalancer(loadbalancer, 'display') + '</span>';
-        html += '</div>';
+        var html = `<div class="pooldetailsheader">
+                        <span>Pool: ${matchingpool.name}</span><br>
+                        <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')}</span>
+                    </div>`;
 
         var table = `
         <table class="pooldetailstable">
@@ -2943,8 +2943,13 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
                 <tr><th>Description</th><th>Load Balancing Method</th><th>Action On Service Down</th><th>Allow NAT</th><th>Allow SNAT</th></tr>
             </thead>
             <tbody>
-                <tr><td>` + (matchingpool.description || "") + "</td><td>" + matchingpool.loadbalancingmethod + "</td><td>" +
-                matchingpool.actiononservicedown + "</td><td>" + matchingpool.allownat + "</td><td>" + matchingpool.allowsnat + `</td></tr>
+                <tr>
+                    <td>${(matchingpool.description || '')}</td>
+                    <td>${matchingpool.loadbalancingmethod}</td>
+                    <td>${matchingpool.actiononservicedown}</td>
+                    <td>${matchingpool.allownat}</td>
+                    <td>${matchingpool.allowsnat}</td>
+                </tr>
             </tbody>
             </table>
             <br>
@@ -2975,18 +2980,28 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
             var member = members[i];
             var memberstatus = translateStatus(member);
 
-            table += "<tr><td>" + member.name + "</td><td>" + member.ip + "</td><td>" + member.port + "</td><td>" + member.priority + "</td><td>" +
-                member.currentconnections + "</td><td>" + member.maximumconnections + "</td><td>" + memberstatus["availability"] + "</td><td>" +
-                memberstatus["enabled"] + "</td><td>" + member.status + "</td><td>" + memberstatus.realtime + "</td></tr>";
+            table += `
+                    <tr>
+                        <td>${member.name}</td>
+                        <td>${member.ip}</td>
+                        <td>${member.port}</td>
+                        <td>${member.priority}</td>
+                        <td>${member.currentconnections}</td>
+                        <td>${member.maximumconnections}</td>
+                        <td>${memberstatus['availability']}</td>
+                        <td>${memberstatus['enabled']}</td>
+                        <td>${member.status}</td>
+                        <td>${memberstatus.realtime}</td>
+                    </tr>`;
 
         }
 
         table += `</tbody></table>
-                    <br>`
+                    <br>`;
 
         if (matchingmonitors.length > 0) {
 
-            table += "<div class=\"monitordetailsheader\">Assigned monitors</div>";
+            table += '<div class="monitordetailsheader">Assigned monitors</div>';
 
             for (var i in matchingmonitors) {
 
@@ -3023,30 +3038,30 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
                         let curllink, netcatlink, httplink
                         let sendstring = matchingmonitors[i].sendstring;
 
-                        if(["HTTP", "HTTPS"].includes(protocol)){
+                        if(['HTTP', 'HTTPS'].includes(protocol)){
                         
                             requestparameters = getMonitorRequestParameters(sendstring)
                             globheader = requestparameters;
 
-                            if (requestparameters["verb"] === "GET" || requestparameters["verb"] === "HEAD") {
+                            if (requestparameters['verb'] === 'GET' || requestparameters['verb'] === 'HEAD') {
 
-                                var curlcommand = "curl";
+                                var curlcommand = 'curl';
 
-                                if (requestparameters["verb"] === "HEAD") {
-                                    curlcommand += " -I"
+                                if (requestparameters['verb'] === 'HEAD') {
+                                    curlcommand += ' -I'
                                 }
 
-                                for (var x in requestparameters["headers"]) {
+                                for (var x in requestparameters['headers']) {
 
-                                    header = requestparameters["headers"][x];
-                                    headerarr = header.split(":");
+                                    header = requestparameters['headers'][x];
+                                    headerarr = header.split(':');
                                     headername = headerarr[0].trim();
                                     headervalue = headerarr[1].trim();
 
-                                    curlcommand += " --header &quot;" + headername + ": " + headervalue + "&quot;";
+                                    curlcommand += ` --header &quot;${headername}:${headervalue}&quot;`;
                                 }
 
-                                curlcommand += " " + protocol + "://" + member.ip + ":" + member.port + requestparameters["uri"];
+                                curlcommand += `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
                             
                             }
 
@@ -3061,8 +3076,8 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
                             ' data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'${netcatcommand}\'></p></a>`;
                         }
 
-                        if(protocol === "HTTP" || protocol === "HTTPS"){
-                            var url = `${protocol}://${member.ip}:${member.port}${requestparameters["uri"]}`;
+                        if(protocol === 'HTTP' || protocol === 'HTTPS'){
+                            var url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
                             httplink = `<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
                             data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${url}"></p></a>`
                         }
@@ -3104,9 +3119,9 @@ function showPoolDetails(pool, loadbalancer, layer = "first") {
         </div>`
     }
 
-    $("a#close" + layer + "layerbutton").text("Close pool details");
-    $("#" + layer + "layerdetailscontentdiv").html(html);
-    $("#" + layer + "layerdiv").fadeIn(updateLocationHash);
+    $(`a#close${layer}layerbutton`).text('Close pool details');
+    $(`#${layer}layerdetailscontentdiv`).html(html);
+    $(`#${layer}layerdiv`).fadeIn(updateLocationHash);
 }
 
 function exportDeviceData() {
