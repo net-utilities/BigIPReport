@@ -231,6 +231,22 @@
 #                                     Adding description column.                                                    Patrik Jonsson
 #                                     Fixing typo, improving CSS.                                                   Tim Riker
 #        5.2.3        2018-10-26      Fixing typo that broke the data group list generation.                        Tim Riker       No
+#        5.2.4        2019-05-28      Fixing short links in device menu                                             Tim Riker       No
+#        5.2.5        2019-05-30      Fixing bug with the direct links to the pool section not working              Patrik Jonsson  No
+#                                     Fixing bug with the certificate table always showing direct links
+#                                     Removed the optional export section since it's added by default
+#                                     Adding padding to sections that is not using data tables
+#                                     Adding a more consistent style to the export buttons
+#        5.2.6        2019-05-31      Replaced the column toggle buttons in the virtual server view with            Patrik Jonsson  No
+#                                     Data tables standard columns
+#                                     Replaced the column filters with DataTables standard column filters
+#                                     Fixed a bug with the pool expansion function expanding everything
+#                                     when search string is empty
+#                                     Fixed a bug with the certificate reset button not working due to
+#                                     misspelled css selector
+#        5.2.7        2019-06-07      Improving the log section with severities for each entry                      Tim Riker      No
+#        5.2.8        2019-06-13      Added favicon, new icons for pools and devices and making the device          Patrik Jonsson No
+#                                     serial number correct for virtual editions
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -245,42 +261,24 @@ Param($ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.2.3"
+$Global:ScriptVersion = "5.2.6"
 
-#Variable for storing handled errors
+#Enable case sensitive dictionaries
+function c@ {
+    New-Object Collections.Hashtable ([StringComparer]::CurrentCulture)
+}
+
+#Variables for storing handled error messages
 $Global:LoggedErrors = @()
+$Global:ReportObjects = c@{};
+# report has error warning and info
+$Global:ReportObjects.LoggedErrors = @()
 
 #Variable used to calculate the time used to generate the report.
 $StartTime = Get-Date
 
 #No BOM Encoding in the log file
 $Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
-
-################################################################################################################################################
-#
-#    Load the configration file
-#
-################################################################################################################################################
-
-#Check if the configuration file exists
-if(Test-Path $ConfigurationFile){
-    #Read the file as xml
-    [xml]$Global:Bigipreportconfig = Get-Content $ConfigurationFile
-
-    #Verify that the file was succssfully loaded, otherwise exit
-    if($?){
-        $Outputlevel = $Global:Bigipreportconfig.Settings.Outputlevel
-        if($Outputlevel -eq "Verbose"){
-            "Successfully loaded the config file: $ConfigurationFile"
-        }
-    } else {
-        Write-Error "Can't read the config file: $ConfigurationFile, or config file corrupt. Aborting."
-        Exit
-    }
-} else {
-    Write-Error "Failed to load config file $ConfigurationFile from $PSScriptRoot. Aborting."
-    Exit
-}
 
 ################################################################################################################################################
 #
@@ -295,21 +293,36 @@ Function log {
     $CurrentTime =  $(Get-Date -UFormat "%Y-%m-%d %H:%M:%S ")
     $LogHeader = $CurrentTime + $($LogType.toUpper()) + ' '
 
+    # log errors for emailing later
     if($LogType -eq "error"){
         $Global:LoggedErrors  += $Message
     }
 
-    if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
-        $LogFilePath = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
-        $LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
+    # log erros, warnings, and info to loggederrors.json
+    if($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info"){
+        $LogLineDict = @{}
 
-        switch($Logtype) {
-            "error"   { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
-            "warning" { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
-            "info"      { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
-            "success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
-            "verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
-            default   { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+        $LogLineDict["date"] = $(Get-Date -UFormat %Y-%m-%d)
+        $LogLineDict["time"] = $(Get-Date -UFormat %H:%M:%S)
+        $LogLineDict["severity"] = $LogType.toupper()
+        $LogLineDict["message"] = $Message
+
+        $Global:ReportObjects.LoggedErrors += $LogLineDict
+    }
+
+    if(Get-Variable -Name Bigipreportconfig -Scope Global){
+        if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
+            $LogFilePath = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
+            $LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
+
+            switch($Logtype) {
+                "error"   { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
+                "warning" { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
+                "info"      { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+                "success" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+                "verbose" { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+                default   { if($LogLevel -eq "Verbose"){ [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+            }
         }
     }
 
@@ -326,9 +339,28 @@ Function log {
 }
 
 
-#Enable case sensitive dictionaries
-function c@ {
-    New-Object Collections.Hashtable ([StringComparer]::CurrentCulture)
+################################################################################################################################################
+#
+#    Load the configration file
+#
+################################################################################################################################################
+
+#Check if the configuration file exists
+if(Test-Path $ConfigurationFile){
+    #Read the file as xml
+    [xml]$Global:Bigipreportconfig = Get-Content $ConfigurationFile
+
+    #Verify that the file was succssfully loaded, otherwise exit
+    if($?){
+        $Outputlevel = $Global:Bigipreportconfig.Settings.Outputlevel
+        log success "Successfully loaded the config file: $ConfigurationFile"
+    } else {
+        log error "Can't read the config file: $ConfigurationFile, or config file corrupt. Aborting."
+        Exit
+    }
+} else {
+    log error "Failed to load config file $ConfigurationFile from $PSScriptRoot. Aborting."
+    Exit
 }
 
 ################################################################################################################################################
@@ -632,7 +664,6 @@ if(-not $SaneConfig){
 #Variables used for storing report data
 $Global:NATdict = c@{}
 
-$Global:ReportObjects = c@{};
 $Global:DeviceGroups = @();
 
 #Build the path to the default document
@@ -1713,7 +1744,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
             $F5 = Get-F5.iControl
 
             log error "The script failed to connect to $Device, run the report manually to determine if this was due to a timeout of bad credentials"
-            log errro $F5.LastException.Message
+            log error $F5.LastException.Message
 
             $ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
 
@@ -1760,7 +1791,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
             $RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
             $BaseRegistrationKey = $RegistrationKeys[0]
 
-            $Serial = $BaseRegistrationKey.split("-")[-1]
+            $Serial = "Z" + $BaseRegistrationKey.split("-")[-1]
         } else {
             $Serial = $SystemInfo.chassis_serial
         }
@@ -2197,11 +2228,6 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         } else {
             [void]$Global:HTML.AppendLine("const ShowDataGroupLinks = false;")
         }
-        if($Global:Bigipreportconfig.Settings.ExportLink.Enabled -eq $true){
-            [void]$Global:HTML.AppendLine("const ShowExportLink = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const ShowExportLink = false;")
-        }
         if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
             [void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = true;")
         } else {
@@ -2236,7 +2262,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
                 <div class="menuitem" id="datagroupbutton" onclick="Javascript:showDataGroups();"><img id="datagroupsicon" src="images/datagroupicon.png" alt="logs"/> Data Groups</div>
                 <div class="menuitem" id="deviceoverviewbutton" onclick="Javascript:showDeviceOverview();"><img id="devicesoverviewicon" src="images/devicesicon.png" alt="overview"/> Device overview</div>
                 <div class="menuitem" id="certificatebutton" onclick="Javascript:showCertificateDetails();"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates<span id="certificatenotification"></span></div>
-                <div class="menuitem" id="logsbutton" onclick="Javascript:showReportLogs();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div>
+                <div class="menuitem" id="logsbutton" onclick="Javascript:showLogs();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div>
                 <div class="menuitem" id="preferencesbutton" onclick="Javascript:showPreferences();"><img id="preferencesicon" src="images/preferences.png" alt="preferences"/> Preferences</div>
                 <div class="menuitem" id="helpbutton" onclick="Javascript:showHelp();"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
             </div>
@@ -2244,20 +2270,11 @@ $Global:HTML = [System.Text.StringBuilder]::new()
             <div class="mainsection" id="virtualservers" style="display: none;"></div>
             <div class="mainsection" id="pools" style="display: none;"></div>
             <div class="mainsection" id="irules" style="display: none;"></div>
+            <div class="mainsection" id="datagroups" style="display: none;"></div>
             <div class="mainsection" id="deviceoverview" style="display: none;"></div>
             <div class="mainsection" id="certificatedetails" style="display: none;"></div>
-            <div class="mainsection" id="datagroups" style="display: none;"></div>
+            <div class="mainsection" id="logs" style="display: none;"></div>
             <div class="mainsection" id="preferences" style="display: none;"></div>
-
-            <div class="mainsection" id="reportlogs" style="display: none;">
-                <table id="reportlogstable" class="bigiptable">
-                    <thead>
-                        <tr><th>Date</th><th>Time</th><th>Severity</th><th>Log content</th></tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
 
             <div class="mainsection" id="helpcontent" style="display: none;">
                 <h3>Filtering for pool members being down</h3>
@@ -2316,22 +2333,7 @@ if($RealTimeStatusDetected){
 </html>
 "@)
 
-$ErrorLog = @()
-
-ForEach ( $e in $Global:LoggedErrors) {
-    $LogLineDict = @{}
-
-    $LogLineDict["date"] = $(Get-Date -UFormat %Y-%m-%d)
-    $LogLineDict["time"] = $(Get-Date -UFormat %H:%M:%S)
-    $logLineDict["severity"] = "ERROR"
-    $LogLineDict["message"] = $e
-
-    $ErrorLog += $LogLineDict
-}
-
-$ReportObjects.LoggedErrors = $ErrorLog
-
-# Time to write temporary files and then update the report
+# Write temporary files and then update the report
 
 $TemporaryFilesWritten = $false
 

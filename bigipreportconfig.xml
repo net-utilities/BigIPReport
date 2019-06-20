@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
     <!--Leave the version information intact-->
-    <Settings version="5.2.3">
+    <Settings version="5.2.8">
 
         <!--
         ***************************************************************************
@@ -307,7 +307,7 @@
             **************************************************************************************************************************************
         -->
 
-        <ErrorReportAnyway>false</ErrorReportAnyway>
+            <ErrorReportAnyway>false</ErrorReportAnyway>
 
         <!--
 
@@ -379,29 +379,6 @@
                 <ShowiRuleLinks>true</ShowiRuleLinks>
                 <ShowDataGroupLinks>true</ShowDataGroupLinks>
             </iRules>
-
-        <!--
-
-            ***********************************************************************************************************************************************
-            *
-            *    Export link settings
-            *
-            *    Enabled:
-            *    <ExportLink>
-            *        <Enabled>true</Enabled>
-            *    </ExportLink>
-            *
-            *    Disabled:
-            *    <ExportLink>
-            *        <Enabled>false</Enabled>
-            *    </ExportLink>            *
-            ************************************************************************************************************************************************
-
-        -->
-
-        <ExportLink>
-            <Enabled>false</Enabled>
-        </ExportLink>
 
         <!--
 
