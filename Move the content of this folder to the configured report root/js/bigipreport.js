@@ -1104,7 +1104,8 @@ function setupVirtualServerTable() {
                 }
             ]
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
 
@@ -1352,7 +1353,8 @@ function setupiRuleTable() {
                 }
             ],
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1499,7 +1501,8 @@ function setupPoolTable() {
                 }
             ],
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1663,7 +1666,8 @@ function setupDataGroupTable() {
                 }
             ],
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1822,7 +1826,8 @@ function setupCertificateTable() {
                 }
             ]
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1943,7 +1948,8 @@ function setupLogsTable() {
                 $('td', row).eq(2).addClass( 'logseverity' + data.severity.toLowerCase() );
             }
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -2901,7 +2907,8 @@ function showDataGroupDetails(datagroup, loadbalancer) {
                 "search": "Search all columns:"
             },
             "dom": 'frtilp',
-            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "stateSave": true
         });
 
     } else {
