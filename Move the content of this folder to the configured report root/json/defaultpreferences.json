@@ -1,12 +1,4 @@
 {
   "autoExpandPools": false,
-  "showASMPoliciesColumn": true,
-  "showAdcLinks": false,
-  "showCompressionProfileColumn": true,
-  "showIPPortColumn": true,
-  "showLoadBalancerColumn": true,
-  "showPersistenceProfileColumn": true,
-  "showPoolsMembersColumn": true,
-  "showSSLProfileColumn": true,
-  "showVirtualServerColumn": true
+  "showAdcLinks": false
 }
