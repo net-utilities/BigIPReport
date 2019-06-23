@@ -247,6 +247,7 @@
 #        5.2.7        2019-06-07      Improving the log section with severities for each entry                      Tim Riker      No
 #        5.2.8        2019-06-13      Added favicon, new icons for pools and devices and making the device          Patrik Jonsson No
 #                                     serial number correct for virtual editions
+#        5.2.9        2019-06-23      Saving state of column toggles                                                Tim Riker      No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
