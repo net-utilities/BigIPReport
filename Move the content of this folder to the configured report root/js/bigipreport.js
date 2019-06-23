@@ -937,11 +937,11 @@ function setupVirtualServerTable() {
                     <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
                     <th><span style="display: none;">Name</span><input type="text" name="name" class="search" placeholder="Name" /></th>
                     <th><span style="display: none;">Description</span><input type="text" name="description" class="search" placeholder="Description" /></th>
-                    <th><span style="display: none;">IP:Port</span><input type="text" name="ipport" class="search" placeholder="IP:port" /></th>
-                    <th><span style="display: none;">ASM Policies</span><input type="text" name="asmpolicies" class="search" placeholder="ASM Policies" /></th>
-                    <th><span style="display: none;">SSL Profile</span><input type="text" name="sslprofile" class="search" placeholder="SSL Profile" /></th>
-                    <th><span style="display: none;">Compression Profile</span><input name="compressionprofile" type="text" class="search" placeholder="Compression Profile" /></th>
-                    <th><span style="display: none;">Persistence Profile</span><input type="text" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
+                    <th><span style="display: none;">IP:Port</span><input type="text" name="ipport" class="search" placeholder="IP:Port" /></th>
+                    <th><span style="display: none;">ASM</span><input type="text" name="asmpolicies" class="search" placeholder="ASM Policies" /></th>
+                    <th><span style="display: none;">SSL</span><input type="text" name="sslprofile" class="search" placeholder="SSL Profile" /></th>
+                    <th><span style="display: none;">Compression</span><input name="compressionprofile" type="text" class="search" placeholder="Compression Profile" /></th>
+                    <th><span style="display: none;">Persistence</span><input type="text" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
                     <th><span style="display: none;">Pool/Members</span><input type="text" name="poolmembers" class="search" placeholder="Pool/Members" /></th>
                 </tr>
             </thead>
@@ -1104,7 +1104,8 @@ function setupVirtualServerTable() {
                 }
             ]
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
 
@@ -1352,7 +1353,8 @@ function setupiRuleTable() {
                 }
             ],
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1499,7 +1501,8 @@ function setupPoolTable() {
                 }
             ],
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1663,7 +1666,8 @@ function setupDataGroupTable() {
                 }
             ],
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1822,7 +1826,8 @@ function setupCertificateTable() {
                 }
             ]
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -1943,7 +1948,8 @@ function setupLogsTable() {
                 $('td', row).eq(2).addClass( 'logseverity' + data.severity.toLowerCase() );
             }
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "stateSave": true
     });
 
     //Prevents sorting the columns when clicking on the sorting headers
@@ -2901,7 +2907,8 @@ function showDataGroupDetails(datagroup, loadbalancer) {
                 "search": "Search all columns:"
             },
             "dom": 'frtilp',
-            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "stateSave": true
         });
 
     } else {
