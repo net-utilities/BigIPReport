@@ -1871,7 +1871,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
             log verbose "Caching LTM information from $BigIPHostname"
             Get-LTMInformation -f5 $F5 -LoadBalancer $LoadBalancerObjects
         } else {
-            log info "This load balancer is not active, and won't be indexed"
+            log info "$BigIPHostname is not active, and won't be indexed"
             Continue
         }
     }
