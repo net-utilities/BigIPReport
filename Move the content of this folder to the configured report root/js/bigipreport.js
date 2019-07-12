@@ -1032,6 +1032,15 @@ function setupVirtualServerTable() {
                         result += "Yes";
                     }
                 }
+                if (type == 'filter') {
+                    if (row && row.sslprofileclient && row.sslprofileclient != "None") {
+                        result += ' ' + row.sslprofileclient;
+                    }
+                    if (row && row.sslprofileserver && row.sslprofileserver != "None") {
+                        result += ' ' + row.sslprofileserver;
+                    }
+                    console.log(result);
+                }
                 return result;
             }
         }, {
