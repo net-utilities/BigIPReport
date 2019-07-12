@@ -1039,7 +1039,6 @@ function setupVirtualServerTable() {
                     if (row && row.sslprofileserver && row.sslprofileserver != "None") {
                         result += ' ' + row.sslprofileserver;
                     }
-                    console.log(result);
                 }
                 return result;
             }
