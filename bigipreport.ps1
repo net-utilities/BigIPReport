@@ -262,7 +262,7 @@ Param($ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.2.8"
+$Global:ScriptVersion = "5.2.9"
 
 #Enable case sensitive dictionaries
 function c@ {
