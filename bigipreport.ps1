@@ -299,8 +299,8 @@ Function log {
         $Global:LoggedErrors  += $Message
     }
 
-    # log erros, warnings, and info to loggederrors.json
-    if($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info"){
+    # log errors, warnings, info and success to loggederrors.json
+    if($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info" -Or $LogType -eq "success"){
         $LogLineDict = @{}
 
         $LogLineDict["date"] = $(Get-Date -UFormat %Y-%m-%d)
@@ -2334,6 +2334,20 @@ if($RealTimeStatusDetected){
 </html>
 "@)
 
+# Record some stats
+
+$StatsMsg = "Stats:"
+$StatsMsg += " G:" + $Global:DeviceGroups.Count
+$StatsMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
+$StatsMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Keys.Count
+$StatsMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
+$StatsMsg += " R:" + $Global:ReportObjects.Values.iRules.Keys.Count
+$StatsMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Keys.Count
+$StatsMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
+$StatsMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
+$StatsMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
+log info $StatsMsg
+
 # Write temporary files and then update the report
 
 $TemporaryFilesWritten = $false
@@ -2390,17 +2404,8 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
     }
 }
 
-# Record some stats
+# Done
 
 $DoneMsg = "Done."
-$DoneMsg += " G:" + $Global:DeviceGroups.Count
-$DoneMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
-$DoneMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Keys.Count
-$DoneMsg += " R:" + $Global:ReportObjects.Values.iRules.Keys.Count
-$DoneMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Keys.Count
-$DoneMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
-$DoneMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
-$DoneMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
-$DoneMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
 $DoneMsg += " T:" + $($(Get-Date)-$StartTime).totalminutes
 log verbose $DoneMsg
