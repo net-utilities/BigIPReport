@@ -176,8 +176,9 @@ $(window).on("load", function () {
             ", virtualservers:" + siteData.virtualservers.length +
             ", pools:" + siteData.pools.length +
             ", iRules:" + siteData.irules.length +
-            ", certificates:" + siteData.certificates.length +
             ", datagroups:" + siteData.datagroups.length +
+            ", certificates:" + siteData.certificates.length +
+            ", monitors:" + siteData.monitors.length +
             ", asmPolicies:" + siteData.asmPolicies.length +
             ".", "INFO");
 
