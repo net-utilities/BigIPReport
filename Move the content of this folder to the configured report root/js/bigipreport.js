@@ -984,7 +984,8 @@ function setupVirtualServerTable() {
             }
         }, {
             "className": "centeredCell",
-            "data": "description"
+            "data": "description",
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1013,7 +1014,8 @@ function setupVirtualServerTable() {
                     }
                     return result;
                 }
-            }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1042,7 +1044,8 @@ function setupVirtualServerTable() {
                     }
                 }
                 return result;
-            }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1051,7 +1054,8 @@ function setupVirtualServerTable() {
                 } else {
                     return "Yes";
                 }
-            }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1060,7 +1064,8 @@ function setupVirtualServerTable() {
                 } else {
                     return "Yes";
                 }
-            }
+            },
+            "visible": false
         }, {
             "data": "pools",
             "type": "html-num",
@@ -1754,9 +1759,11 @@ function setupCertificateTable() {
                     result += "<img class=\"flagicon\" alt=\"" + data.toLowerCase() + "\" src=\"images/flags/" + data.toLowerCase() + ".png\"/> ";
                 }
                 return result + " " + data;
-            }
+            },
+            "visible": false
         }, {
-            "data": "subject.stateName"
+            "data": "subject.stateName",
+            "visible": false
         }, {
             "data": "subject.organizationName"
         }, {
