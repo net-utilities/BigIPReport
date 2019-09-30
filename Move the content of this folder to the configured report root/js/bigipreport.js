@@ -296,22 +296,24 @@ function PoolMemberStatus(member) {
     return mStatus;
 }
 
-function PoolStatus(pool) {
+function PoolStatus(pool, type) {
     if (!pool) {
         return '';
     }
     var pStatus = pool.enabled.split('_')[2] + ':' + pool.availability.split('_')[2];
 
-    if (pStatus == "ENABLED:GREEN" || pStatus == "ENABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
-    } else if (pStatus == "ENABLED:RED" || pStatus == "DISABLED:RED") {
-        return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DOWN</span>';
-    } else if (pStatus == "DISABLED:GREEN") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>'
-    } else if (pStatus == "DISABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>';
+    if (type == 'display' || type == 'print') {
+        if (pStatus == "ENABLED:GREEN" || pStatus == "ENABLED:BLUE") {
+            return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
+        } else if (pStatus == "ENABLED:RED" || pStatus == "DISABLED:RED") {
+            return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DOWN</span>';
+        } else if (pStatus == "DISABLED:GREEN" || pStatus == "DISABLED:BLUE") {
+            return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>'
+        }
+        return pStatus;
+    } else {
+        return pStatus;
     }
-    return pStatus;
 }
 
 function VirtualServerStatus(row) {
@@ -597,16 +599,15 @@ function renderPool(loadbalancer, name, type) {
         return name;
     }
     var poolName=name.replace(/^\/Common\//,'');
-    var result = '';
-    if (type == 'display' || type == 'print') {
-        result += PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
-    }
+    var result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name), type);
     if (type == 'display') {
-        result += '<a';
+        result += '&nbsp;<a';
         result += ' class="tooltip"';
         result += ' data-originalpoolname="' + name + '"';
         result += ' data-loadbalancer="' + loadbalancer + '"';
         result += ' href="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+    } else {
+        result += ' ';
     }
     result += poolName;
     if (type == 'display') {
