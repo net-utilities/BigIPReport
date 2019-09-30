@@ -1407,6 +1407,7 @@ function setupPoolTable() {
             <tr>
                 <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
                 <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Description</span><input type="text" class="search" placeholder="Description" /></th>
                 <th><span style="display: none;">Orphan</span><input type="text" class="search" placeholder="Orphan" /></th>
                 <th><span style="display: none;">Method</span><input type="text" class="search" placeholder="Method" /></th>
                 <th><span style="display: none;">Members</span><input type="text" class="search" placeholder="Members" /></th>
@@ -1433,6 +1434,9 @@ function setupPoolTable() {
             "render": function (data, type, row) {
                 return renderPool(row.loadbalancer, data, type);
             }
+        }, {
+            "data": "description",
+            "visible": false
         }, {
             "data": "orphaned"
         }, {
@@ -2606,7 +2610,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 var xlate = "Automap";
                 break;
             case "SRC_TRANS_SNATPOOL":
-                var xlate = "SNAT Pool " + matchingvirtualserver.sourcexlatetype;
+                var xlate = "SNAT:" + matchingvirtualserver.sourcexlatepool;
                 break;
             case "OLDVERSION":
                 var xlate = "N/A in Bigip versions prior to 11.3";
