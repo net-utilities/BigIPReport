@@ -2933,9 +2933,9 @@ function showDataGroupDetails(datagroup, loadbalancer) {
         if (Object.keys(matchingdatagroup).length == 0) {
             html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group</td></tr>";
         } else {
-            for (var i in matchingdatagroup.data) {
-                html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagroup.data[i] + "</td></tr>";
-            }
+            siteData.datagroupdetailsTableData = $.map(matchingdatagroup.data, function(value, key) {
+                return {"key": key, "value": value};
+            });
         }
 
         html += '</tbody></table>'
@@ -2949,6 +2949,25 @@ function showDataGroupDetails(datagroup, loadbalancer) {
             "language": {
                 "search": "Search all columns:"
             },
+            "data": siteData.datagroupdetailsTableData,
+            "columns": [{
+                "data": "key",
+            }, {
+                "data": "value",
+                "render": function (data, type, row) {
+                    if (data.match(/^http(s)?:/)) {
+                        return '<a href="' + data + '">' + data + '</a>';
+                    } else {
+                        var pool = getPool("/Common/" + data, loadbalancer);
+                        if (pool) {
+                            // Click to see pool details
+                            return renderPool(loadbalancer, pool.name, type)
+                        } else {
+                            return data;
+                        }
+                    }
+                }
+            }],
             "dom": 'frtilp',
             "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             "stateSave": true
