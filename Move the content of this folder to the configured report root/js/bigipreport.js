@@ -284,14 +284,16 @@ function initializeStatusVIPs() {
 function PoolMemberStatus(member) {
     var mStatus = member.enabled.split('_')[2] + ':' + member.availability.split('_')[2];
 
-    if (mStatus == "ENABLED:GREEN" || mStatus == "ENABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Member is able to pass traffic"/></span><span class="textstatus">UP</span>';
+    if (mStatus == "ENABLED:GREEN") {
+        return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="' + mStatus + ' - Member is able to pass traffic"/></span><span class="textstatus">' + mStatus + '</span>';
+    } else if (mStatus == "ENABLED:BLUE") {
+        return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)" title="' + mStatus + ' - Member status unknown"/></span><span class="textstatus">' + mStatus + '</span>';
     } else if (mStatus == "ENABLED:RED" || mStatus == "DISABLED:RED") {
-        return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Member is unable to pass traffic"/></span><span class="textstatus">DOWN</span>';
+        return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="' + mStatus + ' - Member is unable to pass traffic"/></span><span class="textstatus">' + mStatus + '</span>';
     } else if (mStatus == "DISABLED:GREEN") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)" title="Member is available, but disabled"/></span><span class="textstatus">DISABLED</span>'
+        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)" title="' + mStatus + ' - Member is available, but disabled"/></span><span class="textstatus">' + mStatus + '</span>'
     } else if (mStatus == "DISABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Member is disabled"/></span><span class="textstatus">DISABLED</span>';
+        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="' + mStatus + ' - Member is disabled"/></span><span class="textstatus">' + mStatus + '</span>';
     }
     return mStatus;
 }
@@ -303,12 +305,14 @@ function PoolStatus(pool, type) {
     var pStatus = pool.enabled.split('_')[2] + ':' + pool.availability.split('_')[2];
 
     if (type == 'display' || type == 'print') {
-        if (pStatus == "ENABLED:GREEN" || pStatus == "ENABLED:BLUE") {
-            return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
+        if (pStatus == "ENABLED:GREEN") {
+            return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pStatus + ' - ' + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
+        } else if (pStatus == "ENABLED:BLUE") {
+            return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
         } else if (pStatus == "ENABLED:RED" || pStatus == "DISABLED:RED") {
-            return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DOWN</span>';
+            return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
         } else if (pStatus == "DISABLED:GREEN" || pStatus == "DISABLED:BLUE") {
-            return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>'
+            return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>'
         }
         return pStatus;
     } else {
@@ -323,24 +327,24 @@ function VirtualServerStatus(row) {
 
     if (vsStatus == "ENABLED:GREEN") {
         return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"' +
-            ' title="Available (Enabled) - The virtual server is available"/></span><span class="textstatus">UP</span>';
+            ' title="' + vsStatus + ' - The virtual server is available"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "ENABLED:BLUE") {
         return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"' +
-            ' title="Unknown (Enabled) - The children pool member(s) either don\'t have service checking enabled,' +
-            ' or service check results are not available yet"/></span><span class="textstatus">UNKNOWN</span>';
+            ' title="' + vsStatus + ' - The children pool member(s) either don\'t have service checking enabled,' +
+            ' or service check results are not available yet"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "ENABLED:RED") {
         return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"' +
-            ' title="Offline (Enabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>';
+            ' title="' + vsStatus + ' - The children pool member(s) are down"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "DISABLED:GREEN") {
         return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)"' +
-            ' title="Available (Disabled) - The virtual server is disabled"/></span><span class="textstatus">DISABLED</span>'
+            ' title="' + vsStatus + ' - The virtual server is disabled"/></span><span class="textstatus">' + vsStatus + '</span>'
     } else if (vsStatus == "DISABLED:BLUE") {
         return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"' +
-            ' title="Unknown (Disabled) - The children pool member(s) either don\'t have service checking enabled,' +
-            ' or service check results are not available yet"/></span><span class="textstatus">DISABLED</span>';
+            ' title="' + vsStatus + ' - The children pool member(s) either don\'t have service checking enabled,' +
+            ' or service check results are not available yet"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "DISABLED:RED") {
         return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)"' +
-            ' title="Offline (Disabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>'
+            ' title="' + vsStatus + ' - The children pool member(s) are down"/></span><span class="textstatus">' + vsStatus + '</span>'
     }
     return vsStatus;
 }
@@ -753,34 +757,36 @@ function setMemberState(statusSpan, memberStatus) {
     var statusIcon = $(statusSpan).find("span.statusicon");
     var textStatus = $(statusSpan).find("span.textstatus");
 
-    var icon, title, textStatus;
+    var icon, title, status;
 
     switch (memberStatus) {
         case "up":
             icon = "green-circle-checkmark.png";
             title = "Member is ready to accept traffic";
-            textStatus = "UP";
+            status = "ENABLED:GREEN";
             break;
         case "down":
             icon = "red-circle-cross.png";
             title = "Member is marked as down and unable to pass traffic";
-            textStatus = "UP";
+            status = "ENABLED:RED";
             break;
         case "session_disabled":
             icon = "black-circle-checkmark.png";
             title = "Member is ready to accept traffic, but is disabled";
-            textStatus = "UP";
+            status = "DISABLED:BLUE";
             break;
         default:
             icon = "blue-square-questionmark.png";
             title = "Unknown state";
-            textStatus = "UNKNOWN";
+            status = "ENABLED:BLUE";
             break;
     }
 
-    var html = "<span class=\"statusicon\"><img src=\"images/" + icon + "\" title=\"" + title + "\" alt=\"" + textStatus + "\"/></span><span class=\"textstatus\">" + textStatus + "</span>";
-    $(statusIcon).fadeOut(200).html(html).fadeIn(200);
+    var html = '<span class="textstatus">' + status + '</span>';
+    $(textStatus).html(html);
 
+    html = '<img src="images/' + icon + '" title="' + status + ' - ' + title + '" alt="' + status + '"/>'
+    $(statusIcon).fadeOut(200).html(html).fadeIn(200);
 }
 
 /********************************************************************************************************************************************************************************************

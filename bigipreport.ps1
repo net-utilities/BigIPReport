@@ -2278,9 +2278,11 @@ $Global:HTML = [System.Text.StringBuilder]::new()
             <div class="mainsection" id="preferences" style="display: none;"></div>
 
             <div class="mainsection" id="helpcontent" style="display: none;">
-                <h3>Filtering for pool members being down</h3>
-                <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<span style="color:red"><b>DOWN</b></span>", "<span style="color:green"><b>UP</b></span>" and "<b>DISABLED</b>".</p>
-                <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
+                <h3>Filtering on virtual server, pool or pool member status</h3>
+                <p>This is a bit of a hidden feature. In VirtualServer, Pool, and Member columns you can filter on status.
+                The status options are {ENABLED|DISABLED}:{<span style="color:blue"><b>BLUE</b></span>|<span style="color:green"><b>GREEN</b></span>|<span style="color:red"><b>RED</b></span>}.
+                For example, try searching for: "ENABLED:BLUE", ":RED" or "DISABLED:" as a general or field search.</p>
+                <p>It's not perfect since pools or members with any of these words in the name can also end up as results.</p>
                 <h3>Column filtering</h3>
                 <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
                 <h3>Pool member tests</h3>
