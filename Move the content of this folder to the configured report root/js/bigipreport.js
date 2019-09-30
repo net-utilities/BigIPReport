@@ -939,10 +939,11 @@ function setupVirtualServerTable() {
                     <th><span style="display: none;">Name</span><input type="text" name="name" class="search" placeholder="Name" /></th>
                     <th><span style="display: none;">Description</span><input type="text" name="description" class="search" placeholder="Description" /></th>
                     <th><span style="display: none;">IP:Port</span><input type="text" name="ipport" class="search" placeholder="IP:Port" /></th>
+                    <th><span style="display: none;">SNAT</span><input type="text" name="snat" class="search" placeholder="Source Translation" /></th>
                     <th><span style="display: none;">ASM</span><input type="text" name="asmpolicies" class="search" placeholder="ASM Policies" /></th>
                     <th><span style="display: none;">SSL</span><input type="text" name="sslprofile" class="search" placeholder="SSL Profile" /></th>
-                    <th><span style="display: none;">Compression</span><input name="compressionprofile" type="text" class="search" placeholder="Compression Profile" /></th>
-                    <th><span style="display: none;">Persistence</span><input type="text" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
+                    <th><span style="display: none;">Comp</span><input name="compressionprofile" type="text" class="search" placeholder="Compression Profile" /></th>
+                    <th><span style="display: none;">Persist</span><input type="text" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
                     <th><span style="display: none;">Pool/Members</span><input type="text" name="poolmembers" class="search" placeholder="Pool/Members" /></th>
                 </tr>
             </thead>
@@ -995,6 +996,28 @@ function setupVirtualServerTable() {
                 }
                 return result;
             }
+        }, {
+            "className": "centeredCell",
+            "render": function (data, type, row) {
+                if (!row.sourcexlatetype) {
+                    return "N/A";
+                } else {
+                    switch (row.sourcexlatetype) {
+                        case "SRC_TRANS_NONE":
+                            return "None";
+                        case "SRC_TRANS_AUTOMAP":
+                            return "Automap";
+                        case "SRC_TRANS_SNATPOOL":
+                            return "SNAT:" + row.sourcexlatepool;
+                        case "OLDVERSION":
+                            return "N/A in Bigip versions prior to 11.3";
+                        default:
+                            return "Unknown";
+                    }
+                    return result;
+                }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
