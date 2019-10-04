@@ -1146,6 +1146,7 @@ function setupVirtualServerTable() {
             ]
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1395,6 +1396,7 @@ function setupiRuleTable() {
             ],
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1421,6 +1423,8 @@ function setupiRuleTable() {
         expandPoolMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
         toggleAdcLinks();
     });
+
+    siteData.iRuleTable.draw();
 }
 
 function setupPoolTable() {
@@ -1547,6 +1551,7 @@ function setupPoolTable() {
             ],
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1572,6 +1577,8 @@ function setupPoolTable() {
         highlightAll(siteData.poolTable);
         toggleAdcLinks();
     });
+
+    siteData.poolTable.draw();
 }
 
 function setupDataGroupTable() {
@@ -1712,6 +1719,7 @@ function setupDataGroupTable() {
             ],
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1737,6 +1745,8 @@ function setupDataGroupTable() {
         highlightAll(siteData.dataGroupTable);
         toggleAdcLinks();
     });
+
+    siteData.dataGroupTable.draw();
 }
 
 function setupCertificateTable() {
@@ -1874,6 +1884,7 @@ function setupCertificateTable() {
             ]
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1996,6 +2007,7 @@ function setupLogsTable() {
             }
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -3001,6 +3013,7 @@ function showDataGroupDetails(datagroup, loadbalancer) {
             }],
             "dom": 'frtilp',
             "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "search": {"regex": localStorage.getItem("regexSearch") === "true"},
             "stateSave": true
         });
 
