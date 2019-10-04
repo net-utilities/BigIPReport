@@ -4,8 +4,6 @@
 
 *************************************************************************************************************************************************************************************/
 
-var asInitVals = new Array();
-
 var siteData = {};
 siteData.loggedErrors = new Array();
 
@@ -805,18 +803,17 @@ function highlightAll(table) {
     var body = $(table.table().body());
 
     body.unhighlight();
-    body.highlight(table.search());
+    var search=[table.search()];
 
     table.columns().every(function () {
 
-        var that = this;
-
         columnvalue = $('input', this.header()).val()
-
-        if (asInitVals.indexOf(columnvalue) == -1) {
-            body.highlight(columnvalue);
+        if (columnvalue) {
+            search.push(columnvalue);
         }
     });
+
+    body.highlight(search, {"regEx":localStorage.getItem("regexSearch") === "true"});
 }
 
 /******************************************************************************************************************************
@@ -882,7 +879,7 @@ function populateSearchParameters(updatehash) {
                 if ($('#allbigips_filter input')) {
                     $('#allbigips_filter input').val(vars[key]);
                     if (siteData.bigipTable) {
-                        siteData.bigipTable.search(vars[key]);
+                        siteData.bigipTable.search(vars[key], localStorage.getItem("regexSearch") === "true", false);
                         siteData.bigipTable.draw();
                     }
                 }
@@ -1170,7 +1167,7 @@ function setupVirtualServerTable() {
         $( 'input', this.header() ).on( 'keyup change', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1412,7 +1409,7 @@ function setupiRuleTable() {
         $( 'input', this.header() ).on( 'keyup change', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1564,7 +1561,7 @@ function setupPoolTable() {
         $( 'input', this.header() ).on( 'keyup change', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1729,7 +1726,7 @@ function setupDataGroupTable() {
         $( 'input', this.header() ).on( 'keyup change', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1891,7 +1888,7 @@ function setupCertificateTable() {
         $( 'input', this.header() ).on( 'keyup change', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -2013,7 +2010,7 @@ function setupLogsTable() {
         $( 'input', this.header() ).on( 'keyup change', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -2104,6 +2101,7 @@ function showPreferences(updatehash) {
                             <tbody>
                                 <tr><td>Expand all pool members</td><td class="preferencescheckbox"><input type="checkbox" id="autoExpandPools"></td></tr>
                                 <tr><td>Direct links to Big-IP objects</td><td class="preferencescheckbox"><input type="checkbox" id="adcLinks"></td></tr>
+                                <tr><td>Use Regular Expressions when searching</td><td class="preferencescheckbox"><input type="checkbox" id="regexSearch"></td></tr>
                             </tbody>
 
                         </table>
@@ -2112,9 +2110,10 @@ function showPreferences(updatehash) {
     //Populate the content
     $("div#preferences").html(settingsContent);
 
-    //Populate the settings according to the local storage or default settings of none exist
+    //Populate the settings according to the local storage or default settings if none exist
     $("#autoExpandPools").prop("checked", localStorage.getItem("autoExpandPools") === "true");
     $("#adcLinks").prop("checked", localStorage.getItem("showAdcLinks") === "true");
+    $("#regexSearch").prop("checked", localStorage.getItem("regexSearch") === "true");
 
     // if we change content rendering rules, we can redraw with:
     // siteData.bigipTable.clear().rows.add(siteData.virtualservers).draw();
@@ -2132,6 +2131,12 @@ function showPreferences(updatehash) {
     $("#adcLinks").on("click", function () {
         localStorage.setItem("showAdcLinks", this.checked);
         toggleAdcLinks();
+    });
+
+    //Event handler for regular expression searches
+    $("#regexSearch").on("click", function () {
+        localStorage.setItem("regexSearch", this.checked);
+        toggleRegexSearch();
     });
 
     //Make sure that the check boxes are checked according to the settings
@@ -2341,6 +2346,10 @@ function toggleAdcLinks() {
     }
 }
 
+function toggleRegexSearch() {
+    // TODO: re .search() and re .draw() all rendered tables
+}
+
 function toggleColumns() {
 
     $("#allbigips thead th input").each(function (index, tHeader) {
@@ -2400,7 +2409,8 @@ function updateLocationHash(updatehash = true) {
 
 function expandPoolMatches(resultset, searchstring) {
     if (localStorage.autoExpandPools !== "true" && searchstring != '') {
-        $(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
+        //$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
+        $(resultset).children().children().filter("td:has(span.highlight)").each(function () {
             if (this.classList.contains("PoolCell") || this.classList.contains("relative")) {
                 togglePool(this.id);
             }

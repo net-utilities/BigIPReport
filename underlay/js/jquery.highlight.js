@@ -6,8 +6,9 @@
  *
  * Code a little bit refactored and cleaned (in my humble opinion).
  * Most important changes:
- *  - has an option to highlight only entire words (wordsOnly - false by default),
- *  - has an option to be case sensitive (caseSensitive - false by default)
+ *  - option to highlight only entire words (wordsOnly - false by default),
+ *  - option to be case sensitive (caseSensitive - false by default)
+ *  - option to allow regular expressions (regEx - false by default)
  *  - highlight element tag and class names can be specified in options
  *
  * Usage:
@@ -36,6 +37,7 @@
  *   // remove custom highlight
  *   $('#content').unhighlight({ element: 'em', className: 'important' });
  *
+ * regEx added by: Tim Riker <Tim@Rikers.org>
  *
  * Copyright (c) 2009 Bartek Szopka
  *
@@ -80,18 +82,28 @@ jQuery.fn.unhighlight = function (options) {
 };
 
 jQuery.fn.highlight = function (words, options) {
-    var settings = { className: 'highlight', element: 'span', caseSensitive: false, wordsOnly: false };
+    var settings = { className: 'highlight', element: 'span', caseSensitive: false, wordsOnly: false, regEx: false };
     jQuery.extend(settings, options);
     
     if (words.constructor === String) {
         words = [words];
     }
     words = jQuery.grep(words, function(word, i){
-      return word != '';
+        return word != '';
     });
-    words = jQuery.map(words, function(word, i) {
-      return word.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-    });
+    if (settings.regEx) {
+        words = jQuery.map(words, function(word, i) {
+            if (RegExp(word) && ! RegExp(word).test('')) {
+                return word;
+            } else {
+                return word.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+            }
+        });
+    } else {
+        words = jQuery.map(words, function(word, i) {
+            return word.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+        });
+    }
     if (words.length == 0) { return this; };
 
     var flag = settings.caseSensitive ? "" : "i";
@@ -105,4 +117,3 @@ jQuery.fn.highlight = function (words, options) {
         jQuery.highlight(this, re, settings.element, settings.className);
     });
 };
-
