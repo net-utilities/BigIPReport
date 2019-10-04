@@ -2348,6 +2348,20 @@ function toggleAdcLinks() {
 
 function toggleRegexSearch() {
     // TODO: re .search() and re .draw() all rendered tables
+    var regexSearch = localStorage.getItem("regexSearch") === "true";
+    // siteData.poolTable.context['0'].oPreviousSearch.bRegex
+    tables = [
+        siteData.bigipTable,
+        siteData.poolTable,
+        siteData.iRuleTable,
+        siteData.dataGroupTable,
+        siteData.certificateTable,
+        siteData.logTable];
+    tables.forEach((table) => {
+        if (table) {
+            table.search(table.search(), regexSearch, !regexSearch).draw();
+        }
+    });
 }
 
 function toggleColumns() {
