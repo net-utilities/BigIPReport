@@ -1157,93 +1157,50 @@ function Get-LTMInformation {
 
     log verbose "Caching data groups"
 
+    #Region Cache Data groups
+
     $LoadBalancerObjects.DataGroups = c@{}
 
-    [array]$AddressClassList = $F5.LocalLBClass.get_address_class_list()
-    [array]$AddressClassKeys = $F5.LocalLBClass.get_address_class($AddressClassList)
-    [array]$AddressClassValues = $F5.LocalLBClass.get_address_class_member_data_value($AddressClassKeys)
-    [array]$ExternalClassList = $F5.LocalLBClass.get_external_class_list_v2()
+    $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
+    $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
+    $Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
 
-    #Get address type data groups data
-    For($i = 0;$i -lt $AddressClassList.Count;$i++){
+    $DataGroups = $Response.Content | ConvertFrom-Json
+
+    Foreach($DataGroup in $DataGroups.Items){
+            
         $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $AddressClassList[$i]
-        If ($ExternalClassList -Contains $ObjTempDataGroup.name){
-            $ObjTempDataGroup.type = "External Address"
-        } else {
-            $ObjTempDataGroup.type = "Address"
-        }
+        $ObjTempDataGroup.name = $DataGroup.fullPath
+        $ObjTempDataGroup.type = $DataGroup.type
+        $ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
         $Dgdata = New-Object System.Collections.Hashtable
 
-        for($x=0;$x -lt $AddressClassKeys[$i].members.Count;$x++){
-            $Key = [string]$AddressClassKeys[$i].members[$x].Address + " " + [string]$AddressClassKeys[$i].members[$x].Netmask
-            $Value = [string]$AddressClassValues[$i][$x]
-
-            $Dgdata.add($Key, $Value)
+        Foreach($Record in $DataGroup.records){
+            $DgData.Add($Record.name, $Record.data)
         }
 
         $ObjTempDataGroup.data = $Dgdata
-        $objTempDataGroup.loadbalancer = $LoadBalancerName
 
         $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
     }
 
-    $StringClassList = $F5.LocalLBClass.get_string_class_list()
-    $StringClassKeys = $F5.LocalLBClass.get_string_class($StringClassList)
-    $StringClassValues = $F5.LocalLBClass.get_string_class_member_data_value($StringClassKeys)
 
-    For($i = 0;$i -lt $StringClassList.Count;$i++){
+    $Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
+
+    $DataGroups = $Response.Content | ConvertFrom-Json
+
+    Foreach($DataGroup in $DataGroups.Items){
+            
         $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $StringClassList[$i]
-        If ($ExternalClassList -Contains $ObjTempDataGroup.name){
-            $ObjTempDataGroup.type = "External String"
-        } else {
-            $ObjTempDataGroup.type = "String"
-        }
-
-        $Dgdata = New-Object System.Collections.Hashtable
-
-        for($x=0;$x -lt $StringClassKeys[$i].members.Count;$x++){
-            $Key = [string]$StringClassKeys[$i].members[$x]
-            $Value = [string]$StringClassValues[$i][$x]
-
-            $Dgdata.add($Key, $Value)
-        }
-
-        $ObjTempDataGroup.data = $Dgdata
+        $ObjTempDataGroup.name = $DataGroup.fullPath
+        $ObjTempDataGroup.type = $DataGroup.type
         $ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
         $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
     }
 
-    $ValueClassList = $F5.LocalLBClass.get_value_class_list()
-    $ValueClassKeys = $F5.LocalLBClass.get_value_class($ValueClassList)
-    $ValueClassValues = $F5.LocalLBClass.get_value_class_member_data_value($ValueClassKeys)
-
-    For($i = 0;$i -lt $ValueClassList.Count;$i++){
-        $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $ValueClassList[$i]
-        If ($ExternalClassList -Contains $ObjTempDataGroup.name){
-            $ObjTempDataGroup.type = "External Integer"
-        } else {
-            $ObjTempDataGroup.type = "Integer"
-        }
-
-        $Dgdata = New-Object System.Collections.Hashtable
-
-        for($x=0;$x -lt $ValueClassKeys[$i].members.Count;$x++){
-            $Key = [string]$ValueClassKeys[$i].members[$x]
-            $Value = [string]$ValueClassValues[$i][$x]
-
-            $Dgdata.add($Key, $Value)
-        }
-
-        $ObjTempDataGroup.data = $Dgdata
-        $ObjTempDataGroup.loadbalancer = $LoadBalancerName
-
-        $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
-    }
+    #EndRegion
 
     #EndRegion
     #EndRegion
