@@ -984,7 +984,7 @@ function Get-LTMInformation {
                 log info "Version 12+ with ASM. Getting REST token for ASM information"
                 $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
 
-                log verbose "Getting ASM Policy information"
+                log verbose "Getting ASM Policy information from $LoadbalancerName"
 
                 $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
@@ -1018,7 +1018,7 @@ function Get-LTMInformation {
 
     #Region Cache certificate information
 
-    log verbose "Caching certificates"
+    log verbose "Caching certificates from $LoadbalancerName"
 
     $LoadBalancerObjects.Certificates = c@{}
 
@@ -1084,7 +1084,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Monitors = c@{}
 
-    log verbose "Caching monitors"
+    log verbose "Caching monitors from $LoadbalancerName"
 
     [array]$MonitorList = $F5.LocalLBMonitor.get_template_list()
 
@@ -1157,7 +1157,7 @@ function Get-LTMInformation {
 
     #Region Cache Data groups
 
-    log verbose "Caching data groups"
+    log verbose "Caching data groups from $LoadbalancerName"
 
     $LoadBalancerObjects.DataGroups = c@{}
 
@@ -1252,7 +1252,7 @@ function Get-LTMInformation {
 
     #Region Caching Pool information
 
-    log verbose "Caching Pools"
+    log verbose "Caching Pools from $LoadbalancerName"
 
     $LoadBalancerObjects.Pools = c@{}
 
@@ -1321,7 +1321,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Datagroup Pools
-    log verbose "Detecting pools referenced by datagroups"
+    log verbose "Detecting pools referenced by datagroups on $LoadbalancerName"
 
     $Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object -Unique
 
@@ -1332,6 +1332,8 @@ function Get-LTMInformation {
         $Partition = $DataGroup.name.split("/")[1]
 
         Foreach($TempPool in $DataGroup.data.Values) {
+
+            if (!$TempPool) {continue}
 
             if(-not $TempPool.contains("/")){
                 $TempPool = "/$Partition/$TempPool"
@@ -1351,7 +1353,7 @@ function Get-LTMInformation {
 
     #Region Cache information about irules
 
-    log verbose "Caching iRules"
+    log verbose "Caching iRules from $LoadbalancerName"
 
     $DataGroups = $LoadBalancerObjects.DataGroups.Keys | Sort-Object -Unique
 
@@ -1411,7 +1413,7 @@ function Get-LTMInformation {
 
     #Region Cache Virtual Server information
 
-    log verbose "Caching Virtual servers"
+    log verbose "Caching Virtual servers from $LoadbalancerName"
 
     $LoadBalancerObjects.VirtualServers = c@{}
 
@@ -1596,7 +1598,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Orphaned Pools
-    log verbose "Detecting orphaned pools"
+    log verbose "Detecting orphaned pools on $LoadbalancerName"
 
     $LoadBalancerObjects.OrphanPools = @()
 
@@ -1741,7 +1743,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
         $success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
 
         if($?){
-            log success "iControl session successfully established"
+            log success "iControl session to $Device successfully established"
             $ErrorActionPreference = "Continue"
         } Else {
             $F5 = Get-F5.iControl
@@ -1771,14 +1773,14 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 
         $ObjLoadBalancer.isonlydevice = $IsOnlyDevice
 
-        log verbose "Getting hostname"
+        log verbose "Getting hostname from $Device"
 
         $BigIPHostname = $F5.SystemInet.get_hostname()
 
         if($?){
-            log verbose "Hostname is $BigipHostname"
+            log verbose "Hostname is $BigipHostname for $Device"
         } else {
-            log error "Failed to get hostname"
+            log error "Failed to get hostname from $Device"
         }
 
         #Get information about ip, name, model and category
@@ -1819,7 +1821,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
         $ObjLoadBalancer.statusvip = $ObjStatusVIP
 
         #Region Cache Load balancer information
-        log verbose "Fetching information about the device"
+        log verbose "Fetching information about $BigIPHostname"
 
         #Get the version information
         $VersionInformation = ($F5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
