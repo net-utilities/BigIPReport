@@ -984,7 +984,7 @@ function Get-LTMInformation {
                 log info "Version 12+ with ASM. Getting REST token for ASM information"
                 $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
 
-                log verbose "Getting ASM Policy information from $LoadbalancerName"
+                log verbose "Getting ASM Policy information from $LoadBalancerName"
 
                 $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
@@ -1003,7 +1003,7 @@ function Get-LTMInformation {
                     $LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
                 }
             } Catch {
-                log error "Unable to get a valid token from $LoadbalancerName."
+                log error "Unable to get a valid token from $LoadBalancerName."
             }
 
             $ErrorActionPreference = "Continue"
@@ -1018,7 +1018,7 @@ function Get-LTMInformation {
 
     #Region Cache certificate information
 
-    log verbose "Caching certificates from $LoadbalancerName"
+    log verbose "Caching certificates from $LoadBalancerName"
 
     $LoadBalancerObjects.Certificates = c@{}
 
@@ -1049,7 +1049,7 @@ function Get-LTMInformation {
         $ObjCertificate.expirationDate = $Certificate.certificate.expiration_date
         $ObjCertificate.subject = $ObjSubject
         $ObjCertificate.issuer = $ObjIssuer
-        $ObjCertificate.loadbalancer = $LoadbalancerName
+        $ObjCertificate.loadbalancer = $LoadBalancerName
 
         $LoadBalancerObjects.Certificates.add($ObjCertificate.fileName, $ObjCertificate)
     }
@@ -1084,7 +1084,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Monitors = c@{}
 
-    log verbose "Caching monitors from $LoadbalancerName"
+    log verbose "Caching monitors from $LoadBalancerName"
 
     [array]$MonitorList = $F5.LocalLBMonitor.get_template_list()
 
@@ -1157,7 +1157,7 @@ function Get-LTMInformation {
 
     #Region Cache Data groups
 
-    log verbose "Caching data groups from $LoadbalancerName"
+    log verbose "Caching data groups from $LoadBalancerName"
 
     $LoadBalancerObjects.DataGroups = c@{}
 
@@ -1165,6 +1165,8 @@ function Get-LTMInformation {
     [array]$AddressClassKeys = $F5.LocalLBClass.get_address_class($AddressClassList)
     [array]$AddressClassValues = $F5.LocalLBClass.get_address_class_member_data_value($AddressClassKeys)
     [array]$ExternalClassList = $F5.LocalLBClass.get_external_class_list_v2()
+    # TODO: how to we get the file contents?
+    #[array]$ExternalClassFiles = $F5.LocalLBClass.get_external_class_file_name_v2($ExternalClassList)
 
     #Get address type data groups data
     For($i = 0;$i -lt $AddressClassList.Count;$i++){
@@ -1252,7 +1254,7 @@ function Get-LTMInformation {
 
     #Region Caching Pool information
 
-    log verbose "Caching Pools from $LoadbalancerName"
+    log verbose "Caching Pools from $LoadBalancerName"
 
     $LoadBalancerObjects.Pools = c@{}
 
@@ -1321,7 +1323,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Datagroup Pools
-    log verbose "Detecting pools referenced by datagroups on $LoadbalancerName"
+    log verbose "Detecting pools referenced by datagroups on $LoadBalancerName"
 
     $Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object -Unique
 
@@ -1353,7 +1355,7 @@ function Get-LTMInformation {
 
     #Region Cache information about irules
 
-    log verbose "Caching iRules from $LoadbalancerName"
+    log verbose "Caching iRules from $LoadBalancerName"
 
     $DataGroups = $LoadBalancerObjects.DataGroups.Keys | Sort-Object -Unique
 
@@ -1413,7 +1415,7 @@ function Get-LTMInformation {
 
     #Region Cache Virtual Server information
 
-    log verbose "Caching Virtual servers from $LoadbalancerName"
+    log verbose "Caching Virtual servers from $LoadBalancerName"
 
     $LoadBalancerObjects.VirtualServers = c@{}
 
@@ -1598,7 +1600,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Orphaned Pools
-    log verbose "Detecting orphaned pools on $LoadbalancerName"
+    log verbose "Detecting orphaned pools on $LoadBalancerName"
 
     $LoadBalancerObjects.OrphanPools = @()
 
