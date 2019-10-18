@@ -248,8 +248,8 @@
 #        5.2.8        2019-06-13      Added favicon, new icons for pools and devices and making the device          Patrik Jonsson No
 #                                     serial number correct for virtual editions
 #        5.2.9        2019-06-23      Saving state of column toggles                                                Tim Riker      No
-#        5.3.0        2019-10-15      stats to loggederrors, hide columns by default, links in datagroups           Tim Riker      No
-#                                     snat pool, new status searching, rename "underlay", regex search
+#        5.3.0        2019-10-15      stats to loggederrors, hide some columns by default, links in datagroups      Tim Riker      No
+#                                     snat pool, new status searching, rename "underlay", regex search, bug fixes
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -2308,7 +2308,8 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         <div class="footer">
             The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).
             Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-            BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
+            BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+            and <a href="https://rikers.org/">Tim Riker</a>.
         </div>
 "@)
 
