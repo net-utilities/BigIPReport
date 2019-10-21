@@ -1181,8 +1181,12 @@ function Get-LTMInformation {
         $Dgdata = New-Object System.Collections.Hashtable
 
         for($x=0;$x -lt $AddressClassKeys[$i].members.Count;$x++){
-            $Key = [string]$AddressClassKeys[$i].members[$x].Address + " " + [string]$AddressClassKeys[$i].members[$x].Netmask
-            $Value = [string]$AddressClassValues[$i][$x]
+            $Key = [string]$AddressClassKeys[$i].members[$x].Address + "/" + [string]$AddressClassKeys[$i].members[$x].Netmask
+            try {
+                $Value = [string]$AddressClassValues[$i][$x]
+            } catch {
+                $Value = "";
+            }
 
             $Dgdata.add($Key, $Value)
         }
