@@ -2619,9 +2619,9 @@ function getMonitorRequestParameters(sendstring) {
     }
 
     request['verb'] = sendstringarr[0];
-    request['uri'] = sendstringarr[1].replace('\\r\\n', '');
+    request['uri'] = sendstringarr[1].replace('\\\\r\\\\n', '');
 
-    var headers = sendstring.split('\\r\\n');
+    var headers = sendstring.split('\\\\r\\\\n');
 
     if (headers.length > 1) {
 
@@ -3154,7 +3154,6 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         if(['HTTP', 'HTTPS'].includes(protocol)){
                         
                             requestparameters = getMonitorRequestParameters(sendstring)
-                            globheader = requestparameters;
 
                             if (requestparameters['verb'] === 'GET' || requestparameters['verb'] === 'HEAD') {
 
@@ -3171,27 +3170,27 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                                     headername = headerarr[0].trim();
                                     headervalue = headerarr[1].trim();
 
-                                    curlcommand += ` --header &quot;${headername}:${headervalue}&quot;`;
+                                    curlcommand += ` -H &quot;${headername}:${headervalue}&quot;`;
                                 }
 
-                                curlcommand += `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
+                                var url = `${protocol.toLowerCase()}://${member.ip}:${member.port}${requestparameters['uri']}`;
+                                curlcommand += ` ${url}`;
                             
                             }
 
-                            curllink = `<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
-                            ' data-type="curl">Curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
-                            
+                            curllink = `<a href="${url}" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            ' data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
                         }
 
                         if(protocol === 'HTTP' || protocol === 'TCP' || protocol === 'TCP_HALF_OPEN'){
                             var netcatcommand = `echo -ne "${sendstring}" | nc ${member.ip} ${member.port}`;
-                            netcatlink = `<a href="javascript:void(0); target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            netcatlink = `<a href="javascript:selectMonitorInpuText(this)" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
                             ' data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'${netcatcommand}\'></p></a>`;
                         }
 
                         if(protocol === 'HTTP' || protocol === 'HTTPS'){
-                            var url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
-                            httplink = `<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            var url = `${protocol.toLowerCase()}://${member.ip}:${member.port}${requestparameters['uri']}`;
+                            httplink = `<a href="${url}" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
                             data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${url}"></p></a>`
                         }
 
@@ -3205,9 +3204,7 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                 table += `
                         </table>
                         <br>`
-
             }
-
 
             table += '</tbody></table>';
         }
