@@ -2610,24 +2610,26 @@ function selectMonitorInpuText(e) {
 
 function getMonitorRequestParameters(sendstring) {
 
-    var sendstringarr = sendstring.split(" ");
-
     var request = {
         verb: "",
         uri: "",
         headers: []
     }
 
+    var lines = sendstring.split(/\\r\\n|\\\\r\\\\n/);
+
+    var sendstringarr = lines[0].split(" ");
+
     request['verb'] = sendstringarr[0];
-    request['uri'] = sendstringarr[1].replace('\\\\r\\\\n', '');
+    request['uri'] = sendstringarr[1];
+    request['version'] = sendstringarr[2];
 
-    var headers = sendstring.split('\\\\r\\\\n');
 
-    if (headers.length > 1) {
+    if (lines.length > 1) {
 
-        for (i = 1; i < headers.length; i++) {
+        for (i = 1; i < lines.length; i++) {
 
-            var header = headers[i];
+            var header = lines[i];
 
             if (header.indexOf(":") >= 0) {
                 if (header.split(":").length == 2) {
@@ -3152,7 +3154,7 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         let sendstring = matchingmonitors[i].sendstring;
 
                         if(['HTTP', 'HTTPS'].includes(protocol)){
-                        
+
                             requestparameters = getMonitorRequestParameters(sendstring)
 
                             if (requestparameters['verb'] === 'GET' || requestparameters['verb'] === 'HEAD') {
@@ -3161,6 +3163,10 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
 
                                 if (requestparameters['verb'] === 'HEAD') {
                                     curlcommand += ' -I'
+                                }
+
+                                if (requestparameters['version'] === 'HTTP/1.0') {
+                                    curlcommand += ' -0'
                                 }
 
                                 for (var x in requestparameters['headers']) {
@@ -3175,7 +3181,6 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
 
                                 var url = `${protocol.toLowerCase()}://${member.ip}:${member.port}${requestparameters['uri']}`;
                                 curlcommand += ` ${url}`;
-                            
                             }
 
                             curllink = `<a href="${url}" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
