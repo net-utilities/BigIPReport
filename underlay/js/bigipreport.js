@@ -1107,7 +1107,8 @@ function setupVirtualServerTable() {
         "buttons": {
             "buttons": [
                 {
-                    "text": 'Reset filters',
+                    "text": 'Reset',
+                    "titleAttr": "Clear global and column filters",
                     "className": "tableHeaderColumnButton resetFilters",
                     "action": function ( e, dt, node, config ) {
 
@@ -1119,9 +1120,35 @@ function setupVirtualServerTable() {
                         updateLocationHash();
                     }
                 },
+                {
+                    "text": 'e',
+                    "titleAttr": 'expand normal expansion',
+                    "className": "tableHeaderColumnButton toggleExpansion",
+                    "action": function ( e, dt, node, config ) {
+                        switch(node['0'].innerText) {
+                            case 'e':
+                                hidePools(false);
+                                node['0'].innerHTML = '<span>c</span>';
+                                node['0'].title = 'Temporarily collapse all pools';
+                                break;
+                            case 'c':
+                                hidePools(true);
+                                node['0'].innerHTML = '<span>r</span>';
+                                node['0'].title = 'Restore normal expansion';
+                                break;
+                            case 'r':
+                                hidePools(true);
+                                expandPoolMatches($(siteData.bigipTable.table().body()), siteData.bigipTable.search());
+                                node['0'].innerHTML = '<span>e</span>';
+                                node['0'].title = 'Temporarily expand all pools';
+                                break;
+                        }
+                    }
+                },
                 "columnsToggle",
                 {
                     "extend": "copyHtml5",
+                    "titleAttr": "Copy current filtered results as HTML 5 to clipboard",
                     "className": "tableHeaderColumnButton exportFunctions",
                     "exportOptions": {
                         "columns": ":visible",
@@ -1131,6 +1158,7 @@ function setupVirtualServerTable() {
                 },
                 {
                     "extend": "print",
+                    "titleAttr": "Print current filtered results",
                     "className": "tableHeaderColumnButton exportFunctions",
                     "exportOptions": {
                         "columns": ":visible",
@@ -1140,6 +1168,7 @@ function setupVirtualServerTable() {
                 },
                 {
                     "extend": "csvHtml5",
+                    "titleAttr": "Download current filtered results in CSV format",
                     "className": "tableHeaderColumnButton exportFunctions",
                     "action": downloadCSV
                 }
@@ -1179,17 +1208,16 @@ function setupVirtualServerTable() {
 
         var body = $(siteData.bigipTable.table().body());
 
-        highlightAll(siteData.bigipTable);
-        expandPoolMatches(body, siteData.bigipTable.search());
+        // reset toggleExpansion button
+        var button = $('div#allbigips_wrapper div.dt-buttons button.toggleExpansion');
+        button[0].innerHTML = '<span>e<span>'
+        button[0].title = 'Temporarily expand all pools';
+
         hidePools();
         toggleAdcLinks();
-
-        if (siteData.bigipTable.search() != "") {
-            expandPoolMatches(body, siteData.bigipTable.search());
-        }
-
+        highlightAll(siteData.bigipTable);
+        expandPoolMatches(body, siteData.bigipTable.search());
         setPoolTableCellWidth();
-
     });
 
     $('div#allbigips_filter.dataTables_filter input').on('keyup input', function () {
@@ -1201,8 +1229,8 @@ function setupVirtualServerTable() {
 
         $('input', this.header()).on('keyup change', function () {
             updateLocationHash();
-            expandPoolMatches($(siteData.bigipTable.table().body()), $(this).val());
             highlightAll(siteData.bigipTable);
+            expandPoolMatches($(siteData.bigipTable.table().body()), $(this).val());
         });
 
     });
@@ -2448,17 +2476,17 @@ function expandPoolMatches(resultset, searchstring) {
     Collapses all pool cells in the main table
 ******************************************************************************************************************************/
 
-function hidePools() {
-    if (localStorage.autoExpandPools === "true") {
-        $(".AssociatedPoolsInfo").hide();
-        $('.pooltablediv').show();
-        $('.collapse').show();
-        $('.expand').hide();
-    } else {
+function hidePools(hide = !(localStorage.autoExpandPools === "true")) {
+    if (hide) {
         $('.pooltablediv').hide();
         $('.collapse').hide();
         $('.expand').show();
         $('.AssociatedPoolsInfo').show();
+    } else {
+        $(".AssociatedPoolsInfo").hide();
+        $('.expand').hide();
+        $('.collapse').show();
+        $('.pooltablediv').show();
     }
 }
 
