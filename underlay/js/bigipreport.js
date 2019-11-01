@@ -4,8 +4,6 @@
 
 *************************************************************************************************************************************************************************************/
 
-var asInitVals = new Array();
-
 var siteData = {};
 siteData.loggedErrors = new Array();
 
@@ -176,8 +174,9 @@ $(window).on("load", function () {
             ", virtualservers:" + siteData.virtualservers.length +
             ", pools:" + siteData.pools.length +
             ", iRules:" + siteData.irules.length +
-            ", certificates:" + siteData.certificates.length +
             ", datagroups:" + siteData.datagroups.length +
+            ", certificates:" + siteData.certificates.length +
+            ", monitors:" + siteData.monitors.length +
             ", asmPolicies:" + siteData.asmPolicies.length +
             ".", "INFO");
 
@@ -283,34 +282,40 @@ function initializeStatusVIPs() {
 function PoolMemberStatus(member) {
     var mStatus = member.enabled.split('_')[2] + ':' + member.availability.split('_')[2];
 
-    if (mStatus == "ENABLED:GREEN" || mStatus == "ENABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="Member is able to pass traffic"/></span><span class="textstatus">UP</span>';
+    if (mStatus == "ENABLED:GREEN") {
+        return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="' + mStatus + ' - Member is able to pass traffic"/></span><span class="textstatus">' + mStatus + '</span>';
+    } else if (mStatus == "ENABLED:BLUE") {
+        return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)" title="' + mStatus + ' - Member status unknown"/></span><span class="textstatus">' + mStatus + '</span>';
     } else if (mStatus == "ENABLED:RED" || mStatus == "DISABLED:RED") {
-        return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="Member is unable to pass traffic"/></span><span class="textstatus">DOWN</span>';
+        return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="' + mStatus + ' - Member is unable to pass traffic"/></span><span class="textstatus">' + mStatus + '</span>';
     } else if (mStatus == "DISABLED:GREEN") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)" title="Member is available, but disabled"/></span><span class="textstatus">DISABLED</span>'
+        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)" title="' + mStatus + ' - Member is available, but disabled"/></span><span class="textstatus">' + mStatus + '</span>'
     } else if (mStatus == "DISABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="Member is disabled"/></span><span class="textstatus">DISABLED</span>';
+        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="' + mStatus + ' - Member is disabled"/></span><span class="textstatus">' + mStatus + '</span>';
     }
     return mStatus;
 }
 
-function PoolStatus(pool) {
+function PoolStatus(pool, type) {
     if (!pool) {
         return '';
     }
     var pStatus = pool.enabled.split('_')[2] + ':' + pool.availability.split('_')[2];
 
-    if (pStatus == "ENABLED:GREEN" || pStatus == "ENABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
-    } else if (pStatus == "ENABLED:RED" || pStatus == "DISABLED:RED") {
-        return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DOWN</span>';
-    } else if (pStatus == "DISABLED:GREEN") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>'
-    } else if (pStatus == "DISABLED:BLUE") {
-        return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pool.status + '"/></span><span class="textstatus">DISABLED</span>';
+    if (type == 'display' || type == 'print') {
+        if (pStatus == "ENABLED:GREEN") {
+            return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pStatus + ' - ' + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
+        } else if (pStatus == "ENABLED:BLUE") {
+            return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
+        } else if (pStatus == "ENABLED:RED" || pStatus == "DISABLED:RED") {
+            return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>';
+        } else if (pStatus == "DISABLED:GREEN" || pStatus == "DISABLED:BLUE") {
+            return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span><span class="textstatus">' + pStatus + '</span>'
+        }
+        return pStatus;
+    } else {
+        return pStatus;
     }
-    return pStatus;
 }
 
 function VirtualServerStatus(row) {
@@ -320,24 +325,24 @@ function VirtualServerStatus(row) {
 
     if (vsStatus == "ENABLED:GREEN") {
         return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"' +
-            ' title="Available (Enabled) - The virtual server is available"/></span><span class="textstatus">UP</span>';
+            ' title="' + vsStatus + ' - The virtual server is available"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "ENABLED:BLUE") {
         return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"' +
-            ' title="Unknown (Enabled) - The children pool member(s) either don\'t have service checking enabled,' +
-            ' or service check results are not available yet"/></span><span class="textstatus">UNKNOWN</span>';
+            ' title="' + vsStatus + ' - The children pool member(s) either don\'t have service checking enabled,' +
+            ' or service check results are not available yet"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "ENABLED:RED") {
         return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"' +
-            ' title="Offline (Enabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>';
+            ' title="' + vsStatus + ' - The children pool member(s) are down"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "DISABLED:GREEN") {
         return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)"' +
-            ' title="Available (Disabled) - The virtual server is disabled"/></span><span class="textstatus">DISABLED</span>'
+            ' title="' + vsStatus + ' - The virtual server is disabled"/></span><span class="textstatus">' + vsStatus + '</span>'
     } else if (vsStatus == "DISABLED:BLUE") {
         return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"' +
-            ' title="Unknown (Disabled) - The children pool member(s) either don\'t have service checking enabled,' +
-            ' or service check results are not available yet"/></span><span class="textstatus">DISABLED</span>';
+            ' title="' + vsStatus + ' - The children pool member(s) either don\'t have service checking enabled,' +
+            ' or service check results are not available yet"/></span><span class="textstatus">' + vsStatus + '</span>';
     } else if (vsStatus == "DISABLED:RED") {
         return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)"' +
-            ' title="Offline (Disabled) - The children pool member(s) are down"/></span><span class="textstatus">DOWN</span>'
+            ' title="' + vsStatus + ' - The children pool member(s) are down"/></span><span class="textstatus">' + vsStatus + '</span>'
     }
     return vsStatus;
 }
@@ -596,16 +601,15 @@ function renderPool(loadbalancer, name, type) {
         return name;
     }
     var poolName=name.replace(/^\/Common\//,'');
-    var result = '';
-    if (type == 'display' || type == 'print') {
-        result += PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name)) + '&nbsp;';
-    }
+    var result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name), type);
     if (type == 'display') {
-        result += '<a';
+        result += '&nbsp;<a';
         result += ' class="tooltip"';
         result += ' data-originalpoolname="' + name + '"';
         result += ' data-loadbalancer="' + loadbalancer + '"';
         result += ' href="Javascript:showPoolDetails(\'' + name + '\',\'' + loadbalancer + '\');">';
+    } else {
+        result += ' ';
     }
     result += poolName;
     if (type == 'display') {
@@ -751,34 +755,36 @@ function setMemberState(statusSpan, memberStatus) {
     var statusIcon = $(statusSpan).find("span.statusicon");
     var textStatus = $(statusSpan).find("span.textstatus");
 
-    var icon, title, textStatus;
+    var icon, title, status;
 
     switch (memberStatus) {
         case "up":
             icon = "green-circle-checkmark.png";
             title = "Member is ready to accept traffic";
-            textStatus = "UP";
+            status = "ENABLED:GREEN";
             break;
         case "down":
             icon = "red-circle-cross.png";
             title = "Member is marked as down and unable to pass traffic";
-            textStatus = "UP";
+            status = "ENABLED:RED";
             break;
         case "session_disabled":
             icon = "black-circle-checkmark.png";
             title = "Member is ready to accept traffic, but is disabled";
-            textStatus = "UP";
+            status = "DISABLED:BLUE";
             break;
         default:
             icon = "blue-square-questionmark.png";
             title = "Unknown state";
-            textStatus = "UNKNOWN";
+            status = "ENABLED:BLUE";
             break;
     }
 
-    var html = "<span class=\"statusicon\"><img src=\"images/" + icon + "\" title=\"" + title + "\" alt=\"" + textStatus + "\"/></span><span class=\"textstatus\">" + textStatus + "</span>";
-    $(statusIcon).fadeOut(200).html(html).fadeIn(200);
+    var html = '<span class="textstatus">' + status + '</span>';
+    $(textStatus).html(html);
 
+    html = '<img src="images/' + icon + '" title="' + status + ' - ' + title + '" alt="' + status + '"/>'
+    $(statusIcon).fadeOut(200).html(html).fadeIn(200);
 }
 
 /********************************************************************************************************************************************************************************************
@@ -797,18 +803,17 @@ function highlightAll(table) {
     var body = $(table.table().body());
 
     body.unhighlight();
-    body.highlight(table.search());
+    var search=[table.search()];
 
     table.columns().every(function () {
 
-        var that = this;
-
         columnvalue = $('input', this.header()).val()
-
-        if (asInitVals.indexOf(columnvalue) == -1) {
-            body.highlight(columnvalue);
+        if (columnvalue) {
+            search.push(columnvalue);
         }
     });
+
+    body.highlight(search, {"regEx":localStorage.getItem("regexSearch") === "true"});
 }
 
 /******************************************************************************************************************************
@@ -874,7 +879,7 @@ function populateSearchParameters(updatehash) {
                 if ($('#allbigips_filter input')) {
                     $('#allbigips_filter input').val(vars[key]);
                     if (siteData.bigipTable) {
-                        siteData.bigipTable.search(vars[key]);
+                        siteData.bigipTable.search(vars[key], localStorage.getItem("regexSearch") === "true", false);
                         siteData.bigipTable.draw();
                     }
                 }
@@ -934,15 +939,16 @@ function setupVirtualServerTable() {
         <table id="allbigips" class="bigiptable">
             <thead>
                 <tr>
-                    <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
-                    <th><span style="display: none;">Name</span><input type="text" name="name" class="search" placeholder="Name" /></th>
-                    <th><span style="display: none;">Description</span><input type="text" name="description" class="search" placeholder="Description" /></th>
-                    <th><span style="display: none;">IP:Port</span><input type="text" name="ipport" class="search" placeholder="IP:Port" /></th>
-                    <th><span style="display: none;">ASM</span><input type="text" name="asmpolicies" class="search" placeholder="ASM Policies" /></th>
-                    <th><span style="display: none;">SSL</span><input type="text" name="sslprofile" class="search" placeholder="SSL Profile" /></th>
-                    <th><span style="display: none;">Compression</span><input name="compressionprofile" type="text" class="search" placeholder="Compression Profile" /></th>
-                    <th><span style="display: none;">Persistence</span><input type="text" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
-                    <th><span style="display: none;">Pool/Members</span><input type="text" name="poolmembers" class="search" placeholder="Pool/Members" /></th>
+                    <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
+                    <th><span style="display: none;">Name</span><input type="search" name="name" class="search" placeholder="Name" /></th>
+                    <th><span style="display: none;">Description</span><input type="search" name="description" class="search" placeholder="Description" /></th>
+                    <th><span style="display: none;">IP:Port</span><input type="search" name="ipport" class="search" placeholder="IP:Port" /></th>
+                    <th><span style="display: none;">SNAT</span><input type="search" name="snat" class="search" placeholder="Source Translation" /></th>
+                    <th><span style="display: none;">ASM</span><input type="search" name="asmpolicies" class="search" placeholder="ASM Policies" /></th>
+                    <th><span style="display: none;">SSL</span><input type="search" name="sslprofile" class="search" placeholder="SSL Profile" /></th>
+                    <th><span style="display: none;">Comp</span><input name="compressionprofile" type="search" class="search" placeholder="Compression Profile" /></th>
+                    <th><span style="display: none;">Persist</span><input type="search" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
+                    <th><span style="display: none;">Pool/Members</span><input type="search" name="poolmembers" class="search" placeholder="Pool/Members" /></th>
                 </tr>
             </thead>
             <tbody>
@@ -983,7 +989,8 @@ function setupVirtualServerTable() {
             }
         }, {
             "className": "centeredCell",
-            "data": "description"
+            "data": "description",
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -993,6 +1000,28 @@ function setupVirtualServerTable() {
                 }
                 return result;
             }
+        }, {
+            "className": "centeredCell",
+            "render": function (data, type, row) {
+                if (!row.sourcexlatetype) {
+                    return "N/A";
+                } else {
+                    switch (row.sourcexlatetype) {
+                        case "SRC_TRANS_NONE":
+                            return "None";
+                        case "SRC_TRANS_AUTOMAP":
+                            return "Automap";
+                        case "SRC_TRANS_SNATPOOL":
+                            return "SNAT:" + row.sourcexlatepool;
+                        case "OLDVERSION":
+                            return "N/A in Bigip versions prior to 11.3";
+                        default:
+                            return "Unknown";
+                    }
+                    return result;
+                }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1012,7 +1041,8 @@ function setupVirtualServerTable() {
                     }
                     return result;
                 }
-            }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1041,7 +1071,8 @@ function setupVirtualServerTable() {
                     }
                 }
                 return result;
-            }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1050,7 +1081,8 @@ function setupVirtualServerTable() {
                 } else {
                     return "Yes";
                 }
-            }
+            },
+            "visible": false
         }, {
             "className": "centeredCell",
             "render": function (data, type, row) {
@@ -1059,7 +1091,8 @@ function setupVirtualServerTable() {
                 } else {
                     return "Yes";
                 }
-            }
+            },
+            "visible": false
         }, {
             "data": "pools",
             "type": "html-num",
@@ -1074,7 +1107,8 @@ function setupVirtualServerTable() {
         "buttons": {
             "buttons": [
                 {
-                    "text": 'Reset filters',
+                    "text": 'Reset',
+                    "titleAttr": "Clear global and column filters",
                     "className": "tableHeaderColumnButton resetFilters",
                     "action": function ( e, dt, node, config ) {
 
@@ -1086,9 +1120,35 @@ function setupVirtualServerTable() {
                         updateLocationHash();
                     }
                 },
+                {
+                    "text": 'e',
+                    "titleAttr": 'expand normal expansion',
+                    "className": "tableHeaderColumnButton toggleExpansion",
+                    "action": function ( e, dt, node, config ) {
+                        switch(node['0'].innerText) {
+                            case 'e':
+                                hidePools(false);
+                                node['0'].innerHTML = '<span>c</span>';
+                                node['0'].title = 'Temporarily collapse all pools';
+                                break;
+                            case 'c':
+                                hidePools(true);
+                                node['0'].innerHTML = '<span>r</span>';
+                                node['0'].title = 'Restore normal expansion';
+                                break;
+                            case 'r':
+                                hidePools(true);
+                                expandPoolMatches($(siteData.bigipTable.table().body()), siteData.bigipTable.search());
+                                node['0'].innerHTML = '<span>e</span>';
+                                node['0'].title = 'Temporarily expand all pools';
+                                break;
+                        }
+                    }
+                },
                 "columnsToggle",
                 {
                     "extend": "copyHtml5",
+                    "titleAttr": "Copy current filtered results as HTML 5 to clipboard",
                     "className": "tableHeaderColumnButton exportFunctions",
                     "exportOptions": {
                         "columns": ":visible",
@@ -1098,6 +1158,7 @@ function setupVirtualServerTable() {
                 },
                 {
                     "extend": "print",
+                    "titleAttr": "Print current filtered results",
                     "className": "tableHeaderColumnButton exportFunctions",
                     "exportOptions": {
                         "columns": ":visible",
@@ -1107,12 +1168,14 @@ function setupVirtualServerTable() {
                 },
                 {
                     "extend": "csvHtml5",
+                    "titleAttr": "Download current filtered results in CSV format",
                     "className": "tableHeaderColumnButton exportFunctions",
                     "action": downloadCSV
                 }
             ]
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1131,10 +1194,10 @@ function setupVirtualServerTable() {
     // Apply the search
     siteData.bigipTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change input search', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1145,17 +1208,16 @@ function setupVirtualServerTable() {
 
         var body = $(siteData.bigipTable.table().body());
 
-        highlightAll(siteData.bigipTable);
-        expandPoolMatches(body, siteData.bigipTable.search());
+        // reset toggleExpansion button
+        var button = $('div#allbigips_wrapper div.dt-buttons button.toggleExpansion');
+        button[0].innerHTML = '<span>e<span>'
+        button[0].title = 'Temporarily expand all pools';
+
         hidePools();
         toggleAdcLinks();
-
-        if (siteData.bigipTable.search() != "") {
-            expandPoolMatches(body, siteData.bigipTable.search());
-        }
-
+        highlightAll(siteData.bigipTable);
+        expandPoolMatches(body, siteData.bigipTable.search());
         setPoolTableCellWidth();
-
     });
 
     $('div#allbigips_filter.dataTables_filter input').on('keyup input', function () {
@@ -1165,10 +1227,10 @@ function setupVirtualServerTable() {
     //Update search has on columns input update and expand pool matches
     siteData.bigipTable.columns().every(function () {
 
-        $('input', this.header()).on('keyup change', function () {
+        $('input', this.header()).on('keyup change input search', function () {
             updateLocationHash();
-            expandPoolMatches($(siteData.bigipTable.table().body()), $(this).val());
             highlightAll(siteData.bigipTable);
+            expandPoolMatches($(siteData.bigipTable.table().body()), $(this).val());
         });
 
     });
@@ -1193,12 +1255,12 @@ function setupiRuleTable() {
     <table id="iRuleTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
-                <th><span style="display: none;">Datagroups</span><input type="text" class="search" placeholder="Associated Datagroups" /></th>
-                <th><span style="display: none;">Virtualservers</span><input type="text" class="search" placeholder="Associated Virtual Servers" /></th>
-                <th style="width: 4em;"><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Pools</span><input type="search" class="search" placeholder="Associated Pools" /></th>
+                <th><span style="display: none;">Datagroups</span><input type="search" class="search" placeholder="Associated Datagroups" /></th>
+                <th><span style="display: none;">Virtualservers</span><input type="search" class="search" placeholder="Associated Virtual Servers" /></th>
+                <th style="width: 4em;"><span style="display: none;">Length</span><input type="search" class="search" placeholder="Length" /></th>
         </thead>
         <tbody>
         </tbody>
@@ -1362,6 +1424,7 @@ function setupiRuleTable() {
             ],
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1373,10 +1436,10 @@ function setupiRuleTable() {
     // Apply the search
     siteData.iRuleTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change input search', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1388,6 +1451,8 @@ function setupiRuleTable() {
         expandPoolMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
         toggleAdcLinks();
     });
+
+    siteData.iRuleTable.draw();
 }
 
 function setupPoolTable() {
@@ -1399,11 +1464,13 @@ function setupPoolTable() {
     <table id="poolTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Orphan</span><input type="text" class="search" placeholder="Orphan" /></th>
-                <th><span style="display: none;">Method</span><input type="text" class="search" placeholder="Method" /></th>
-                <th><span style="display: none;">Members</span><input type="text" class="search" placeholder="Members" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Description</span><input type="search" class="search" placeholder="Description" /></th>
+                <th><span style="display: none;">Orphan</span><input type="search" class="search" placeholder="Orphan" /></th>
+                <th><span style="display: none;">Method</span><input type="search" class="search" placeholder="Method" /></th>
+                <th><span style="display: none;">Monitors</span><input type="search" class="search" placeholder="Monitors" /></th>
+                <th><span style="display: none;">Members</span><input type="search" class="search" placeholder="Members" /></th>
             </tr>
         </thead>
         <tbody>
@@ -1428,9 +1495,22 @@ function setupPoolTable() {
                 return renderPool(row.loadbalancer, data, type);
             }
         }, {
+            "data": "description",
+            "visible": false
+        }, {
             "data": "orphaned"
         }, {
             "data": "loadbalancingmethod"
+        }, {
+            "data": "monitors",
+            "render": function (data, type, row) {
+                if (data) {
+                    return data.join(' ');
+                } else {
+                    return 'None';
+                }
+            },
+            "visible": false
         }, {
             "data": "members",
             "type": "html-num",
@@ -1510,6 +1590,7 @@ function setupPoolTable() {
             ],
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1521,10 +1602,10 @@ function setupPoolTable() {
     // Apply the search
     siteData.poolTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change input search', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1535,6 +1616,8 @@ function setupPoolTable() {
         highlightAll(siteData.poolTable);
         toggleAdcLinks();
     });
+
+    siteData.poolTable.draw();
 }
 
 function setupDataGroupTable() {
@@ -1546,11 +1629,11 @@ function setupDataGroupTable() {
     <table id="dataGroupTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Type</span><input type="text" class="search" placeholder="Type" /></th>
-                <th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
-                <th><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Type</span><input type="search" class="search" placeholder="Type" /></th>
+                <th><span style="display: none;">Pools</span><input type="search" class="search" placeholder="Associated Pools" /></th>
+                <th><span style="display: none;">Length</span><input type="search" class="search" placeholder="Length" /></th>
             </tr>
         </thead>
         <tbody>
@@ -1675,6 +1758,7 @@ function setupDataGroupTable() {
             ],
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1686,10 +1770,10 @@ function setupDataGroupTable() {
     // Apply the search
     siteData.dataGroupTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change input search', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1700,6 +1784,8 @@ function setupDataGroupTable() {
         highlightAll(siteData.dataGroupTable);
         toggleAdcLinks();
     });
+
+    siteData.dataGroupTable.draw();
 }
 
 function setupCertificateTable() {
@@ -1712,13 +1798,13 @@ function setupCertificateTable() {
     <table id="certificateTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Common Name</span><input type="text" class="search" placeholder="Common Name" /></th>
-                <th><span style="display: none;">Country</span><input type="text" class="search" placeholder="Country Name" /></th>
-                <th><span style="display: none;">State</span><input type="text" class="search" placeholder="State Name" /></th>
-                <th><span style="display: none;">Org</span><input type="text" class="search" placeholder="Organization Name" /></th>
-                <th><span style="display: none;">Expiring</span><input type="text" class="search" placeholder="Expiring" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Common Name</span><input type="search" class="search" placeholder="Common Name" /></th>
+                <th><span style="display: none;">Country</span><input type="search" class="search" placeholder="Country Name" /></th>
+                <th><span style="display: none;">State</span><input type="search" class="search" placeholder="State Name" /></th>
+                <th><span style="display: none;">Org</span><input type="search" class="search" placeholder="Organization Name" /></th>
+                <th><span style="display: none;">Expiring</span><input type="search" class="search" placeholder="Expiring" /></th>
             </tr>
         </thead>
         <tbody>
@@ -1753,9 +1839,11 @@ function setupCertificateTable() {
                     result += "<img class=\"flagicon\" alt=\"" + data.toLowerCase() + "\" src=\"images/flags/" + data.toLowerCase() + ".png\"/> ";
                 }
                 return result + " " + data;
-            }
+            },
+            "visible": false
         }, {
-            "data": "subject.stateName"
+            "data": "subject.stateName",
+            "visible": false
         }, {
             "data": "subject.organizationName"
         }, {
@@ -1835,6 +1923,7 @@ function setupCertificateTable() {
             ]
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1846,10 +1935,10 @@ function setupCertificateTable() {
     // Apply the search
     siteData.certificateTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change input search', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -1874,10 +1963,10 @@ function setupLogsTable() {
     <table id="logstable" class="bigiptable">
         <thead>
             <tr>
-                <th><span style="display: none;">Date</span><input type="text" class="search" placeholder="Date" /></th>
-                <th><span style="display: none;">Time</span><input type="text" class="search" placeholder="Time" /></th>
-                <th><span style="display: none;">Severity</span><input type="text" class="search" placeholder="Severity" /></th>
-                <th><span style="display: none;">Log Content</span><input type="text" class="search" placeholder="Log Content" /></th>
+                <th><span style="display: none;">Date</span><input type="search" class="search" placeholder="Date" /></th>
+                <th><span style="display: none;">Time</span><input type="search" class="search" placeholder="Time" /></th>
+                <th><span style="display: none;">Severity</span><input type="search" class="search" placeholder="Severity" /></th>
+                <th><span style="display: none;">Log Content</span><input type="search" class="search" placeholder="Log Content" /></th>
             </tr>
         </thead>
         <tbody>
@@ -1957,6 +2046,7 @@ function setupLogsTable() {
             }
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        "search": {"regex": localStorage.getItem("regexSearch") === "true"},
         "stateSave": true
     });
 
@@ -1968,10 +2058,10 @@ function setupLogsTable() {
     // Apply the search
     siteData.logTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change input search', function () {
             if ( that.search() !== this.value ) {
                 that
-                    .search( this.value )
+                    .search( this.value, localStorage.getItem("regexSearch") === "true", false )
                     .draw();
             }
         });
@@ -2062,6 +2152,7 @@ function showPreferences(updatehash) {
                             <tbody>
                                 <tr><td>Expand all pool members</td><td class="preferencescheckbox"><input type="checkbox" id="autoExpandPools"></td></tr>
                                 <tr><td>Direct links to Big-IP objects</td><td class="preferencescheckbox"><input type="checkbox" id="adcLinks"></td></tr>
+                                <tr><td>Use Regular Expressions when searching</td><td class="preferencescheckbox"><input type="checkbox" id="regexSearch"></td></tr>
                             </tbody>
 
                         </table>
@@ -2070,9 +2161,10 @@ function showPreferences(updatehash) {
     //Populate the content
     $("div#preferences").html(settingsContent);
 
-    //Populate the settings according to the local storage or default settings of none exist
+    //Populate the settings according to the local storage or default settings if none exist
     $("#autoExpandPools").prop("checked", localStorage.getItem("autoExpandPools") === "true");
     $("#adcLinks").prop("checked", localStorage.getItem("showAdcLinks") === "true");
+    $("#regexSearch").prop("checked", localStorage.getItem("regexSearch") === "true");
 
     // if we change content rendering rules, we can redraw with:
     // siteData.bigipTable.clear().rows.add(siteData.virtualservers).draw();
@@ -2090,6 +2182,12 @@ function showPreferences(updatehash) {
     $("#adcLinks").on("click", function () {
         localStorage.setItem("showAdcLinks", this.checked);
         toggleAdcLinks();
+    });
+
+    //Event handler for regular expression searches
+    $("#regexSearch").on("click", function () {
+        localStorage.setItem("regexSearch", this.checked);
+        toggleRegexSearch();
     });
 
     //Make sure that the check boxes are checked according to the settings
@@ -2299,6 +2397,24 @@ function toggleAdcLinks() {
     }
 }
 
+function toggleRegexSearch() {
+    // TODO: re .search() and re .draw() all rendered tables
+    var regexSearch = localStorage.getItem("regexSearch") === "true";
+    // siteData.poolTable.context['0'].oPreviousSearch.bRegex
+    tables = [
+        siteData.bigipTable,
+        siteData.poolTable,
+        siteData.iRuleTable,
+        siteData.dataGroupTable,
+        siteData.certificateTable,
+        siteData.logTable];
+    tables.forEach((table) => {
+        if (table) {
+            table.search(table.search(), regexSearch, !regexSearch).draw();
+        }
+    });
+}
+
 function toggleColumns() {
 
     $("#allbigips thead th input").each(function (index, tHeader) {
@@ -2358,7 +2474,8 @@ function updateLocationHash(updatehash = true) {
 
 function expandPoolMatches(resultset, searchstring) {
     if (localStorage.autoExpandPools !== "true" && searchstring != '') {
-        $(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
+        //$(resultset).children().children().filter("td:icontains('" + searchstring + "')").each(function () {
+        $(resultset).children().children().filter("td:has(span.highlight)").each(function () {
             if (this.classList.contains("PoolCell") || this.classList.contains("relative")) {
                 togglePool(this.id);
             }
@@ -2370,17 +2487,17 @@ function expandPoolMatches(resultset, searchstring) {
     Collapses all pool cells in the main table
 ******************************************************************************************************************************/
 
-function hidePools() {
-    if (localStorage.autoExpandPools === "true") {
-        $(".AssociatedPoolsInfo").hide();
-        $('.pooltablediv').show();
-        $('.collapse').show();
-        $('.expand').hide();
-    } else {
+function hidePools(hide = !(localStorage.autoExpandPools === "true")) {
+    if (hide) {
         $('.pooltablediv').hide();
         $('.collapse').hide();
         $('.expand').show();
         $('.AssociatedPoolsInfo').show();
+    } else {
+        $(".AssociatedPoolsInfo").hide();
+        $('.expand').hide();
+        $('.collapse').show();
+        $('.pooltablediv').show();
     }
 }
 
@@ -2532,24 +2649,26 @@ function selectMonitorInpuText(e) {
 
 function getMonitorRequestParameters(sendstring) {
 
-    var sendstringarr = sendstring.split(" ");
-
     var request = {
         verb: "",
         uri: "",
         headers: []
     }
 
+    var lines = sendstring.split(/\\r\\n|\\\\r\\\\n/);
+
+    var sendstringarr = lines[0].split(" ");
+
     request['verb'] = sendstringarr[0];
-    request['uri'] = sendstringarr[1].replace('\\r\\n', '');
+    request['uri'] = sendstringarr[1];
+    request['version'] = sendstringarr[2];
 
-    var headers = sendstring.split('\\r\\n');
 
-    if (headers.length > 1) {
+    if (lines.length > 1) {
 
-        for (i = 1; i < headers.length; i++) {
+        for (i = 1; i < lines.length; i++) {
 
-            var header = headers[i];
+            var header = lines[i];
 
             if (header.indexOf(":") >= 0) {
                 if (header.split(":").length == 2) {
@@ -2598,7 +2717,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 var xlate = "Automap";
                 break;
             case "SRC_TRANS_SNATPOOL":
-                var xlate = "SNAT Pool " + matchingvirtualserver.sourcexlatetype;
+                var xlate = "SNAT:" + matchingvirtualserver.sourcexlatepool;
                 break;
             case "OLDVERSION":
                 var xlate = "N/A in Bigip versions prior to 11.3";
@@ -2898,9 +3017,9 @@ function showDataGroupDetails(datagroup, loadbalancer) {
         if (Object.keys(matchingdatagroup).length == 0) {
             html += "<tr class=\"emptydg\"><td colspan=\"2\">Empty data group</td></tr>";
         } else {
-            for (var i in matchingdatagroup.data) {
-                html += "<tr><td class=\"dgkey\">" + i + "</td><td class=\"dgvalue\">" + matchingdatagroup.data[i] + "</td></tr>";
-            }
+            siteData.datagroupdetailsTableData = $.map(matchingdatagroup.data, function(value, key) {
+                return {"key": key, "value": value};
+            });
         }
 
         html += '</tbody></table>'
@@ -2914,8 +3033,28 @@ function showDataGroupDetails(datagroup, loadbalancer) {
             "language": {
                 "search": "Search all columns:"
             },
+            "data": siteData.datagroupdetailsTableData,
+            "columns": [{
+                "data": "key",
+            }, {
+                "data": "value",
+                "render": function (data, type, row) {
+                    if (data.match(/^http(s)?:/)) {
+                        return '<a href="' + data + '">' + data + '</a>';
+                    } else {
+                        var pool = getPool("/Common/" + data, loadbalancer);
+                        if (pool) {
+                            // Click to see pool details
+                            return renderPool(loadbalancer, pool.name, type)
+                        } else {
+                            return data;
+                        }
+                    }
+                }
+            }],
             "dom": 'frtilp',
             "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "search": {"regex": localStorage.getItem("regexSearch") === "true"},
             "stateSave": true
         });
 
@@ -3054,9 +3193,8 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         let sendstring = matchingmonitors[i].sendstring;
 
                         if(['HTTP', 'HTTPS'].includes(protocol)){
-                        
+
                             requestparameters = getMonitorRequestParameters(sendstring)
-                            globheader = requestparameters;
 
                             if (requestparameters['verb'] === 'GET' || requestparameters['verb'] === 'HEAD') {
 
@@ -3066,6 +3204,10 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                                     curlcommand += ' -I'
                                 }
 
+                                if (requestparameters['version'] === 'HTTP/1.0') {
+                                    curlcommand += ' -0'
+                                }
+
                                 for (var x in requestparameters['headers']) {
 
                                     header = requestparameters['headers'][x];
@@ -3073,27 +3215,26 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                                     headername = headerarr[0].trim();
                                     headervalue = headerarr[1].trim();
 
-                                    curlcommand += ` --header &quot;${headername}:${headervalue}&quot;`;
+                                    curlcommand += ` -H &quot;${headername}:${headervalue}&quot;`;
                                 }
 
-                                curlcommand += `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
-                            
+                                var url = `${protocol.toLowerCase()}://${member.ip}:${member.port}${requestparameters['uri']}`;
+                                curlcommand += ` ${url}`;
                             }
 
-                            curllink = `<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
-                            ' data-type="curl">Curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
-                            
+                            curllink = `<a href="${url}" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            ' data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
                         }
 
                         if(protocol === 'HTTP' || protocol === 'TCP' || protocol === 'TCP_HALF_OPEN'){
                             var netcatcommand = `echo -ne "${sendstring}" | nc ${member.ip} ${member.port}`;
-                            netcatlink = `<a href="javascript:void(0); target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            netcatlink = `<a href="javascript:selectMonitorInpuText(this)" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
                             ' data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'${netcatcommand}\'></p></a>`;
                         }
 
                         if(protocol === 'HTTP' || protocol === 'HTTPS'){
-                            var url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
-                            httplink = `<a href="javascript:void(0);" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
+                            var url = `${protocol.toLowerCase()}://${member.ip}:${member.port}${requestparameters['uri']}`;
+                            httplink = `<a href="${url}" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
                             data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${url}"></p></a>`
                         }
 
@@ -3107,9 +3248,7 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                 table += `
                         </table>
                         <br>`
-
             }
-
 
             table += '</tbody></table>';
         }

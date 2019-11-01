@@ -248,6 +248,8 @@
 #        5.2.8        2019-06-13      Added favicon, new icons for pools and devices and making the device          Patrik Jonsson No
 #                                     serial number correct for virtual editions
 #        5.2.9        2019-06-23      Saving state of column toggles                                                Tim Riker      No
+#        5.3.0        2019-10-15      stats to loggederrors, hide some columns by default, links in datagroups      Tim Riker      No
+#                                     snat pool, new status searching, rename "underlay", regex search, bug fixes
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -262,7 +264,7 @@ Param($ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.2.9"
+$Global:ScriptVersion = "5.3.0"
 
 #Enable case sensitive dictionaries
 function c@ {
@@ -299,8 +301,8 @@ Function log {
         $Global:LoggedErrors  += $Message
     }
 
-    # log erros, warnings, and info to loggederrors.json
-    if($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info"){
+    # log errors, warnings, info and success to loggederrors.json
+    if($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info" -Or $LogType -eq "success"){
         $LogLineDict = @{}
 
         $LogLineDict["date"] = $(Get-Date -UFormat %Y-%m-%d)
@@ -982,7 +984,7 @@ function Get-LTMInformation {
                 log info "Version 12+ with ASM. Getting REST token for ASM information"
                 $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
 
-                log verbose "Getting ASM Policy information"
+                log verbose "Getting ASM Policy information from $LoadBalancerName"
 
                 $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
@@ -1001,7 +1003,7 @@ function Get-LTMInformation {
                     $LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
                 }
             } Catch {
-                log error "Unable to get a valid token from $LoadbalancerName."
+                log error "Unable to get a valid token from $LoadBalancerName."
             }
 
             $ErrorActionPreference = "Continue"
@@ -1016,7 +1018,7 @@ function Get-LTMInformation {
 
     #Region Cache certificate information
 
-    log verbose "Caching certificates"
+    log verbose "Caching certificates from $LoadBalancerName"
 
     $LoadBalancerObjects.Certificates = c@{}
 
@@ -1047,7 +1049,7 @@ function Get-LTMInformation {
         $ObjCertificate.expirationDate = $Certificate.certificate.expiration_date
         $ObjCertificate.subject = $ObjSubject
         $ObjCertificate.issuer = $ObjIssuer
-        $ObjCertificate.loadbalancer = $LoadbalancerName
+        $ObjCertificate.loadbalancer = $LoadBalancerName
 
         $LoadBalancerObjects.Certificates.add($ObjCertificate.fileName, $ObjCertificate)
     }
@@ -1082,7 +1084,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Monitors = c@{}
 
-    log verbose "Caching monitors"
+    log verbose "Caching monitors from $LoadBalancerName"
 
     [array]$MonitorList = $F5.LocalLBMonitor.get_template_list()
 
@@ -1155,9 +1157,9 @@ function Get-LTMInformation {
 
     #Region Cache Data groups
 
-    log verbose "Caching data groups"
+    log verbose "Caching data groups from $LoadBalancerName"
 
-    #Region Cache Data groups
+    #Region Cache Data group
 
     $LoadBalancerObjects.DataGroups = c@{}
 
@@ -1207,7 +1209,7 @@ function Get-LTMInformation {
 
     #Region Caching Pool information
 
-    log verbose "Caching Pools"
+    log verbose "Caching Pools from $LoadBalancerName"
 
     $LoadBalancerObjects.Pools = c@{}
 
@@ -1276,7 +1278,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Datagroup Pools
-    log verbose "Detecting pools referenced by datagroups"
+    log verbose "Detecting pools referenced by datagroups on $LoadBalancerName"
 
     $Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object -Unique
 
@@ -1287,6 +1289,8 @@ function Get-LTMInformation {
         $Partition = $DataGroup.name.split("/")[1]
 
         Foreach($TempPool in $DataGroup.data.Values) {
+
+            if (!$TempPool) {continue}
 
             if(-not $TempPool.contains("/")){
                 $TempPool = "/$Partition/$TempPool"
@@ -1306,7 +1310,7 @@ function Get-LTMInformation {
 
     #Region Cache information about irules
 
-    log verbose "Caching iRules"
+    log verbose "Caching iRules from $LoadBalancerName"
 
     $DataGroups = $LoadBalancerObjects.DataGroups.Keys | Sort-Object -Unique
 
@@ -1366,7 +1370,7 @@ function Get-LTMInformation {
 
     #Region Cache Virtual Server information
 
-    log verbose "Caching Virtual servers"
+    log verbose "Caching Virtual servers from $LoadBalancerName"
 
     $LoadBalancerObjects.VirtualServers = c@{}
 
@@ -1551,7 +1555,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Orphaned Pools
-    log verbose "Detecting orphaned pools"
+    log verbose "Detecting orphaned pools on $LoadBalancerName"
 
     $LoadBalancerObjects.OrphanPools = @()
 
@@ -1696,7 +1700,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
         $success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
 
         if($?){
-            log success "iControl session successfully established"
+            log success "iControl session to $Device successfully established"
             $ErrorActionPreference = "Continue"
         } Else {
             $F5 = Get-F5.iControl
@@ -1726,14 +1730,14 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 
         $ObjLoadBalancer.isonlydevice = $IsOnlyDevice
 
-        log verbose "Getting hostname"
+        log verbose "Getting hostname from $Device"
 
         $BigIPHostname = $F5.SystemInet.get_hostname()
 
         if($?){
-            log verbose "Hostname is $BigipHostname"
+            log verbose "Hostname is $BigipHostname for $Device"
         } else {
-            log error "Failed to get hostname"
+            log error "Failed to get hostname from $Device"
         }
 
         #Get information about ip, name, model and category
@@ -1774,7 +1778,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
         $ObjLoadBalancer.statusvip = $ObjStatusVIP
 
         #Region Cache Load balancer information
-        log verbose "Fetching information about the device"
+        log verbose "Fetching information about $BigIPHostname"
 
         #Get the version information
         $VersionInformation = ($F5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
@@ -2235,9 +2239,11 @@ $Global:HTML = [System.Text.StringBuilder]::new()
             <div class="mainsection" id="preferences" style="display: none;"></div>
 
             <div class="mainsection" id="helpcontent" style="display: none;">
-                <h3>Filtering for pool members being down</h3>
-                <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<span style="color:red"><b>DOWN</b></span>", "<span style="color:green"><b>UP</b></span>" and "<b>DISABLED</b>".</p>
-                <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
+                <h3>Filtering on virtual server, pool or pool member status</h3>
+                <p>This is a bit of a hidden feature. In VirtualServer, Pool, and Member columns you can filter on status.
+                The status options are {ENABLED|DISABLED}:{<span style="color:blue"><b>BLUE</b></span>|<span style="color:green"><b>GREEN</b></span>|<span style="color:red"><b>RED</b></span>}.
+                For example, try searching for: "ENABLED:BLUE", ":RED" or "DISABLED:" as a general or field search.</p>
+                <p>It's not perfect since pools or members with any of these words in the name can also end up as results.</p>
                 <h3>Column filtering</h3>
                 <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
                 <h3>Pool member tests</h3>
@@ -2259,7 +2265,8 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         <div class="footer">
             The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).
             Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-            BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
+            BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+            and <a href="https://rikers.org/">Tim Riker</a>.
         </div>
 "@)
 
@@ -2290,6 +2297,20 @@ if($RealTimeStatusDetected){
     </body>
 </html>
 "@)
+
+# Record some stats
+
+$StatsMsg = "Stats:"
+$StatsMsg += " G:" + $Global:DeviceGroups.Count
+$StatsMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
+$StatsMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Keys.Count
+$StatsMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
+$StatsMsg += " R:" + $Global:ReportObjects.Values.iRules.Keys.Count
+$StatsMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Keys.Count
+$StatsMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
+$StatsMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
+$StatsMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
+log info $StatsMsg
 
 # Write temporary files and then update the report
 
@@ -2347,17 +2368,8 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
     }
 }
 
-# Record some stats
+# Done
 
 $DoneMsg = "Done."
-$DoneMsg += " G:" + $Global:DeviceGroups.Count
-$DoneMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
-$DoneMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Keys.Count
-$DoneMsg += " R:" + $Global:ReportObjects.Values.iRules.Keys.Count
-$DoneMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Keys.Count
-$DoneMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
-$DoneMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
-$DoneMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
-$DoneMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
 $DoneMsg += " T:" + $($(Get-Date)-$StartTime).totalminutes
 log verbose $DoneMsg
