@@ -1469,6 +1469,7 @@ function setupPoolTable() {
                 <th><span style="display: none;">Description</span><input type="text" class="search" placeholder="Description" /></th>
                 <th><span style="display: none;">Orphan</span><input type="text" class="search" placeholder="Orphan" /></th>
                 <th><span style="display: none;">Method</span><input type="text" class="search" placeholder="Method" /></th>
+                <th><span style="display: none;">Monitors</span><input type="text" class="search" placeholder="Monitors" /></th>
                 <th><span style="display: none;">Members</span><input type="text" class="search" placeholder="Members" /></th>
             </tr>
         </thead>
@@ -1500,6 +1501,16 @@ function setupPoolTable() {
             "data": "orphaned"
         }, {
             "data": "loadbalancingmethod"
+        }, {
+            "data": "monitors",
+            "render": function (data, type, row) {
+                if (data) {
+                    return data.join(' ');
+                } else {
+                    return 'None';
+                }
+            },
+            "visible": false
         }, {
             "data": "members",
             "type": "html-num",
