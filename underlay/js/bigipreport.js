@@ -939,16 +939,16 @@ function setupVirtualServerTable() {
         <table id="allbigips" class="bigiptable">
             <thead>
                 <tr>
-                    <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
-                    <th><span style="display: none;">Name</span><input type="text" name="name" class="search" placeholder="Name" /></th>
-                    <th><span style="display: none;">Description</span><input type="text" name="description" class="search" placeholder="Description" /></th>
-                    <th><span style="display: none;">IP:Port</span><input type="text" name="ipport" class="search" placeholder="IP:Port" /></th>
-                    <th><span style="display: none;">SNAT</span><input type="text" name="snat" class="search" placeholder="Source Translation" /></th>
-                    <th><span style="display: none;">ASM</span><input type="text" name="asmpolicies" class="search" placeholder="ASM Policies" /></th>
-                    <th><span style="display: none;">SSL</span><input type="text" name="sslprofile" class="search" placeholder="SSL Profile" /></th>
-                    <th><span style="display: none;">Comp</span><input name="compressionprofile" type="text" class="search" placeholder="Compression Profile" /></th>
-                    <th><span style="display: none;">Persist</span><input type="text" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
-                    <th><span style="display: none;">Pool/Members</span><input type="text" name="poolmembers" class="search" placeholder="Pool/Members" /></th>
+                    <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
+                    <th><span style="display: none;">Name</span><input type="search" name="name" class="search" placeholder="Name" /></th>
+                    <th><span style="display: none;">Description</span><input type="search" name="description" class="search" placeholder="Description" /></th>
+                    <th><span style="display: none;">IP:Port</span><input type="search" name="ipport" class="search" placeholder="IP:Port" /></th>
+                    <th><span style="display: none;">SNAT</span><input type="search" name="snat" class="search" placeholder="Source Translation" /></th>
+                    <th><span style="display: none;">ASM</span><input type="search" name="asmpolicies" class="search" placeholder="ASM Policies" /></th>
+                    <th><span style="display: none;">SSL</span><input type="search" name="sslprofile" class="search" placeholder="SSL Profile" /></th>
+                    <th><span style="display: none;">Comp</span><input name="compressionprofile" type="search" class="search" placeholder="Compression Profile" /></th>
+                    <th><span style="display: none;">Persist</span><input type="search" name="persistenceprofile" class="search" placeholder="Persistence Profile" /></th>
+                    <th><span style="display: none;">Pool/Members</span><input type="search" name="poolmembers" class="search" placeholder="Pool/Members" /></th>
                 </tr>
             </thead>
             <tbody>
@@ -1255,12 +1255,12 @@ function setupiRuleTable() {
     <table id="iRuleTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
-                <th><span style="display: none;">Datagroups</span><input type="text" class="search" placeholder="Associated Datagroups" /></th>
-                <th><span style="display: none;">Virtualservers</span><input type="text" class="search" placeholder="Associated Virtual Servers" /></th>
-                <th style="width: 4em;"><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Pools</span><input type="search" class="search" placeholder="Associated Pools" /></th>
+                <th><span style="display: none;">Datagroups</span><input type="search" class="search" placeholder="Associated Datagroups" /></th>
+                <th><span style="display: none;">Virtualservers</span><input type="search" class="search" placeholder="Associated Virtual Servers" /></th>
+                <th style="width: 4em;"><span style="display: none;">Length</span><input type="search" class="search" placeholder="Length" /></th>
         </thead>
         <tbody>
         </tbody>
@@ -1464,13 +1464,13 @@ function setupPoolTable() {
     <table id="poolTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Description</span><input type="text" class="search" placeholder="Description" /></th>
-                <th><span style="display: none;">Orphan</span><input type="text" class="search" placeholder="Orphan" /></th>
-                <th><span style="display: none;">Method</span><input type="text" class="search" placeholder="Method" /></th>
-                <th><span style="display: none;">Monitors</span><input type="text" class="search" placeholder="Monitors" /></th>
-                <th><span style="display: none;">Members</span><input type="text" class="search" placeholder="Members" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Description</span><input type="search" class="search" placeholder="Description" /></th>
+                <th><span style="display: none;">Orphan</span><input type="search" class="search" placeholder="Orphan" /></th>
+                <th><span style="display: none;">Method</span><input type="search" class="search" placeholder="Method" /></th>
+                <th><span style="display: none;">Monitors</span><input type="search" class="search" placeholder="Monitors" /></th>
+                <th><span style="display: none;">Members</span><input type="search" class="search" placeholder="Members" /></th>
             </tr>
         </thead>
         <tbody>
@@ -1629,11 +1629,11 @@ function setupDataGroupTable() {
     <table id="dataGroupTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Type</span><input type="text" class="search" placeholder="Type" /></th>
-                <th><span style="display: none;">Pools</span><input type="text" class="search" placeholder="Associated Pools" /></th>
-                <th><span style="display: none;">Length</span><input type="text" class="search" placeholder="Length" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Type</span><input type="search" class="search" placeholder="Type" /></th>
+                <th><span style="display: none;">Pools</span><input type="search" class="search" placeholder="Associated Pools" /></th>
+                <th><span style="display: none;">Length</span><input type="search" class="search" placeholder="Length" /></th>
             </tr>
         </thead>
         <tbody>
@@ -1798,13 +1798,13 @@ function setupCertificateTable() {
     <table id="certificateTable" class="bigiptable">
         <thead>
             <tr>
-                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="text" class="search" placeholder="Load Balancer" /></th>
-                <th><span style="display: none;">Name</span><input type="text" class="search" placeholder="Name" /></th>
-                <th><span style="display: none;">Common Name</span><input type="text" class="search" placeholder="Common Name" /></th>
-                <th><span style="display: none;">Country</span><input type="text" class="search" placeholder="Country Name" /></th>
-                <th><span style="display: none;">State</span><input type="text" class="search" placeholder="State Name" /></th>
-                <th><span style="display: none;">Org</span><input type="text" class="search" placeholder="Organization Name" /></th>
-                <th><span style="display: none;">Expiring</span><input type="text" class="search" placeholder="Expiring" /></th>
+                <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
+                <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
+                <th><span style="display: none;">Common Name</span><input type="search" class="search" placeholder="Common Name" /></th>
+                <th><span style="display: none;">Country</span><input type="search" class="search" placeholder="Country Name" /></th>
+                <th><span style="display: none;">State</span><input type="search" class="search" placeholder="State Name" /></th>
+                <th><span style="display: none;">Org</span><input type="search" class="search" placeholder="Organization Name" /></th>
+                <th><span style="display: none;">Expiring</span><input type="search" class="search" placeholder="Expiring" /></th>
             </tr>
         </thead>
         <tbody>
@@ -1963,10 +1963,10 @@ function setupLogsTable() {
     <table id="logstable" class="bigiptable">
         <thead>
             <tr>
-                <th><span style="display: none;">Date</span><input type="text" class="search" placeholder="Date" /></th>
-                <th><span style="display: none;">Time</span><input type="text" class="search" placeholder="Time" /></th>
-                <th><span style="display: none;">Severity</span><input type="text" class="search" placeholder="Severity" /></th>
-                <th><span style="display: none;">Log Content</span><input type="text" class="search" placeholder="Log Content" /></th>
+                <th><span style="display: none;">Date</span><input type="search" class="search" placeholder="Date" /></th>
+                <th><span style="display: none;">Time</span><input type="search" class="search" placeholder="Time" /></th>
+                <th><span style="display: none;">Severity</span><input type="search" class="search" placeholder="Severity" /></th>
+                <th><span style="display: none;">Log Content</span><input type="search" class="search" placeholder="Log Content" /></th>
             </tr>
         </thead>
         <tbody>
