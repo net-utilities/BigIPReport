@@ -3039,7 +3039,7 @@ function showDataGroupDetails(datagroup, loadbalancer) {
             }, {
                 "data": "value",
                 "render": function (data, type, row) {
-                    if (data.match(/^http(s)?:/)) {
+                    if (data && data.match(/^http(s)?:/)) {
                         return '<a href="' + data + '">' + data + '</a>';
                     } else {
                         var pool = getPool("/Common/" + data, loadbalancer);
