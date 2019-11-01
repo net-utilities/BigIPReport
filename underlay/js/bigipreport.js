@@ -1194,7 +1194,7 @@ function setupVirtualServerTable() {
     // Apply the search
     siteData.bigipTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change search', function () {
             if ( that.search() !== this.value ) {
                 that
                     .search( this.value, localStorage.getItem("regexSearch") === "true", false )
@@ -1227,7 +1227,7 @@ function setupVirtualServerTable() {
     //Update search has on columns input update and expand pool matches
     siteData.bigipTable.columns().every(function () {
 
-        $('input', this.header()).on('keyup change', function () {
+        $('input', this.header()).on('keyup change search', function () {
             updateLocationHash();
             highlightAll(siteData.bigipTable);
             expandPoolMatches($(siteData.bigipTable.table().body()), $(this).val());
@@ -1436,7 +1436,7 @@ function setupiRuleTable() {
     // Apply the search
     siteData.iRuleTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change search', function () {
             if ( that.search() !== this.value ) {
                 that
                     .search( this.value, localStorage.getItem("regexSearch") === "true", false )
@@ -1602,7 +1602,7 @@ function setupPoolTable() {
     // Apply the search
     siteData.poolTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change search', function () {
             if ( that.search() !== this.value ) {
                 that
                     .search( this.value, localStorage.getItem("regexSearch") === "true", false )
@@ -1770,7 +1770,7 @@ function setupDataGroupTable() {
     // Apply the search
     siteData.dataGroupTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change search', function () {
             if ( that.search() !== this.value ) {
                 that
                     .search( this.value, localStorage.getItem("regexSearch") === "true", false )
@@ -1935,7 +1935,7 @@ function setupCertificateTable() {
     // Apply the search
     siteData.certificateTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change search', function () {
             if ( that.search() !== this.value ) {
                 that
                     .search( this.value, localStorage.getItem("regexSearch") === "true", false )
@@ -2058,7 +2058,7 @@ function setupLogsTable() {
     // Apply the search
     siteData.logTable.columns().every( function () {
         var that = this;
-        $( 'input', this.header() ).on( 'keyup change', function () {
+        $( 'input', this.header() ).on( 'keyup change search', function () {
             if ( that.search() !== this.value ) {
                 that
                     .search( this.value, localStorage.getItem("regexSearch") === "true", false )
