@@ -1170,7 +1170,7 @@ function Get-LTMInformation {
     $DataGroups = $Response.Content | ConvertFrom-Json
 
     Foreach($DataGroup in $DataGroups.Items){
-            
+
         $ObjTempDataGroup = New-Object -Type DataGroup
         $ObjTempDataGroup.name = $DataGroup.fullPath
         $ObjTempDataGroup.type = $DataGroup.type
@@ -1193,7 +1193,7 @@ function Get-LTMInformation {
     $DataGroups = $Response.Content | ConvertFrom-Json
 
     Foreach($DataGroup in $DataGroups.Items){
-            
+
         $ObjTempDataGroup = New-Object -Type DataGroup
         $ObjTempDataGroup.name = $DataGroup.fullPath
         $ObjTempDataGroup.type = $DataGroup.type
