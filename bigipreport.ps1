@@ -1456,7 +1456,7 @@ function Get-LTMInformation {
             try {
                 $LoadBalancerObjects.iRules[$tempName].virtualservers += $VirtualServerName
             } catch {
-                log error "iRule $tempName not found for $VirtualServerName on $LoadBalancerName"
+                log error "iRule $tempName not found (zero length?) for $VirtualServerName on $LoadBalancerName"
             }
         }
 
