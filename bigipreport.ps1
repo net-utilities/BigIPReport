@@ -1003,7 +1003,7 @@ function Get-LTMInformation {
                     $LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
                 }
             } Catch {
-                log error "Unable to get a valid token from $LoadBalancerName."
+                log error "Unable to load ASM policies from $LoadBalancerName."
             }
 
             $ErrorActionPreference = "Continue"
@@ -1165,7 +1165,7 @@ function Get-LTMInformation {
 
     $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
     $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
-    $Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
+    $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
 
     $DataGroups = $Response.Content | ConvertFrom-Json
 
@@ -1188,7 +1188,7 @@ function Get-LTMInformation {
     }
 
 
-    $Response = Invoke-WebRequest -Method "GET" -Headers $headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
+    $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
 
     $DataGroups = $Response.Content | ConvertFrom-Json
 
@@ -1255,7 +1255,7 @@ function Get-LTMInformation {
                 $ObjTempMember.currentconnections = $Statistics["currentconnections"]
                 $ObjTempMember.maximumconnections = $Statistics["maximumconnections"]
             } Catch {
-                log "error" "Unable to get statistics for member $(objTempMember.Name):$(objTempMember.Port) in pool $($ObjTempPool.name)"
+                log error "Unable to get statistics for member $(objTempMember.Name):$(objTempMember.Port) in pool $($ObjTempPool.name)"
             }
 
             #Add the object to a list
@@ -1453,7 +1453,11 @@ function Get-LTMInformation {
         $VirtualServeriRules[$i] | Sort-Object -Property priority | ForEach-Object {
             $tempName = $_.rule_name
             $ObjTempVirtualServer.irules += [string]$tempName
-            $LoadBalancerObjects.iRules[$tempName].virtualservers += $VirtualServerName
+            try {
+                $LoadBalancerObjects.iRules[$tempName].virtualservers += $VirtualServerName
+            } catch {
+                log error "iRule $tempName not found for $VirtualServerName on $LoadBalancerName"
+            }
         }
 
         if([string]($ObjTempVirtualServer.irules) -eq ""){
@@ -1546,7 +1550,7 @@ function Get-LTMInformation {
             $ObjTempVirtualServer.cpuavg1min = Get-Int64 -High $($VipStatistics[39].value.high) -Low $($VipStatistics[39].value.low)
             $ObjTempVirtualServer.cpuavg5min = Get-Int64 -High $($VipStatistics[40].value.high) -Low $($VipStatistics[40].value.low)
         } Catch {
-            log "error" "Unable to get virtual server CPU statistics for $VirtualServerName"
+            log error "Unable to get virtual server CPU statistics for $VirtualServerName"
         }
 
         $LoadBalancerObjects.VirtualServers.add($ObjTempVirtualServer.name, $ObjTempVirtualServer)
