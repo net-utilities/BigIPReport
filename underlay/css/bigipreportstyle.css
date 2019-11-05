@@ -589,6 +589,14 @@ span.statusicon, span.detailsicon {
     vertical-align: middle;
 }
 
+span.statusicon {
+    padding-right: 4px;
+}
+
+span.adcLinkSpan {
+    padding-left: 4px;
+}
+
 span.detailsicon {
     margin-left: 4px;
 }
