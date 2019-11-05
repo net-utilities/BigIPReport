@@ -936,7 +936,7 @@ function setupVirtualServerTable() {
 
     var content = `
 
-        <table id="allbigips" class="bigiptable">
+        <table id="allbigips" class="bigiptable display">
             <thead>
                 <tr>
                     <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
@@ -1252,7 +1252,7 @@ function setupiRuleTable() {
     }
 
     var content = `
-    <table id="iRuleTable" class="bigiptable">
+    <table id="iRuleTable" class="bigiptable display">
         <thead>
             <tr>
                 <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
@@ -1461,7 +1461,7 @@ function setupPoolTable() {
     }
 
     var content = `
-    <table id="poolTable" class="bigiptable">
+    <table id="poolTable" class="bigiptable display">
         <thead>
             <tr>
                 <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
@@ -1626,7 +1626,7 @@ function setupDataGroupTable() {
     }
 
     var content = `
-    <table id="dataGroupTable" class="bigiptable">
+    <table id="dataGroupTable" class="bigiptable display">
         <thead>
             <tr>
                 <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
@@ -1795,7 +1795,7 @@ function setupCertificateTable() {
     }
 
     var content = `
-    <table id="certificateTable" class="bigiptable">
+    <table id="certificateTable" class="bigiptable display">
         <thead>
             <tr>
                 <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
@@ -1960,7 +1960,7 @@ function setupLogsTable() {
     }
 
     var content = `
-    <table id="logstable" class="bigiptable">
+    <table id="logstable" class="bigiptable display">
         <thead>
             <tr>
                 <th><span style="display: none;">Date</span><input type="search" class="search" placeholder="Date" /></th>
@@ -2141,7 +2141,7 @@ function showPreferences(updatehash) {
 
     //Prepare the content
     var settingsContent = `
-                        <table id="preferencestable" class="bigiptable">
+                        <table id="preferencestable" class="bigiptable display">
 
                             <thead>
                                 <tr>
@@ -2222,7 +2222,7 @@ function showDeviceOverview() {
     var loadbalancers = siteData.loadbalancers
 
     var html = `
-            <table id="deviceoverviewtable" class="bigiptable">
+            <table id="deviceoverviewtable" class="bigiptable display">
                 <thead>
                     <tr>
                         <th>Icon</th>
@@ -2931,7 +2931,7 @@ function showiRuleDetails(irule, loadbalancer) {
         }
 
         //Prepare the div content
-        html += `<table class="bigiptable">
+        html += `<table class="bigiptable display">
                     <thead>
                         <tr><th>iRule definiton</th></tr>
                     </thead>
@@ -3005,7 +3005,7 @@ function showDataGroupDetails(datagroup, loadbalancer) {
         html += '<span class="dgtype">Type: ' + matchingdatagroup.type + "</span>";
         html += '</div>';
 
-        html += `<table id="datagroupdetailsTable" class="datagrouptable">
+        html += `<table id="datagroupdetailsTable" class="datagrouptable display">
                     <thead>
                         <tr>
                             <th class="keyheader">Key</th>
