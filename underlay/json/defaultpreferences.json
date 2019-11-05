@@ -1,4 +1,5 @@
 {
   "autoExpandPools": false,
-  "showAdcLinks": false
+  "showAdcLinks": false,
+  "regexSearch": true
 }
