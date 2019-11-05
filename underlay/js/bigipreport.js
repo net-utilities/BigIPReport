@@ -360,7 +360,7 @@ function renderPoolMember(type, member) {
         if (type == 'display' || type == 'print') {
             result += '<span data-member="' + member.ip + ':' + member.port + '">';
             result += PoolMemberStatus(member);
-            result += '</span>&nbsp;&nbsp;';
+            result += '</span>';
         }
         name = member.name.split('/')[2];
         result += name
@@ -603,7 +603,7 @@ function renderPool(loadbalancer, name, type) {
     var poolName=name.replace(/^\/Common\//,'');
     var result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name), type);
     if (type == 'display') {
-        result += '&nbsp;<a';
+        result += '<a';
         result += ' class="tooltip"';
         result += ' data-originalpoolname="' + name + '"';
         result += ' data-loadbalancer="' + loadbalancer + '"';
@@ -985,7 +985,7 @@ function setupVirtualServerTable() {
                 if (type == 'export' || type == 'sort') {
                     return renderVirtualServer(row.loadbalancer, data, type);
                 }
-                return VirtualServerStatus(row) + '&nbsp;' + renderVirtualServer(row.loadbalancer, data, type);
+                return VirtualServerStatus(row) + renderVirtualServer(row.loadbalancer, data, type);
             }
         }, {
             "className": "centeredCell",
