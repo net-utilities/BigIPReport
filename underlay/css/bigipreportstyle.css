@@ -6,8 +6,7 @@
     Declare color variables to make it easier to change the color scheme of the report
 *****************************************************************************************************************************/
 :root {
-    --alternatetablecolor: #f9f9f9;
-    --headerbackgroundcolor: #efefef;
+    --headerbackgroundcolor: #f1f4fd;
     --headerfontcolor: #333;
     --bordercolor: #DDDDDD;
     --defaultfontcolor: #222;
@@ -120,7 +119,6 @@
 }
 
 .bigiptable tbody>tr:nth-child(even)>td {
-    background-color: var(--alternatetablecolor);
     border-collapse: collapse;
 }
 
@@ -277,7 +275,6 @@ div.expand, div.collapse {
 }
 
 .virtualserverdetailstable tbody>tr:nth-child(even)>td {
-    background-color: var(--alternatetablecolor);
     border-collapse: collapse;
     border: 1px solid var(--bordercolor);
 }
@@ -344,7 +341,6 @@ div#consolediv {
 }
 
 .pooldetailstable tbody>tr:nth-child(even)>td {
-    background-color: var(--alternatetablecolor);
     border-collapse: collapse;
     border: 1px solid var(--bordercolor);
 }
@@ -402,7 +398,6 @@ div#consolediv {
 }
 
 .monitordetailstable tbody>tr:nth-child(even)>td {
-    background-color: var(--alternatetablecolor);
     border-collapse: collapse;
     white-space: nowrap;
     border: 1px solid var(--bordercolor);
@@ -436,7 +431,6 @@ div#consolediv {
 }
 
 .membermonitortable tbody>tr:nth-child(even)>td {
-    background-color: var(--alternatetablecolor);
     border-collapse: collapse;
     border: 1px solid var(--bordercolor);
 }
@@ -788,7 +782,6 @@ div#secondlayerdetailscontent {
 }
 
 .datagrouptable tbody>tr:nth-child(even)>td {
-    background-color: var(--alternatetablecolor);
     border-collapse: collapse;
     white-space: nowrap;
 }
@@ -1132,7 +1125,6 @@ table#logstable.logdate {
 }
 
 .iRulesTable tbody>tr:nth-child(even)>td {
-    background-color: var(--alternatetablecolor);
     border-collapse: collapse;
     white-space: nowrap;
 }
