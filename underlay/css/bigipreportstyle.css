@@ -41,9 +41,6 @@
     font-size: 14px;
     width: 100%;
     text-align: center;
-    background-image: url(../images/filter.png);
-    background-repeat: no-repeat;
-    background-position: right;
     color: var(--headerfontcolor);
 }
 
@@ -56,9 +53,6 @@
     font-size: 14px;
     width: 100%;
     text-align: center;
-    background-image: url(../images/filter.png);
-    background-repeat: no-repeat;
-    background-position: right;
     color: var(--headerfontcolor);
 }
 
