@@ -6,7 +6,7 @@
     Declare color variables to make it easier to change the color scheme of the report
 *****************************************************************************************************************************/
 :root {
-    --headerbackgroundcolor: #f1f4fd;
+    --headerbackgroundcolor: #efefef;
     --headerfontcolor: #333;
     --bordercolor: #DDDDDD;
     --defaultfontcolor: #222;
