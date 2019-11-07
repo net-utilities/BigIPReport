@@ -248,8 +248,9 @@
 #        5.2.8        2019-06-13      Added favicon, new icons for pools and devices and making the device          Patrik Jonsson No
 #                                     serial number correct for virtual editions
 #        5.2.9        2019-06-23      Saving state of column toggles                                                Tim Riker      No
-#        5.3.0        2019-10-15      stats to loggederrors, hide some columns by default, links in datagroups      Tim Riker      No
+#        5.3.0        2019-10-15      stats to loggederrors, hide some columns by default, links in datagroups      Tim Riker      Yes
 #                                     snat pool, new status searching, rename "underlay", regex search, bug fixes
+#                                     configuration added, (x) filters to clear, monitor column on pool table
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -666,6 +667,7 @@ if(-not $SaneConfig){
 
 #Variables used for storing report data
 $Global:NATdict = c@{}
+$Global:Preferences = c@{}
 
 $Global:DeviceGroups = @();
 
@@ -673,6 +675,7 @@ $Global:DeviceGroups = @();
 $Global:reportpath = $Global:bigipreportconfig.Settings.ReportRoot + $Global:bigipreportconfig.Settings.Defaultdocument
 
 #Build the json object paths
+$Global:preferencesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/preferences.json"
 $Global:poolsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/pools.json"
 $Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
 $Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/virtualservers.json"
@@ -1904,6 +1907,13 @@ Function Update-ReportData {
         $Status  = $false
     }
 
+    Move-Item -Force $($Global:preferencesjsonpath + ".tmp") $Global:preferencesjsonpath
+
+    if(!$?){
+        log error "Failed to update the preferences json file"
+        $Status  = $false
+    }
+
     Move-Item -Force $($Global:poolsjsonpath + ".tmp") $Global:poolsjsonpath
 
     if(!$?){
@@ -2057,6 +2067,7 @@ Function Write-TemporaryFiles {
 
     $StreamWriter.dispose()
 
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:preferencesjsonpath -Data $Global:Preferences
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data @( $Global:ReportObjects.Values.Pools.Values | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data @( $Global:ReportObjects.Values.Monitors.Values | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data @( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
@@ -2149,39 +2160,6 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         <script src="js/jquery.highlight.js"></script>
         <script src="js/bigipreport.js"></script>
         <script src="js/sh_main.js"></script>
-        <script>
-'@
-)
-
-        # Transfer some settings from the config file onto the Javascript
-        # Todo: All global variables should be located in a single object
-        #       to minimize the polution of the global namespace.
-        if($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true){
-            [void]$Global:HTML.AppendLine("const ShowiRules = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const ShowiRules = false;")
-        }
-        if($Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $true){
-            [void]$Global:HTML.AppendLine("const ShowiRuleLinks = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const ShowiRuleLinks = false;")
-        }
-        if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
-            [void]$Global:HTML.AppendLine("const ShowDataGroupLinks = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const ShowDataGroupLinks = false;")
-        }
-        if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
-            [void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = false;")
-        }
-        [void]$Global:HTML.AppendLine("const AJAXMAXPOOLS = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxPools + ";")
-        [void]$Global:HTML.AppendLine("const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";")
-        [void]$Global:HTML.AppendLine("const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";")
-
-        [void]$Global:HTML.AppendLine(@'
-        </script>
     </head>
     <body>
         <div class="beforedocumentready"></div>
@@ -2251,15 +2229,7 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         </div>
 "@)
 
-#Initiate variables used for showing progress (in case the debug is set)
-
-#Initiate variables to give unique id's to pools and members
-$RealTimeStatusDetected = ($Global:ReportObjects.Values.LoadBalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
-if($RealTimeStatusDetected){
-    log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
-}
-
-[void]$Global:HTML.AppendLine(@"
+[void]$Global:HTML.AppendLine(@'
         <div class="lightbox" id="firstlayerdiv">
             <div class="innerLightbox">
                 <div class="lightboxcontent" id="firstlayerdetailscontentdiv">
@@ -2277,7 +2247,19 @@ if($RealTimeStatusDetected){
         </div>
     </body>
 </html>
-"@)
+'@)
+
+# Save Preferences
+$Global:Preferences['HideLoadBalancerFQDN'] = ($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true)
+$Global:Preferences['PollingMaxPools'] = [int]$Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxPools
+$Global:Preferences['PollingMaxQueue'] = [int]$Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue
+$Global:Preferences['PollingRefreshRate'] = [int]$Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate
+$Global:Preferences['ShowDataGroupLinks'] = ($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true)
+$Global:Preferences['ShowiRuleLinks'] = ($Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $true)
+$Global:Preferences['ShowiRules'] = ($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true)
+$Global:Preferences['autoExpandPools'] = ($Global:Bigipreportconfig.Settings.autoExpandPools -eq $true)
+$Global:Preferences['regexSearch'] = ($Global:Bigipreportconfig.Settings.regexSearch -eq $true)
+$Global:Preferences['showAdcLinks'] = ($Global:Bigipreportconfig.Settings.showAdcLinks -eq $true)
 
 # Record some stats
 

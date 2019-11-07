@@ -261,6 +261,51 @@
         <!--
             **************************************************************************************************************************************
             *
+            *    Expand all Pools in table views by default?
+            *    Probably only useful for small sites.
+            *    User can override.
+            *    Searches normally expand pools with matches
+            *
+            *    Example:
+            *    <autoExpandPools>false</autoExpandPools>
+            *
+            **************************************************************************************************************************************
+        -->
+
+        <autoExpandPools>false</autoExpandPools>
+
+        <!--
+            **************************************************************************************************************************************
+            *
+            *    Show Direct links to BIG-IP to edit objects
+            *    User can override.
+            *
+            *    Example:
+            *    <showAdcLinks>false</showAdcLinks>
+            *
+            **************************************************************************************************************************************
+        -->
+
+        <showAdcLinks>false</showAdcLinks>
+
+        <!--
+            **************************************************************************************************************************************
+            *
+            *    Enable Regular Expression searches by default?
+            *    User can override.
+            *    This enables searches like "stage|development" and wildcard searching.
+            *
+            *    Example:
+            *    <regexSearch>true</regexSearch>
+            *
+            **************************************************************************************************************************************
+        -->
+
+        <regexSearch>true</regexSearch>
+
+        <!--
+            **************************************************************************************************************************************
+            *
             *    Error reporting
             *    This means that "loadbalancername.mydomain.local" is shown as "loadbalancername"
             *
