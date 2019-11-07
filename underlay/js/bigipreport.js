@@ -140,8 +140,8 @@ $(window).on("load", function () {
         $.getJSON("json/loadbalancers.json", function (result) {
             siteData.loadbalancers = result;
         }).fail(addJSONLoadingFailure),
-        $.getJSON("json/defaultpreferences.json", function (result) {
-            siteData.defaultPreferences = result;
+        $.getJSON("json/preferences.json", function (result) {
+            siteData.preferences = result;
         }).fail(addJSONLoadingFailure),
         $.getJSON("json/knowndevices.json", function (result) {
             siteData.knownDevices = result;
@@ -508,7 +508,7 @@ function testStatusVIP(loadbalancer) {
                                 resetClock();
                                 log("Did not finish the polling in time, consider increasing the polling interval, or increase the max queue in the configuration file", "WARNING")
                             }
-                        }, (AJAXREFRESHRATE * 1000));
+                        }, (siteData.preferences.PollingRefreshRate * 1000));
                     } else {
                         log("No functioning status VIPs detected, scanning disabled<br>" +
                             "More information about why this happens is available" +
@@ -525,14 +525,14 @@ function testStatusVIP(loadbalancer) {
 function pollCurrentView() {
     resetClock();
     var length = $("table.pooltable tr td.poolname:visible").length;
-    if (length == 0 || length > AJAXMAXPOOLS) {
+    if (length == 0 || length > siteData.preferences.PollingMaxPools) {
         $("span#ajaxqueue").text(0);
-        $("td#pollingstatecell").html('Disabled, ' + length + ' of ' + AJAXMAXPOOLS +
+        $("td#pollingstatecell").html('Disabled, ' + length + ' of ' + siteData.preferences.PollingMaxPools +
             ' pools open<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' +
-            AJAXREFRESHRATE + '</span> seconds</span>');
+            siteData.preferences.PollingRefreshRate + '</span> seconds</span>');
     } else {
         $("td#pollingstatecell").html('<span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh">,' +
-            ' refresh in <span id="refreshcountdown">' + AJAXREFRESHRATE + '</span> seconds</span>');
+            ' refresh in <span id="refreshcountdown">' + siteData.preferences.PollingRefreshRate + '</span> seconds</span>');
 
         $("span#ajaxqueue").text(length);
         $("table.pooltable tr td.poolname:visible").each(function () {
@@ -543,7 +543,7 @@ function pollCurrentView() {
 
 function renderLoadBalancer(loadbalancer, type) {
     var balancer;
-    if (HideLoadBalancerFQDN) {
+    if (siteData.preferences.HideLoadBalancerFQDN) {
         balancer = loadbalancer.split('.')[0]
     } else {
         balancer = loadbalancer;
@@ -655,7 +655,7 @@ function renderDataGroup(loadbalancer, name, type) {
 
 function resetClock() {
 
-    var countDown = AJAXREFRESHRATE;
+    var countDown = siteData.preferences.PollingRefreshRate;
 
     var clock = setInterval(function () {
         countDown--;
@@ -670,7 +670,7 @@ function resetClock() {
 
 function getPoolStatus(poolCell) {
 
-    if (siteData.memberStates.ajaxQueue.length >= AJAXMAXQUEUE) {
+    if (siteData.memberStates.ajaxQueue.length >= siteData.preferences.PollingMaxQueue) {
         setTimeout(function () {
             getPoolStatus(poolCell)
         }, 200);
@@ -2168,7 +2168,7 @@ function showPreferences(updatehash) {
 
     // if we change content rendering rules, we can redraw with:
     // siteData.bigipTable.clear().rows.add(siteData.virtualservers).draw();
-    // we could make HideLoadBalancerFQDN dynamic this way. Might want to redraw all tables.
+    // we could make siteData.preferences.HideLoadBalancerFQDN dynamic this way. Might want to redraw all tables.
 
     //Event handler for auto expand pools
     $("#autoExpandPools").on("click", function () {
@@ -2772,12 +2772,12 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
 
         table += '<br>'
 
-        if (ShowiRules == true) {
-            if (matchingvirtualserver.irules.length > 0 && ShowiRules) {
+        if (siteData.preferences.ShowiRules == true) {
+            if (matchingvirtualserver.irules.length > 0) {
                 //Add the assigned irules
                 table += '<table class="virtualserverdetailstable">';
 
-                if (ShowiRuleLinks) {
+                if (siteData.preferences.ShowiRuleLinks) {
                     table += '    <tr><th>iRule name</th><th>Data groups</th></tr>';
                 } else {
                     table += '    <tr><th>iRule name</th></tr>';
@@ -2787,7 +2787,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
 
                     // If iRules linking has been set to true show iRule links
                     // and parse data groups
-                    if (ShowiRuleLinks) {
+                    if (siteData.preferences.ShowiRuleLinks) {
 
                         var iruleobj = getiRule(matchingvirtualserver.irules[i], loadbalancer);
 
@@ -2800,7 +2800,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                                 iruleobj.datagroups.forEach((datagroup) => {
                                     name = datagroup.split("/")[2];
 
-                                    if (ShowDataGroupLinks) {
+                                    if (siteData.preferences.ShowDataGroupLinks) {
                                         datagroupdata.push(renderDataGroup(loadbalancer, datagroup, 'display'));
                                     } else {
                                         datagroupdata.push(name)
@@ -2895,7 +2895,7 @@ function showiRuleDetails(irule, loadbalancer) {
         definition = definition.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
         //Check if data group links are wanted. Parse and create links if that's the base
-        if (ShowDataGroupLinks == true) {
+        if (siteData.preferences.ShowDataGroupLinks == true) {
             matchingirule.datagroups.forEach((dg) => {
                 // rule might not include partition which causes the replace to fail
                 var opt=dg.replace(/\/.*\//,'($&)?');
@@ -3349,10 +3349,10 @@ function exportDeviceData() {
 
 function loadPreferences() {
 
-    var defaultPreferences = siteData.defaultPreferences;
+    var preferences = siteData.preferences;
 
-    for (var k in defaultPreferences) {
-        if (localStorage.getItem(k) === null){ localStorage.setItem(k, defaultPreferences[k]) }
+    for (var k in preferences) {
+        if (localStorage.getItem(k) === null){ localStorage.setItem(k, preferences[k]) }
     }
 
 }
