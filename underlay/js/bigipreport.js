@@ -1121,26 +1121,26 @@ function setupVirtualServerTable() {
                     }
                 },
                 {
-                    "text": 'e',
-                    "titleAttr": 'expand normal expansion',
+                    "text": 'Expand',
+                    "titleAttr": 'Temporarily expand all',
                     "className": "tableHeaderColumnButton toggleExpansion",
                     "action": function ( e, dt, node, config ) {
                         switch(node['0'].innerText) {
-                            case 'e':
+                            case 'Expand':
                                 hidePools(false);
-                                node['0'].innerHTML = '<span>c</span>';
-                                node['0'].title = 'Temporarily collapse all pools';
+                                node['0'].innerHTML = '<span>Collapse</span>';
+                                node['0'].title = 'Temporarily collapse all';
                                 break;
-                            case 'c':
+                            case 'Collapse':
                                 hidePools(true);
-                                node['0'].innerHTML = '<span>r</span>';
+                                node['0'].innerHTML = '<span>Restore</span>';
                                 node['0'].title = 'Restore normal expansion';
                                 break;
-                            case 'r':
+                            case 'Restore':
                                 hidePools(true);
                                 expandPoolMatches($(siteData.bigipTable.table().body()), siteData.bigipTable.search());
-                                node['0'].innerHTML = '<span>e</span>';
-                                node['0'].title = 'Temporarily expand all pools';
+                                node['0'].innerHTML = '<span>Expand</span>';
+                                node['0'].title = 'Temporarily expand all';
                                 break;
                         }
                     }
@@ -1210,8 +1210,8 @@ function setupVirtualServerTable() {
 
         // reset toggleExpansion button
         var button = $('div#allbigips_wrapper div.dt-buttons button.toggleExpansion');
-        button[0].innerHTML = '<span>e<span>'
-        button[0].title = 'Temporarily expand all pools';
+        button[0].innerHTML = '<span>Expand<span>'
+        button[0].title = 'Temporarily expand all';
 
         hidePools();
         toggleAdcLinks();
