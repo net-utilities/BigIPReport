@@ -1666,26 +1666,6 @@ Function Get-AuthToken {
 
 #EndRegion
 
-#Region Function Get-iRules
-Function Get-DefinedRules {
-    $DefinedRules = $Bigipreportconfig.Settings.iRules.iRule
-
-    $Rules = @()
-
-    Foreach($Rule in ( $DefinedRules | Where-Object { $_.LoadBalancer -and $_.iRuleName } )){
-        $TempRule = c@{}
-
-        $TempRule.add("loadBalancer", $Rule.loadBalancer)
-        $TempRule.add("iRuleName", $Rule.iRuleName)
-
-        $Rules += $TempRule
-    }
-
-    ConvertTo-Json $Rules
-}
-#EndRegion
-
-
 #Region Call Cache LTM information
 Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $IsOnlyDevice = $DeviceGroup.Device.Count -eq 1
@@ -2176,9 +2156,6 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         # Transfer some settings from the config file onto the Javascript
         # Todo: All global variables should be located in a single object
         #       to minimize the polution of the global namespace.
-        $DefinediRules = Get-DefinedRules
-        [void]$Global:HTML.AppendLine("var definedRules = " + $DefinediRules + ";`n")
-
         if($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true){
             [void]$Global:HTML.AppendLine("const ShowiRules = true;")
         } else {
