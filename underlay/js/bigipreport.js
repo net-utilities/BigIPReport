@@ -1329,12 +1329,21 @@ function setupiRuleTable() {
                 }
                 var result = '';
                 if (row.datagroups && row.datagroups.length > 0) {
+                    if (type == 'display' && row.datagroups.length > 1) {
+                        result += '<details>';
+                        result += '<summary>View ' + row.datagroups.length + ' datagroups</summary>';
+                    }
+                    var dglist = '';
                     row.datagroups.forEach((datagroup) => {
-                        if (result != '') {
-                            result += '<br>';
+                        if (dglist != '') {
+                            dglist += '<br>';
                         }
-                        result += renderDataGroup(row.loadbalancer, datagroup, type);
+                        dglist += renderDataGroup(row.loadbalancer, datagroup, type);
                     });
+                    result += dglist;
+                    if (type == 'display' && row.datagroups.length > 1) {
+                        result += '</details>';
+                    }
                 } else {
                     result = "None";
                 }
@@ -1351,12 +1360,21 @@ function setupiRuleTable() {
                 }
                 var result = '';
                 if (row.virtualservers && row.virtualservers.length > 0) {
+                    if (type == 'display' && row.virtualservers.length > 1) {
+                        result += '<details>';
+                        result += '<summary>View ' + row.virtualservers.length + ' virtualservers</summary>';
+                    }
+                    var vslist = '';
                     row.virtualservers.forEach((virtualserver) => {
-                        if (result != '') {
-                            result += '<br>';
+                        if (vslist != '') {
+                            vslist += '<br>';
                         }
-                        result += renderVirtualServer(row.loadbalancer, virtualserver, type);
+                        vslist += renderVirtualServer(row.loadbalancer, virtualserver, type);
                     });
+                    result += vslist;
+                    if (type == 'display' && row.virtualservers.length > 1) {
+                        result += '</details>';
+                    }
                 } else {
                     result = "None";
                 }
@@ -1444,6 +1462,7 @@ function setupiRuleTable() {
     // highlight matches
     siteData.iRuleTable.on('draw', function () {
         highlightAll(siteData.iRuleTable);
+        expandMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
         expandPoolMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
         toggleAdcLinks();
     });
@@ -1525,7 +1544,14 @@ function setupPoolTable() {
                         members.push(renderPoolMember(type, member));
                     });
                     if (type == 'print' || type == 'display') {
-                        result = members.join('<br>');
+                        if (data.length > 1) {
+                            result = '<details>'
+                            result += '<summary>View ' + data.length + ' pool members</summary>';
+                            result += members.join('<br>');
+                            result += '</details>';
+                        } else {
+                            result += members;
+                        }
                     } else {
                         result = members.join(' ');
                     }
@@ -1610,6 +1636,7 @@ function setupPoolTable() {
     // highlight matches
     siteData.poolTable.on('draw', function () {
         highlightAll(siteData.poolTable);
+        expandMatches($(siteData.poolTable.table().body()), siteData.poolTable.search());
         toggleAdcLinks();
     });
 
@@ -2476,6 +2503,13 @@ function expandPoolMatches(resultset, searchstring) {
                 togglePool(this.id);
             }
         });
+    }
+}
+
+function expandMatches(resultset, searchstring) {
+    if (searchstring != '') {
+        $(resultset).find('details').removeAttr('open');
+        $(resultset).find('details:has(span.highlight)').attr('open', '');
     }
 }
 
