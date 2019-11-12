@@ -1220,17 +1220,6 @@ function setupVirtualServerTable() {
         updateLocationHash();
     });
 
-    //Update search has on columns input update and expand pool matches
-    siteData.bigipTable.columns().every(function () {
-
-        $('input', this.header()).on('keyup change input search', function () {
-            updateLocationHash();
-            highlightAll(siteData.bigipTable);
-            expandPoolMatches($(siteData.bigipTable.table().body()), $(this).val());
-        });
-
-    });
-
 
     /*************************************************************************************************************
 
@@ -1292,15 +1281,9 @@ function setupiRuleTable() {
                 }
                 var result = '';
                 if (row.pools && row.pools.length > 0) {
-                    if (type == 'display') {
-                        var tid = "i-" + meta.row;
-                        result += '<div class="expand" id="expand-' + tid + '" style="display: block;">' +
-                            '<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
-                        result += '<div class="collapse" id="collapse-' + tid + '" style="display: none;">' +
-                            '<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
-                        result += '<div onclick="Javascript:togglePool(\'' + tid + '\')"' +
-                            ' id="AssociatedPoolsInfo-' + tid + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
-                            '<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: none;">';
+                    if (type == 'display' && row.pools.length > 1) {
+                        result += '<details>';
+                        result += '<summary>View ' + row.pools.length + ' pools</summary>';
                     }
                     var poolList = '';
                     row.pools.forEach((pool) => {
@@ -1310,8 +1293,8 @@ function setupiRuleTable() {
                         poolList += renderPool(row.loadbalancer, pool, type);
                     });
                     result += poolList;
-                    if (type == 'display') {
-                        result += '</div>';
+                    if (type == 'display' && row.pools.length > 1) {
+                        result += '</details>';
                     }
                 } else {
                     result = "None";
@@ -1396,15 +1379,13 @@ function setupiRuleTable() {
                 {
                     "text": 'Reset filters',
                     "className": "tableHeaderColumnButton resetFilters",
-                    "action": function ( e, dt, node, config ) {
-
-                        $("table#iRuleTable thead th input").val("");
-                        siteData.iRuleTable.search('')
-                            .columns().search('')
-                            .draw();
-                        updateLocationHash();
-
-                    }
+                    "action": resetFilters
+                },
+                {
+                    "text": 'Expand',
+                    "titleAttr": 'Temporarily expand all',
+                    "className": "tableHeaderColumnButton toggleExpansion",
+                    "action": toggleExpandCollapseRestore
                 },
                 "columnsToggle",
                 {
@@ -1461,10 +1442,14 @@ function setupiRuleTable() {
 
     // highlight matches
     siteData.iRuleTable.on('draw', function () {
-        highlightAll(siteData.iRuleTable);
-        expandMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
-        expandPoolMatches(siteData.iRuleTable.table().body(), siteData.iRuleTable.search());
+        // reset toggleExpansion button
+        var button = $('div#iRuleTable_wrapper div.dt-buttons button.toggleExpansion');
+        button[0].innerHTML = '<span>Expand<span>'
+        button[0].title = 'Temporarily expand all';
+
         toggleAdcLinks();
+        highlightAll(siteData.iRuleTable);
+        expandMatches(siteData.iRuleTable.table().body());
     });
 
     siteData.iRuleTable.draw();
@@ -1543,7 +1528,7 @@ function setupPoolTable() {
                     data.forEach((member) => {
                         members.push(renderPoolMember(type, member));
                     });
-                    if (type == 'print' || type == 'display') {
+                    if (type == 'display') {
                         if (data.length > 1) {
                             result = '<details>'
                             result += '<summary>View ' + data.length + ' pool members</summary>';
@@ -1571,14 +1556,13 @@ function setupPoolTable() {
                 {
                     "text": 'Reset filters',
                     "className": "tableHeaderColumnButton resetFilters",
-                    "action": function ( e, dt, node, config ) {
-
-                        $("table#poolTable thead th input").val("");
-                        siteData.poolTable.search('')
-                            .columns().search('')
-                            .draw();
-
-                    }
+                    "action": resetFilters
+                },
+                {
+                    "text": 'Expand',
+                    "titleAttr": 'Temporarily expand all',
+                    "className": "tableHeaderColumnButton toggleExpansion",
+                    "action": toggleExpandCollapseRestore
                 },
                 "columnsToggle",
                 {
@@ -1635,9 +1619,14 @@ function setupPoolTable() {
 
     // highlight matches
     siteData.poolTable.on('draw', function () {
-        highlightAll(siteData.poolTable);
-        expandMatches($(siteData.poolTable.table().body()), siteData.poolTable.search());
+        // reset toggleExpansion button
+        var button = $('div#poolTable_wrapper div.dt-buttons button.toggleExpansion');
+        button[0].innerHTML = '<span>Expand<span>'
+        button[0].title = 'Temporarily expand all';
+
         toggleAdcLinks();
+        highlightAll(siteData.poolTable);
+        expandMatches($(siteData.poolTable.table().body()));
     });
 
     siteData.poolTable.draw();
@@ -1695,26 +1684,17 @@ function setupDataGroupTable() {
                 }
                 var result = '';
                 if (row.pools && row.pools.length > 0) {
-                    if (type == 'display') {
-                        var tid="dg-" + meta.row;
-                        result += '<div class="expand" id="expand-' + tid + '" style="display: block;">' +
-                            '<a><img src="images/chevron-down.png" alt="down" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
-                        result += '<div class="collapse" id="collapse-' + tid + '" style="display: none;">' +
-                            '<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
-                        result += '<div onclick="Javascript:togglePool(\'' + tid + '\'"' +
-                            ' id="AssociatedPoolsInfo-' + tid + '" style="display: block;"> Show ' + row.pools.length + ' associated pool(s)</div>' +
-                            '<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: none;">';
-                    }
-                    var poolList = '';
-                    row.pools.forEach((pool) => {
-                        if (poolList != '') {
-                            poolList += '<br>';
-                        }
-                        poolList += renderPool(row.loadbalancer, pool, type);
+                    var members = [];
+                    row.pools.forEach((member) => {
+                        members.push(renderPool(row.loadbalancer, member, type));
                     });
-                    result += poolList;
-                    if (type == 'display') {
-                        result += '</div>';
+                    if (type == 'display' && row.pools.length > 1) {
+                        result = '<details>'
+                        result += '<summary>View ' + row.pools.length + ' pool members</summary>';
+                        result += members.join('<br>');
+                        result += '</details>';
+                    } else {
+                        result += members.join('<br>');
                     }
                 } else {
                     result = "None";
@@ -1740,14 +1720,13 @@ function setupDataGroupTable() {
                 {
                     "text": 'Reset filters',
                     "className": "tableHeaderColumnButton resetFilters",
-                    "action": function ( e, dt, node, config ) {
-
-                        $("table#dataGroupTable thead th input").val("");
-                        siteData.dataGroupTable.search('')
-                            .columns().search('')
-                            .draw();
-
-                    }
+                    "action": resetFilters
+                },
+                {
+                    "text": 'Expand',
+                    "titleAttr": 'Temporarily expand all',
+                    "className": "tableHeaderColumnButton toggleExpansion",
+                    "action": toggleExpandCollapseRestore
                 },
                 "columnsToggle",
                 {
@@ -1804,8 +1783,14 @@ function setupDataGroupTable() {
 
     // highlight matches
     siteData.dataGroupTable.on('draw', function () {
-        highlightAll(siteData.dataGroupTable);
+        // reset toggleExpansion button
+        var button = $('div#dataGroupTable_wrapper div.dt-buttons button.toggleExpansion');
+        button[0].innerHTML = '<span>Expand<span>'
+        button[0].title = 'Temporarily expand all';
+
         toggleAdcLinks();
+        highlightAll(siteData.dataGroupTable);
+        expandMatches(siteData.dataGroupTable.table().body())
     });
 
     siteData.dataGroupTable.draw();
@@ -1905,14 +1890,7 @@ function setupCertificateTable() {
                 {
                     "text": 'Reset filters',
                     "className": "tableHeaderColumnButton resetFilters",
-                    "action": function ( e, dt, node, config ) {
-
-                        $("table#certificateTable thead th input").val("");
-                        siteData.certificateTable.search('')
-                            .columns().search('')
-                            .draw();
-
-                    }
+                    "action": resetFilters
                 },
                 "columnsToggle",
                 {
@@ -2023,14 +2001,7 @@ function setupLogsTable() {
                 {
                     "text": 'Reset filters',
                     "className": "tableHeaderColumnButton resetFilters",
-                    "action": function ( e, dt, node, config ) {
-
-                        $("table#logstable thead th input").val("");
-                        siteData.logTable.search('')
-                            .columns().search('')
-                            .draw();
-
-                    }
+                    "action": resetFilters
                 },
                 "columnsToggle",
                 {
@@ -2421,9 +2392,8 @@ function toggleAdcLinks() {
 }
 
 function toggleRegexSearch() {
-    // TODO: re .search() and re .draw() all rendered tables
     var regexSearch = localStorage.getItem("regexSearch") === "true";
-    // siteData.poolTable.context['0'].oPreviousSearch.bRegex
+    // internal flag: siteData.poolTable.context['0'].oPreviousSearch.bRegex
     tables = [
         siteData.bigipTable,
         siteData.poolTable,
@@ -2437,26 +2407,6 @@ function toggleRegexSearch() {
         }
     });
 }
-
-function toggleColumns() {
-
-    $("#allbigips thead th input").each(function (index, tHeader) {
-
-        var settingName = tHeader.getAttribute("data-setting-name");
-        index += 1
-
-        if (localStorage.getItem(settingName) === "false") {
-            $(this).parent().hide();
-            $("#allbigips > tbody > tr.virtualserverrow > td:nth-child(" + index + "\)").hide();
-        } else {
-            $(this).parent().show();
-            $("#allbigips > tbody > tr.virtualserverrow > td:nth-child(" + index + "\)").show();
-        }
-
-    });
-
-}
-
 
 function updateLocationHash(updatehash = true) {
 
@@ -2506,10 +2456,36 @@ function expandPoolMatches(resultset, searchstring) {
     }
 }
 
-function expandMatches(resultset, searchstring) {
-    if (searchstring != '') {
-        $(resultset).find('details').removeAttr('open');
-        $(resultset).find('details:has(span.highlight)').attr('open', '');
+function expandMatches(resultset) {
+    $(resultset).find('details').removeAttr('open');
+    $(resultset).find('details:has(span.highlight)').attr('open', '');
+}
+
+function resetFilters( e, dt, node, config ) {
+    $(dt.header()).find('input').val('');
+    dt.search('')
+        .columns().search('')
+        .draw();
+}
+
+function toggleExpandCollapseRestore(e, dt, node, config) {
+    switch(node['0'].innerText) {
+        case 'Expand':
+            $(dt.table().body()).find('details').attr('open','');
+            node['0'].innerHTML = '<span>Collapse</span>';
+            node['0'].title = 'Temporarily collapse all';
+            break;
+        case 'Collapse':
+            $(dt.table().body()).find('details').removeAttr('open');
+            node['0'].innerHTML = '<span>Restore</span>';
+            node['0'].title = 'Restore normal expansion';
+            break;
+        case 'Restore':
+            hidePools(true);
+            expandMatches($(dt.table().body()));
+            node['0'].innerHTML = '<span>Expand</span>';
+            node['0'].title = 'Temporarily expand all';
+            break;
     }
 }
 
