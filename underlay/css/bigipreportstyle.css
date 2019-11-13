@@ -588,11 +588,11 @@ span.statusicon {
 }
 
 span.adcLinkSpan {
-    padding-left: 4px;
+    padding-right: 4px;
 }
 
 span.detailsicon {
-    margin-left: 4px;
+    padding-left: 4px;
 }
 
 /****************************************************************************************************************************
