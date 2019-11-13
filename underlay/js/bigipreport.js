@@ -2634,7 +2634,7 @@ function translateStatus(member) {
             translatedstatus['enabled'] = "<span class=\"memberdisabled\">Disabled by parent</span>";
             break;
         case "ENABLED_STATUS_DISABLED":
-            translatedstatus['enabled'] = "<span class=\"memberdisabled\">Member disabled</span>";
+            translatedstatus['enabled'] = "<span class=\"memberdisabled\">Disabled</span>";
             break;
         default:
             translatedstatus['enabled'] = "<span class=\"memberunknown\">Unknown</span>";
