@@ -192,6 +192,7 @@ div.realtimestatusdiv {
     position: absolute;
     top: 15px;
     left: 25px;
+    cursor: pointer;
 }
 
 span.topleftheader {
