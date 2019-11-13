@@ -354,7 +354,7 @@ function createdPoolCell(cell, cellData, rowData, rowIndex, colIndex) {
     }
 }
 
-function renderPoolMember(type, member) {
+function renderPoolMember(loadbalancer, member, type) {
     var result='';
     if (member !== null) {
         if (type == 'display' || type == 'print') {
@@ -374,19 +374,20 @@ function renderPoolMember(type, member) {
 
 function renderPoolMemberCell(type, member, poolNum) {
     membercell = '<td class="PoolMember" data-pool="' + poolNum + '">';
-    membercell += renderPoolMember(type, member);
+    membercell += renderPoolMember('', member, type);
     membercell += '</td>'
     return membercell;
 }
+
 function renderPoolCell(data, type, row, meta) {
     if (type == 'sort') {
-        if (row.pools) {
-            return row.pools.length;
+        if (data) {
+            return data.length;
         } else {
             return 0;
         }
     }
-    if (!row.pools) {
+    if (!data) {
         return "N/A";
     }
     var poolCell = '';
@@ -397,12 +398,12 @@ function renderPoolCell(data, type, row, meta) {
         poolCell += '<div class="collapse" id="collapse-' + tid + '" style="display: block;">' +
             '<a><img src="images/chevron-up.png" alt="up" onclick="Javascript:togglePool(\'' + tid + '\')"></a></div>';
         poolCell +=    '<div class="AssociatedPoolsInfo" onclick="Javascript:togglePool(\'' + tid + '\')"' +
-            ' id="AssociatedPoolsInfo-' + tid + '" style="display: none;"> Show ' + row.pools.length + ' associated pools</div>' +
+            ' id="AssociatedPoolsInfo-' + tid + '" style="display: none;"> Show ' + data.length + ' associated pools</div>' +
             '<div id="PoolCell-' + tid + '" class="pooltablediv" style="display: block;">';
     }
     poolCell += '<table class="pooltable"><tbody>';
-    for (var i=0; i<row.pools.length; i++) {
-        var pool = siteData.poolsMap.get(row.loadbalancer + ':' + row.pools[i]);
+    for (var i=0; i<data.length; i++) {
+        var pool = siteData.poolsMap.get(row.loadbalancer + ':' + data[i]);
         // report dumps pools before virtualhosts, so pool might not exist
         if (pool) {
             var poolClass = 'Pool-' + pool.poolNum;
@@ -434,6 +435,33 @@ function renderPoolCell(data, type, row, meta) {
     poolCell += '</tbody></table>';
     poolCell += "</div>";
     return poolCell;
+}
+
+function renderList(data, type, row, meta, renderCallback, plural) {
+    if (type == 'sort') {
+        if (data && data.length) {
+            return data.length;
+        }
+        return 0;
+    }
+    var result = '';
+    if (data && data.length > 0) {
+        var members = [];
+        data.forEach((member) => {
+            members.push(renderCallback(row.loadbalancer, member, type));
+        });
+        if (type == 'display' && data.length > 1) {
+            result = '<details>'
+            result += '<summary>View ' + data.length + ' ' + plural + '</summary>';
+            result += members.join('<br>');
+            result += '</details>';
+        } else {
+            result += members.join('<br>');
+        }
+    } else {
+        result = "None";
+    }
+    return result;
 }
 
 function testStatusVIP(loadbalancer) {
@@ -1270,98 +1298,23 @@ function setupiRuleTable() {
                 return renderRule(row.loadbalancer, data, type);
             }
         }, {
+            "data": "pools",
             "type": "html-num",
             "className": "relative",
             "render": function (data, type, row, meta) {
-                if (type == 'sort') {
-                    if (row.pools && row.pools.length) {
-                        return row.pools.length;
-                    }
-                    return 0;
-                }
-                var result = '';
-                if (row.pools && row.pools.length > 0) {
-                    if (type == 'display' && row.pools.length > 1) {
-                        result += '<details>';
-                        result += '<summary>View ' + row.pools.length + ' pools</summary>';
-                    }
-                    var poolList = '';
-                    row.pools.forEach((pool) => {
-                        if (poolList != '') {
-                            poolList += '<br>';
-                        }
-                        poolList += renderPool(row.loadbalancer, pool, type);
-                    });
-                    result += poolList;
-                    if (type == 'display' && row.pools.length > 1) {
-                        result += '</details>';
-                    }
-                } else {
-                    result = "None";
-                }
-                return result;
+                return renderList(data, type, row, meta, renderPool, 'pools');
             }
         }, {
+            "data": "datagroups",
             "type": "html-num",
-            "render": function (data, type, row) {
-                if (type == 'sort') {
-                    if (row.datagroups && row.datagroups.length) {
-                        return row.datagroups.length;
-                    }
-                    return 0;
-                }
-                var result = '';
-                if (row.datagroups && row.datagroups.length > 0) {
-                    if (type == 'display' && row.datagroups.length > 1) {
-                        result += '<details>';
-                        result += '<summary>View ' + row.datagroups.length + ' datagroups</summary>';
-                    }
-                    var dglist = '';
-                    row.datagroups.forEach((datagroup) => {
-                        if (dglist != '') {
-                            dglist += '<br>';
-                        }
-                        dglist += renderDataGroup(row.loadbalancer, datagroup, type);
-                    });
-                    result += dglist;
-                    if (type == 'display' && row.datagroups.length > 1) {
-                        result += '</details>';
-                    }
-                } else {
-                    result = "None";
-                }
-                return result;
+            "render": function (data, type, row, meta) {
+                return renderList(data, type, row, meta, renderDataGroup, 'datagroups');
             }
         }, {
+            "data": "virtualservers",
             "type": "html-num",
             "render": function (data, type, row) {
-                if (type == 'sort') {
-                    if (row.virtualservers && row.virtualservers.length) {
-                        return row.virtualservers.length;
-                    }
-                    return 0;
-                }
-                var result = '';
-                if (row.virtualservers && row.virtualservers.length > 0) {
-                    if (type == 'display' && row.virtualservers.length > 1) {
-                        result += '<details>';
-                        result += '<summary>View ' + row.virtualservers.length + ' virtualservers</summary>';
-                    }
-                    var vslist = '';
-                    row.virtualservers.forEach((virtualserver) => {
-                        if (vslist != '') {
-                            vslist += '<br>';
-                        }
-                        vslist += renderVirtualServer(row.loadbalancer, virtualserver, type);
-                    });
-                    result += vslist;
-                    if (type == 'display' && row.virtualservers.length > 1) {
-                        result += '</details>';
-                    }
-                } else {
-                    result = "None";
-                }
-                return result;
+                return renderList(data, type, row, meta, renderVirtualServer, 'virtualservers');
             }
         }, {
             "data": "definition",
@@ -1514,36 +1467,8 @@ function setupPoolTable() {
         }, {
             "data": "members",
             "type": "html-num",
-            "render": function (data, type, row) {
-                // column sort sorts by number of members
-                if (type == 'sort') {
-                    if (data && data.length) {
-                        return data.length;
-                    }
-                    return 0;
-                }
-                var result='';
-                if (data) {
-                    var members = [];
-                    data.forEach((member) => {
-                        members.push(renderPoolMember(type, member));
-                    });
-                    if (type == 'display') {
-                        if (data.length > 1) {
-                            result = '<details>'
-                            result += '<summary>View ' + data.length + ' pool members</summary>';
-                            result += members.join('<br>');
-                            result += '</details>';
-                        } else {
-                            result += members;
-                        }
-                    } else {
-                        result = members.join(' ');
-                    }
-                } else {
-                    result += 'None'
-                }
-                return result;
+            "render": function (data, type, row, meta) {
+                return renderList(data, type, row, meta, renderPoolMember, 'pool members');
             }
         }],
         "iDisplayLength": 10,
@@ -1673,33 +1598,11 @@ function setupDataGroupTable() {
         }, {
             "data": "type",
         }, {
+            "data": "pools",
             "type": "html-num",
             "className": "relative",
             "render": function (data, type, row, meta) {
-                if (type == 'sort') {
-                    if (row.pools && row.pools.length) {
-                        return row.pools.length;
-                    }
-                    return 0;
-                }
-                var result = '';
-                if (row.pools && row.pools.length > 0) {
-                    var members = [];
-                    row.pools.forEach((member) => {
-                        members.push(renderPool(row.loadbalancer, member, type));
-                    });
-                    if (type == 'display' && row.pools.length > 1) {
-                        result = '<details>'
-                        result += '<summary>View ' + row.pools.length + ' pool members</summary>';
-                        result += members.join('<br>');
-                        result += '</details>';
-                    } else {
-                        result += members.join('<br>');
-                    }
-                } else {
-                    result = "None";
-                }
-                return result;
+                return renderList(data, type, row, meta, renderPool, 'pools');
             }
         }, {
             "data": "data",
