@@ -451,7 +451,7 @@ function renderList(data, type, row, meta, renderCallback, plural) {
             members.push(renderCallback(row.loadbalancer, member, type));
         });
         if (type == 'display' && data.length > 1) {
-            result = '<details>'
+            result = '<details data-loadbalancer="' + row.loadbalancer + '" data-name="' + row.name + '">';
             result += '<summary>View ' + data.length + ' ' + plural + '</summary>';
             result += members.join('<br>');
             result += '</details>';
@@ -552,7 +552,16 @@ function testStatusVIP(loadbalancer) {
 //Initiate pool status updates
 function pollCurrentView() {
     resetClock();
-    var length = $("table.pooltable tr td.poolname:visible").length;
+    var currentSection = $("div#mainholder").attr("data-activesection");
+    var length = 0;
+    switch (currentSection) {
+        case "virtualservers":
+            var length = $("table.pooltable tr td.poolname:visible").length;
+            break;
+        case "pools":
+            var length = $("table#poolTable details[open]").length;
+            break;
+    }
     if (length == 0 || length > siteData.preferences.PollingMaxPools) {
         $("span#ajaxqueue").text(0);
         $("td#pollingstatecell").html('Disabled, ' + length + ' of ' + siteData.preferences.PollingMaxPools +
@@ -563,9 +572,19 @@ function pollCurrentView() {
             ' refresh in <span id="refreshcountdown">' + siteData.preferences.PollingRefreshRate + '</span> seconds</span>');
 
         $("span#ajaxqueue").text(length);
-        $("table.pooltable tr td.poolname:visible").each(function () {
-            getPoolStatus(this);
-        });
+        switch (currentSection) {
+            case "virtualservers":
+                $("table.pooltable tr td.poolname:visible").each(function () {
+                    getPoolStatus(this);
+                });
+                break;
+            case "pools":
+                var length = $("table#poolTable details[open]").length;
+                $("table#poolTable details[open]").each(function () {
+                    getPoolStatusPools(this);
+                })
+                break;
+        }
     }
 }
 
@@ -729,6 +748,67 @@ function getPoolStatus(poolCell) {
                             for (var memberStatus in data.memberstatuses) {
 
                                 var statusSpan = $("td.PoolMember[data-pool=\"" + pool.poolNum + "\"] span[data-member=\"" + memberStatus + "\"]");
+
+                                setMemberState(statusSpan, data.memberstatuses[memberStatus])
+
+                                // Update the pool json object
+                                var members = pool.members;
+
+                                for (i in members) {
+                                    var member = members[i];
+                                    var ipport = member.ip + ":" + member.port;
+                                    if (ipport === memberStatus) {
+                                        member.realtimestatus = data.memberstatuses[memberStatus];
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    timeout: 2000
+                })
+                .fail(function (jqxhr) {
+                    // To be used later in the console
+                    // siteData.memberStates.ajaxFailures.push({ url: url, code: jqxhr.status, reason: jqxhr.statusText })
+                    decreaseAjaxQueue(url)
+                    return false;
+                });
+            }
+        }
+    }
+}
+
+function getPoolStatusPools(poolCell) {
+
+    if (siteData.memberStates.ajaxQueue.length >= siteData.preferences.PollingMaxQueue) {
+        setTimeout(function () {
+            getPoolStatusPools(poolCell)
+        }, 200);
+
+    } else {
+
+        var loadbalancerName = $(poolCell).attr("data-loadbalancer");
+
+        var loadbalancer = getLoadbalancer(loadbalancerName);
+
+        if (loadbalancer && loadbalancer.statusvip.working === true) {
+
+            var poolName = $(poolCell).attr("data-name");
+
+            var pool = getPool(poolName, loadbalancerName);
+            var url = loadbalancer.statusvip.url + pool.name
+
+            if (increaseAjaxQueue(url)) {
+                $.ajax({
+                    dataType: "json",
+                    url: url,
+                    success: function (data) {
+                        if (data.success) {
+
+                            decreaseAjaxQueue(url);
+
+                            for (var memberStatus in data.memberstatuses) {
+
+                                var statusSpan = $('details[data-name="' + poolName + '"] span[data-member="' + memberStatus + '"]');
 
                                 setMemberState(statusSpan, data.memberstatuses[memberStatus])
 
@@ -2651,7 +2731,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
         table += '                <table class="virtualserverdetailstable">';
         table += '                    <tr><th>Name</th><td>' + matchingvirtualserver.name + '</td></tr>';
         table += '                    <tr><th>IP:Port</th><td>' + matchingvirtualserver.ip + ':' + matchingvirtualserver.port + '</td></tr>';
-        table += '                    <tr><th>Default pool</th><td>' + renderPool(loadbalancer,defaultPool, 'display') + '</td></tr>';
+        table += '                    <tr><th>Default pool</th><td>' + renderPool(loadbalancer, defaultPool, 'display') + '</td></tr>';
         table += '                    <tr><th>Traffic Group</th><td>' + trafficGroup + '</td></tr>';
         table += '                    <tr><th>Description</th><td>' + description + '</td></tr>';
         table += '                </table>';
