@@ -2164,13 +2164,13 @@ $Global:HTML = [System.Text.StringBuilder]::new()
     <body>
         <div class="beforedocumentready"></div>
         <div class="bigipreportheader"><img src="images/bigipreportlogo.png" alt="bigipreportlogo"/></div>
-        <div class="realtimestatusdiv">
+        <div class="realtimestatusdiv" onclick="javascript:pollCurrentView();">
             <table>
                 <tr>
                     <td><span class="topleftheader">Status VIPs:</span></td><td><span id="realtimetestsuccess">0</span> working, <span id="realtimetestfailed">0</span> failed, <span id="realtimenotconfigured">0</span> not configured</td>
                 </tr>
                 <tr>
-                    <td><span class="topleftheader">Polling state<a href="javascript:pollCurrentView();">:</a></span></td><td id="pollingstatecell"><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span></td>
+                    <td><span class="topleftheader">Polling state:</span></td><td id="pollingstatecell"><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span></td>
                 </tr>
             </table>
         </div>
