@@ -608,6 +608,14 @@ function renderVirtualServer(loadbalancer, name, type) {
     vsName=name.replace(/^\/Common\//,'');
     result = '';
     if (type == 'display') {
+        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+        result += '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + name + '">Edit</a></span>';
+    }
+    if (type == 'display' || type == 'print') {
+        var vs=getVirtualServer(name, loadbalancer);
+        result += VirtualServerStatus(vs);
+    }
+    if (type == 'display') {
         result += '<a';
         result += ' class="tooltip"';
         result += ' data-originalvirtualservername="' + name + '"';
@@ -619,8 +627,6 @@ function renderVirtualServer(loadbalancer, name, type) {
         result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
         result += '<p>Click to see virtual server details</p>';
         result += '</a>';
-        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-        result += '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + name + '">Edit</a></span>';
     }
     return result;
 }
@@ -629,6 +635,8 @@ function renderRule(loadbalancer, name, type) {
     var ruleName=name.replace(/^\/Common\//,'');
     var result='';
     if (type == 'display') {
+        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+        result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
         result += '<a';
         result += ' class="tooltip"';
         result += ' data-originalvirtualservername="' + name + '"';
@@ -640,8 +648,6 @@ function renderRule(loadbalancer, name, type) {
         result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
         result += '<p>Click to see iRule details</p>';
         result += '</a>';
-        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-        result += '/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=' + name + '">Edit</a></span>';
     }
     return result;
 }
@@ -651,7 +657,12 @@ function renderPool(loadbalancer, name, type) {
         return name;
     }
     var poolName=name.replace(/^\/Common\//,'');
-    var result = PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name), type);
+    var result = '';
+    if (type == 'display') {
+        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+        result += '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
+    }
+    result += PoolStatus(siteData.poolsMap.get(loadbalancer + ':' + name), type);
     if (type == 'display') {
         result += '<a';
         result += ' class="tooltip"';
@@ -666,8 +677,6 @@ function renderPool(loadbalancer, name, type) {
         result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
         result += '<p>Click to see pool details</p>';
         result += '</a>';
-        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-        result += '/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=' + name + '">Edit</a></span>';
     }
     return result;
 }
@@ -686,6 +695,8 @@ function renderDataGroup(loadbalancer, name, type) {
     var datagroupName=name.replace(/^\/Common\//,'');
     var result = '';
     if (type == 'display') {
+        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
+        result += '/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=' + name + '">Edit</a></span>';
         result += '<a';
         result += ' class="tooltip"';
         result += ' data-originalvirtualservername="' + name + '"';
@@ -697,8 +708,6 @@ function renderDataGroup(loadbalancer, name, type) {
         result += '<span class="detailsicon"><img src="images/details.png" alt="details"></span>';
         result += '<p>Click to see Data Group details</p>';
         result += '</a>';
-        result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
-        result += '/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=' + name + '">Edit</a></span>';
     }
     return result;
 }
@@ -1114,11 +1123,8 @@ function setupVirtualServerTable() {
         }, {
             "data": "name",
             "className": "virtualServerCell",
-            "render": function (data, type, row) {
-                if (type == 'export' || type == 'sort') {
-                    return renderVirtualServer(row.loadbalancer, data, type);
-                }
-                return VirtualServerStatus(row) + renderVirtualServer(row.loadbalancer, data, type);
+            "render": function (data, type, row, meta) {
+                return renderVirtualServer(row.loadbalancer, data, type);
             }
         }, {
             "className": "centeredCell",
@@ -1126,7 +1132,7 @@ function setupVirtualServerTable() {
             "visible": false
         }, {
             "className": "centeredCell",
-            "render": function (data, type, row) {
+            "render": function (data, type, row, meta) {
                 var result = row.ip + ':' + row.port;
                 if (siteData.NATdict[row.ip.split('%')[0]]) {
                     result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
@@ -1959,8 +1965,8 @@ function setupCertificateTable() {
 
     // Highlight matches
     siteData.certificateTable.on('draw', function () {
-        highlightAll(siteData.certificateTable);
         toggleAdcLinks();
+        highlightAll(siteData.certificateTable);
     });
 
     siteData.certificateTable.draw();
@@ -2075,8 +2081,8 @@ function setupLogsTable() {
 
     // Highlight matches
     siteData.logTable.on('draw', function () {
-        highlightAll(siteData.logTable);
         toggleAdcLinks();
+        highlightAll(siteData.logTable);
     });
 
     siteData.logTable.draw();
