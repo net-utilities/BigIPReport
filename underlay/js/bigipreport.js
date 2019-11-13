@@ -245,6 +245,7 @@ function initializeStatusVIPs() {
     // Also initialize the ajaxQueue
     siteData.memberStates = {}
     siteData.memberStates.ajaxQueue = [];
+    siteData.memberStates.ajaxRecent = [];
     siteData.memberStates.ajaxFailures = [];
 
     var loadbalancers = siteData.loadbalancers;
@@ -450,13 +451,24 @@ function renderList(data, type, row, meta, renderCallback, plural) {
         data.forEach((member) => {
             members.push(renderCallback(row.loadbalancer, member, type));
         });
-        if (type == 'display' && data.length > 1) {
-            result = '<details data-loadbalancer="' + row.loadbalancer + '" data-name="' + row.name + '">';
-            result += '<summary>View ' + data.length + ' ' + plural + '</summary>';
+        if (type == 'display') {
+            if (data.length == 1) {
+                result = '<div data-loadbalancer="' + row.loadbalancer + '" data-name="' + row.name + '">';
+            } else {
+                result = '<details data-loadbalancer="' + row.loadbalancer + '" data-name="' + row.name + '">';
+                result += '<summary>View ' + data.length + ' ' + plural + '</summary>';
+            }
             result += members.join('<br>');
-            result += '</details>';
+            if (data.length == 1) {
+                result += '</div>';
+            } else {
+                result += '</details>';
+            }
+            result += '</div>';
+        } else if (type == 'print') {
+            result += members.join('<br>');
         } else {
-            result += members.join('<br>');
+            result += members;
         }
     } else {
         result = "None";
@@ -551,6 +563,7 @@ function testStatusVIP(loadbalancer) {
 
 //Initiate pool status updates
 function pollCurrentView() {
+    siteData.memberStates.ajaxRecent = [];
     resetClock();
     var currentSection = $("div#mainholder").attr("data-activesection");
     var length = 0;
@@ -559,19 +572,10 @@ function pollCurrentView() {
             var length = $("table.pooltable tr td.poolname:visible").length;
             break;
         case "pools":
-            var length = $("table#poolTable details[open]").length;
+            var length = $("table#poolTable details[open][data-name],table#poolTable div[data-name]").length;
             break;
     }
-    if (length == 0 || length > siteData.preferences.PollingMaxPools) {
-        $("span#ajaxqueue").text(0);
-        $("td#pollingstatecell").html('Disabled, ' + length + ' of ' + siteData.preferences.PollingMaxPools +
-            ' pools open<span id="realtimenextrefresh">, refresh in <span id="refreshcountdown">' +
-            siteData.preferences.PollingRefreshRate + '</span> seconds</span>');
-    } else {
-        $("td#pollingstatecell").html('<span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh">,' +
-            ' refresh in <span id="refreshcountdown">' + siteData.preferences.PollingRefreshRate + '</span> seconds</span>');
-
-        $("span#ajaxqueue").text(length);
+    if (length >= 0 && length <= siteData.preferences.PollingMaxPools) {
         switch (currentSection) {
             case "virtualservers":
                 $("table.pooltable tr td.poolname:visible").each(function () {
@@ -579,8 +583,7 @@ function pollCurrentView() {
                 });
                 break;
             case "pools":
-                var length = $("table#poolTable details[open]").length;
-                $("table#poolTable details[open]").each(function () {
+                $("table#poolTable details[open][data-name],table#poolTable div[data-name]").each(function () {
                     getPoolStatusPools(this);
                 })
                 break;
@@ -700,19 +703,39 @@ function renderDataGroup(loadbalancer, name, type) {
     return result;
 }
 
+function countdownClock () {
+    siteData.countDown--;
+    if (siteData.countDown === 0) {
+        clearTimeout(siteData.clock)
+    }
+    $("span#refreshcountdown").html(siteData.countDown);
+    var currentSection = $("div#mainholder").attr("data-activesection");
+    var length = 0;
+    switch (currentSection) {
+        case "virtualservers":
+            var length = $("table.pooltable tr td.poolname:visible").length;
+            break;
+        case "pools":
+            var length = $("table#poolTable details[open][data-name],table#poolTable div[data-name]").length;
+            break;
+    }
+    var pollingstate = '';
+    if (length == 0 || length > siteData.preferences.PollingMaxPools) {
+        pollingstate += 'Disabled, ';
+    }
+    pollingstate += length + '/' + siteData.preferences.PollingMaxPools + ' pools open, ';
+    if (siteData.memberStates) {
+        pollingstate += '<span id="ajaxqueue">' + siteData.memberStates.ajaxQueue.length + '</span>/' + siteData.preferences.PollingMaxQueue + ' queued, ';
+    }
+    pollingstate += 'refresh in ' + siteData.countDown + ' seconds.'
+    $("td#pollingstatecell").html(pollingstate);
+}
+
 function resetClock() {
-
-    var countDown = siteData.preferences.PollingRefreshRate;
-
-    var clock = setInterval(function () {
-        countDown--;
-        if (countDown === 0) {
-            clearTimeout(clock)
-        }
-        $("span#refreshcountdown").html(countDown);
-
-    }, 1000);
-
+    siteData.countDown = siteData.preferences.PollingRefreshRate + 1;
+    clearInterval(siteData.clock);
+    countdownClock();
+    siteData.clock = setInterval(countdownClock, 1000);
 }
 
 function getPoolStatus(poolCell) {
@@ -808,7 +831,10 @@ function getPoolStatusPools(poolCell) {
 
                             for (var memberStatus in data.memberstatuses) {
 
-                                var statusSpan = $('details[data-name="' + poolName + '"] span[data-member="' + memberStatus + '"]');
+                                var statusSpan = $(
+                                    'table#poolTable details[data-name="' + poolName + '"] span[data-member="' + memberStatus + '"],' +
+                                    'table#poolTable div[data-name="' + poolName + '"] span[data-member="' + memberStatus + '"]'
+                                    );
 
                                 setMemberState(statusSpan, data.memberstatuses[memberStatus])
 
@@ -844,13 +870,16 @@ function decreaseAjaxQueue(url) {
     if (index > -1) {
         siteData.memberStates.ajaxQueue.splice(index,1);
     }
+    if (siteData.memberStates.ajaxRecent.indexOf(url) == -1) {
+        siteData.memberStates.ajaxRecent.push(url);
+    }
 
     //Decrease the total queue
     $("span#ajaxqueue").text(siteData.memberStates.ajaxQueue.length);
 }
 
 function increaseAjaxQueue(url) {
-    if (siteData.memberStates.ajaxQueue.indexOf(url) == -1) {
+    if (siteData.memberStates.ajaxRecent.indexOf(url) == -1 && siteData.memberStates.ajaxQueue.indexOf(url) == -1) {
         siteData.memberStates.ajaxQueue.push(url);
         $("span#ajaxqueue").text(siteData.memberStates.ajaxQueue.length);
         return true;
@@ -1393,7 +1422,7 @@ function setupiRuleTable() {
         }, {
             "data": "virtualservers",
             "type": "html-num",
-            "render": function (data, type, row) {
+            "render": function (data, type, row, meta) {
                 return renderList(data, type, row, meta, renderVirtualServer, 'virtualservers');
             }
         }, {
