@@ -880,7 +880,6 @@ div.innerLightbox {
 ***********************************************************************************************************************************/
 
 div.sidemenu {
-    background-color: var(--headerbackgroundcolor);
     width: 100%;
     text-align: left;
 }
@@ -891,6 +890,12 @@ div.sidemenu div.menuitem {
     padding: 5px;
     white-space: nowrap;
     text-align: middle;
+}
+
+div.menuitem {
+    background-color: var(--headerbackgroundcolor);
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
 }
 
 div.sidemenu div.menuitem img {
