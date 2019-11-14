@@ -490,24 +490,14 @@ a:hover.monitortest p {
 }
 
 .closelightboxbutton:hover, .openlightboxbutton:hover {
-    background: #3cb0fd;
-    background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: -ms-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: -o-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: linear-gradient(to bottom, #3a79b5, #3a79b5);
+    background-image: linear-gradient(#3a79b5, #3a79b5);
     text-decoration: none;
 }
 
-a.irulesButton, a.iRuleButton, a.lightboxbutton {
+a.irulesButton, a.lightboxbutton {
     position: relative;
     display: inline;
-    background: #33699d;
-    background-image: -webkit-linear-gradient(top, #33699d, #33699d);
-    background-image: -moz-linear-gradient(top, #33699d, #33699d);
-    background-image: -ms-linear-gradient(top, #33699d, #33699d);
-    background-image: -o-linear-gradient(top, #33699d, #33699d);
-    background-image: linear-gradient(to bottom, #33699d, #33699d);
+    /* background-image: linear-gradient(#33699d, #33699d); */
     border-radius: var(--border-radius);
     font-family: Arial;
     color: #ffffff;
@@ -519,7 +509,7 @@ button.tableHeaderColumnButton {
     line-height: 0.9;
     position: relative;
     display: inline;
-    background: #33699d;
+    background-image: linear-gradient(#4489ca, #316392);
     border-radius: var(--border-radius);
     font-family: Arial;
     color: #ffffff;
@@ -527,40 +517,17 @@ button.tableHeaderColumnButton {
     text-decoration: none;
 }
 
-button.exportFunctions {
-    background: #33699d;
-    background-image: -webkit-linear-gradient(top, #33699d, #33699d);
-    background-image: -moz-linear-gradient(top, #33699d, #33699d);
-    background-image: -ms-linear-gradient(top, #33699d, #33699d);
-    background-image: -o-linear-gradient(top, #33699d, #33699d);
-    background-image: linear-gradient(to bottom, #33699d, #33699d);
-}
-
-button.exportFunctions:hover {
-    background: #3a79b5 !important;
-}
-
 button.resetFilters {
-    background: #f5f5f5;
-    background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+    background-image: linear-gradient(#f5f5f5, #c2c2c2);
     font-family: Arial;
     color: #383838;
 }
 
 button.resetFilters:hover {
-    background: #ebebeb;
-    background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
+    background-image: linear-gradient(#b9b9b9, #e8e8e8);
 }
 
-a.irulesButton, a.iRuleButton, a.exportCSVButton {
+a.irulesButton {
     font-size: 12px;
     padding: 5px 20px 5px 20px;
 }
@@ -570,13 +537,8 @@ a.lightboxbutton {
     padding: 7px 20px 7px 20px;
 }
 
-a.irulesButton:hover, a.iRuleButton:hover, a.exportCSVButton:hover, a.lightboxbutton:hover {
-    background: #3a79b5;
-    background-image: -webkit-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: -moz-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: -ms-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: -o-linear-gradient(top, #3a79b5, #3a79b5);
-    background-image: linear-gradient(to bottom, #3a79b5, #3a79b5);
+a.irulesButton:hover, a.lightboxbutton:hover {
+    background-image: linear-gradient(#3a79b5, #3a79b5);
     text-decoration: none;
 }
 
@@ -865,8 +827,6 @@ div.innerLightbox {
     padding: 10px 20px 20px 20px;
     top: 100px;
     border: 1px #000 solid;
-    -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-    -moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
 }
 
@@ -1134,16 +1094,8 @@ table#logstable.logdate {
 /* The buttons telling the user that there is a new version available */
 
 .updateavailable {
-    -moz-box-shadow: 0px 1px 0px 0px #fff6af;
-    -webkit-box-shadow: 0px 1px 0px 0px #fff6af;
     box-shadow: 0px 1px 0px 0px #fff6af;
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffec64), color-stop(1, #ffab23));
-    background: -moz-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-    background: -webkit-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-    background: -o-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-    background: -ms-linear-gradient(top, #ffec64 5%, #ffab23 100%);
-    background: linear-gradient(to bottom, #ffec64 5%, #ffab23 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffec64', endColorstr='#ffab23', GradientType=0);
+    background-image: linear-gradient(#ffec64, #ffab23);
     background-color: #ffec64;
     border-radius: 3px;
     border: 1px solid #ffaa22;
@@ -1166,13 +1118,7 @@ table#logstable.logdate {
 }
 
 .updateavailable:hover {
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffab23), color-stop(1, #ffec64));
-    background: -moz-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-    background: -webkit-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-    background: -o-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-    background: -ms-linear-gradient(top, #ffab23 5%, #ffec64 100%);
-    background: linear-gradient(to bottom, #ffab23 5%, #ffec64 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffab23', endColorstr='#ffec64', GradientType=0);
+    background-image: linear-gradient(#ffab23, #ffec64);
     background-color: #ffab23;
 }
 .updateavailable:active {
@@ -1181,16 +1127,8 @@ table#logstable.logdate {
 }
 
 .criticalupdateavailable {
-    -moz-box-shadow: inset 0px 1px 0px 0px #cf866c;
-    -webkit-box-shadow: inset 0px 1px 0px 0px #cf866c;
     box-shadow: inset 0px 1px 0px 0px #cf866c;
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #d0451b), color-stop(1, #bc3315));
-    background: -moz-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background: -webkit-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background: -o-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background: -ms-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background: linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d0451b', endColorstr='#bc3315', GradientType=0);
+    background-image: linear-gradient(#d0451b, #bc3315);
     background-color: #d0451b;
     border-radius: 3px;
     border: 1px solid #942911;
@@ -1206,13 +1144,7 @@ table#logstable.logdate {
     text-shadow: 0px 1px 0px #854629;
 }
 .criticalupdateavailable:hover {
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
-    background: -moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background: -webkit-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background: -o-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background: -ms-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background: linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b', GradientType=0);
+    background-image: linear-gradient(#bc3315, #d0451b);
     background-color: #bc3315;
 }
 .criticalupdateavailable:active {
@@ -1221,12 +1153,7 @@ table#logstable.logdate {
 }
 
 span.adcLinkSpan a {
-    background: #da212f;
-    background-image: -webkit-linear-gradient(top, #99173C, #B93057);
-    background-image: -moz-linear-gradient(top, #99173C, #B93057);
-    background-image: -ms-linear-gradient(top, #99173C, #B93057);
-    background-image: -o-linear-gradient(top, #99173C, #B93057);
-    background-image: linear-gradient(to bottom, #99173C, #B93057);
+    background-image: linear-gradient(#99173C, #B93057);
     border-radius: var(--border-radius);
     font-family: Arial;
     color: #ffffff;
@@ -1236,45 +1163,28 @@ span.adcLinkSpan a {
 }
 
 span.adcLinkSpan a:hover {
-    background: #c92330;
-    background-image: -webkit-linear-gradient(top, #B93057, #D05276);
-    background-image: -moz-linear-gradient(top, #B93057, #D05276);
-    background-image: -ms-linear-gradient(top, #B93057, #D05276);
-    background-image: -o-linear-gradient(top, #B93057, #D05276);
-    background-image: linear-gradient(to bottom, #B93057, #D05276);
+    background-image: linear-gradient(#B93057, #D05276);
     text-decoration: none;
 }
 
-.visibleColumnButton, button.dt-button.buttons-columnVisibility.active {
-    background: #4F9717 !important;
+button.dt-button.buttons-columnVisibility.active {
+    background-image: linear-gradient(#64bd21, #4d8b1d);
     border-radius: var(--border-radius);
     font-family: Arial;
     color: #fff;
     font-size: 12px;
     margin-left: 5px;
     text-decoration: none;
-}
-
-.visibleColumnButton {
-    padding: 8px 8px 8px 8px;
-}
-
-button.dt-button.buttons-columnVisibility.active {
     padding: 4px 8px 4px 8px;
 }
 
-.visibleColumnButton:hover, button.dt-button.buttons-columnVisibility.active:hover {
-    background: #71b62c !important;
+button.dt-button.buttons-columnVisibility.active:hover {
+    background-image: linear-gradient(#f5f5f5, #c2c2c2);
     text-decoration: none;
 }
 
 .hiddenColumnButton, button.dt-button.buttons-columnVisibility {
-    background: #f5f5f5;
-    background-image: -webkit-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: -moz-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: -ms-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: -o-linear-gradient(top, #f5f5f5, #c2c2c2);
-    background-image: linear-gradient(to bottom, #f5f5f5, #c2c2c2);
+    background-image: linear-gradient(#f5f5f5, #c2c2c2);
     border-radius: var(--border-radius);
     font-family: Arial;
     color: #383838;
@@ -1285,12 +1195,7 @@ button.dt-button.buttons-columnVisibility.active {
 }
 
 .hiddenColumnButton:hover {
-    background: #ebebeb;
-    background-image: -webkit-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: -moz-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: -ms-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: -o-linear-gradient(top, #ebebeb, #e8e8e8);
-    background-image: linear-gradient(to bottom, #ebebeb, #e8e8e8);
+    background-image: linear-gradient(#ebebeb, #e8e8e8);
     text-decoration: none;
 }
 
