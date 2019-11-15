@@ -533,6 +533,7 @@ a.irulesButton {
 }
 
 a.lightboxbutton {
+    background-image: linear-gradient(#4489ca, #316392);
     font-size: 14px;
     padding: 7px 20px 7px 20px;
 }
