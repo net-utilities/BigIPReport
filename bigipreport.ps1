@@ -2205,6 +2205,9 @@ $Global:HTML = [System.Text.StringBuilder]::new()
                 <p>It's not perfect since pools or members with any of these words in the name can also end up as results.</p>
                 <h3>Column filtering</h3>
                 <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
+                <h3>Regular Expression Searching</h3>
+                <p>Under Preferences, Regular Expression searching is enabled by default. This allows entering filters like "this|that" to filter to one or the other values.
+                Other examples include "^((?!pool_).)*$" to filter a column to entries that don't contain "pool_" or "\bcom" to pickup "com" only after a wordbreak.</p>
                 <h3>Pool member tests</h3>
                 <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
                 <h3>Feature requests</h3>
