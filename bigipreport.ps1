@@ -248,9 +248,10 @@
 #        5.2.8        2019-06-13      Added favicon, new icons for pools and devices and making the device          Patrik Jonsson No
 #                                     serial number correct for virtual editions
 #        5.2.9        2019-06-23      Saving state of column toggles                                                Tim Riker      No
-#        5.3.0        2019-10-15      stats to loggederrors, hide some columns by default, links in datagroups      Tim Riker      Yes
-#                                     snat pool, new status searching, rename "underlay", regex search, bug fixes
-#                                     configuration added, (x) filters to clear, monitor column on pool table
+#        5.3.0        2019-11-15      regex searching, rename "underlay", new settings in xml file! bug fixes       Tim Riker      Yes
+#                                     stats to loggederrors, hide some columns by default, links in datagroups
+#                                     snat pool, new status searching, updated tab/button/input styling
+#                                     monitor column on pool table, new preferences.json
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
