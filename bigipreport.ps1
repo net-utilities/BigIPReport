@@ -2218,7 +2218,8 @@ $Global:HTML = [System.Text.StringBuilder]::new()
                 <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
                 <p>To collect and download anonymized data for submitting a device overview bug report, <a href="javascript:exportDeviceData()">Export Device Data</a>.</p>
                 <h3>Contact</h3>
-                <p>If you need to get hold of the author, then see <a href="https://loadbalancing.se/about/">contact information</a>.</p>
+                <p>If you need to contact the authors, please post on the devcentral forum above or directly on the
+                <a href="https://github.com/epacke/BigIPReport">BigIPReport GitHub</a> project.</p>
             </div>
         </div>
 '@)
