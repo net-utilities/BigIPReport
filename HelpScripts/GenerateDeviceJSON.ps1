@@ -47,4 +47,4 @@ Foreach($DeviceRow in $F5HardwareMatrix.div.table.tbody.tr){
 #>
 
 ConvertTo-Json -Depth 5 $DeviceJSON
-#| Out-File "C:\BigIPReport\Move the content of this folder to the configured report root\json\knowndevices.json"
+#| Out-File "C:\BigIPReport\underlay\json\knowndevices.json"
