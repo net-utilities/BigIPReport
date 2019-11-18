@@ -248,6 +248,10 @@
 #        5.2.8        2019-06-13      Added favicon, new icons for pools and devices and making the device          Patrik Jonsson No
 #                                     serial number correct for virtual editions
 #        5.2.9        2019-06-23      Saving state of column toggles                                                Tim Riker      No
+#        5.3.0        2019-11-15      regex searching, rename "underlay", new settings in xml file! bug fixes       Tim Riker      Yes
+#                                     stats to loggederrors, hide some columns by default, links in datagroups
+#                                     snat pool, new status searching, updated tab/button/input styling
+#                                     monitor column on pool table, new preferences.json
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -262,7 +266,7 @@ Param($ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml")
 Set-StrictMode -Version 1.0
 
 #Script version
-$Global:ScriptVersion = "5.2.9"
+$Global:ScriptVersion = "5.3.0"
 
 #Enable case sensitive dictionaries
 function c@ {
@@ -299,8 +303,8 @@ Function log {
         $Global:LoggedErrors  += $Message
     }
 
-    # log erros, warnings, and info to loggederrors.json
-    if($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info"){
+    # log errors, warnings, info and success to loggederrors.json
+    if($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info" -Or $LogType -eq "success"){
         $LogLineDict = @{}
 
         $LogLineDict["date"] = $(Get-Date -UFormat %Y-%m-%d)
@@ -664,6 +668,7 @@ if(-not $SaneConfig){
 
 #Variables used for storing report data
 $Global:NATdict = c@{}
+$Global:Preferences = c@{}
 
 $Global:DeviceGroups = @();
 
@@ -671,6 +676,7 @@ $Global:DeviceGroups = @();
 $Global:reportpath = $Global:bigipreportconfig.Settings.ReportRoot + $Global:bigipreportconfig.Settings.Defaultdocument
 
 #Build the json object paths
+$Global:preferencesjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/preferences.json"
 $Global:poolsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/pools.json"
 $Global:monitorsjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
 $Global:virtualserversjsonpath = $Global:bigipreportconfig.Settings.ReportRoot + "json/virtualservers.json"
@@ -982,7 +988,7 @@ function Get-LTMInformation {
                 log info "Version 12+ with ASM. Getting REST token for ASM information"
                 $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
 
-                log verbose "Getting ASM Policy information"
+                log verbose "Getting ASM Policy information from $LoadBalancerName"
 
                 $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
@@ -1001,7 +1007,7 @@ function Get-LTMInformation {
                     $LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
                 }
             } Catch {
-                log error "Unable to get a valid token from $LoadbalancerName."
+                log error "Unable to load ASM policies from $LoadBalancerName."
             }
 
             $ErrorActionPreference = "Continue"
@@ -1016,7 +1022,7 @@ function Get-LTMInformation {
 
     #Region Cache certificate information
 
-    log verbose "Caching certificates"
+    log verbose "Caching certificates from $LoadBalancerName"
 
     $LoadBalancerObjects.Certificates = c@{}
 
@@ -1047,7 +1053,7 @@ function Get-LTMInformation {
         $ObjCertificate.expirationDate = $Certificate.certificate.expiration_date
         $ObjCertificate.subject = $ObjSubject
         $ObjCertificate.issuer = $ObjIssuer
-        $ObjCertificate.loadbalancer = $LoadbalancerName
+        $ObjCertificate.loadbalancer = $LoadBalancerName
 
         $LoadBalancerObjects.Certificates.add($ObjCertificate.fileName, $ObjCertificate)
     }
@@ -1082,7 +1088,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Monitors = c@{}
 
-    log verbose "Caching monitors"
+    log verbose "Caching monitors from $LoadBalancerName"
 
     [array]$MonitorList = $F5.LocalLBMonitor.get_template_list()
 
@@ -1155,102 +1161,59 @@ function Get-LTMInformation {
 
     #Region Cache Data groups
 
-    log verbose "Caching data groups"
+    log verbose "Caching data groups from $LoadBalancerName"
+
+    #Region Cache Data group
 
     $LoadBalancerObjects.DataGroups = c@{}
 
-    [array]$AddressClassList = $F5.LocalLBClass.get_address_class_list()
-    [array]$AddressClassKeys = $F5.LocalLBClass.get_address_class($AddressClassList)
-    [array]$AddressClassValues = $F5.LocalLBClass.get_address_class_member_data_value($AddressClassKeys)
-    [array]$ExternalClassList = $F5.LocalLBClass.get_external_class_list_v2()
+    $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
+    $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
+    $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
 
-    #Get address type data groups data
-    For($i = 0;$i -lt $AddressClassList.Count;$i++){
+    $DataGroups = $Response.Content | ConvertFrom-Json
+
+    Foreach($DataGroup in $DataGroups.Items){
+
         $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $AddressClassList[$i]
-        If ($ExternalClassList -Contains $ObjTempDataGroup.name){
-            $ObjTempDataGroup.type = "External Address"
-        } else {
-            $ObjTempDataGroup.type = "Address"
-        }
+        $ObjTempDataGroup.name = $DataGroup.fullPath
+        $ObjTempDataGroup.type = $DataGroup.type
+        $ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
         $Dgdata = New-Object System.Collections.Hashtable
 
-        for($x=0;$x -lt $AddressClassKeys[$i].members.Count;$x++){
-            $Key = [string]$AddressClassKeys[$i].members[$x].Address + " " + [string]$AddressClassKeys[$i].members[$x].Netmask
-            $Value = [string]$AddressClassValues[$i][$x]
-
-            $Dgdata.add($Key, $Value)
+        Foreach($Record in $DataGroup.records){
+            $DgData.Add($Record.name, $Record.data)
         }
 
         $ObjTempDataGroup.data = $Dgdata
-        $objTempDataGroup.loadbalancer = $LoadBalancerName
 
         $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
     }
 
-    $StringClassList = $F5.LocalLBClass.get_string_class_list()
-    $StringClassKeys = $F5.LocalLBClass.get_string_class($StringClassList)
-    $StringClassValues = $F5.LocalLBClass.get_string_class_member_data_value($StringClassKeys)
 
-    For($i = 0;$i -lt $StringClassList.Count;$i++){
+    $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
+
+    $DataGroups = $Response.Content | ConvertFrom-Json
+
+    Foreach($DataGroup in $DataGroups.Items){
+
         $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $StringClassList[$i]
-        If ($ExternalClassList -Contains $ObjTempDataGroup.name){
-            $ObjTempDataGroup.type = "External String"
-        } else {
-            $ObjTempDataGroup.type = "String"
-        }
-
-        $Dgdata = New-Object System.Collections.Hashtable
-
-        for($x=0;$x -lt $StringClassKeys[$i].members.Count;$x++){
-            $Key = [string]$StringClassKeys[$i].members[$x]
-            $Value = [string]$StringClassValues[$i][$x]
-
-            $Dgdata.add($Key, $Value)
-        }
-
-        $ObjTempDataGroup.data = $Dgdata
+        $ObjTempDataGroup.name = $DataGroup.fullPath
+        $ObjTempDataGroup.type = $DataGroup.type
         $ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
         $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
     }
 
-    $ValueClassList = $F5.LocalLBClass.get_value_class_list()
-    $ValueClassKeys = $F5.LocalLBClass.get_value_class($ValueClassList)
-    $ValueClassValues = $F5.LocalLBClass.get_value_class_member_data_value($ValueClassKeys)
-
-    For($i = 0;$i -lt $ValueClassList.Count;$i++){
-        $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $ValueClassList[$i]
-        If ($ExternalClassList -Contains $ObjTempDataGroup.name){
-            $ObjTempDataGroup.type = "External Integer"
-        } else {
-            $ObjTempDataGroup.type = "Integer"
-        }
-
-        $Dgdata = New-Object System.Collections.Hashtable
-
-        for($x=0;$x -lt $ValueClassKeys[$i].members.Count;$x++){
-            $Key = [string]$ValueClassKeys[$i].members[$x]
-            $Value = [string]$ValueClassValues[$i][$x]
-
-            $Dgdata.add($Key, $Value)
-        }
-
-        $ObjTempDataGroup.data = $Dgdata
-        $ObjTempDataGroup.loadbalancer = $LoadBalancerName
-
-        $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
-    }
+    #EndRegion
 
     #EndRegion
     #EndRegion
 
     #Region Caching Pool information
 
-    log verbose "Caching Pools"
+    log verbose "Caching Pools from $LoadBalancerName"
 
     $LoadBalancerObjects.Pools = c@{}
 
@@ -1296,7 +1259,7 @@ function Get-LTMInformation {
                 $ObjTempMember.currentconnections = $Statistics["currentconnections"]
                 $ObjTempMember.maximumconnections = $Statistics["maximumconnections"]
             } Catch {
-                log "error" "Unable to get statistics for member $(objTempMember.Name):$(objTempMember.Port) in pool $($ObjTempPool.name)"
+                log error "Unable to get statistics for member $(objTempMember.Name):$(objTempMember.Port) in pool $($ObjTempPool.name)"
             }
 
             #Add the object to a list
@@ -1319,7 +1282,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Datagroup Pools
-    log verbose "Detecting pools referenced by datagroups"
+    log verbose "Detecting pools referenced by datagroups on $LoadBalancerName"
 
     $Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object -Unique
 
@@ -1330,6 +1293,8 @@ function Get-LTMInformation {
         $Partition = $DataGroup.name.split("/")[1]
 
         Foreach($TempPool in $DataGroup.data.Values) {
+
+            if (!$TempPool) {continue}
 
             if(-not $TempPool.contains("/")){
                 $TempPool = "/$Partition/$TempPool"
@@ -1349,7 +1314,7 @@ function Get-LTMInformation {
 
     #Region Cache information about irules
 
-    log verbose "Caching iRules"
+    log verbose "Caching iRules from $LoadBalancerName"
 
     $DataGroups = $LoadBalancerObjects.DataGroups.Keys | Sort-Object -Unique
 
@@ -1409,7 +1374,7 @@ function Get-LTMInformation {
 
     #Region Cache Virtual Server information
 
-    log verbose "Caching Virtual servers"
+    log verbose "Caching Virtual servers from $LoadBalancerName"
 
     $LoadBalancerObjects.VirtualServers = c@{}
 
@@ -1492,7 +1457,11 @@ function Get-LTMInformation {
         $VirtualServeriRules[$i] | Sort-Object -Property priority | ForEach-Object {
             $tempName = $_.rule_name
             $ObjTempVirtualServer.irules += [string]$tempName
-            $LoadBalancerObjects.iRules[$tempName].virtualservers += $VirtualServerName
+            try {
+                $LoadBalancerObjects.iRules[$tempName].virtualservers += $VirtualServerName
+            } catch {
+                log error "iRule $tempName not found (zero length?) for $VirtualServerName on $LoadBalancerName"
+            }
         }
 
         if([string]($ObjTempVirtualServer.irules) -eq ""){
@@ -1585,7 +1554,7 @@ function Get-LTMInformation {
             $ObjTempVirtualServer.cpuavg1min = Get-Int64 -High $($VipStatistics[39].value.high) -Low $($VipStatistics[39].value.low)
             $ObjTempVirtualServer.cpuavg5min = Get-Int64 -High $($VipStatistics[40].value.high) -Low $($VipStatistics[40].value.low)
         } Catch {
-            log "error" "Unable to get virtual server CPU statistics for $VirtualServerName"
+            log error "Unable to get virtual server CPU statistics for $VirtualServerName"
         }
 
         $LoadBalancerObjects.VirtualServers.add($ObjTempVirtualServer.name, $ObjTempVirtualServer)
@@ -1594,7 +1563,7 @@ function Get-LTMInformation {
     #EndRegion
 
     #Region Get Orphaned Pools
-    log verbose "Detecting orphaned pools"
+    log verbose "Detecting orphaned pools on $LoadBalancerName"
 
     $LoadBalancerObjects.OrphanPools = @()
 
@@ -1701,26 +1670,6 @@ Function Get-AuthToken {
 
 #EndRegion
 
-#Region Function Get-iRules
-Function Get-DefinedRules {
-    $DefinedRules = $Bigipreportconfig.Settings.iRules.iRule
-
-    $Rules = @()
-
-    Foreach($Rule in ( $DefinedRules | Where-Object { $_.LoadBalancer -and $_.iRuleName } )){
-        $TempRule = c@{}
-
-        $TempRule.add("loadBalancer", $Rule.loadBalancer)
-        $TempRule.add("iRuleName", $Rule.iRuleName)
-
-        $Rules += $TempRule
-    }
-
-    ConvertTo-Json $Rules
-}
-#EndRegion
-
-
 #Region Call Cache LTM information
 Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $IsOnlyDevice = $DeviceGroup.Device.Count -eq 1
@@ -1739,7 +1688,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
         $success = Initialize-F5.iControl -Username $Global:Bigipreportconfig.Settings.Credentials.Username -Password $Global:Bigipreportconfig.Settings.Credentials.Password -HostName $Device
 
         if($?){
-            log success "iControl session successfully established"
+            log success "iControl session to $Device successfully established"
             $ErrorActionPreference = "Continue"
         } Else {
             $F5 = Get-F5.iControl
@@ -1769,14 +1718,14 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
 
         $ObjLoadBalancer.isonlydevice = $IsOnlyDevice
 
-        log verbose "Getting hostname"
+        log verbose "Getting hostname from $Device"
 
         $BigIPHostname = $F5.SystemInet.get_hostname()
 
         if($?){
-            log verbose "Hostname is $BigipHostname"
+            log verbose "Hostname is $BigipHostname for $Device"
         } else {
-            log error "Failed to get hostname"
+            log error "Failed to get hostname from $Device"
         }
 
         #Get information about ip, name, model and category
@@ -1817,7 +1766,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
         $ObjLoadBalancer.statusvip = $ObjStatusVIP
 
         #Region Cache Load balancer information
-        log verbose "Fetching information about the device"
+        log verbose "Fetching information about $BigIPHostname"
 
         #Get the version information
         $VersionInformation = ($F5.SystemSoftwareManagement.get_all_software_status()) | Where-Object { $_.active -eq "True" }
@@ -1956,6 +1905,13 @@ Function Update-ReportData {
 
     if(!$?){
         log error "Failed to update the report file"
+        $Status  = $false
+    }
+
+    Move-Item -Force $($Global:preferencesjsonpath + ".tmp") $Global:preferencesjsonpath
+
+    if(!$?){
+        log error "Failed to update the preferences json file"
         $Status  = $false
     }
 
@@ -2112,6 +2068,7 @@ Function Write-TemporaryFiles {
 
     $StreamWriter.dispose()
 
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:preferencesjsonpath -Data $Global:Preferences
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:poolsjsonpath -Data @( $Global:ReportObjects.Values.Pools.Values | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:monitorsjsonpath -Data @( $Global:ReportObjects.Values.Monitors.Values | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:loadbalancersjsonpath -Data @( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
@@ -2204,53 +2161,17 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         <script src="js/jquery.highlight.js"></script>
         <script src="js/bigipreport.js"></script>
         <script src="js/sh_main.js"></script>
-        <script>
-'@
-)
-
-        # Transfer some settings from the config file onto the Javascript
-        # Todo: All global variables should be located in a single object
-        #       to minimize the polution of the global namespace.
-        $DefinediRules = Get-DefinedRules
-        [void]$Global:HTML.AppendLine("var definedRules = " + $DefinediRules + ";`n")
-
-        if($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true){
-            [void]$Global:HTML.AppendLine("const ShowiRules = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const ShowiRules = false;")
-        }
-        if($Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $true){
-            [void]$Global:HTML.AppendLine("const ShowiRuleLinks = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const ShowiRuleLinks = false;")
-        }
-        if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
-            [void]$Global:HTML.AppendLine("const ShowDataGroupLinks = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const ShowDataGroupLinks = false;")
-        }
-        if($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true){
-            [void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = true;")
-        } else {
-            [void]$Global:HTML.AppendLine("const HideLoadBalancerFQDN = false;")
-        }
-        [void]$Global:HTML.AppendLine("const AJAXMAXPOOLS = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxPools + ";")
-        [void]$Global:HTML.AppendLine("const AJAXMAXQUEUE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue + ";")
-        [void]$Global:HTML.AppendLine("const AJAXREFRESHRATE = " + $Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate + ";")
-
-        [void]$Global:HTML.AppendLine(@'
-        </script>
     </head>
     <body>
         <div class="beforedocumentready"></div>
         <div class="bigipreportheader"><img src="images/bigipreportlogo.png" alt="bigipreportlogo"/></div>
-        <div class="realtimestatusdiv">
+        <div class="realtimestatusdiv" onclick="javascript:pollCurrentView();">
             <table>
                 <tr>
                     <td><span class="topleftheader">Status VIPs:</span></td><td><span id="realtimetestsuccess">0</span> working, <span id="realtimetestfailed">0</span> failed, <span id="realtimenotconfigured">0</span> not configured</td>
                 </tr>
                 <tr>
-                    <td><span class="topleftheader">Polling state<a href="javascript:pollCurrentView();">:</a></span></td><td id="pollingstatecell"><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span></td>
+                    <td><span class="topleftheader">Polling state:</span></td><td id="pollingstatecell"><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span></td>
                 </tr>
             </table>
         </div>
@@ -2278,11 +2199,16 @@ $Global:HTML = [System.Text.StringBuilder]::new()
             <div class="mainsection" id="preferences" style="display: none;"></div>
 
             <div class="mainsection" id="helpcontent" style="display: none;">
-                <h3>Filtering for pool members being down</h3>
-                <p>This one is a bit of a hidden feature. In the Pool/Members column you can filter on "<span style="color:red"><b>DOWN</b></span>", "<span style="color:green"><b>UP</b></span>" and "<b>DISABLED</b>".</p>
-                <p>It's not perfect though since pools or members with any of these words in the name will also end up as results.</p>
+                <h3>Filtering on virtual server, pool or pool member status</h3>
+                <p>This is a bit of a hidden feature. In VirtualServer, Pool, and Member columns you can filter on status.
+                The status options are {ENABLED|DISABLED}:{<span style="color:blue"><b>BLUE</b></span>|<span style="color:green"><b>GREEN</b></span>|<span style="color:red"><b>RED</b></span>}.
+                For example, try searching for: "ENABLED:BLUE", ":RED" or "DISABLED:" as a general or field search.</p>
+                <p>It's not perfect since pools or members with any of these words in the name can also end up as results.</p>
                 <h3>Column filtering</h3>
                 <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
+                <h3>Regular Expression Searching</h3>
+                <p>Under Preferences, Regular Expression searching is enabled by default. This allows entering filters like "this|that" to filter to one or the other values.
+                Other examples include "^((?!pool_).)*$" to filter a column to entries that don't contain "pool_" or "\bcom" to pickup "com" only after a wordbreak.</p>
                 <h3>Pool member tests</h3>
                 <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
                 <h3>Feature requests</h3>
@@ -2293,7 +2219,8 @@ $Global:HTML = [System.Text.StringBuilder]::new()
                 <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
                 <p>To collect and download anonymized data for submitting a device overview bug report, <a href="javascript:exportDeviceData()">Export Device Data</a>.</p>
                 <h3>Contact</h3>
-                <p>If you need to get hold of the author, then see <a href="https://loadbalancing.se/about/">contact information</a>.</p>
+                <p>If you need to contact the authors, please post on the devcentral forum above or directly on the
+                <a href="https://github.com/epacke/BigIPReport">BigIPReport GitHub</a> project.</p>
             </div>
         </div>
 '@)
@@ -2302,19 +2229,12 @@ $Global:HTML = [System.Text.StringBuilder]::new()
         <div class="footer">
             The report was generated on $($env:computername) using BigIP Report version $($Global:ScriptVersion).
             Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-            BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>.
+            BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+            and <a href="https://rikers.org/">Tim Riker</a>.
         </div>
 "@)
 
-#Initiate variables used for showing progress (in case the debug is set)
-
-#Initiate variables to give unique id's to pools and members
-$RealTimeStatusDetected = ($Global:ReportObjects.Values.LoadBalancer | Where-Object { $_.statusvip.url -ne "" }).Count -gt 0
-if($RealTimeStatusDetected){
-    log verbose "Status vips detected in the configuration, simplified icons will be used for the whole report"
-}
-
-[void]$Global:HTML.AppendLine(@"
+[void]$Global:HTML.AppendLine(@'
         <div class="lightbox" id="firstlayerdiv">
             <div class="innerLightbox">
                 <div class="lightboxcontent" id="firstlayerdetailscontentdiv">
@@ -2332,7 +2252,33 @@ if($RealTimeStatusDetected){
         </div>
     </body>
 </html>
-"@)
+'@)
+
+# Save Preferences
+$Global:Preferences['HideLoadBalancerFQDN'] = ($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true)
+$Global:Preferences['PollingMaxPools'] = [int]$Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxPools
+$Global:Preferences['PollingMaxQueue'] = [int]$Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxQueue
+$Global:Preferences['PollingRefreshRate'] = [int]$Global:Bigipreportconfig.Settings.RealTimeMemberStates.RefreshRate
+$Global:Preferences['ShowDataGroupLinks'] = ($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true)
+$Global:Preferences['ShowiRuleLinks'] = ($Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $true)
+$Global:Preferences['ShowiRules'] = ($Global:Bigipreportconfig.Settings.iRules.enabled -eq $true)
+$Global:Preferences['autoExpandPools'] = ($Global:Bigipreportconfig.Settings.autoExpandPools -eq $true)
+$Global:Preferences['regexSearch'] = ($Global:Bigipreportconfig.Settings.regexSearch -eq $true)
+$Global:Preferences['showAdcLinks'] = ($Global:Bigipreportconfig.Settings.showAdcLinks -eq $true)
+
+# Record some stats
+
+$StatsMsg = "Stats:"
+$StatsMsg += " G:" + $Global:DeviceGroups.Count
+$StatsMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
+$StatsMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Keys.Count
+$StatsMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
+$StatsMsg += " R:" + $Global:ReportObjects.Values.iRules.Keys.Count
+$StatsMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Keys.Count
+$StatsMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
+$StatsMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
+$StatsMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
+log info $StatsMsg
 
 # Write temporary files and then update the report
 
@@ -2390,17 +2336,8 @@ if($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true){
     }
 }
 
-# Record some stats
+# Done
 
 $DoneMsg = "Done."
-$DoneMsg += " G:" + $Global:DeviceGroups.Count
-$DoneMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
-$DoneMsg += " VS:" + $Global:ReportObjects.Values.VirtualServers.Keys.Count
-$DoneMsg += " R:" + $Global:ReportObjects.Values.iRules.Keys.Count
-$DoneMsg += " DG:" + $Global:ReportObjects.Values.DataGroups.Keys.Count
-$DoneMsg += " P:" + $Global:ReportObjects.Values.Pools.Keys.Count
-$DoneMsg += " M:" + $Global:ReportObjects.Values.Monitors.Keys.Count
-$DoneMsg += " C:" + $Global:ReportObjects.Values.Certificates.Keys.Count
-$DoneMsg += " ASM:" + $Global:ReportObjects.Values.ASMPolicies.Keys.Count
 $DoneMsg += " T:" + $($(Get-Date)-$StartTime).totalminutes
 log verbose $DoneMsg
