@@ -1062,7 +1062,7 @@ table#logstable tbody tr td.logseverityerror {
     font-weight: bold;
 }
 
-table#logstable.logdate {
+table#logstable.logdatetime {
     white-space: no-wrap;
 }
 
