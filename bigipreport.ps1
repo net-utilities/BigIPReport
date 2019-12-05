@@ -1966,14 +1966,14 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.loadbalancers -Data @( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.nat -Data $Global:NATdict
 
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.pools -Data @( $Global:Out.Pools | Sort-Object loadbalancer, name )
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.monitors -Data @( $Global:Out.Monitors | Sort-Object loadbalancer, name )
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data @( $Global:Out.VirtualServers | Sort-Object loadbalancer,name )
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:Out.Certificates | Sort-Object loadbalancer, fileName )
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.asmpolicies -Data @( $Global:Out.ASMPolicies | Sort-Object loadbalancer, name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.pools -Data  @( $Global:ReportObjects.Values.Pools.Values | Sort-Object loadbalancer, name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.monitors -Data @( $Global:ReportObjects.Values.Monitors.Values | Sort-Object loadbalancer, name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data  @( $Global:ReportObjects.Values.VirtualServers.Values | Sort-Object loadbalancer,name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:ReportObjects.Values.Certificates.Values | Sort-Object loadbalancer, fileName )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.asmpolicies -Data @( $Global:ReportObjects.Values.ASMPolicies.Values | Sort-Object loadbalancer, name )
 
     if($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true){
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.irules -Data @($Global:Out.iRules | Sort-Object loadbalancer, name )
+        $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.irules -Data @($Global:ReportObjects.Values.iRules.Values | Sort-Object loadbalancer, name )
     } else {
         log verbose "iRule links disabled in config. Writing empty json object to $($Global:irules + ".tmp")"
 
@@ -1997,7 +1997,7 @@ Function Write-TemporaryFiles {
     $StreamWriter.dispose()
 
     if($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true){
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @( $Global:Out.Datagroups | Sort-Object loadbalancer, name )
+        $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @( $Global:ReportObjects.Values.DataGroups.Values | Sort-Object loadbalancer, name )
     } else {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @()
     }
