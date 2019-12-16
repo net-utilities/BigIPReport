@@ -1152,51 +1152,56 @@ function Get-LTMInformation {
 
     #EndRegion
 
-    #Region Cache Data groups
+    #Region Cache Datagroups
 
-    log verbose "Caching data groups from $LoadBalancerName"
+    log verbose "Caching datagroups from $LoadBalancerName"
 
-    #Region Cache Data group
 
-    $LoadBalancerObjects.DataGroups = c@{}
+    try {
+        $LoadBalancerObjects.DataGroups = c@{}
 
-    $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
-    $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
-    $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
+        $AuthToken = Get-AuthToken -Loadbalancer $LoadBalancerIP
+        $Headers = @{ "X-F5-Auth-Token" = $AuthToken; }
 
-    $DataGroups = $Response.Content | ConvertFrom-Json
+        $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
 
-    Foreach($DataGroup in $DataGroups.Items){
+        $DataGroups = $Response.Content | ConvertFrom-Json
 
-        $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $DataGroup.fullPath
-        $ObjTempDataGroup.type = $DataGroup.type
-        $ObjTempDataGroup.loadbalancer = $LoadBalancerName
+        Foreach($DataGroup in $DataGroups.Items){
 
-        $Dgdata = New-Object System.Collections.Hashtable
+            $ObjTempDataGroup = New-Object -Type DataGroup
+            $ObjTempDataGroup.name = $DataGroup.fullPath
+            $ObjTempDataGroup.type = $DataGroup.type
+            $ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
-        Foreach($Record in $DataGroup.records){
-            $DgData.Add($Record.name, $Record.data)
+            $Dgdata = New-Object System.Collections.Hashtable
+
+            Foreach($Record in $DataGroup.records){
+                $DgData.Add($Record.name, $Record.data)
+            }
+
+            $ObjTempDataGroup.data = $Dgdata
+
+            $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
         }
 
-        $ObjTempDataGroup.data = $Dgdata
 
-        $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
-    }
+        $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
 
+        $DataGroups = $Response.Content | ConvertFrom-Json
 
-    $Response = Invoke-WebRequest -Method "GET" -Headers $Headers -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
+        Foreach($DataGroup in $DataGroups.Items){
 
-    $DataGroups = $Response.Content | ConvertFrom-Json
+            $ObjTempDataGroup = New-Object -Type DataGroup
+            $ObjTempDataGroup.name = $DataGroup.fullPath
+            $ObjTempDataGroup.type = $DataGroup.type
+            $ObjTempDataGroup.loadbalancer = $LoadBalancerName
 
-    Foreach($DataGroup in $DataGroups.Items){
+            $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
+        }
 
-        $ObjTempDataGroup = New-Object -Type DataGroup
-        $ObjTempDataGroup.name = $DataGroup.fullPath
-        $ObjTempDataGroup.type = $DataGroup.type
-        $ObjTempDataGroup.loadbalancer = $LoadBalancerName
-
-        $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
+    } catch {
+        log error "Failed to load datagroups from $LoadBalancerIP"
     }
 
     #EndRegion
