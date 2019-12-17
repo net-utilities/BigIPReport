@@ -1677,7 +1677,7 @@ Foreach($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGr
             $F5 = Get-F5.iControl
 
             log error "The script failed to connect to $Device, run the report manually to determine if this was due to a timeout of bad credentials"
-            log error $F5.LastException.Message
+            log error ("$Device error: " + $F5.LastException.Message)
 
             $ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
 
