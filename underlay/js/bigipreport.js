@@ -1982,8 +1982,7 @@ function setupLogsTable() {
     <table id="logstable" class="bigiptable display">
         <thead>
             <tr>
-                <th><span style="display: none;">Date</span><input type="search" class="search" placeholder="Date" /></th>
-                <th><span style="display: none;">Time</span><input type="search" class="search" placeholder="Time" /></th>
+                <th><span style="display: none;">DateTime</span><input type="search" class="search" placeholder="DateTime" /></th>
                 <th><span style="display: none;">Severity</span><input type="search" class="search" placeholder="Severity" /></th>
                 <th><span style="display: none;">Log Content</span><input type="search" class="search" placeholder="Log Content" /></th>
             </tr>
@@ -1999,11 +1998,8 @@ function setupLogsTable() {
         "deferRender": true,
         "data": siteData.loggedErrors,
         "columns": [{
-            "data": "date",
-            "className": "logdate"
-        }, {
-            "data": "time",
-            "className": "logtime"
+            "data": "datetime",
+            "className": "logdatetime"
         }, {
             "data": "severity"
         }, {
@@ -2054,7 +2050,7 @@ function setupLogsTable() {
         },
         "createdRow": function(row, data, index) {
             if (data && data.severity) {
-                $('td', row).eq(2).addClass( 'logseverity' + data.severity.toLowerCase() );
+                $('td', row).eq(1).addClass( 'logseverity' + data.severity.toLowerCase() );
             }
         },
         "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
@@ -2366,21 +2362,15 @@ function showHelp(updatehash) {
 }
 
 
-function log(message, severity = null, date = null, time = null) {
+function log(message, severity = null, datetime = null) {
 
-    if (!date || !time) {
+    if (!datetime) {
         var now = new Date();
         const offset = now.getTimezoneOffset();
         now = new Date(now.getTime() - (offset*60000));
         var dateArr = now.toISOString().split("T")
 
-        if (!date) {
-            date = dateArr[0];
-        }
-
-        if (!time) {
-            time = dateArr[1].replace(/\.[0-9]+Z$/, "");
-        }
+        datetime = dateArr[0] + ' ' + dateArr[1].replace(/\.[0-9]+Z$/, "");
     }
 
     var severityClass;
@@ -2394,11 +2384,17 @@ function log(message, severity = null, date = null, time = null) {
     }
 
     siteData.loggedErrors.push({
-        'date': date,
-        'time': time,
+        'datetime': datetime,
         'severity': severity,
         'message': message,
     });
+
+    if (siteData.logTable) {
+        siteData.logTable.destroy();
+        siteData.logTable = false;
+        setupLogsTable();
+    }
+
 }
 
 function toggleAdcLinks() {
@@ -3207,7 +3203,6 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                 for (var x in members) {
 
                     let member = members[x];
-                    let memberstatus = translateStatus(member);
 
                     let protocol = matchingmonitors[i].type.replace(/^TTYPE_/, '');
 
