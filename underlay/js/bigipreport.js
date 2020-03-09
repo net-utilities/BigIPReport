@@ -3431,7 +3431,6 @@ function generateCSV() {
 
         var returnStr = ""
 
-        var first = true;
         var firstmember = true;
 
         for (var m in pool.members) {
@@ -3451,9 +3450,9 @@ function generateCSV() {
 
         if (vs.name !== "N/A (Orphan pool)") {
 
-            var line = vs.name + "," + (vs.description || "") + "," + (vs.ip || "") + "," + (vs.port || "") + ',"' + (vs.sslprofileclient || "None") + '","' +
+            var line = vs.name + ',"' + (vs.description.replace(/"/g, '""') || "") + '",' + (vs.ip || "") + "," + (vs.port || "") + ',"' + (vs.sslprofileclient || "None") + '","' +
                 (vs.sslprofileserver || "None") + '",' +(vs.compressionprofile || "None") + "," + (vs.persistenceprofile || "None") + "," + vs.availability + "," +
-                vs.enabled + "," + vs.currentconnections + "," + vs.cpuavg5sec + "," + vs.cpuavg1min + "," + vs.cpuavg5min + "," + (vs.defaultpool || "None") + ",";
+                vs.enabled + "," + vs.currentconnections + "," + vs.cpuavg5sec + "," + vs.cpuavg1min + "," + vs.cpuavg5min + "," + (vs.defaultpool || "None") + ',"';
 
             var firstpool = true;
 
@@ -3462,12 +3461,12 @@ function generateCSV() {
                 if (!firstpool){ line += "|"} else { firstpool = false }
 
                 var pool = getPool(vs.pools[p], vs.loadbalancer);
-                line += '"' + pool.name + ": ";
+                line += pool.name + ": ";
 
-                line += getMembers(pool) + '"';
+                line += getMembers(pool);
             }
 
-            line += "," + vs.loadbalancer;
+            line += '",' + vs.loadbalancer;
 
         }
 
@@ -3483,6 +3482,7 @@ function downLoadTextFile(data, fileName) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
     element.setAttribute('download', fileName);
+    element.innerHTML = "download"
 
     element.style.display = 'none';
     document.body.appendChild(element);
