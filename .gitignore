@@ -15,6 +15,7 @@ underlay/json/loggederrors.json
 underlay/json/monitors.json
 underlay/json/nat.json
 underlay/json/pools.json
+underlay/json/preferences.json
 underlay/json/virtualservers.json
 underlay/web.config
 .vscode
