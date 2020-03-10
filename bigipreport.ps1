@@ -252,6 +252,7 @@
 #                                     stats to loggederrors, hide some columns by default, links in datagroups
 #                                     snat pool, new status searching, updated tab/button/input styling
 #                                     monitor column on pool table, new preferences.json
+#        5.3.1        2019-11-15      Bug fix for descriptions with quotes and some branding corrections            Tim Riker       No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -272,7 +273,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.3.0"
+$Global:ScriptVersion = "5.3.1"
 
 #Variable used to calculate the time used to generate the report.
 $StartTime = Get-Date

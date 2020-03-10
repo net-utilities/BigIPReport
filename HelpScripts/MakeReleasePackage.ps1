@@ -1,7 +1,8 @@
+#! /usr/bin/pwsh
 $ScriptFolder = (Get-Item -Path "../" -Verbose).FullName
 Set-Location $ScriptFolder
 
-$7zipPath = "C:/Program Files/7-Zip/7z.exe"
+$7zipPath = "7z"
 $ConfigurationFile = [xml](Get-Content "$ScriptFolder/bigipreportconfig.xml")
 
 $Version = $ConfigurationFile.Settings.version
