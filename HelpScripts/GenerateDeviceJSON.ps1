@@ -1,3 +1,4 @@
+#! /usr/bin/pwsh
 #Based on the tables in https://support.f5.com/csp/article/K9476
 
 $F5HardwareMatrix = [xml](Get-Content C:\Temp\hw.html)
