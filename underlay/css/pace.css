@@ -90,7 +90,7 @@ body:before {
 }
 
 .pace:after {
-    content:"Loading BigIP Report";
+    content:"Loading BigIPReport";
     font-size: 12px;
     font-family: Helvetica, Arial, "Lucida Grande", sans-serif;
     font-weight: bold;
