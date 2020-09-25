@@ -1223,7 +1223,12 @@ function Get-LTMInformation {
     [array]$PoolActionOnServiceDown = $F5.LocalLBPool.get_action_on_service_down($PoolList)
     [array]$PoolAllowNAT = $F5.LocalLBPool.get_allow_nat_state($PoolList)
     [array]$PoolAllowSNAT = $F5.LocalLBPool.get_allow_snat_state($PoolList)
-    [array]$PoolMemberStatistics = $F5.LocalLBPool.get_all_member_statistics($PoolList)
+    Try {
+        [array]$PoolMemberStatistics = $F5.LocalLBPool.get_all_member_statistics($PoolList)
+    } Catch {
+        [array]$PoolMemberStatistics = @()
+        log error "Error getting pool statistics from $LoadBalancerName"
+    }
     [array]$PoolDescriptions = $F5.LocalLBPool.get_description($PoolList)
 
     for($i=0;$i -lt ($PoolList.Count);$i++){
@@ -1255,7 +1260,7 @@ function Get-LTMInformation {
                 $ObjTempMember.currentconnections = $Statistics["currentconnections"]
                 $ObjTempMember.maximumconnections = $Statistics["maximumconnections"]
             } Catch {
-                log error "Unable to get statistics for member $(objTempMember.Name):$(objTempMember.Port) in pool $($ObjTempPool.name)"
+                log error "Unable to get statistics for member $($objTempMember.Name):$($objTempMember.Port) in pool $($ObjTempPool.name)"
             }
 
             #Add the object to a list
@@ -1383,7 +1388,12 @@ function Get-LTMInformation {
     [array]$VirtualServerFallbackPersistenceProfiles = $F5.LocalLBVirtualServer.get_fallback_persistence_profile($VirtualServers)
     [array]$VirtualServerVlans = $F5.LocalLBVirtualServer.get_vlan($VirtualServers);
     [array]$VirtualServerStates = $F5.LocalLBVirtualServer.get_object_status($VirtualServers)
-    [array]$VirtualServerStatistics = $F5.LocalLBVirtualServer.get_statistics($VirtualServers)
+    Try {
+        [array]$VirtualServerStatistics = $F5.LocalLBVirtualServer.get_statistics($VirtualServers)
+    } Catch {
+        [array]$VirtualServerStatistics = @()
+        log error "Error virtual server statistics from $LoadBalancerName"
+    }
     [array]$VirtualServerDescriptions = $F5.LocalLBVirtualServer.get_description($VirtualServers)
 
     #Only supported since version 11.3
@@ -1537,14 +1547,15 @@ function Get-LTMInformation {
         $ObjTempVirtualServer.availability = $VirtualServerStates[$i].availability_status
         $ObjTempVirtualServer.enabled = $VirtualServerStates[$i].enabled_status
 
+        Try {
+	# FIXME: 15.x fails to load virtual server statistics
         $VipStatistics = $VirtualServerStatistics.statistics[$i].statistics
 
         #Connection statistics
         $ObjTempVirtualServer.currentconnections = Get-Int64 -High $($VipStatistics[8].value.high) -Low $($VipStatistics[8].value.low)
         $ObjTempVirtualServer.maximumconnections = Get-Int64 -High $($VipStatistics[9].value.high) -Low $($VipStatistics[9].value.low)
 
-        #I don't remember seeing these in the older versions so I'll take the safe bet here
-        Try {
+            #I don't remember seeing these in the older versions so I'll take the safe bet here
             #CPU statistics
             $ObjTempVirtualServer.cpuavg5sec = Get-Int64 -High $($VipStatistics[38].value.high) -Low $($VipStatistics[38].value.low)
             $ObjTempVirtualServer.cpuavg1min = Get-Int64 -High $($VipStatistics[39].value.high) -Low $($VipStatistics[39].value.low)
