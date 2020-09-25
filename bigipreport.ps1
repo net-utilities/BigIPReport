@@ -1548,7 +1548,7 @@ function Get-LTMInformation {
         $ObjTempVirtualServer.enabled = $VirtualServerStates[$i].enabled_status
 
         Try {
-	# FIXME: 15.x fails to load vittual server statistics
+	# FIXME: 15.x fails to load virtual server statistics
         $VipStatistics = $VirtualServerStatistics.statistics[$i].statistics
 
         #Connection statistics
