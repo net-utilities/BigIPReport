@@ -1,6 +1,6 @@
 /*************************************************************************************************************************************************************************************
 
-    BigIP-report Javascript
+    BigIPReport Javascript
 
 *************************************************************************************************************************************************************************************/
 
@@ -211,34 +211,43 @@ $(window).on("load", function () {
 
         **************************************************************************************************************/
 
+        NavButtonDiv(null,null,null);
         //Check if there's a new update
         setInterval(function () {
             $.ajax(document.location.href, {
                 type: 'HEAD',
-                success: function (response, status, xhr) {
-
-                    var currentreport = Date.parse(document.lastModified);
-                    var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
-                    //var currenttime = new Date();
-
-                    // The time since this report was generated (in minutes)
-                    //timesincelatestgeneration = Math.round((((currenttime - latestreport) % 86400000) % 3600000) / 60000)
-
-                    // If there's been a new report, how long ago (in minutes)
-                    timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
-
-                    if (timesincerefresh > 60) {
-                        $("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="criticalupdateavailable">Update available</a>');
-                    } else if (timesincerefresh > 0) {
-                        $("div#updateavailablediv").html('<a href="javascript:document.location.reload()" class="updateavailable">Update available</a>');
-                    }
-                }
+                success: NavButtonDiv
             });
         }, 3000);
 
     });
 
 });
+
+// update Navigation Buttons based on HEAD polling date (if available)
+function NavButtonDiv(response, status, xhr) {
+    var currentreport = Date.parse(document.lastModified);
+    var timesincerefresh=0;
+    if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
+        var latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
+        // If there's been a new report, how long ago (in minutes)
+        timesincerefresh = Math.round((((latestreport - currentreport) % 86400000) % 3600000) / 60000)
+    }
+
+    var navbutton='<ul>'
+    if (timesincerefresh > 60) {
+        navbutton+='<li><button onclick="document.location.reload()" class="navbutton urgent">Update available</a></li>';
+    } else if (timesincerefresh > 0) {
+        navbutton+='<li><button onclick="document.location.reload()" class="navbutton important">Update available</a></li>';
+    } else {
+        navbutton+='<li><button onclick="document.location.reload()" class="navbutton">Refresh</button></li>';
+    }
+    for (var key in siteData.preferences.NavLinks) {
+        navbutton+='<li><button onclick="window.location.href=\'' + siteData.preferences.NavLinks[key] + '\'" class="navbutton">' + key + '</button></li>';
+    }
+    navbutton+='</ul>'
+    $("div#navbuttondiv").html(navbutton);
+}
 
 function initializeStatusVIPs() {
 
@@ -280,37 +289,41 @@ function initializeStatusVIPs() {
     }
 }
 
-function PoolMemberStatus(member) {
-    var mStatus = member.enabled.split('_')[2] + ':' + member.availability.split('_')[2];
+function PoolMemberStatus(member, type) {
+    var mStatus = member.enabled + ':' + member.availability;
 
-    if (mStatus == "ENABLED:GREEN") {
+    if (type == 'export') {
+        return '';
+    } else if (type == 'filter') {
+        return mStatus;
+    } else if (mStatus == "enabled:available") {
         return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)" title="' + mStatus + ' - Member is able to pass traffic"/></span>';
-    } else if (mStatus == "ENABLED:BLUE") {
+    } else if (mStatus == "enabled:unknown") {
         return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)" title="' + mStatus + ' - Member status unknown"/></span>';
-    } else if (mStatus == "ENABLED:RED" || mStatus == "DISABLED:RED") {
+    } else if (mStatus == "enabled:offline") {
         return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)" title="' + mStatus + ' - Member is unable to pass traffic"/></span>';
-    } else if (mStatus == "DISABLED:GREEN") {
+    } else if (mStatus == "disabled:available") {
         return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)" title="' + mStatus + ' - Member is available, but disabled"/></span>'
-    } else if (mStatus == "DISABLED:BLUE") {
+    } else if (mStatus == "disabled:offline" || mStatus == "disabled-by-parent:offline") {
         return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" title="' + mStatus + ' - Member is disabled"/></span>';
     }
     return mStatus;
 }
 
 function PoolStatus(pool, type) {
-    if (!pool) {
+    if (!pool || type == 'export') {
         return '';
     }
-    var pStatus = pool.enabled.split('_')[2] + ':' + pool.availability.split('_')[2];
+    var pStatus = pool.enabled + ':' + pool.availability;
 
     if (type == 'display' || type == 'print') {
-        if (pStatus == "ENABLED:GREEN") {
+        if (pStatus == "enabled:available") {
             return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' + pStatus + '" title="' + pStatus + ' - ' + pool.status + '"/></span>';
-        } else if (pStatus == "ENABLED:BLUE") {
+        } else if (pStatus == "enabled:unknown") {
             return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span>';
-        } else if (pStatus == "ENABLED:RED" || pStatus == "DISABLED:RED") {
+        } else if (pStatus == "enabled:offline") {
             return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span>';
-        } else if (pStatus == "DISABLED:GREEN" || pStatus == "DISABLED:BLUE") {
+        } else if (pStatus == "disabled-by-parent:available" || pStatus == "disabled-by-parent:offline") {
             return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' + pStatus + '" title="' + pStatus + ' - '  + pool.status + '"/></span>'
         }
         return pStatus;
@@ -319,29 +332,31 @@ function PoolStatus(pool, type) {
     }
 }
 
-function VirtualServerStatus(row) {
+function VirtualServerStatus(row, type) {
     if (!row.enabled || !row.availability)
         return '';
-    var vsStatus = row.enabled.split('_')[2] + ':' + row.availability.split('_')[2];
+    var vsStatus = row.enabled + ':' + row.availability;
 
-    if (vsStatus == "ENABLED:GREEN") {
+    if (type == 'filter') {
+        return vsStatus;
+    } else if (vsStatus == "enabled:available") {
         return '<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"' +
             ' title="' + vsStatus + ' - The virtual server is available"/></span>';
-    } else if (vsStatus == "ENABLED:BLUE") {
+    } else if (vsStatus == "enabled:unknown") {
         return '<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"' +
             ' title="' + vsStatus + ' - The children pool member(s) either don\'t have service checking enabled,' +
             ' or service check results are not available yet"/></span>';
-    } else if (vsStatus == "ENABLED:RED") {
+    } else if (vsStatus == "enabled:offline") {
         return '<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"' +
             ' title="' + vsStatus + ' - The children pool member(s) are down"/></span>';
-    } else if (vsStatus == "DISABLED:GREEN") {
+    } else if (vsStatus == "disabled:available") {
         return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)"' +
             ' title="' + vsStatus + ' - The virtual server is disabled"/></span>'
-    } else if (vsStatus == "DISABLED:BLUE") {
+    } else if (vsStatus == "disabled:unknown") {
         return '<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"' +
             ' title="' + vsStatus + ' - The children pool member(s) either don\'t have service checking enabled,' +
             ' or service check results are not available yet"/></span>';
-    } else if (vsStatus == "DISABLED:RED") {
+    } else if (vsStatus == "disabled:offline") {
         return '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)"' +
             ' title="' + vsStatus + ' - The children pool member(s) are down"/></span>'
     }
@@ -360,15 +375,18 @@ function renderPoolMember(loadbalancer, member, type) {
     if (member !== null) {
         if (type == 'display' || type == 'print') {
             result += '<span data-member="' + member.ip + ':' + member.port + '">';
-            result += PoolMemberStatus(member);
+        }
+        result += PoolMemberStatus(member, type);
+        if (type == 'display' || type == 'print') {
             result += '</span>';
+        } else {
+            result += ' ';
         }
         name = member.name.split('/')[2];
-        result += name
-        if (name != member.ip) {
+        if (name != member.ip + ':' + member.port) {
             result += '(' + member.ip + ')';
         }
-        result += ':' + member.port;
+        result += name
     }
     return result;
 }
@@ -392,6 +410,21 @@ function renderPoolCell(data, type, row, meta) {
         return "N/A";
     }
     var poolCell = '';
+    if (type == 'filter' || type == 'export') {
+        for (var i=0; i<data.length; i++) {
+            var pool = siteData.poolsMap.get(row.loadbalancer + ':' + data[i]);
+            if (pool) {
+                poolCell += renderPool(pool.loadbalancer, pool.name, type) + ': ';
+                if (pool.members !== null) {
+                    poolCell += renderPoolMember(pool.loadbalancer, pool.members[0], type);
+                    for (var m=1; m<pool.members.length; m++) {
+                        poolCell += ',' + renderPoolMember(pool.loadbalancer, pool.members[m], type);
+                    }
+                }
+            }
+        }
+        return poolCell;
+    }
     if (type == 'display') {
         var tid = "vs-" + meta.row;
         poolCell += '<div class="expand" id="expand-' + tid + '" style="display: none;">' +
@@ -594,7 +627,7 @@ function pollCurrentView() {
 function renderLoadBalancer(loadbalancer, type) {
     var balancer;
     if (siteData.preferences.HideLoadBalancerFQDN) {
-        balancer = loadbalancer.split('.')[0]
+        balancer = loadbalancer.split('.')[0];
     } else {
         balancer = loadbalancer;
     }
@@ -611,9 +644,9 @@ function renderVirtualServer(loadbalancer, name, type) {
         result += '<span class="adcLinkSpan"><a target="_blank" href="https://' + loadbalancer;
         result += '/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=' + name + '">Edit</a></span>';
     }
-    if (type == 'display' || type == 'print') {
+    if (type == 'display' || type == 'print' || type == 'filter') {
         var vs=getVirtualServer(name, loadbalancer);
-        result += VirtualServerStatus(vs);
+        result += VirtualServerStatus(vs, type);
     }
     if (type == 'display') {
         result += '<a';
@@ -906,22 +939,22 @@ function setMemberState(statusSpan, memberStatus) {
         case "up":
             icon = "green-circle-checkmark.png";
             title = "Member is ready to accept traffic";
-            status = "ENABLED:GREEN";
+            status = "enabled:available";
             break;
         case "down":
             icon = "red-circle-cross.png";
             title = "Member is marked as down and unable to pass traffic";
-            status = "ENABLED:RED";
+            status = "enabled:offline";
             break;
         case "session_disabled":
             icon = "black-circle-checkmark.png";
             title = "Member is ready to accept traffic, but is disabled";
-            status = "DISABLED:BLUE";
+            status = "disabled:unknown";
             break;
         default:
             icon = "blue-square-questionmark.png";
             title = "Unknown state";
-            status = "ENABLED:BLUE";
+            status = "enabled:unknown";
             break;
     }
 
@@ -1143,19 +1176,13 @@ function setupVirtualServerTable() {
             "className": "centeredCell",
             "render": function (data, type, row) {
                 if (!row.sourcexlatetype) {
-                    return "N/A";
+                    return "Unknown";
                 } else {
                     switch (row.sourcexlatetype) {
-                        case "SRC_TRANS_NONE":
-                            return "None";
-                        case "SRC_TRANS_AUTOMAP":
-                            return "Automap";
-                        case "SRC_TRANS_SNATPOOL":
+                        case "snat":
                             return "SNAT:" + row.sourcexlatepool;
-                        case "OLDVERSION":
-                            return "N/A in Bigip versions prior to 11.3";
                         default:
-                            return "Unknown";
+                            return row.sourcexlatetype;
                     }
                     return result;
                 }
@@ -1309,7 +1336,12 @@ function setupVirtualServerTable() {
                     "extend": "csvHtml5",
                     "titleAttr": "Download current filtered results in CSV format",
                     "className": "tableHeaderColumnButton exportFunctions",
-                    "action": downloadCSV
+                    "exportOptions": {
+                        "columns": ":visible",
+                        "stripHtml": false,
+                        "orthogonal": "export"
+                    },
+                    "customize": customizeCSV
                 }
             ]
         },
@@ -1827,6 +1859,7 @@ function setupCertificateTable() {
                 <th class="loadbalancerHeaderCell"><span style="display: none;">Load Balancer</span><input type="search" class="search" placeholder="Load Balancer" /></th>
                 <th><span style="display: none;">Name</span><input type="search" class="search" placeholder="Name" /></th>
                 <th><span style="display: none;">Common Name</span><input type="search" class="search" placeholder="Common Name" /></th>
+                <th><span style="display: none;">SAN</span><input type="search" class="search" placeholder="SAN" /></th>
                 <th><span style="display: none;">Country</span><input type="search" class="search" placeholder="Country Name" /></th>
                 <th><span style="display: none;">State</span><input type="search" class="search" placeholder="State Name" /></th>
                 <th><span style="display: none;">Org</span><input type="search" class="search" placeholder="Organization Name" /></th>
@@ -1856,6 +1889,9 @@ function setupCertificateTable() {
             }
         }, {
             "data": "subject.commonName"
+        }, {
+            "data": "subjectAlternativeName",
+            "visible": false
         }, {
             "data": "subject.countryName",
             "class": "certificatecountryname",
@@ -2264,7 +2300,7 @@ function showDeviceOverview() {
 
             if (loadbalancer.success) {
 
-                var model = loadbalancer.model.toUpperCase();
+                var model = loadbalancer.model && loadbalancer.model.toUpperCase();
                 var deviceData = siteData.knownDevices[model] || false;
                 successFound = true;
 
@@ -2612,10 +2648,10 @@ function translateStatus(member) {
     };
 
     switch (member.availability) {
-        case "AVAILABILITY_STATUS_GREEN":
+        case "available":
             translatedstatus['availability'] = "<span class=\"memberup\">UP</span>";
             break;
-        case "AVAILABILITY_STATUS_BLUE":
+        case "unknown":
             translatedstatus['availability'] = "<span class=\"memberunknown\">UNKNOWN</span>";
             break;
         default:
@@ -2623,13 +2659,13 @@ function translateStatus(member) {
     }
 
     switch (member.enabled) {
-        case "ENABLED_STATUS_ENABLED":
+        case "enabled":
             translatedstatus['enabled'] = "<span class=\"memberenabled\">Enabled</span>";
             break;
-        case "ENABLED_STATUS_DISABLED_BY_PARENT":
+        case "disabled-by-parent":
             translatedstatus['enabled'] = "<span class=\"memberdisabled\">Disabled by parent</span>";
             break;
-        case "ENABLED_STATUS_DISABLED":
+        case "disabled":
             translatedstatus['enabled'] = "<span class=\"memberdisabled\">Disabled</span>";
             break;
         default:
@@ -2730,20 +2766,11 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
         $("div#firstlayerdetailscontentdiv").attr("data-loadbalancer", matchingvirtualserver.loadbalancer);
 
         switch (matchingvirtualserver.sourcexlatetype) {
-            case "SRC_TRANS_NONE":
-                var xlate = "None";
-                break;
-            case "SRC_TRANS_AUTOMAP":
-                var xlate = "Automap";
-                break;
-            case "SRC_TRANS_SNATPOOL":
+            case "snat":
                 var xlate = "SNAT:" + matchingvirtualserver.sourcexlatepool;
                 break;
-            case "OLDVERSION":
-                var xlate = "N/A in Bigip versions prior to 11.3";
-                break;
             default:
-                var xlate = "Unknown";
+                var xlate = matchingvirtualserver.sourcexlatetype || "Unknown";
         }
 
         var trafficGroup = matchingvirtualserver.trafficgroup || "N/A"
@@ -3129,8 +3156,8 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
             <br>
             <div class="monitordetailsheader">Member details</div>
                 <table class="pooldetailstable">
-                <thead><tr><th>Member Name</th><th>Member IP</th><th>Port</th><th>Priority Group</th><th>Connections</th>
-                <th>Max Connections</th><th>Member Availability</th><th>Enabled</th><th>Member Status Description</th><th>Realtime Availability</th></tr></thead><tbody>`
+                <thead><tr><th>Name</th><th>IP</th><th>Port</th><th>Priority Group</th><th>Connections</th>
+                <th>Max Connections</th><th>Availability</th><th>Enabled</th><th>Status Description</th><th>Realtime Availability</th></tr></thead><tbody>`
 
         poolmonitors = matchingpool.monitors
 
@@ -3181,7 +3208,9 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
 
                 matchingmonitor = matchingmonitors[i];
 
+                matchingmonitor.sendstring = matchingmonitor.sendstring.replace('<', '&lt;').replace('>', '&gt;');
                 matchingmonitor.receivestring = matchingmonitor.receivestring.replace('<', '&lt;').replace('>', '&gt;');
+                matchingmonitor.disablestring = matchingmonitor.disablestring.replace('<', '&lt;').replace('>', '&gt;');
 
                 table += `
                         <table class="monitordetailstable">
@@ -3189,7 +3218,8 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                             <tbody>
                                 <tr><td class="monitordetailstablerowheader"><b>Type</td><td>${matchingmonitor.type}</b></td></tr>
                                 <tr><td class="monitordetailstablerowheader"><b>Send string</td><td>${matchingmonitor.sendstring}</b></td></tr>
-                                <tr><td class="monitordetailstablerowheader"><b>Receive string</b></td><td>${matchingmonitor.receivestring}</td></tr>
+                                <tr><td class="monitordetailstablerowheader"><b>Receive String</b></td><td>${matchingmonitor.receivestring}</td></tr>
+                                <tr><td class="monitordetailstablerowheader"><b>Disable String</b></td><td>${matchingmonitor.disablestring}</td></tr>
                                 <tr><td class="monitordetailstablerowheader"><b>Interval</b></td><td>${matchingmonitor.interval}</td></tr>
                                 <tr><td class="monitordetailstablerowheader"><b>Timeout</b></td><td>${matchingmonitor.timeout}</td></tr>
                             </table>
@@ -3204,14 +3234,14 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
 
                     let member = members[x];
 
-                    let protocol = matchingmonitors[i].type.replace(/^TTYPE_/, '');
+                    let protocol = matchingmonitors[i].type.replace(/:.*$/, '');
 
-                    if(['HTTP', 'HTTPS', 'TCP', 'TCP_HALF_OPEN'].includes(protocol)){
+                    if(['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)){
 
                         let curllink, netcatlink, httplink
                         let sendstring = matchingmonitors[i].sendstring;
 
-                        if(['HTTP', 'HTTPS'].includes(protocol)){
+                        if(['http', 'https'].includes(protocol)){
 
                             requestparameters = getMonitorRequestParameters(sendstring)
 
@@ -3237,7 +3267,7 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                                     curlcommand += ` -H &quot;${headername}:${headervalue}&quot;`;
                                 }
 
-                                var url = `${protocol.toLowerCase()}://${member.ip}:${member.port}${requestparameters['uri']}`;
+                                var url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
                                 curlcommand += ` ${url}`;
                             }
 
@@ -3245,14 +3275,14 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                             ' data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
                         }
 
-                        if(protocol === 'HTTP' || protocol === 'TCP' || protocol === 'TCP_HALF_OPEN'){
+                        if(protocol === 'http' || protocol === 'tcp' || protocol === 'tcp-half-open'){
                             var netcatcommand = `echo -ne "${sendstring}" | nc ${member.ip} ${member.port}`;
                             netcatlink = `<a href="javascript:selectMonitorInpuText(this)" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
                             ' data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand" class="monitorcopybox" type="text" value=\'${netcatcommand}\'></p></a>`;
                         }
 
-                        if(protocol === 'HTTP' || protocol === 'HTTPS'){
-                            var url = `${protocol.toLowerCase()}://${member.ip}:${member.port}${requestparameters['uri']}`;
+                        if(protocol === 'http' || protocol === 'https'){
+                            var url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
                             httplink = `<a href="${url}" target="_blank" class="monitortest" onmouseover="javascript:selectMonitorInpuText(this)"
                             data-type="http">HTTP<p>HTTP Link (CTL+C)<input id="curlcommand" class="monitorcopybox" type="text" value="${url}"></p></a>`
                         }
@@ -3414,67 +3444,9 @@ function activateMenuButton(b) {
 
 function customizeCSV(csv, button, datatable) {
     var csvRows = csv.split('\n');
-    // bigip table uses value
-    csvRows[0] = csvRows[0].replace(/<[^>]* value=""([^"]*)""[^>]*>/gi, '$1')
-    // the rest of the tables have a span and a placeholder
+    // table headings have a span and a placeholder, replace with placeholder
     csvRows[0] = csvRows[0].replace(/<span[^>]*>[^<]*<\/span><[^>]* placeholder=""([^"]*)""[^>]*>/gi, '$1')
     return csvRows.join('\n');
-}
-
-function generateCSV() {
-
-    var csv = "name,description,ip,port,sslprofileclient,sslprofileserver,compressionprofile,persistenceprofile,availability,enabled," +
-        "currentconnections,cpuavg5sec,cpuavg1min,cpuavg5min,defaultpool,associated-pools,loadbalancer\n";
-
-
-    var getMembers = function (pool) {
-
-        var returnStr = ""
-
-        var firstmember = true;
-
-        for (var m in pool.members) {
-            if (!firstmember){ returnStr += ", "} else { firstmember = false;}
-            var member = pool.members[m]
-            returnStr += member.name + " (" + member.ip + ":" + member.port + ")";
-        }
-
-        return returnStr;
-    }
-
-
-    //$("#allbigips tbody tr.virtualserverrow").each(function () {
-    siteData.bigipTable.rows({filter:'applied'}).data().each(function (vs) {
-
-        var line = "";
-
-        if (vs.name !== "N/A (Orphan pool)") {
-
-            var line = vs.name + ',"' + (vs.description.replace(/"/g, '""') || "") + '",' + (vs.ip || "") + "," + (vs.port || "") + ',"' + (vs.sslprofileclient || "None") + '","' +
-                (vs.sslprofileserver || "None") + '",' +(vs.compressionprofile || "None") + "," + (vs.persistenceprofile || "None") + "," + vs.availability + "," +
-                vs.enabled + "," + vs.currentconnections + "," + vs.cpuavg5sec + "," + vs.cpuavg1min + "," + vs.cpuavg5min + "," + (vs.defaultpool || "None") + ',"';
-
-            var firstpool = true;
-
-            for (var p in vs.pools) {
-
-                if (!firstpool){ line += "|"} else { firstpool = false }
-
-                var pool = getPool(vs.pools[p], vs.loadbalancer);
-                line += pool.name + ": ";
-
-                line += getMembers(pool);
-            }
-
-            line += '",' + vs.loadbalancer;
-
-        }
-
-        csv += line + "\n";
-
-    })
-
-    return (csv);
 }
 
 function downLoadTextFile(data, fileName) {
@@ -3490,24 +3462,4 @@ function downLoadTextFile(data, fileName) {
     element.click();
 
     document.body.removeChild(element);
-
-}
-
-function downloadCSV() {
-
-    var text = generateCSV();
-
-    var d = new Date();
-
-    var year = d.getFullYear();
-    var month = d.getMonth();
-    var day = d.getDay();
-
-    if(month < 10){ month = "0" + month }
-    if(day < 10){ day = "0" + day }
-
-    var fileName = year + "-" + month + "-" + day + "-bigipreportexport.csv";
-
-    downLoadTextFile(text, fileName);
-
 }

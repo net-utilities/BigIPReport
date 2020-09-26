@@ -139,7 +139,7 @@
 }
 
 /******************************************************************************************
-    Style for cell containing the pool and member information in the main table 
+    Style for cell containing the pool and member information in the main table
 *******************************************************************************************/
 
 /*The cell that contains the pool table */
@@ -221,14 +221,6 @@ span#realtimenotconfigured {
 
 span#refreshcountdown {
     font-weight: bold;
-}
-
-/* Containing style for the top right information box */
-
-div#updateavailablediv {
-    position: absolute;
-    top: 15px;
-    right: 25px;
 }
 
 /* Containing the chevrons used to collapse and expand the pool*/
@@ -617,8 +609,12 @@ div.beforedocumentready {
     text-align: center;
 }
 
-.bigipreportheader img {
-    max-height: 45px;
+.bigipreportheader h1 {
+    margin-bottom: -0.1em;
+    margin-top: -0.3em;
+    font-size: 4em;
+    font-family: "Rockwell", "Courier New", monospace;
+    font-weight: normal;
 }
 
 /****************************************************************************************************************************
@@ -1099,65 +1095,67 @@ table#logstable.logdatetime {
     white-space: nowrap;
 }
 
-/* The buttons telling the user that there is a new version available */
-
-.updateavailable {
+/* Navigation buttons style for the top right information box */
+div#navbuttondiv {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    max-height: 104px;
+    overflow-y: auto;
+}
+div#navbuttondiv ul {
+    list-style-type: none;
+    text-align: right;
+    margin: unset;
+    padding: unset;
+}
+div#navbuttondiv button {
+    background-image: linear-gradient(#c2c2c2, #f5f5f5);
+    background-color: #c2c2c2;
+    border-radius: var(--border-radius);
+    border-radius: var(--border-radius);
+    border: 1px solid #999;
+    font-family: Arial;
+    font-size: 12px;
+    margin-top: 2px;
+    padding: 4px 12px;
+    text-shadow: 0px 1px 0px #ffee66;
+}
+div#navbuttondiv button:hover {
+    background-image: linear-gradient(#f5f5f5, #c2c2c2);
+    text-decoration: none;
+    color: #383838;
+}
+div#navbuttondiv button.important {
     box-shadow: 0px 1px 0px 0px #fff6af;
     background-image: linear-gradient(#ffec64, #ffab23);
     background-color: #ffec64;
-    border-radius: 3px;
-    border: 1px solid #ffaa22;
-    display: inline-block;
-    cursor: pointer;
+    border: 1px solid #ffaa23;
     color: #333333;
-    font-family: Arial;
-    font-size: 12px;
-    font-weight: bold;
-    margin-top: 2px;
-    margin-left: 10px;
-    padding: 4px 24px;
-    text-decoration: none;
     text-shadow: 0px 1px 0px #ffee66;
+    font-weight: bold;
+}
+div#navbuttondiv button.important:hover {
+    background-image: linear-gradient(#ffab23, #ffec64);
+    background-color: #ffab23;
+}
+div#navbuttondiv button.urgent {
+    box-shadow: 0px 1px 0px 0px #cf866c;
+    background-image: linear-gradient(#d0451b, #bc3315);
+    background-color: #d0451b;
+    border: 1px solid #bc3315;
+    color: #ffffff;
+    text-shadow: 0px 1px 0px #854629;
+    font-weight: bold;
+}
+div#navbuttondiv button.urgent:hover {
+    background-image: linear-gradient(#bc3315, #d0451b);
+    background-color: #bc3315;
 }
 
 .centeredCell, .loadbalancerCell {
     text-align: center;
     width: 1px;
-}
-
-.updateavailable:hover {
-    background-image: linear-gradient(#ffab23, #ffec64);
-    background-color: #ffab23;
-}
-.updateavailable:active {
-    position: relative;
-    top: 1px;
-}
-
-.criticalupdateavailable {
-    box-shadow: inset 0px 1px 0px 0px #cf866c;
-    background-image: linear-gradient(#d0451b, #bc3315);
-    background-color: #d0451b;
-    border-radius: 3px;
-    border: 1px solid #942911;
-    display: inline-block;
-    cursor: pointer;
-    color: #ffffff;
-    font-family: Arial;
-    font-size: 12px;
-    margin-left: 10px;
-    margin-top: 2px;
-    padding: 4px 24px;
-    text-decoration: none;
-    text-shadow: 0px 1px 0px #854629;
-}
-.criticalupdateavailable:hover {
-    background-image: linear-gradient(#bc3315, #d0451b);
-    background-color: #bc3315;
-}
-.criticalupdateavailable:active {
-    position: relative;
-    top: 1px;
 }
 
 span.adcLinkSpan a {

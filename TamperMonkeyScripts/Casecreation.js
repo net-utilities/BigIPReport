@@ -59,7 +59,7 @@
 
     var bigipReportURL = "https://linuxworker.j.local/json/loadbalancers.json";
 
-    // Get the load balancer objects from BigIP Report
+    // Get the load balancer objects from BigIPReport
     GM_xmlhttpRequest({
         method: "GET",
         url: bigipReportURL,
