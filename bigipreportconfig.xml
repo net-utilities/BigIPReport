@@ -109,7 +109,12 @@
         <!--
         **************************************************************************************************************************************
         *
-        *    How many parallel jobs do we want to run?
+        *    The build script runs one parent thread and one thread for each listed Device.
+        *    The MaxJobs setting controls how many parallel PowerShell jobs are launched.
+        *    Increasing it will work well if your build host has the memory and cpu power.
+        *
+        *    Decreasing it may be required if running on a build machine with fewer resources.
+        *
         *
         *    Example:
         *    <MaxJobs>10</MaxJobs>
