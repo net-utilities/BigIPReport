@@ -1168,7 +1168,7 @@ function Get-LTMInformation {
         $ObjTempPool.name = $Pool.fullPath
         if (Get-Member -inputobject $Pool -name 'monitor') {
             # split into words and take any that start with /
-            # could be at least "<monitor> and <monitor>" or "min 1 of {<monitor> <monitor>}"
+            # could be at least "<monitor> and <monitor>" or "min 1 of { <monitor> <monitor> }"
             $objTempPool.monitors = [array]$Pool.monitor.split(' ') -match '\/[^ ]*'
         }
         $ObjTempPool.loadbalancingmethod = $Pool.loadBalancingMode
