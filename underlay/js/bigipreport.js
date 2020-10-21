@@ -35,7 +35,7 @@ $(window).on('load', function() {
         <h3>Possible reasons</h3>
 
         <h4>The web server hosting the report is IIS7.x or older</h4>
-        If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME 
+        If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME
         files settings.<br>
         <a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">Detailed instructions are
          available here</a>.<br>
@@ -44,7 +44,7 @@ $(window).on('load', function() {
         Script has had issues when creating the files due to lack of permissions or network issues.<br>
         Double check your script execution logs, web folder content and try running the script manually.<br>
 
-        <h3>Please note that while you can close these details, the report won't function as it should until these 
+        <h3>Please note that while you can close these details, the report won't function as it should until these
         problems has been solved.</h3>
 
     </div>`);
@@ -239,7 +239,7 @@ function NavButtonDiv(response, status, xhr) {
     ).getTime();
     // If there's been a new report, how long ago (in minutes)
     timesincerefresh = Math.round(
-        (((latestreport - currentreport) % 86400000) % 3600000) / 60000
+        (latestreport - currentreport) / 60000
     );
   }
 
@@ -330,7 +330,7 @@ function poolMemberStatus(member, type) {
     mStatus === 'disabled:offline' ||
     mStatus === 'disabled-by-parent:offline'
   ) {
-    return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)" 
+    return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"
                 title="${mStatus} - Member is disabled"/></span>`;
   }
   return mStatus;
@@ -652,7 +652,7 @@ function testStatusVIP(loadbalancer) {
               `Statusvip test <a href="${testURL}">${testURL}</a> failed on loadbalancer: <b>` +
             `${loadbalancer.name}</b><br>Information about troubleshooting status VIPs is available` +
             ` <a href="https://loadbalancing.se/bigip-report/#One_or_more_status_endpoints_has_been_marked_as_failed">
-                here 
+                here
             </a>`,
               'ERROR'
           );
@@ -785,7 +785,7 @@ function renderRule(loadbalancer, name, type) {
   let result = '';
   if (type === 'display') {
     result += `<span class="adcLinkSpan">
-                 <a target="_blank" 
+                 <a target="_blank"
                  href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/rule/properties.jsp?name=${name}">
                      Edit
                  </a>
@@ -809,7 +809,7 @@ function renderPool(loadbalancer, name, type) {
   const poolName = name.replace(/^\/Common\//, '');
   let result = '';
   if (type === 'display') {
-    result += `<span class="adcLinkSpan"><a target="_blank" 
+    result += `<span class="adcLinkSpan"><a target="_blank"
     href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/pool/properties.jsp?name=${name}">Edit</a></span>`;
   }
   result += poolStatus(siteData.poolsMap.get(`${loadbalancer}:${name}`), type);
@@ -852,7 +852,7 @@ function renderDataGroup(loadbalancer, name, type) {
   if (type === 'display') {
     result += `
     <span class="adcLinkSpan">
-      <a target="_blank" 
+      <a target="_blank"
       href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/datagroup/properties.jsp?name=${name}">
         Edit
       </a>
@@ -3310,16 +3310,16 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
     html = `
       <div id="objectnotfound">
         <h1>No matching Virtual Server was found</h1>
-        
+
         <h4>What happened?</h4>
         When clicking the report it will parse the JSON data to find the matching Virtual Server and display the
         details. However, in this case it was not able to find any matching Virtual Server.
-        
+
         <h4>Possible reason</h4>
         This might happen if the report is being updated as you navigate to the page.
-        If you see this page often, please report a bug 
+        If you see this page often, please report a bug
         <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
-        
+
         <h4>Possible solutions</h4>
         Refresh the page and try again.
 
@@ -3796,7 +3796,7 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
 
               curllink = `<a href="${url}" target="_blank"
                             class="monitortest" onmouseover="selectMonitorInputText(this)"
-                            data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand" 
+                            data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand"
                             class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
             }
 
