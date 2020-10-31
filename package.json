@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "eslint ./underlay/js/bigipreport.js"
+    "test": "eslint ./underlay/js/bigipreport.js && mocha -r ts-node/register js-src/**/*.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -18,15 +18,21 @@
   },
   "homepage": "https://github.com/epacke/BigIPReport#readme",
   "devDependencies": {
+    "@types/chai": "^4.2.14",
     "@types/datatables.net": "^1.10.19",
     "@types/datatables.net-buttons": "^1.4.3",
     "@types/jquery": "^3.5.3",
+    "@types/mocha": "^8.0.3",
     "@types/node": "^14.0.0",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
+    "chai": "^4.2.0",
     "eslint": "^7.11.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jquery": "^1.5.1",
-    "typescript": "^4.0.3"
+    "mocha": "^8.2.0",
+    "nyc": "^15.1.0",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5"
   }
 }

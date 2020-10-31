@@ -1,7 +1,7 @@
 import { siteData, updateLocationHash, renderLoadBalancer } from '../bigipreport.js';
 import translateStatus from './translateStatus.js';
 import selectMonitorInputText from './selectMonitorInputText.js';
-import getMonitorRequestParameters from './getMonitorRequestParameters.js';
+import parseHTTPMonitorSendString from './parseHTTPMonitorSendString.js';
 
 /** ********************************************************************************************************************
  Shows the pool details light box
@@ -176,9 +176,9 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
           const member = members[x];
 
           const protocol = matchingmonitors[i].type.replace(/:.*$/, '');
-          const requestparameters = getMonitorRequestParameters(matchingmonitor.sendstring);
+          const requestparameters = parseHTTPMonitorSendString(matchingmonitor.sendstring);
 
-          if (['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)) {
+          if (requestparameters && ['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)) {
             let curllink; let netcatlink; let httplink; let url; let curlcommand;
             const sendstring = matchingmonitors[i].sendstring;
 
@@ -211,7 +211,7 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
               }
 
               curllink = `<a href="${url}" target="_blank"
-                            class="monitortest" onmouseover="selectMonitorInputText(this)"
+                            class="monitortest"
                             data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand" 
                             class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
             }
@@ -223,7 +223,6 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
             ) {
               const netcatcommand = `echo -ne "${sendstring}" | nc ${member.ip} ${member.port}`;
               netcatlink = `<a href="javascript:selectMonitorInpuText(this)" class="monitortest"
-                              onmouseover="selectMonitorInputText(this)"
                               data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand"
                               class="monitorcopybox" type="text" value='${netcatcommand}'>
                               </p>
@@ -233,7 +232,6 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
             if (protocol === 'http' || protocol === 'https') {
               const url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
               httplink = `<a href="${url}" target="_blank" class="monitortest"
-                            onmouseover="selectMonitorInputText(this)"
                             data-type="http">
                               HTTP
                               <p>
@@ -289,5 +287,6 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
 
   $(`a#close${layer}layerbutton`).text('Close pool details');
   layerContentDiv.html(html);
+  $(layerContentDiv).find('a.monitortest').on('mouseover', selectMonitorInputText);
   $(`#${layer}layerdiv`).fadeIn(updateLocationHash);
 }
