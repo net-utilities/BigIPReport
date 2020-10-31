@@ -17,7 +17,7 @@ export default function parseHTTPMonitorSendString(sendString: string): {
 
   const [verb, uri, version] = requestDataArr;
 
-  // Add valid headers
+  // Add only valid headers
   const headers = lines.filter(l => /^^[^:]+: *[^:]+$/.test(l));
 
   return {
