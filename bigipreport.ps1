@@ -268,6 +268,7 @@
 #
 ######################################################################################################################################
 
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable','')]
 Param(
     $ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml",
     $PollLoadBalancer = $null,
@@ -492,12 +493,12 @@ Function Send-Errors {
 
                 Foreach ($ErrorItem in $Error) {
                     if (Get-Member -inputobject $ErrorItem -name "ScriptStackTrace") {
-                        $StackTrace = $ErrorItem.ScriptStackTrace
+                        $ScriptStackTrace = $ErrorItem.ScriptStackTrace
                         $Category = $ErrorItem.Categoryinfo.Reason
                         $LineNumber = $ErrorItem.InvocationInfo.ScriptLineNumber
                         $PositionMessage = $ErrorItem.InvocationInfo.PositionMessage
 
-                        $Errorsummary += "<tr><td>$Category</td><td>$Linenumber</td><td>$PositionMessage</td><td>$Stacktrace</td></tr>"
+                        $Errorsummary += "<tr><td>$Category</td><td>$Linenumber</td><td>$PositionMessage</td><td>$ScriptStackTrace</td></tr>"
                     }
                 }
 
@@ -683,6 +684,9 @@ $Global:Preferences['ShowiRules'] = ($Global:Bigipreportconfig.Settings.iRules.e
 $Global:Preferences['autoExpandPools'] = ($Global:Bigipreportconfig.Settings.autoExpandPools -eq $true)
 $Global:Preferences['regexSearch'] = ($Global:Bigipreportconfig.Settings.regexSearch -eq $true)
 $Global:Preferences['showAdcLinks'] = ($Global:Bigipreportconfig.Settings.showAdcLinks -eq $true)
+$Global:Preferences['scriptServer'] = $Global:hostname
+$Global:Preferences['scriptVersion'] = $Global:ScriptVersion
+$Global:Preferences['startTime'] = $StartTime
 $Global:Preferences['NavLinks'] = c@ {}
 
 if ((Get-Member -inputobject $Global:Bigipreportconfig.Settings -name 'NavLinks') -and (Get-Member -inputobject $Global:Bigipreportconfig.Settings.Navlinks -name 'NavLink')) {
@@ -729,7 +733,6 @@ $Global:DeviceGroups = @();
 
 #Build the path to the default document and json files
 $Global:paths = c@ {}
-$Global:paths.report = $Global:bigipreportconfig.Settings.ReportRoot + $Global:bigipreportconfig.Settings.Defaultdocument
 $Global:paths.preferences = $Global:bigipreportconfig.Settings.ReportRoot + "json/preferences.json"
 $Global:paths.pools = $Global:bigipreportconfig.Settings.ReportRoot + "json/pools.json"
 $Global:paths.monitors = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
@@ -1915,26 +1918,6 @@ Function Write-TemporaryFiles {
 
     $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
-    log verbose "Writing $($Global:paths.report + ".tmp") from $PSScriptRoot"
-
-    $HTMLContent = $Global:HTML.ToString();
-
-    # remove whitespace from output
-    if ($Outputlevel -ne "Verbose") {
-        $HTMLContent = $HTMLContent.Split("`n").Trim() -Join "`n"
-    }
-
-    $StreamWriter = New-Object System.IO.StreamWriter($($Global:paths.report + ".tmp"), $false, $Utf8NoBomEncoding, 0x10000)
-    $StreamWriter.Write($HTMLContent)
-
-    if (!$?) {
-        log error "Failed to update the temporary report file"
-        $WriteStatuses += $false
-    }
-
-    $StreamWriter.dispose()
-
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.preferences -Data $Global:Preferences
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.loggederrors -Data @( $Global:LoggedErrors )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.devicegroups -Data @( $Global:DeviceGroups | Sort-Object name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.loadbalancers -Data @( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
@@ -1945,6 +1928,8 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data @( $Global:Out.VirtualServers | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:Out.Certificates | Sort-Object loadbalancer, fileName )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.asmpolicies -Data @( $Global:Out.ASMPolicies | Sort-Object loadbalancer, name )
+    $Global:Preferences['executionTime'] = $($(Get-Date) - $StartTime).TotalMinutes
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.preferences -Data $Global:Preferences
 
     if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true) {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.irules -Data @($Global:Out.iRules | Sort-Object loadbalancer, name )
@@ -1959,16 +1944,15 @@ Function Write-TemporaryFiles {
             log error "Failed to update the temporary irules json file"
             $WriteStatuses += $false
         }
-    }
 
-    $StreamWriter.dispose()
+        $StreamWriter.dispose()
+    }
 
     if ($Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true) {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @( $Global:Out.DataGroups | Sort-Object loadbalancer, name )
     } else {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @()
     }
-    $StreamWriter.dispose()
     Return -not $( $WriteStatuses -Contains $false)
 }
 
@@ -2042,128 +2026,6 @@ if ($MissingData) {
 }
 
 #EndRegion
-
-#Global:html contains the report html data
-#Add links to style sheets, jquery and datatables and some embedded javascripts
-
-$Global:HTML = [System.Text.StringBuilder]::new()
-
-[void]$Global:HTML.AppendLine(@'
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>BigIPReport</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-        <link href="css/pace.css" rel="stylesheet" type="text/css"/>
-        <link href="css/jquery.dataTables.css" rel="stylesheet" type="text/css">
-        <link href="css/buttons.dataTables.min.css" rel="stylesheet" type="text/css">
-        <link href="css/bigipreportstyle.css" rel="stylesheet" type="text/css">
-        <link href="css/sh_style.css" rel="stylesheet" type="text/css">
-        <link rel="shortcut icon" href="images/favicon.ico">
-
-        <script src="js/pace.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;: false }"></script>
-        <script src="js/jquery.min.js"></script>
-        <script src="js/jquery.dataTables.min.js"></script>
-        <script src="js/dataTables.buttons.min.js"></script>
-        <script src="js/buttons.colVis.min.js"></script>
-        <script src="js/buttons.html5.min.js"></script>
-        <script src="js/buttons.print.min.js"></script>
-        <script src="js/jquery.highlight.js"></script>
-        <script src="js/bigipreport.js"></script>
-        <script src="js/sh_main.js"></script>
-    </head>
-    <body>
-        <div class="beforedocumentready"></div>
-        <div class="bigipreportheader"><img src="logo.jpg"/></div>
-        <div class="realtimestatusdiv" onclick="javascript:pollCurrentView();">
-            <table>
-                <tr>
-                    <td><span class="topleftheader">Status VIPs:</span></td><td><span id="realtimetestsuccess">0</span> working, <span id="realtimetestfailed">0</span> failed, <span id="realtimenotconfigured">0</span> not configured</td>
-                </tr>
-                <tr>
-                    <td><span class="topleftheader">Polling state:</span></td><td id="pollingstatecell"><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span></td>
-                </tr>
-            </table>
-        </div>
-        <div id="navbuttondiv"></div>
-        <div id="mainholder">
-            <div class="sidemenu">
-                <div class="menuitem" id="virtualserversbutton" onclick="Javascript:showVirtualServers();"><img id="virtualserverviewicon" src="images/virtualservericon.png" alt="virtual servers"/> Virtual Servers</div>
-                <div class="menuitem" id="poolsbutton" onclick="Javascript:showPools();"><img id="poolsicon" src="images/poolsicon.png" alt="pools"/> Pools</div>
-                <div class="menuitem" id="irulesbutton" onclick="Javascript:showiRules();"><img id="irulesicon" src="images/irulesicon.png" alt="irules"/> iRules</div>
-                <div class="menuitem" id="datagroupbutton" onclick="Javascript:showDataGroups();"><img id="datagroupsicon" src="images/datagroupicon.png" alt="logs"/> Data Groups</div>
-                <div class="menuitem" id="deviceoverviewbutton" onclick="Javascript:showDeviceOverview();"><img id="devicesoverviewicon" src="images/devicesicon.png" alt="overview"/> Device overview</div>
-                <div class="menuitem" id="certificatebutton" onclick="Javascript:showCertificateDetails();"><img id="certificateicon" src="images/certificates.png" alt="certificates"/> Certificates<span id="certificatenotification"></span></div>
-                <div class="menuitem" id="logsbutton" onclick="Javascript:showLogs();"><img id="logsicon" src="images/logsicon.png" alt="logs"/> Logs</div>
-                <div class="menuitem" id="preferencesbutton" onclick="Javascript:showPreferences();"><img id="preferencesicon" src="images/preferences.png" alt="preferences"/> Preferences</div>
-                <div class="menuitem" id="helpbutton" onclick="Javascript:showHelp();"><img id="helpicon" src="images/help.png" alt="help"/> Help</div>
-            </div>
-
-            <div class="mainsection" id="virtualservers" style="display: none;"></div>
-            <div class="mainsection" id="pools" style="display: none;"></div>
-            <div class="mainsection" id="irules" style="display: none;"></div>
-            <div class="mainsection" id="datagroups" style="display: none;"></div>
-            <div class="mainsection" id="deviceoverview" style="display: none;"></div>
-            <div class="mainsection" id="certificatedetails" style="display: none;"></div>
-            <div class="mainsection" id="logs" style="display: none;"></div>
-            <div class="mainsection" id="preferences" style="display: none;"></div>
-
-            <div class="mainsection" id="helpcontent" style="display: none;">
-                <h3>Filtering on virtual server, pool or pool member status</h3>
-                <p>This is a bit of a hidden feature. In VirtualServer, Pool, and Member columns you can filter on status.
-                The status options are {enabled|disabled}:{available|offline|unknown}.
-                For example, try searching for: "enabled:available", ":unknown" or "disabled:" as a general or field search.</p>
-                <p>It's not perfect since pools or members with any of these words in the name can also end up as results.</p>
-                <h3>Column filtering</h3>
-                <p>Clicking on any column header allows you to filter data within that column. This has been more clear in the later versions but worth mentioning in case you've missed it.</p>
-                <h3>Regular Expression Searching</h3>
-                <p>Under Preferences, Regular Expression searching is enabled by default. This allows entering filters like "this|that" to filter to one or the other values.
-                Other examples include "^((?!pool_).)*$" to filter a column to entries that don't contain "pool_" or "\bcom" to pickup "com" only after a wordbreak.</p>
-                <h3>Pool member tests</h3>
-                <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP based monitors and can be used to troubleshoot why a monitor is failing.</p>
-                <h3>Feature requests</h3>
-                <p>Please add any feature requests or suggestions here:</p>
-                <p><a href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a></p>
-                <p>And if you like the project, please set aside some of your time to leave a <a href="https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
-                <h3>Troubleshooting</h3>
-                <p>If the report does not work as you'd expect or you're getting error messages, please read the <a href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything there, please add a comment in the project over at <a href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
-                <p>To collect and download anonymized data for submitting a device overview bug report, <a href="javascript:exportDeviceData()">Export Device Data</a>.</p>
-                <h3>Contact</h3>
-                <p>If you need to contact the authors, please post on the devcentral forum above or directly on the
-                <a href="https://github.com/epacke/BigIPReport">BigIPReport GitHub</a> project.</p>
-            </div>
-        </div>
-'@)
-
-[void]$Global:HTML.AppendLine(@"
-        <div class="footer">
-            The report was generated on $($Global:hostname) using BigIPReport version $($Global:ScriptVersion).
-            Script started at <span id="Generationtime">$StartTime</span> and took $([int]($(Get-Date)-$StartTime).totalminutes) minutes to finish.<br>
-            BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
-            and <a href="https://rikers.org/">Tim Riker</a>.
-        </div>
-"@)
-
-[void]$Global:HTML.AppendLine(@'
-        <div class="lightbox" id="firstlayerdiv">
-            <div class="innerLightbox">
-                <div class="lightboxcontent" id="firstlayerdetailscontentdiv">
-                </div>
-            </div>
-            <div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"><a class="lightboxbutton" id="closefirstlayerbutton" href="javascript:void(0);">Close div</a></div>
-        </div>
-
-        <div class="lightbox" id="secondlayerdiv">
-            <div class="innerLightbox">
-                <div class="lightboxcontent" id="secondlayerdetailscontentdiv">
-                </div>
-            </div>
-            <div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton" id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>
-        </div>
-    </body>
-</html>
-'@)
 
 # Record some stats
 

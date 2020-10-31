@@ -19,3 +19,11 @@ DevCentral codeshare:
 * [Data tables](https://datatables.net/)
 * [jQuery hightlight plugin](http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html)
 * [SHJS](http://shjs.sourceforge.net)
+
+# Developing Javascript
+1. Install NodeJS
+2. Go to `js-src`
+3. Run `npm install`
+4. Run `tsc --outDir <js folder path> --watch`, example `tsc --outDir ./underlay/js --watch
+
+The typescript files will now be transpiled and written to js folder path when changes are detected.

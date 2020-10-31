@@ -2,7 +2,7 @@ name: Lint our self-managed js files
 on:
   push:
     paths:
-      - 'underlay/js/bigipreport.js'
+      - 'underlay/js/bigipreport.ts'
       - '.eslintrc.json'
       - '.github/workflows/'
 

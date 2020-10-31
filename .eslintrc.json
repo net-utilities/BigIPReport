@@ -3,7 +3,8 @@
     "ecmaVersion": 6
   },
   "plugins": [
-    "jquery"
+    "jquery",
+    "@typescript-eslint"
   ],
   "env": {
     "browser": true,
@@ -11,11 +12,16 @@
     "es6": true,
     "jquery": true
   },
-  "extends": ["eslint:recommended", "plugin:jquery/deprecated"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:jquery/deprecated",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"],
   "rules": {
     "quotes": ["error", "single"],
     "max-len": ["error", { "code": 120 }],
     "brace-style": ["error", "1tbs"],
+    "@typescript-eslint/no-this-alias": 0,
     "space-before-blocks": 2,
     "jquery/no-fade": 0,
     "jquery/no-show": 0,

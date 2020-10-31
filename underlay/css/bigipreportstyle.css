@@ -138,6 +138,10 @@
     min-width: 30px;
 }
 
+.details-link {
+    cursor: pointer;
+}
+
 /******************************************************************************************
     Style for cell containing the pool and member information in the main table
 *******************************************************************************************/

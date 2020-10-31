@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "This tool will pull the configuration from multiple load balancers and display it in a table.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "eslint ./underlay/js/bigipreport.js"
   },
@@ -17,8 +18,15 @@
   },
   "homepage": "https://github.com/epacke/BigIPReport#readme",
   "devDependencies": {
-    "eslint": "^7.10.0",
+    "@types/datatables.net": "^1.10.19",
+    "@types/datatables.net-buttons": "^1.4.3",
+    "@types/jquery": "^3.5.3",
+    "@types/node": "^14.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.5.0",
+    "@typescript-eslint/parser": "^4.5.0",
+    "eslint": "^7.11.0",
+    "eslint-config-google": "^0.14.0",
     "eslint-plugin-jquery": "^1.5.1",
-    "eslint-config-google": "^0.14.0"
+    "typescript": "^4.0.3"
   }
 }

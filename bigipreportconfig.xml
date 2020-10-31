@@ -79,23 +79,6 @@
         <ReportRoot></ReportRoot>
 
         <!--
-        **************************************************************************************************************************************
-        *
-        *    Name the default document
-        *    IIS users might want to set this to default.htm
-        *    Apache users might want to set this to index.html
-        *
-        *    Examples:
-        *    <DefaultDocument>default.html</DefaultDocument>
-        *    or
-        *    <DefaultDocument>index.html</DefaultDocument>
-        *
-        **************************************************************************************************************************************
-        -->
-
-        <DefaultDocument>index.html</DefaultDocument>
-
-        <!--
         ************************************************************
         *
         *    Optional configuration below

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>BigIPReport</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <link href="css/pace.css" rel="stylesheet" type="text/css" />
+    <link href="css/jquery.dataTables.css" rel="stylesheet" type="text/css">
+    <link href="css/buttons.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="css/bigipreportstyle.css" rel="stylesheet" type="text/css">
+    <link href="css/sh_style.css" rel="stylesheet" type="text/css">
+    <link rel="shortcut icon" href="images/favicon.ico">
+
+    <script src="js/pace.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;: false }"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/dataTables.buttons.min.js"></script>
+    <script src="js/buttons.colVis.min.js"></script>
+    <script src="js/buttons.html5.min.js"></script>
+    <script src="js/buttons.print.min.js"></script>
+    <script src="js/jquery.highlight.js"></script>
+    <script type="module" src="js/bigipreport.js"></script>
+    <script src="js/sh_main.js"></script>
+</head>
+
+<body>
+    <div class="beforedocumentready"></div>
+    <div class="bigipreportheader"><img alt="BigIPReport logo" style="max-width:350px" src="images/logo.png" /></div>
+    <div id="realtimestatusdiv" class="realtimestatusdiv">
+        <table>
+            <tr>
+                <td><span class="topleftheader">Status VIPs:</span></td>
+                <td><span id="realtimetestsuccess">0</span> working, <span id="realtimetestfailed">0</span> failed,
+                    <span id="realtimenotconfigured">0</span> not configured</td>
+            </tr>
+            <tr>
+                <td><span class="topleftheader">Polling state:</span></td>
+                <td id="pollingstatecell"><span id="ajaxqueue">0</span> queued<span id="realtimenextrefresh"></span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="navbuttondiv"></div>
+    <div id="mainholder">
+        <div class="sidemenu">
+            <div class="menuitem" id="virtualserversbutton"><img
+                    id="virtualserverviewicon" src="images/virtualservericon.png" alt="virtual servers" /> Virtual
+                Servers</div>
+            <div class="menuitem" id="poolsbutton"><img id="poolsicon"
+                    src="images/poolsicon.png" alt="pools" /> Pools</div>
+            <div class="menuitem" id="irulesbutton"><img id="irulesicon"
+                    src="images/irulesicon.png" alt="irules" /> iRules</div>
+            <div class="menuitem" id="datagroupbutton"><img id="datagroupsicon"
+                    src="images/datagroupicon.png" alt="logs" /> Data Groups</div>
+            <div class="menuitem" id="deviceoverviewbutton"><img
+                    id="devicesoverviewicon" src="images/devicesicon.png" alt="overview" /> Device overview</div>
+            <div class="menuitem" id="certificatebutton"><img
+                    id="certificateicon" src="images/certificates.png" alt="certificates" /> Certificates<span
+                    id="certificatenotification"></span></div>
+            <div class="menuitem" id="logsbutton"><img id="logsicon"
+                    src="images/logsicon.png" alt="logs" /> Logs</div>
+            <div class="menuitem" id="preferencesbutton"><img
+                    id="preferencesicon" src="images/preferences.png" alt="preferences" /> Preferences</div>
+            <div class="menuitem" id="helpbutton"><img id="helpicon"
+                    src="images/help.png" alt="help" /> Help</div>
+        </div>
+
+        <div class="mainsection" id="virtualservers" style="display: none;"></div>
+        <div class="mainsection" id="pools" style="display: none;"></div>
+        <div class="mainsection" id="irules" style="display: none;"></div>
+        <div class="mainsection" id="datagroups" style="display: none;"></div>
+        <div class="mainsection" id="deviceoverview" style="display: none;"></div>
+        <div class="mainsection" id="certificatedetails" style="display: none;"></div>
+        <div class="mainsection" id="logs" style="display: none;"></div>
+        <div class="mainsection" id="preferences" style="display: none;"></div>
+
+        <div class="mainsection" id="helpcontent" style="display: none;">
+            <h3>Filtering on virtual server, pool or pool member status</h3>
+            <p>This is a bit of a hidden feature. In VirtualServer, Pool, and Member columns you can filter on status.
+                The status options are {enabled|disabled}:{available|offline|unknown}.
+                For example, try searching for: "enabled:available", ":unknown" or "disabled:" as a general or field
+                search.</p>
+            <p>It's not perfect since pools or members with any of these words in the name can also end up as results.
+            </p>
+            <h3>Column filtering</h3>
+            <p>Clicking on any column header allows you to filter data within that column. This has been more clear in
+                the later versions but worth mentioning in case you've missed it.</p>
+            <h3>Regular Expression Searching</h3>
+            <p>Under Preferences, Regular Expression searching is enabled by default. This allows entering filters like
+                "this|that" to filter to one or the other values.
+                Other examples include "^((?!pool_).)*$" to filter a column to entries that don't contain "pool_" or
+                "\bcom" to pickup "com" only after a wordbreak.</p>
+            <h3>Pool member tests</h3>
+            <p>If you click on any pool name to bring up the details you have a table at the bottom containing tests for
+                each configured monitor. The tests is generating HTTP links, CURL links and netcat commands for HTTP
+                based monitors and can be used to troubleshoot why a monitor is failing.</p>
+            <h3>Feature requests</h3>
+            <p>Please add any feature requests or suggestions here:</p>
+            <p><a
+                    href="https://devcentral.f5.com/codeshare/bigip-report">https://devcentral.f5.com/codeshare/bigip-report</a>
+            </p>
+            <p>And if you like the project, please set aside some of your time to leave a <a
+                    href="https://devcentral.f5.com/codeshare/bigip-report#rating">review/rating</a>.</p>
+            <h3>Troubleshooting</h3>
+            <p>If the report does not work as you'd expect or you're getting error messages, please read the <a
+                    href="https://loadbalancing.se/bigip-report/#FAQ">FAQ</a>&nbsp;first. If you can't find anything
+                there, please add a comment in the project over at <a
+                    href="https://devcentral.f5.com/codeshare/bigip-report">Devcentral</a>.</p>
+            <p>To collect and download anonymized data for submitting a device overview bug report, <a
+                    href="javascript:exportDeviceData()">Export Device Data</a>.</p>
+            <h3>Contact</h3>
+            <p>If you need to contact the authors, please post on the devcentral forum above or directly on the
+                <a href="https://github.com/epacke/BigIPReport">BigIPReport GitHub</a> project.</p>
+        </div>
+    </div>
+    <div id="report-footer" class="footer">
+    </div>
+    <div class="lightbox" id="firstlayerdiv">
+        <div class="innerLightbox">
+            <div class="lightboxcontent" id="firstlayerdetailscontentdiv">
+            </div>
+        </div>
+        <div id="firstlayerdetailsfooter" class="firstlayerdetailsfooter"><a class="lightboxbutton"
+                id="closefirstlayerbutton" href="javascript:void(0);">Close div</a></div>
+    </div>
+
+    <div class="lightbox" id="secondlayerdiv">
+        <div class="innerLightbox">
+            <div class="lightboxcontent" id="secondlayerdetailscontentdiv">
+            </div>
+        </div>
+        <div class="secondlayerdetailsfooter" id="secondlayerdetailsfooter"><a class="lightboxbutton"
+                id="closesecondlayerbutton" href="javascript:void(0);">Close div</a></div>
+    </div>
+</body>
+
+</html>
