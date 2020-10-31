@@ -1,4 +1,4 @@
-name: Lint our self-managed js files
+name: Lint the ts code
 on:
   push:
     paths:
