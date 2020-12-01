@@ -187,7 +187,7 @@ window.addEventListener('load', function () {
         NavButtonDiv(null, null, null); // eslint-disable-line new-cap
         // Check if there's a new update
         setInterval(function () {
-            $.ajax(document.location.href, {
+            $.ajax('json/preferences.json', {
                 type: 'HEAD',
                 success: NavButtonDiv,
             });
@@ -216,12 +216,15 @@ window.addEventListener('load', function () {
 });
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
-    const currentreport = Date.parse(document.lastModified);
     let timesincerefresh = 0;
-    if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
+    if (siteData.preferences.currentReportDate === undefined && xhr && null != xhr.getResponseHeader('Last-Modified')) {
+        // If we have not yet stored the currentReportDate, store it and return
+        siteData.preferences.currentReportDate = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
+    }
+    else if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
         const latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
         // If there's been a new report, how long ago (in minutes)
-        timesincerefresh = Math.round((latestreport - currentreport) / 60000);
+        timesincerefresh = Math.round((latestreport - siteData.preferences.currentReportDate) / 60000);
     }
     let navbutton = '<ul>';
     if (timesincerefresh > 60) {

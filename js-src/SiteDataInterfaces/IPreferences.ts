@@ -14,4 +14,5 @@ export default interface IPreferences {
   scriptVersion: string,
   showAdcLinks: boolean,
   startTime: string,
+  currentReportDate: number,
 }
