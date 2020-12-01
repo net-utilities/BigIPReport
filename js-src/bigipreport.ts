@@ -1264,7 +1264,7 @@ function populateSearchParameters(updatehash: boolean) {
           allFilterInput.val(vars[key]);
           if (siteData.bigipTable) {
             siteData.bigipTable.search(
-              'test',
+              vars[key],
               localStorage.getItem('regexSearch') === 'true',
               false
             );

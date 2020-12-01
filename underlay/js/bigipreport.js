@@ -1086,7 +1086,7 @@ function populateSearchParameters(updatehash) {
                 if (allFilterInput) {
                     allFilterInput.val(vars[key]);
                     if (siteData.bigipTable) {
-                        siteData.bigipTable.search('test', localStorage.getItem('regexSearch') === 'true', false);
+                        siteData.bigipTable.search(vars[key], localStorage.getItem('regexSearch') === 'true', false);
                         siteData.bigipTable.draw();
                     }
                 }
