@@ -191,7 +191,7 @@ window.addEventListener('load', function () {
                 type: 'HEAD',
                 success: NavButtonDiv,
             });
-        }, 3000);
+        }, 60000);
     });
     // Attach click events to the main menu buttons and poller div
     document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
