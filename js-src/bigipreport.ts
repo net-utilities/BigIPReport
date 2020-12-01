@@ -378,6 +378,7 @@ function poolMemberStatus(member, type) {
                 title="${mStatus} - Member is available, but disabled"/></span>`;
   } else if (
     mStatus === 'disabled:offline' ||
+    mStatus === 'disabled-by-parent:available' ||
     mStatus === 'disabled-by-parent:offline'
   ) {
     return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"
@@ -466,9 +467,7 @@ function virtualServerStatus(row, type) {
   } else if (vsStatus === 'disabled:available') {
     return (
       '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)"' +
-      ' title="' +
-      vsStatus +
-      ' - The virtual server is disabled"/></span>'
+      ` title="${vsStatus} - The virtual server is disabled"/></span>`
     );
   } else if (vsStatus === 'disabled:unknown') {
     return (
@@ -480,6 +479,18 @@ function virtualServerStatus(row, type) {
     return (
       '<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)"' +
       ` title="${vsStatus} - The children pool member(s) are down"/></span>`
+    );
+  } else if (vsStatus === 'disabled-by-parent:offline') {
+    return (
+      '<span class="statusicon">' +
+      '<img src="images/black-circle-cross.png" alt="Offline (Disabled-by-parent)"' +
+      ` title="${vsStatus} - The parent is disabled and the children pool member(s) are down"/></span>`
+    );
+  } else if (vsStatus === 'disabled-by-parent:available') {
+    return (
+      '<span class="statusicon">' +
+      '<img src="images/black-diamond-exclamationmark.png" alt="Available (Disabled-by-parent)"' +
+      ` title="${vsStatus} - The children pool member(s) are available but the parent is disabled"/></span>`
     );
   }
   return vsStatus;
