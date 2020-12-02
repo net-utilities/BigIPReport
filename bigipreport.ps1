@@ -542,11 +542,6 @@ if ($null -eq $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -or 0 
     $SaneConfig = $false
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.DefaultDocument -or "" -eq $Global:Bigipreportconfig.Settings.DefaultDocument) {
-    log error "No default document configured"
-    $SaneConfig = $false
-}
-
 if ($null -eq $Global:Bigipreportconfig.Settings.LogSettings -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled) {
     log error "Mandatory fields from the LogSettings section has been removed"
     $SaneConfig = $false
