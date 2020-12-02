@@ -22,8 +22,7 @@ DevCentral codeshare:
 
 # Developing Javascript
 1. Install NodeJS
-2. Go to `js-src`
-3. Run `npm install`
-4. Run `tsc --outDir <js folder path> --watch`, example `tsc --outDir ./underlay/js --watch
+2. Run `npm install` which uses `package.json`
+4. Run `tsc --watch` which uses `tsconfig.json`
 
 The typescript files will now be transpiled and written to js folder path when changes are detected.

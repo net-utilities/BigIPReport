@@ -187,11 +187,11 @@ window.addEventListener('load', function () {
         NavButtonDiv(null, null, null); // eslint-disable-line new-cap
         // Check if there's a new update
         setInterval(function () {
-            $.ajax(document.location.href, {
+            $.ajax('json/preferences.json', {
                 type: 'HEAD',
                 success: NavButtonDiv,
             });
-        }, 3000);
+        }, 60000);
     });
     // Attach click events to the main menu buttons and poller div
     document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
@@ -216,12 +216,15 @@ window.addEventListener('load', function () {
 });
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
-    const currentreport = Date.parse(document.lastModified);
     let timesincerefresh = 0;
-    if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
+    if (siteData.preferences.currentReportDate === undefined && xhr && null != xhr.getResponseHeader('Last-Modified')) {
+        // If we have not yet stored the currentReportDate, store it and return
+        siteData.preferences.currentReportDate = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
+    }
+    else if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
         const latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
         // If there's been a new report, how long ago (in minutes)
-        timesincerefresh = Math.round((latestreport - currentreport) / 60000);
+        timesincerefresh = Math.round((latestreport - siteData.preferences.currentReportDate) / 60000);
     }
     let navbutton = '<ul>';
     if (timesincerefresh > 60) {
@@ -307,6 +310,7 @@ function poolMemberStatus(member, type) {
                 title="${mStatus} - Member is available, but disabled"/></span>`;
     }
     else if (mStatus === 'disabled:offline' ||
+        mStatus === 'disabled-by-parent:available' ||
         mStatus === 'disabled-by-parent:offline') {
         return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"
                 title="${mStatus} - Member is disabled"/></span>`;
@@ -384,9 +388,7 @@ function virtualServerStatus(row, type) {
     }
     else if (vsStatus === 'disabled:available') {
         return ('<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)"' +
-            ' title="' +
-            vsStatus +
-            ' - The virtual server is disabled"/></span>');
+            ` title="${vsStatus} - The virtual server is disabled"/></span>`);
     }
     else if (vsStatus === 'disabled:unknown') {
         return ('<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"' +
@@ -396,6 +398,16 @@ function virtualServerStatus(row, type) {
     else if (vsStatus === 'disabled:offline') {
         return ('<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)"' +
             ` title="${vsStatus} - The children pool member(s) are down"/></span>`);
+    }
+    else if (vsStatus === 'disabled-by-parent:offline') {
+        return ('<span class="statusicon">' +
+            '<img src="images/black-circle-cross.png" alt="Offline (Disabled-by-parent)"' +
+            ` title="${vsStatus} - The parent is disabled and the children pool member(s) are down"/></span>`);
+    }
+    else if (vsStatus === 'disabled-by-parent:available') {
+        return ('<span class="statusicon">' +
+            '<img src="images/black-diamond-exclamationmark.png" alt="Available (Disabled-by-parent)"' +
+            ` title="${vsStatus} - The children pool member(s) are available but the parent is disabled"/></span>`);
     }
     return vsStatus;
 }
@@ -1077,7 +1089,7 @@ function populateSearchParameters(updatehash) {
                 if (allFilterInput) {
                     allFilterInput.val(vars[key]);
                     if (siteData.bigipTable) {
-                        siteData.bigipTable.search('test', localStorage.getItem('regexSearch') === 'true', false);
+                        siteData.bigipTable.search(vars[key], localStorage.getItem('regexSearch') === 'true', false);
                         siteData.bigipTable.draw();
                     }
                 }
