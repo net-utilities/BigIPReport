@@ -542,11 +542,6 @@ if ($null -eq $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -or 0 
     $SaneConfig = $false
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.DefaultDocument -or "" -eq $Global:Bigipreportconfig.Settings.DefaultDocument) {
-    log error "No default document configured"
-    $SaneConfig = $false
-}
-
 if ($null -eq $Global:Bigipreportconfig.Settings.LogSettings -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled) {
     log error "Mandatory fields from the LogSettings section has been removed"
     $SaneConfig = $false
@@ -1637,25 +1632,32 @@ function GetDeviceInfo {
     $Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
     # REST login sometimes works, and sometimes does not. Try 3 times in case it's flakey
-    try {
-        $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
-        log success "Got auth token from $LoadBalancerIP"
-        $AuthToken = $TokenRequest.token.token
-        $TokenReference = $TokenRequest.token.name;
-        $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
+    $tries = 0
+    while ($tries -lt 4) {
+        try {
+            $tries++
+            $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
+            log success "Got auth token from $LoadBalancerIP"
+            $AuthToken = $TokenRequest.token.token
+            $TokenReference = $TokenRequest.token.name;
+            $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
 
-        # Add the token to the session
-        $Session.Headers.Add('X-F5-Auth-Token', $AuthToken)
-        $Body = @{ timeout = 7200 } | ConvertTo-Json
+            # Add the token to the session
+            $Session.Headers.Add('X-F5-Auth-Token', $AuthToken)
+            $Body = @{ timeout = 7200 } | ConvertTo-Json
 
-        # Extend the token to 120 minutes
-        Invoke-RestMethod -WebSession $Session -Method Patch -Uri https://$LoadBalancerIP/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
-        $ts = New-TimeSpan -Minutes (120)
-        $ExpirationTime = $TokenStartTime + $ts
-        $Session.Headers.Add('Token-Expiration', $ExpirationTime)
-    } catch {
-        $Line = $_.InvocationInfo.ScriptLineNumber
-        log error "Error getting auth token from $LoadBalancerIP : $_ (Line $Line)"
+            # Extend the token to 120 minutes
+            Invoke-RestMethod -WebSession $Session -Method Patch -Uri https://$LoadBalancerIP/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
+            $ts = New-TimeSpan -Minutes (120)
+            $ExpirationTime = $TokenStartTime + $ts
+            $Session.Headers.Add('Token-Expiration', $ExpirationTime)
+            $tries = 99
+        } catch {
+            $Line = $_.InvocationInfo.ScriptLineNumber
+            log error "Error getting auth token from $LoadBalancerIP : $_ (Line $Line, Tries $tries)"
+        }
+    }
+    if ($tries -ne 99) {
         Exit
     }
 
