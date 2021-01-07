@@ -270,9 +270,9 @@
 
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable','')]
 Param(
-    $ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml",
-    $PollLoadBalancer = $null,
-    $Location = $null
+    $Global:ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml",
+    $Global:PollLoadBalancer = $null,
+    $Global:Location = $null
 )
 
 Set-StrictMode -Version Latest
@@ -305,7 +305,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 $Global:ScriptVersion = "5.4.3"
 
 #Variable used to calculate the time used to generate the report.
-$StartTime = Get-Date
+$Global:StartTime = Get-Date
 
 $Global:hostname = [System.Net.Dns]::GetHostName()
 
@@ -333,7 +333,7 @@ $Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 ################################################################################################################################################
 
 # default until we load the config
-$Outputlevel = "Normal"
+$Global:Outputlevel = "Normal"
 Function log {
     Param ([string]$LogType = "info", [string]$Message = "")
 
