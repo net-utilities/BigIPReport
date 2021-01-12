@@ -257,8 +257,11 @@
 #                                     requires powershell 6.x+ to get ConvertFrom-Json -AsHashTable
 #                                     csv on vs table uses datatables, custom link buttons, SAN on cert table
 #        5.4.1        2019-05-27      Add MaxJobs to control how many child processes to fork at once               Tim Riker       Yes
-#        5.4.2        2020-09-21      copy underlay, disabled irule reporting, text logo, filter by status, locale  Tim Riker       No
-#        5.4.3        2020-09-24      fixes with monitors, member status, copying underlay, asm policies without vs Tim Riker       No
+#        5.4.2        2020-09-21      Copy underlay, disabled irule reporting, text logo, filter by status, locale  Tim Riker       No
+#        5.4.3        2020-09-24      Fixes with monitors, member status, copying underlay, asm policies without vs Tim Riker       No
+#        5.4.4        2020-09-24      Fix token fails to patch on devices without valid cert                        Patrik Jonsson  No
+#                                     Token valid for a longer period
+#                                     Using web session instead of supplying credentials every time
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
