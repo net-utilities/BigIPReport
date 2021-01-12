@@ -28,11 +28,6 @@ if(-not (Test-Path "$ScriptFolder/Releases/BigIPReport-$Version.zip")){
         }
     }
 
-    if(Test-Path "$ScriptFolder/underlay/index.html"){
-        "Remove temp files from `"underlay`""
-        Break
-    }
-
     #Add version to the file in order to allow users to store multiple versions without overwriting them
     Move-Item "$ScriptFolder/bigipreport.ps1" "$ScriptFolder/bigipreport-$version.ps1"
 
