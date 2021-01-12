@@ -1647,7 +1647,7 @@ function GetDeviceInfo {
             $Body = @{ timeout = 7200 } | ConvertTo-Json
 
             # Extend the token to 120 minutes
-            Invoke-RestMethod -WebSession $Session -Method Patch -Uri https://$LoadBalancerIP/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
+            Invoke-RestMethod -WebSession $Session -Method Patch -SkipCertificateCheck -Uri https://$LoadBalancerIP/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
             $ts = New-TimeSpan -Minutes (120)
             $ExpirationTime = $TokenStartTime + $ts
             $Session.Headers.Add('Token-Expiration', $ExpirationTime)
