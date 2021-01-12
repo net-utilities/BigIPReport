@@ -262,6 +262,9 @@
 #        5.4.4        2020-09-24      Fix token fails to patch on devices without valid cert                        Patrik Jonsson  No
 #                                     Token valid for a longer period
 #                                     Using web session instead of supplying credentials every time
+#        5.4.5        2020-09-24      Fix bug where data group lists did not load                                   Patrik Jonsson  No
+#                                     Token valid for a longer period
+#                                     Using web session instead of supplying credentials every time
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
