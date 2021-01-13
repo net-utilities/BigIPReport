@@ -28,7 +28,8 @@ if(-not (Test-Path "$ScriptFolder/Releases/BigIPReport-$Version.zip")){
         }
     }
 
-    if(Test-Path "$ScriptFolder/underlay/index.html"){
+    if(Test-Path "$ScriptFolder/underlay/json/preferences.json"){
+        "It looks like you have some files in underlay that you probably don't want in a release"
         "Remove temp files from `"underlay`""
         Break
     }

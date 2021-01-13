@@ -269,6 +269,7 @@ window.addEventListener('load', function () {
   window['togglePool'] = togglePool;
   window['togglePoolHighlight'] = togglePoolHighlight;
   window['showVirtualServerDetails'] = showVirtualServerDetails;
+  window['showDataGroupDetails'] = showDataGroupDetails;
   window['showiRuleDetails'] = showiRuleDetails;
   window['siteData'] = siteData;
 
