@@ -83,14 +83,14 @@ Write-Host "Text: " ( $text | Out-String )
 
 $compressedByteArray = Get-CompressedGzipByteArray -byteArray $encText
 
-Write-Host "Encoded:"
+Write-Host "Encoded: " ($compressedByteArray.Length)
 Write-Host "" ( $enc.GetString( $compressedByteArray ) | Format-Hex )
 
 $decompressedByteArray = Get-DecompressedGzipByteArray -byteArray $compressedByteArray
 Write-Host "Decoded: " ( $enc.GetString( $decompressedByteArray ) | Out-String )
 
 $compressedByteArray = Get-CompressedBrotliByteArray -byteArray $encText
-Write-Host "Encoded:"
+Write-Host "Encoded: " ($compressedByteArray.Length)
 Write-Host "" ( $enc.GetString( $compressedByteArray ) | Format-Hex )
 
 $decompressedByteArray = Get-DecompressedBrotliByteArray -byteArray $compressedByteArray
