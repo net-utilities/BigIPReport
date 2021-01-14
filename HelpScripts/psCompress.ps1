@@ -3,7 +3,7 @@
 
 # Compress and decompress byte array
 function Get-CompressedGzipByteArray {
-	[CmdletBinding()]
+  [CmdletBinding()]
   Param (
    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
     [byte[]] $byteArray = $(Throw("-byteArray is required"))
@@ -11,7 +11,7 @@ function Get-CompressedGzipByteArray {
   Process {
     Write-Verbose "Get-CompressedByteArray"
     [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
-    $gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionMode]::Compress)
+    $gzipStream = New-Object System.IO.Compression.GzipStream $output, ([IO.Compression.CompressionLevel]::Optimal)
     $gzipStream.Write( $byteArray, 0, $byteArray.Length )
     $gzipStream.Close()
     $output.Close()
@@ -23,10 +23,10 @@ function Get-CompressedGzipByteArray {
 function Get-DecompressedGzipByteArray {
   [CmdletBinding()]
   Param (
-	  [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
     [byte[]] $byteArray = $(Throw("-byteArray is required"))
   )
-	Process {
+  Process {
     Write-Verbose "Get-DecompressedByteArray"
     $input = New-Object System.IO.MemoryStream( , $byteArray )
     $output = New-Object System.IO.MemoryStream
@@ -40,15 +40,15 @@ function Get-DecompressedGzipByteArray {
 }
 
 function Get-CompressedBrotliByteArray {
-	[CmdletBinding()]
+  [CmdletBinding()]
   Param (
-   [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
     [byte[]] $byteArray = $(Throw("-byteArray is required"))
   )
   Process {
     Write-Verbose "Get-CompressedByteArray"
     [System.IO.MemoryStream] $output = New-Object System.IO.MemoryStream
-    $brotliStream = New-Object System.IO.Compression.BrotliStream $output, ([IO.Compression.CompressionMode]::Compress)
+    $brotliStream = New-Object System.IO.Compression.BrotliStream $output, ([IO.Compression.CompressionLevel]::Optimal)
     $brotliStream.Write( $byteArray, 0, $byteArray.Length )
     $brotliStream.Close()
     $output.Close()
@@ -60,10 +60,10 @@ function Get-CompressedBrotliByteArray {
 function Get-DecompressedBrotliByteArray {
   [CmdletBinding()]
   Param (
-	  [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
     [byte[]] $byteArray = $(Throw("-byteArray is required"))
   )
-	Process {
+  Process {
     Write-Verbose "Get-DecompressedByteArray"
     $input = New-Object System.IO.MemoryStream( , $byteArray )
     $output = New-Object System.IO.MemoryStream
@@ -75,7 +75,8 @@ function Get-DecompressedBrotliByteArray {
     Write-Output $byteOutArray
   }
 }
-[string] $text = "some text to encode some text to encode some text to encode some text to encode some text to encode some text to encode some text to encode"
+
+[string] $text = "some text to encode some text to encode some text to encode some text to encode some text to encode"
 Write-Host "Text: " ( $text | Out-String )
 
 [System.Text.Encoding] $enc = [System.Text.Encoding]::UTF8
