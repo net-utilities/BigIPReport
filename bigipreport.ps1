@@ -607,6 +607,13 @@ if ($null -eq $Global:Bigipreportconfig.Settings.RealTimeMemberStates) {
     $SaneConfig = $false
 }
 
+if ($null -eq $Global:Bigipreportconfig.Settings.UseBrotli) {
+    log verbose "UseBrotli is not present in the configuration file. Update to the latest configuration file to get rid of this message."
+    $Global:UseBrotli = $false
+} else {
+    $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
+}
+
 if ($null -eq $Global:Bigipreportconfig.Settings.ReportRoot -or $Global:Bigipreportconfig.Settings.ReportRoot -eq "") {
     log error "No report root configured"
     $SaneConfig = $false
@@ -1887,6 +1894,23 @@ do {
 # remove completed jobs
 $jobs | Remove-Job
 
+Function brotliCompressFile([ValidateScript({Test-Path $_})][string]$File){
+    $srcFile = Get-Item -Path $File
+    $newFileName = "$($srcFile.FullName).br"
+    try {
+        $srcFileStream = New-Object System.IO.FileStream($srcFile.FullName,([IO.FileMode]::Open),([IO.FileAccess]::Read),([IO.FileShare]::Read))
+        $dstFileStream = New-Object System.IO.FileStream($newFileName,([IO.FileMode]::Create),([IO.FileAccess]::Write),([IO.FileShare]::None))
+        $brotli = New-Object System.IO.Compression.BrotliStream($dstFileStream,[System.IO.Compression.CompressionLevel]::Optimal)
+        $srcFileStream.CopyTo($brotli)
+    } catch {
+        Write-Host "$_.Exception.Message" -ForegroundColor Red
+    } finally {
+        $brotli.Dispose()
+        $srcFileStream.Dispose()
+        $dstFileStream.Dispose()
+    }
+}
+
 Function Write-JSONFile {
     Param($Data, $DestinationFile)
 
@@ -1913,6 +1937,10 @@ Function Write-JSONFile {
     }
 
     $StreamWriter.dispose()
+
+    if($Global:UseBrotli) {
+        brotliCompressFile($DestinationTempFile)
+    }
 
     Return $Success
 }
@@ -2085,6 +2113,14 @@ if ($TemporaryFilesWritten) {
         if (!$?) {
             log error "Failed to update $path"
             $MovedFiles = $false
+        }
+
+        if($Global:UseBrotli) {
+            Move-Item -Force ($path + ".tmp.br") "$path.br"
+            if (!$?) {
+                log error "Failed to update $path"
+                $MovedFiles = $false
+            }
         }
     }
 
