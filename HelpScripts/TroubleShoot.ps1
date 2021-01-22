@@ -5,7 +5,9 @@
 
 # F5 Device to diagnose
 # Use DNS or else the TLS/SSL tests will fail
-$Device = ""
+Param(
+    $Device
+)
 
 ###############################################################################################################
 #                                           End config section
