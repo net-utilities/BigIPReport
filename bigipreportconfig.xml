@@ -255,6 +255,24 @@
         <!--
         **************************************************************************************************************************************
         *
+        *    This variable enables or disables the use of brotli compression.
+        *    If enabled .br files will be created. The web server needs to offer these precompressed files transparently.
+        *
+        *    To enable, set the variable to true, otherwise false
+        *
+        *    Example:
+        *    <UseBrotli>true</UseBrotli>
+        *    or
+        *    <UseBrotli>false</UseBrotli>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <UseBrotli>true</UseBrotli>
+
+        <!--
+        **************************************************************************************************************************************
+        *
         *    In this section you can choose to hide partition information to save space in the report.
         *    To show, set to true. To hide, set to false.
         *

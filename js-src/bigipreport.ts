@@ -2850,41 +2850,41 @@ function showDeviceOverview() {
         } else {
           pollingStatus = 'N/A (passive device)';
         }
-      }
 
-      if (firstDevice) {
+        if (firstDevice) {
+          html +=
+            `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
+              <img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
+            `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>`;
+          firstDevice = false;
+        } else {
+          html += '<tr>';
+        }
+
+        const devicestatus = loadbalancer.color || 'red';
         html +=
-          `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
-            <img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
-          `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>`;
-        firstDevice = false;
-      } else {
-        html += '<tr>';
+          '<td class="devicenamecell"><img class="devicestatusicon" alt="' +
+          devicestatus +
+          '" src="images/devicestatus' +
+          devicestatus +
+          '.png"/>' +
+          (loadbalancer.name ?
+            renderLoadBalancer(loadbalancer.name, 'display') :
+            '<span class="devicefailed">Failed to index</span>') +
+          '</td><td>' +
+          (loadbalancer.category || 'N/A') +
+          '</td><td>' +
+          (loadbalancer.model || 'N/A') +
+          '</td><td>' +
+          (loadbalancer.version || 'N/A') +
+          '</td><td>' +
+          loadbalancer.serial +
+          '</td><td>' +
+          loadbalancer.ip +
+          '</td><td>' +
+          pollingStatus +
+          '</td></tr>';
       }
-
-      const devicestatus = loadbalancer.color || 'red';
-      html +=
-        '<td class="devicenamecell"><img class="devicestatusicon" alt="' +
-        devicestatus +
-        '" src="images/devicestatus' +
-        devicestatus +
-        '.png"/>' +
-        (loadbalancer.name ?
-          renderLoadBalancer(loadbalancer.name, 'display') :
-          '<span class="devicefailed">Failed to index</span>') +
-        '</td><td>' +
-        (loadbalancer.category || 'N/A') +
-        '</td><td>' +
-        (loadbalancer.model || 'N/A') +
-        '</td><td>' +
-        (loadbalancer.version || 'N/A') +
-        '</td><td>' +
-        loadbalancer.serial +
-        '</td><td>' +
-        loadbalancer.ip +
-        '</td><td>' +
-        pollingStatus +
-        '</td></tr>';
     }
   }
 
