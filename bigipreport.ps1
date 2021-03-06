@@ -1222,7 +1222,7 @@ function Get-LTMInformation {
                 #.psobject.Properties.Value.nestedStats.entries
             }
             Foreach ($MemberStat in $MemberStats.Values) {
-              if ($MemberStat.nestedStats.entries.nodeName.description -contains ':') {
+              if ($MemberStat.nestedStats.entries.nodeName.description.contains(':')) {
                 # IPv6 has dot separator for port
                 $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + '.' + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
               } else {
@@ -1244,7 +1244,6 @@ function Get-LTMInformation {
                     $ObjTempMember.Priority = $PoolMember.priorityGroup
                     $ObjTempMember.Status = $PoolMember.state
 
-                    #$ObjTempPool.name + "|" + $PoolMember.fullPath + "|" + $MemberStatsDict[$PoolMember.fullPath].'status.availabilityState'.description
                     try {
                         $ObjTempMember.Availability = $MemberStatsDict[$PoolMember.fullPath].'status.availabilityState'.description
                     } catch {
