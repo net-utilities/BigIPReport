@@ -1222,7 +1222,13 @@ function Get-LTMInformation {
                 #.psobject.Properties.Value.nestedStats.entries
             }
             Foreach ($MemberStat in $MemberStats.Values) {
-                $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + ":" + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
+              if ($MemberStat.nestedStats.entries.nodeName.description -contains ':') {
+                # IPv6 has dot separator for port
+                $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + '.' + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
+              } else {
+                # IPv4 has colon separator for port
+                $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + ':' + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
+              }
             }
             try {
                 Foreach ($PoolMember in $Pool.membersReference.items) {
@@ -1230,7 +1236,11 @@ function Get-LTMInformation {
                     $ObjTempMember = New-Object Member
                     $ObjTempMember.Name = $PoolMember.fullPath
                     $ObjTempMember.ip = $PoolMember.address
-                    $ObjTempMember.Port = $PoolMember.name.split(":")[1]
+                    if ($PoolMember.name -match ':.*\.') {
+                      $ObjTempMember.Port = $PoolMember.name.split('.')[1]
+                    } else {
+                      $ObjTempMember.Port = $PoolMember.name.split(':')[1]
+                    }
                     $ObjTempMember.Priority = $PoolMember.priorityGroup
                     $ObjTempMember.Status = $PoolMember.state
 
@@ -1435,8 +1445,15 @@ function Get-LTMInformation {
             }
             # remove partition name if present (internal vs do not have a partition)
             $destination = $VirtualServer.destination -replace ".*/", ""
-            $ObjTempVirtualServer.ip = $destination.split(":")[0]
-            $ObjTempVirtualServer.port = $destination.split(":")[1]
+            if ($destination -match ':.*\.') {
+              # parse ipv6 addresses deaf:beef::1.port
+              $ObjTempVirtualServer.ip = $destination.split('.')[0]
+              $ObjTempVirtualServer.port = $destination.split('.')[1]
+            } else {
+              # parse ipv4 addresses 10.0.0.1:port
+              $ObjTempVirtualServer.ip = $destination.split(':')[0]
+              $ObjTempVirtualServer.port = $destination.split(':')[1]
+            }
 
             if (($ObjTempVirtualServer.port) -eq 0) {
                 $ObjTempVirtualServer.port = "Any"
