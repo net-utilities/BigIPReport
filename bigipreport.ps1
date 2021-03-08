@@ -965,6 +965,23 @@ if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
     }
 }
 
+Function Convert-MaskToCIDR([string] $dottedMask)
+{
+  $result = 0;
+  # ensure we have a valid IP address
+  [IPAddress] $ip = $dottedMask;
+  $octets = $ip.IPAddressToString.Split('.');
+  foreach($octet in $octets)
+  {
+    while(0 -ne $octet)
+    {
+      $octet = ($octet -shl 1) -band [byte]::MaxValue
+      $result++;
+    }
+  }
+  return $result;
+}
+
 #Region function Get-LTMInformation
 
 #Function used to gather data from the load balancers
@@ -1452,6 +1469,10 @@ function Get-LTMInformation {
               # parse ipv4 addresses 10.0.0.1:port
               $ObjTempVirtualServer.ip = $destination.split(':')[0]
               $ObjTempVirtualServer.port = $destination.split(':')[1]
+              if ($VirtualServer.mask -ne '255.255.255.255') {
+                $cidr = Convert-MaskToCIDR($VirtualServer.mask)
+                $ObjTempVirtualServer.ip += '/' + $cidr
+              }
             }
 
             if (($ObjTempVirtualServer.port) -eq 0) {
