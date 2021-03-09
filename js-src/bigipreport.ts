@@ -521,7 +521,7 @@ function renderPoolMember(loadbalancer, member, type) {
       result += ' ';
     }
     const name = member.name.split('/')[2];
-    if (name !== member.ip + ':' + member.port) {
+    if ((name !== member.ip + ':' + member.port) && (name !== member.ip + '.' + member.port)) {
       result += '(' + member.ip + ')';
     }
     result += name;
