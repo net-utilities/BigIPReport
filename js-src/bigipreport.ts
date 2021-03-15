@@ -831,8 +831,9 @@ function renderVirtualServer(loadbalancer, name, type) {
     result += virtualServerStatus(vs, type);
   }
   if (type === 'display') {
-    result += `<a class="tooltip details-link" data-originalvirtualservername="${name}"
-                data-loadbalancer="${loadbalancer}">`;
+    result += `<a class="tooltip details-link" data-originalvirtualservername="${name}"`
+    result += ` data-loadbalancer="${loadbalancer}"`;
+    result += ` href="Javascript:showVirtualServerDetails('${name}','${loadbalancer}');">`;
   }
   result += vsName;
   if (type === 'display') {
@@ -1406,14 +1407,6 @@ function setupVirtualServerTable() {
         className: 'virtualServerCell',
         render: function (data, type, row) {
           return renderVirtualServer(row.loadbalancer, data, type);
-        },
-        createdCell(data, type, row) {
-          // Add click handler for showing the virtual server
-          const cell = data as Node & HTMLDivElement;
-          const link = cell.querySelector('a.details-link');
-          link.addEventListener('click', () => {
-            showVirtualServerDetails(row.name, row.loadbalancer)
-          });
         }
       },
       {
