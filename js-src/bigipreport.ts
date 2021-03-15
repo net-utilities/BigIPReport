@@ -2817,7 +2817,7 @@ function showDeviceOverview(updatehash) {
           return o.ip === deviceGroup.ips[i];
         });
 
-      let pollingStatus = 'N/A';
+      let pollingStatus = 'N/A (passive device)';
 
       if (loadbalancer) {
         if (loadbalancer.active || loadbalancer.isonlydevice) {
@@ -2829,8 +2829,6 @@ function showDeviceOverview(updatehash) {
           } else {
             pollingStatus = '<span class="devicepollingfailed">Failed</span>';
           }
-        } else {
-          pollingStatus = 'N/A (passive device)';
         }
 
         if (firstDevice) {
@@ -3035,7 +3033,7 @@ function toggleExpandCollapseRestore(e, dt, node) {
     Collapses all pool cells in the main table
 ***********************************************************************************************************************/
 
-function hidePools(hide = !(localStorage.autoExpandPools === 'true')) {
+function hidePools(hide = (localStorage.autoExpandPools !== 'true')) {
   if (hide) {
     $('.pooltablediv').hide();
     $('.collapse').hide();
