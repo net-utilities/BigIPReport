@@ -1236,10 +1236,10 @@ function populateSearchParameters(updatehash: boolean) {
           showiRules(updatehash);
           break;
         case 'deviceoverview':
-          showDeviceOverview();
+          showDeviceOverview(updatehash);
           break;
         case 'certificatedetails':
-          showCertificateDetails();
+          showCertificateDetails(updatehash);
           break;
         case 'datagroups':
           showDataGroups(updatehash);
@@ -2707,10 +2707,8 @@ function showPreferences(updatehash) {
   const adcLinks = $('#adcLinks');
   const regexSearch = $('#regexSearch');
 
-  autoExpandPool.prop(
-    'checked',
-    localStorage.getItem('autoExpandPools') === 'true'
-  );
+  // Make sure that the check boxes are checked according to the settings
+  autoExpandPool.prop('checked', localStorage.getItem('autoExpandPools') === 'true');
   adcLinks.prop('checked', localStorage.getItem('showAdcLinks') === 'true');
   regexSearch.prop('checked', localStorage.getItem('regexSearch') === 'true');
 
@@ -2741,33 +2739,24 @@ function showPreferences(updatehash) {
     toggleRegexSearch();
   });
 
-  // Make sure that the check boxes are checked according to the settings
-  $('#allbigips thead th input').each(function () {
-    const columnID = $(this).attr('data-setting-name');
-    $('#' + columnID).prop(
-      'checked',
-      localStorage.getItem(columnID) === 'true'
-    );
-  });
-
   showMainSection('preferences');
 }
 
-function showCertificateDetails() {
+function showCertificateDetails(updatehash) {
   hideMainSection();
   setupCertificateTable();
   activateMenuButton('div#certificatebutton');
   $('div#mainholder').attr('data-activesection', 'certificatedetails');
-  updateLocationHash(true);
+  updateLocationHash(updatehash);
 
   showMainSection('certificatedetails');
 }
 
-function showDeviceOverview() {
+function showDeviceOverview(updatehash) {
   hideMainSection();
   activateMenuButton('div#deviceoverviewbutton');
   $('div#mainholder').attr('data-activesection', 'deviceoverview');
-  updateLocationHash(true);
+  updateLocationHash(updatehash);
 
   const deviceGroups = siteData.deviceGroups;
   const loadbalancers = siteData.loadbalancers;
