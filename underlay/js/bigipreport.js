@@ -709,8 +709,9 @@ function renderVirtualServer(loadbalancer, name, type) {
         result += virtualServerStatus(vs, type);
     }
     if (type === 'display') {
-        result += `<a class="tooltip details-link" data-originalvirtualservername="${name}"
-                data-loadbalancer="${loadbalancer}">`;
+        result += `<a class="tooltip details-link" data-originalvirtualservername="${name}"`;
+        result += ` data-loadbalancer="${loadbalancer}"`;
+        result += ` href="Javascript:showVirtualServerDetails('${name}','${loadbalancer}');">`;
     }
     result += vsName;
     if (type === 'display') {
@@ -1060,10 +1061,10 @@ function populateSearchParameters(updatehash) {
                     showiRules(updatehash);
                     break;
                 case 'deviceoverview':
-                    showDeviceOverview();
+                    showDeviceOverview(updatehash);
                     break;
                 case 'certificatedetails':
-                    showCertificateDetails();
+                    showCertificateDetails(updatehash);
                     break;
                 case 'datagroups':
                     showDataGroups(updatehash);
@@ -1209,14 +1210,6 @@ function setupVirtualServerTable() {
                 className: 'virtualServerCell',
                 render: function (data, type, row) {
                     return renderVirtualServer(row.loadbalancer, data, type);
-                },
-                createdCell(data, type, row) {
-                    // Add click handler for showing the virtual server
-                    const cell = data;
-                    const link = cell.querySelector('a.details-link');
-                    link.addEventListener('click', () => {
-                        showVirtualServerDetails(row.name, row.loadbalancer);
-                    });
                 }
             },
             {
@@ -2394,6 +2387,7 @@ function showPreferences(updatehash) {
     const autoExpandPool = $('#autoExpandPools');
     const adcLinks = $('#adcLinks');
     const regexSearch = $('#regexSearch');
+    // Make sure that the check boxes are checked according to the settings
     autoExpandPool.prop('checked', localStorage.getItem('autoExpandPools') === 'true');
     adcLinks.prop('checked', localStorage.getItem('showAdcLinks') === 'true');
     regexSearch.prop('checked', localStorage.getItem('regexSearch') === 'true');
@@ -2420,26 +2414,21 @@ function showPreferences(updatehash) {
         localStorage.setItem('regexSearch', checkBox.checked.toString());
         toggleRegexSearch();
     });
-    // Make sure that the check boxes are checked according to the settings
-    $('#allbigips thead th input').each(function () {
-        const columnID = $(this).attr('data-setting-name');
-        $('#' + columnID).prop('checked', localStorage.getItem(columnID) === 'true');
-    });
     showMainSection('preferences');
 }
-function showCertificateDetails() {
+function showCertificateDetails(updatehash) {
     hideMainSection();
     setupCertificateTable();
     activateMenuButton('div#certificatebutton');
     $('div#mainholder').attr('data-activesection', 'certificatedetails');
-    updateLocationHash(true);
+    updateLocationHash(updatehash);
     showMainSection('certificatedetails');
 }
-function showDeviceOverview() {
+function showDeviceOverview(updatehash) {
     hideMainSection();
     activateMenuButton('div#deviceoverviewbutton');
     $('div#mainholder').attr('data-activesection', 'deviceoverview');
-    updateLocationHash(true);
+    updateLocationHash(updatehash);
     const deviceGroups = siteData.deviceGroups;
     const loadbalancers = siteData.loadbalancers;
     let html = `
@@ -2488,7 +2477,7 @@ function showDeviceOverview() {
             const loadbalancer = loadbalancers.find(function (o) {
                 return o.ip === deviceGroup.ips[i];
             });
-            let pollingStatus = 'N/A';
+            let pollingStatus = 'N/A (passive device)';
             if (loadbalancer) {
                 if (loadbalancer.active || loadbalancer.isonlydevice) {
                     if (loadbalancer.statusvip.url === '') {
@@ -2501,9 +2490,6 @@ function showDeviceOverview() {
                     else {
                         pollingStatus = '<span class="devicepollingfailed">Failed</span>';
                     }
-                }
-                else {
-                    pollingStatus = 'N/A (passive device)';
                 }
                 if (firstDevice) {
                     html +=
@@ -2678,7 +2664,7 @@ function toggleExpandCollapseRestore(e, dt, node) {
 /** ********************************************************************************************************************
     Collapses all pool cells in the main table
 ***********************************************************************************************************************/
-function hidePools(hide = !(localStorage.autoExpandPools === 'true')) {
+function hidePools(hide = (localStorage.autoExpandPools !== 'true')) {
     if (hide) {
         $('.pooltablediv').hide();
         $('.collapse').hide();

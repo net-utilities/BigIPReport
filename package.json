@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/epacke/BigIPReport.git"
+    "url": "git+https://github.com/net-utilities/BigIPReport.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Patrik Jonsson",
+  "license": "GPL",
   "bugs": {
-    "url": "https://github.com/epacke/BigIPReport/issues"
+    "url": "https://github.com/net-utilities/BigIPReport/issues"
   },
-  "homepage": "https://github.com/epacke/BigIPReport#readme",
+  "homepage": "https://github.com/net-utilities/BigIPReport#readme",
   "devDependencies": {
     "@types/chai": "^4.2.14",
     "@types/datatables.net": "^1.10.19",
