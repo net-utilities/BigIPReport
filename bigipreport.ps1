@@ -875,6 +875,7 @@ Add-Type @'
         public bool active;
         public bool isonlydevice;
         public string color;
+        public string sync;
         public Hashtable modules;
         public PoolStatusVip statusvip;
         public bool success = true;
@@ -1781,6 +1782,12 @@ function GetDeviceInfo {
 
     $ObjLoadBalancer.active = $Response.entries.'https://localhost/mgmt/tm/cm/failover-status/0'.nestedStats.entries.status.description -eq "ACTIVE"
     $ObjLoadBalancer.color = $Response.entries.'https://localhost/mgmt/tm/cm/failover-status/0'.nestedStats.entries.color.description
+
+    #Get sync status
+    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/cm/sync-status"
+
+    $ObjLoadBalancer.sync = $Response.entries.'https://localhost/mgmt/tm/cm/sync-status/0'.nestedStats.entries.color.description
+
 
     #Get provisioned modules
     $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/provision"
