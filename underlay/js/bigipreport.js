@@ -2491,6 +2491,7 @@ function showDeviceOverview(updatehash) {
                         pollingStatus = '<span class="devicepollingfailed">Failed</span>';
                     }
                 }
+                const devicestatus = loadbalancer.color || 'red';
                 if (firstDevice) {
                     html +=
                         `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
@@ -2498,10 +2499,12 @@ function showDeviceOverview(updatehash) {
                             `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>`;
                     firstDevice = false;
                 }
+                else if (devicestatus == 'green') {
+                    html += '<tr style="background-color: orange;">';
+                }
                 else {
                     html += '<tr>';
                 }
-                const devicestatus = loadbalancer.color || 'red';
                 html +=
                     '<td class="devicenamecell"><img class="devicestatusicon" alt="' +
                         devicestatus +
@@ -2520,7 +2523,7 @@ function showDeviceOverview(updatehash) {
                         '</td><td>' +
                         loadbalancer.serial +
                         '</td><td>' +
-                        loadbalancer.ip +
+                        renderLoadBalancer(loadbalancer.ip, 'display') +
                         '</td><td>' +
                         pollingStatus +
                         '</td></tr>';
