@@ -2505,8 +2505,13 @@ function showDeviceOverview(updatehash) {
                 else {
                     html += '<tr>';
                 }
+                const syncstatus = loadbalancer.sync || 'red';
+                let syncstyle = '';
+                if (syncstatus != 'green') {
+                    syncstyle = ' style="background-color: yellow;"';
+                }
                 html +=
-                    '<td class="devicenamecell"><img class="devicestatusicon" alt="' +
+                    '<td class="devicenamecell"' + syncstyle + '><img class="devicestatusicon" alt="' +
                         devicestatus +
                         '" src="images/devicestatus' +
                         devicestatus +
