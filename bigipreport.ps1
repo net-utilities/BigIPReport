@@ -1924,8 +1924,9 @@ do {
         }
     }
     while ($DevicesToStart.length -gt 0 -and $running -lt $MaxJobs) {
-        $Device, $DevicesToStart = $DevicesToStart
+        $Device, [string[]]$DevicesToStart = $DevicesToStart
         if (! $DevicesToStart) {
+            # powershell returns the last one as $null instead of an empty array
             $DevicesToStart = @()
         }
         $running++
