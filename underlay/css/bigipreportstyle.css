@@ -1166,6 +1166,11 @@ div#navbuttondiv button.urgent:hover {
     width: 1px;
 }
 
+.plainLink {
+  text-decoration: none;
+  color: black;
+}
+
 span.adcLinkSpan a {
     background-image: linear-gradient(#99173C, #B93057);
     border-radius: var(--border-radius);

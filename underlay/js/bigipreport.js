@@ -693,7 +693,7 @@ export function renderLoadBalancer(loadbalancer, type) {
         balancer = loadbalancer;
     }
     if (type === 'display') {
-        return `<a onclick="window.open('https://${loadbalancer}', '_blank')">${balancer}</a>`;
+        return `<a href="https://${loadbalancer}" target="_blank" class="plainLink">${balancer}</a>`;
     }
     return balancer;
 }
@@ -2494,9 +2494,11 @@ function showDeviceOverview(updatehash) {
                 const devicestatus = loadbalancer.color || 'red';
                 if (firstDevice) {
                     html +=
-                        `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
-              <img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
-                            `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>`;
+                        `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">` +
+                            `<img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
+                            `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">` +
+                            renderLoadBalancer(deviceGroup.name, 'display') +
+                            '</td>';
                     firstDevice = false;
                 }
                 else if (devicestatus == 'green') {
