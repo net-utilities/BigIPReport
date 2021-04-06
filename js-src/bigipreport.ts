@@ -2860,7 +2860,7 @@ function showDeviceOverview(updatehash) {
         html +=
             `
             <td>
-              <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html">
+              <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html" target="_blank">
                 <img src="images/${syncStatus}" style="max-width: 2em;"/>
               </a>
             </td>
