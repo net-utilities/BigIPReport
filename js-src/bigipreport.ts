@@ -2767,6 +2767,7 @@ function showDeviceOverview(updatehash) {
                     <tr>
                         <th>Icon</th>
                         <th>Device Group</th>
+                        <th>Sync</th>
                         <th>Name</th>
                         <th>Model</th>
                         <th>Type</th>
@@ -2846,34 +2847,43 @@ function showDeviceOverview(updatehash) {
           html += '<tr>';
         }
 
-        const syncstatus = loadbalancer.sync || 'red';
-        let syncstyle = ''
-        if (syncstatus != 'green') {
-          syncstyle = ' style="background-color: yellow;"'
+        let syncStatus = 'unsynchronized.png';
+        const { sync } = loadbalancer;
+
+        console.log(sync);
+        if (sync === 'yellow') {
+          syncStatus = 'syncpending.png';
+        } else if (sync === 'green') {
+          syncStatus = 'synchronized.png';
         }
 
         html +=
-          '<td class="devicenamecell"' + syncstyle + '><img class="devicestatusicon" alt="' +
-          devicestatus +
-          '" src="images/devicestatus' +
-          devicestatus +
-          '.png"/>' +
-          (loadbalancer.name ?
-            renderLoadBalancer(loadbalancer.name, 'display') :
-            '<span class="devicefailed">Failed to index</span>') +
-          '</td><td>' +
-          (loadbalancer.category || 'N/A') +
-          '</td><td>' +
-          (loadbalancer.model || 'N/A') +
-          '</td><td>' +
-          (loadbalancer.version || 'N/A') +
-          '</td><td>' +
-          loadbalancer.serial +
-          '</td><td>' +
-          renderLoadBalancer(loadbalancer.ip, 'display') +
-          '</td><td>' +
-          pollingStatus +
-          '</td></tr>';
+            `
+            <td><img src="images/${syncStatus}" style="max-width: 2em;"/> </td>
+            <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
+                src="images/devicestatus${devicestatus}.png"/>
+                ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
+                  '<span class="devicefailed">Failed to index</span>')}
+            </td>
+            <td>
+                ${loadbalancer.category || 'N/A'}
+            </td>
+            <td>
+                ${loadbalancer.model || 'N/A'}
+            </td>
+            <td>
+                ${loadbalancer.version || 'N/A'}
+            </td>
+            <td>
+                ${loadbalancer.serial}
+            </td>
+            <td>
+                ${renderLoadBalancer(loadbalancer.ip, 'display')}
+            </td>
+            <td>
+                ${pollingStatus}
+            </td>
+        </tr>`;
       }
     }
   }
