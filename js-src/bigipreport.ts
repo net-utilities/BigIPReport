@@ -2859,7 +2859,11 @@ function showDeviceOverview(updatehash) {
 
         html +=
             `
-            <td><img src="images/${syncStatus}" style="max-width: 2em;"/> </td>
+            <td>
+              <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html">
+                <img src="images/${syncStatus}" style="max-width: 2em;"/>
+              </a>
+            </td>
             <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
                 src="images/devicestatus${devicestatus}.png"/>
                 ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
