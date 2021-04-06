@@ -924,10 +924,6 @@ table#deviceoverviewtable tbody tr td.devicenamecell {
     text-align: left;
 }
 
-table#deviceoverviewtable tbody tr td a {
-    cursor: pointer;
-}
-
 table#deviceoverviewtable tbody tr td img.deviceicon {
     max-height: 45px;
     max-width: 180px;
