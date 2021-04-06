@@ -49,6 +49,12 @@
                     <Device>192.168.11.56</Device>
                     <StatusVip></StatusVip>
                 </DeviceGroup>
+                <DeviceGroup>
+                    <Name>lb-ext.example.com</Name>
+                    <Device>lb-ext-a.example.com</Device>
+                    <Device>lb-ext-b.example.com</Device>
+                    <StatusVip>https://lb-ext-s.example.com</StatusVip>
+                </DeviceGroup>
             </DeviceGroups>
         *
         **************************************************************************************************************************************
