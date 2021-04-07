@@ -2767,7 +2767,7 @@ function showDeviceOverview(updatehash) {
                     <tr>
                         <th>Icon</th>
                         <th>Device Group</th>
-                        <th>Synchronized</th>
+                        <th>In Sync</th>
                         <th>Name</th>
                         <th>Model</th>
                         <th>Type</th>
@@ -2847,7 +2847,7 @@ function showDeviceOverview(updatehash) {
           html += '<tr>';
         }
 
-        let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">Out of sync</span>';
+        let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">No</span>';
         const { sync } = loadbalancer;
 
         if (sync === 'yellow') {
