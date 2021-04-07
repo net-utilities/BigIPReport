@@ -2437,7 +2437,7 @@ function showDeviceOverview(updatehash) {
                     <tr>
                         <th>Icon</th>
                         <th>Device Group</th>
-                        <th>Sync</th>
+                        <th>In Sync</th>
                         <th>Name</th>
                         <th>Model</th>
                         <th>Type</th>
@@ -2503,26 +2503,23 @@ function showDeviceOverview(updatehash) {
                     firstDevice = false;
                 }
                 else if (devicestatus == 'green') {
-                    html += '<tr style="background-color: orange;">';
+                    html += '<tr style="background-color: #FFF8F0;">';
                 }
                 else {
                     html += '<tr>';
                 }
-                let syncStatus = 'unsynchronized.png';
+                let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">No</span>';
                 const { sync } = loadbalancer;
-                console.log(sync);
                 if (sync === 'yellow') {
-                    syncStatus = 'syncpending.png';
+                    syncSpan = '<span style="color:#ED833A;font-weight:bold;">Pending</span>';
                 }
                 else if (sync === 'green') {
-                    syncStatus = 'synchronized.png';
+                    syncSpan = '<span style="color:#8DA54B;font-weight:bold;">Yes</span>';
                 }
                 html +=
                     `
             <td>
-              <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html" target="_blank">
-                <img src="images/${syncStatus}" style="max-width: 2em;"/>
-              </a>
+              ${syncSpan}
             </td>
             <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
                 src="images/devicestatus${devicestatus}.png"/>
