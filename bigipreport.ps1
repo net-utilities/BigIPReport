@@ -265,6 +265,8 @@
 #        5.4.5        2020-09-24      Fix bug where data group lists did not load                                   Patrik Jonsson  No
 #                                     Token valid for a longer period
 #                                     Using web session instead of supplying credentials every time
+#        5.5.0        2021-04-07      Brotli compression, CIDR dest ips, IPv6 parsing, cluster sync status          Tim Riker       Yes
+#                                     Highlight active secondaries, bug fixes
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -308,7 +310,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.4.5"
+$Global:ScriptVersion = "5.5.0"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -875,6 +877,7 @@ Add-Type @'
         public bool active;
         public bool isonlydevice;
         public string color;
+        public string sync;
         public Hashtable modules;
         public PoolStatusVip statusvip;
         public bool success = true;
@@ -1782,6 +1785,12 @@ function GetDeviceInfo {
     $ObjLoadBalancer.active = $Response.entries.'https://localhost/mgmt/tm/cm/failover-status/0'.nestedStats.entries.status.description -eq "ACTIVE"
     $ObjLoadBalancer.color = $Response.entries.'https://localhost/mgmt/tm/cm/failover-status/0'.nestedStats.entries.color.description
 
+    #Get sync status
+    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/cm/sync-status"
+
+    $ObjLoadBalancer.sync = $Response.entries.'https://localhost/mgmt/tm/cm/sync-status/0'.nestedStats.entries.color.description
+
+
     #Get provisioned modules
     $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/provision"
 
@@ -1917,8 +1926,9 @@ do {
         }
     }
     while ($DevicesToStart.length -gt 0 -and $running -lt $MaxJobs) {
-        $Device, $DevicesToStart = $DevicesToStart
+        $Device, [string[]]$DevicesToStart = $DevicesToStart
         if (! $DevicesToStart) {
+            # powershell returns the last one as $null instead of an empty array
             $DevicesToStart = @()
         }
         $running++

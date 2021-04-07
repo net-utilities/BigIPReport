@@ -814,7 +814,7 @@ export function renderLoadBalancer(loadbalancer: string, type: string) : string 
     balancer = loadbalancer;
   }
   if (type === 'display') {
-    return `<a onclick="window.open('https://${loadbalancer}', '_blank')">${balancer}</a>`;
+    return `<a href="https://${loadbalancer}" target="_blank" class="plainLink">${balancer}</a>`;
   }
   return balancer;
 }
@@ -2767,6 +2767,7 @@ function showDeviceOverview(updatehash) {
                     <tr>
                         <th>Icon</th>
                         <th>Device Group</th>
+                        <th>In Sync</th>
                         <th>Name</th>
                         <th>Model</th>
                         <th>Type</th>
@@ -2831,39 +2832,62 @@ function showDeviceOverview(updatehash) {
           }
         }
 
+        const devicestatus = loadbalancer.color || 'red';
         if (firstDevice) {
           html +=
-            `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
-              <img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
-            `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>`;
+            `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">` +
+            `<img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
+            `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">` +
+            renderLoadBalancer(deviceGroup.name, 'display') +
+            '</td>';
           firstDevice = false;
+        } else if (devicestatus == 'green') {
+          html += '<tr title="Secondary device is Active" style="background-color: #FFF8F0;">';
         } else {
           html += '<tr>';
         }
 
-        const devicestatus = loadbalancer.color || 'red';
+        let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">No</span>';
+        const { sync } = loadbalancer;
+
+        if (sync === 'yellow') {
+          syncSpan = '<span style="color:#ED833A;font-weight:bold;">Pending</span>';
+        } else if (sync === 'green') {
+          syncSpan = '<span style="color:#8DA54B;font-weight:bold;">Yes</span>';
+        }
+
         html +=
-          '<td class="devicenamecell"><img class="devicestatusicon" alt="' +
-          devicestatus +
-          '" src="images/devicestatus' +
-          devicestatus +
-          '.png"/>' +
-          (loadbalancer.name ?
-            renderLoadBalancer(loadbalancer.name, 'display') :
-            '<span class="devicefailed">Failed to index</span>') +
-          '</td><td>' +
-          (loadbalancer.category || 'N/A') +
-          '</td><td>' +
-          (loadbalancer.model || 'N/A') +
-          '</td><td>' +
-          (loadbalancer.version || 'N/A') +
-          '</td><td>' +
-          loadbalancer.serial +
-          '</td><td>' +
-          loadbalancer.ip +
-          '</td><td>' +
-          pollingStatus +
-          '</td></tr>';
+            `
+            <td>
+              <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
+                  class="plainLink" target="_blank">
+                ${syncSpan}
+              </a>
+            </td>
+            <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
+                src="images/devicestatus${devicestatus}.png"/>
+                ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
+                  '<span class="devicefailed">Failed to index</span>')}
+            </td>
+            <td>
+                ${loadbalancer.category || 'N/A'}
+            </td>
+            <td>
+                ${loadbalancer.model || 'N/A'}
+            </td>
+            <td>
+                ${loadbalancer.version || 'N/A'}
+            </td>
+            <td>
+                ${loadbalancer.serial}
+            </td>
+            <td>
+                ${renderLoadBalancer(loadbalancer.ip, 'display')}
+            </td>
+            <td>
+                ${pollingStatus}
+            </td>
+        </tr>`;
       }
     }
   }

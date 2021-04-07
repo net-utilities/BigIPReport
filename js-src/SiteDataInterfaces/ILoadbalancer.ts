@@ -14,6 +14,7 @@ export default interface ILoadbalancer {
   },
   active: boolean,
   color: string,
+  sync: string,
   ip: string,
   success: boolean,
   build: string,
@@ -22,5 +23,4 @@ export default interface ILoadbalancer {
   category: string,
   isonlydevice: boolean,
   baseBuild: string,
-
 }

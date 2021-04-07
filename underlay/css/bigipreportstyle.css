@@ -922,6 +922,7 @@ table#deviceoverviewtable tbody tr td {
 
 table#deviceoverviewtable tbody tr td.devicenamecell {
     text-align: left;
+    text-align: center;
 }
 
 table#deviceoverviewtable tbody tr td img.deviceicon {
@@ -1160,6 +1161,11 @@ div#navbuttondiv button.urgent:hover {
 .centeredCell, .loadbalancerCell {
     text-align: center;
     width: 1px;
+}
+
+.plainLink {
+  text-decoration: none;
+  color: black;
 }
 
 span.adcLinkSpan a {
