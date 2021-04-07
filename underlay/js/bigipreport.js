@@ -2519,7 +2519,10 @@ function showDeviceOverview(updatehash) {
                 html +=
                     `
             <td>
-              ${syncSpan}
+              <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
+                  class="plainLink" target="_blank">
+                ${syncSpan}
+              </a>
             </td>
             <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
                 src="images/devicestatus${devicestatus}.png"/>
