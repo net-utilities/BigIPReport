@@ -922,6 +922,7 @@ table#deviceoverviewtable tbody tr td {
 
 table#deviceoverviewtable tbody tr td.devicenamecell {
     text-align: left;
+    text-align: center;
 }
 
 table#deviceoverviewtable tbody tr td img.deviceicon {
