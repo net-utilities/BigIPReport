@@ -2503,7 +2503,7 @@ function showDeviceOverview(updatehash) {
                     firstDevice = false;
                 }
                 else if (devicestatus == 'green') {
-                    html += '<tr style="background-color: #FFF8F0;">';
+                    html += '<tr title="Secondary device is Active" style="background-color: #FFF8F0;">';
                 }
                 else {
                     html += '<tr>';
