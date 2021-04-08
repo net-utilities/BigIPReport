@@ -956,6 +956,9 @@ span.devicepollingnotconfigured {
     color: #cc9900;
 }
 
+table#deviceoverviewtable img.support-icon {
+    max-width: 30px;
+}
 
 /****************************************************************************************************************************
     This section contains the style for the preferences
