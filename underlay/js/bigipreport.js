@@ -2443,6 +2443,7 @@ function showDeviceOverview(updatehash) {
                         <th>Type</th>
                         <th>Version</th>
                         <th>Serial</th>
+                        ${siteData.preferences.supportCheckEnabled ? '<th>Support</th>' : ''}
                         <th>Management</th>
                         <th>Polling</th>
                     </tr>
@@ -2518,35 +2519,54 @@ function showDeviceOverview(updatehash) {
                 }
                 html +=
                     `
-            <td>
-              <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
-                  class="plainLink" target="_blank">
-                ${syncSpan}
-              </a>
-            </td>
-            <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
-                src="images/devicestatus${devicestatus}.png"/>
-                ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
+          <td>
+            <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
+                class="plainLink" target="_blank">
+              ${syncSpan}
+            </a>
+          </td>
+          <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
+              src="images/devicestatus${devicestatus}.png"/>
+              ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
                         '<span class="devicefailed">Failed to index</span>')}
-            </td>
-            <td>
-                ${loadbalancer.category || 'N/A'}
-            </td>
-            <td>
-                ${loadbalancer.model || 'N/A'}
-            </td>
-            <td>
-                ${loadbalancer.version || 'N/A'}
-            </td>
-            <td>
-                ${loadbalancer.serial}
-            </td>
-            <td>
-                ${renderLoadBalancer(loadbalancer.ip, 'display')}
-            </td>
-            <td>
-                ${pollingStatus}
-            </td>
+          </td>
+          <td>
+              ${loadbalancer.category || 'N/A'}
+          </td>
+          <td>
+              ${loadbalancer.model || 'N/A'}
+          </td>
+          <td>
+              ${loadbalancer.version || 'N/A'}
+          </td>
+          <td>
+              ${loadbalancer.serial}
+          </td>
+          ${siteData.preferences.supportCheckEnabled ? `
+          <td>
+            ${loadbalancer.hasSupport === 'true' ?
+                        `
+            <img
+              class="support-icon"' +
+              src="images/check-box.png" title="This device has a valid support agreement"
+            />` :
+                        loadbalancer.hasSupport === 'ignored' ?
+                            `<img
+                  class="support-icon" src="images/cone.png" 
+                  title="Support checks supressed in the BigIPReport config"
+             />` : `
+             <img
+                class="support-icon"
+                src="images/warning.png" 
+                title="${loadbalancer.supportErrorMessage}"
+             />`}
+          </td>` : ''}
+          <td>
+              ${renderLoadBalancer(loadbalancer.ip, 'display')}
+          </td>
+          <td>
+              ${pollingStatus}
+          </td>
         </tr>`;
             }
         }

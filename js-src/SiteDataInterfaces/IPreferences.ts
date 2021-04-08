@@ -1,4 +1,5 @@
 export default interface IPreferences {
+  supportCheckEnabled: boolean;
   HideLoadBalancerFQDN: boolean,
   NavLinks: { [key: string]: string },
   PollingMaxPools: number,
