@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
     <!--Leave the version information intact-->
-    <Settings version="5.5.0">
+    <Settings version="5.5.1">
 
         <!--
         ***************************************************************************
@@ -504,5 +504,43 @@
             <MaxQueue>2</MaxQueue>
             <RefreshRate>60</RefreshRate>
         </RealTimeMemberStates>
+
+
+        <!--
+        ***********************************************************************************************************************************************
+        *
+        *    Support Check
+        *
+        *    The script reaches out to F5 and validates your support entitlement status for each serial number.
+        *    This requires the server that runs the Powershell script to have access to api-u.f5.com
+        *
+        *    If you get information that your device does not appear to have support, hover the mouse over the icon to see
+        *    either the script error or the response from the F5 API
+        *
+        *    If you need an account you can create one here:
+        *    https://support.f5.com/csp/my-support/home
+        *
+        *    Just remember to associate all your licenses with this account. You can do this by mailing F5 support
+        *    on support@f5.com with all your serial numbers once the account has been created.
+        *
+        *    Enabled: If the support check should be done or not
+        *    Username: F5 Support account username
+        *    Password: The password for the aforementioned account
+        *    IgnoreDevices: A list of the devices you want to ignore.
+        *
+        *    Please note that this should be the FQDN of the device and not the host, ie device-lb-01.dom.com instead of just device-lb-01
+        *
+        *
+        ************************************************************************************************************************************************
+        -->
+
+        <SupportCheck>
+            <Enabled>False</Enabled>
+            <Username></Username>
+            <Password></Password>
+            <IgnoredDevices>
+                <Device></Device>
+            </IgnoredDevices>
+        </SupportCheck>
 
     </Settings>

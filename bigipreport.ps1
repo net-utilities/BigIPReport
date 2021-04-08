@@ -266,7 +266,8 @@
 #                                     Token valid for a longer period
 #                                     Using web session instead of supplying credentials every time
 #        5.5.0        2021-04-07      Brotli compression, CIDR dest ips, IPv6 parsing, cluster sync status          Tim Riker       Yes
-#                                     Highlight active secondaries, bug fixes
+#                                     Highlight active secondaries, bug fixes'
+#        5.5.1        2021-04-08      Verify support entitlement                                                    Patrik Jonsson  Yes
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -616,6 +617,18 @@ if ($null -eq $Global:Bigipreportconfig.Settings.UseBrotli) {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
 }
 
+if ($null -eq $Global:Bigipreportconfig.Settings.SupportCheck){
+    log error "Missing option Support check from the config file. Update the the latest version of the file and try again."
+} else {
+    $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
+    if($SupportCheckOption.Enabled -eq "True") {
+        if ($null -eq $SupportCheckOption.Username -or $SupportCheckOption.Username -eq "" -or $null -eq $SupportCheckOption.Password -or $SupportCheckOption.Password -eq "") {
+            log error "Option Support Check has been enabled but the credentials has not been populated. Either disable the support check or provide credentials"
+            $SaneConfig = $false
+        }
+    }
+}
+
 if ($null -eq $Global:Bigipreportconfig.Settings.ReportRoot -or $Global:Bigipreportconfig.Settings.ReportRoot -eq "") {
     log error "No report root configured"
     $SaneConfig = $false
@@ -694,6 +707,7 @@ $Global:Preferences['ShowiRules'] = ($Global:Bigipreportconfig.Settings.iRules.e
 $Global:Preferences['autoExpandPools'] = ($Global:Bigipreportconfig.Settings.autoExpandPools -eq $true)
 $Global:Preferences['regexSearch'] = ($Global:Bigipreportconfig.Settings.regexSearch -eq $true)
 $Global:Preferences['showAdcLinks'] = ($Global:Bigipreportconfig.Settings.showAdcLinks -eq $true)
+$Global:Preferences['supportCheckEnabled'] = ($Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq $true)
 $Global:Preferences['scriptServer'] = $Global:hostname
 $Global:Preferences['scriptVersion'] = $Global:ScriptVersion
 $Global:Preferences['startTime'] = $StartTime
@@ -881,6 +895,8 @@ Add-Type @'
         public Hashtable modules;
         public PoolStatusVip statusvip;
         public bool success = true;
+        public string hasSupport = "unknown";
+        public string supportErrorMessage;
     }
 
     public class ASMPolicy {
@@ -2037,6 +2053,55 @@ Function Write-TemporaryFiles {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @()
     }
     Return -not $( $WriteStatuses -Contains $false)
+}
+
+#EndRegion
+
+#Region Check Support Entitlement
+
+if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
+
+    log info "Support entitlement checks configured, validating serial numbers against F5"
+    $LoginBody = @{"user_id" = $Global:Bigipreportconfig.Settings.SupportCheck.Username; "user_secret" = $Global:Bigipreportconfig.Settings.SupportCheck.Password; "app_id"="support"}
+    
+    # Add the ignored devices
+    $IgnoredDevices = @()
+    If ($Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices -and $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device) {
+        $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
+    }
+
+    Try {
+        # Get a session
+        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -SessionVariable F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
+    } Catch {
+        log error "Unable to login to F5s support API, skipping support entitlement checks"
+    }
+
+    if ($F5SupportSession -ne $null){
+        Foreach($DeviceName in $Global:ReportObjects.Keys){
+            $Device = $Global:ReportObjects[$DeviceName]
+
+            if ($DeviceName -in $IgnoredDevices){
+                $Device.LoadBalancer.hasSupport = "ignored"
+                Continue
+            } 
+            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
+                # Note. There should only be one serial number.
+                # If there are more we might run into a bug where they overwrite each others statuses
+                
+                try {
+                    $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
+                    $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
+                    $Device.LoadBalancer.hasSupport = $ResponseData.valid
+                    If($ResponseData.ContainsKey("errorMessage")) {
+                        $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
+                    }
+                } catch {
+                    $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
+                }
+            }
+        }
+    }
 }
 
 #EndRegion
