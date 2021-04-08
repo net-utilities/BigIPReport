@@ -2085,7 +2085,7 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
                 $Device.LoadBalancer.hasSupport = "ignored"
                 Continue
             } 
-            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z)' })){
+            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
                 # Note. There should only be one serial number.
                 # If there are more we might run into a bug where they overwrite each others statuses
                 
