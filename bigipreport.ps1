@@ -2147,6 +2147,16 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
         }
     } else {
         log info "Less than 24 hours since the last support check, skipping."
+        $OldDevicesData = Get-Content $Global:paths.loadbalancers | ConvertFrom-Json -AsHashtable
+        Foreach($OldDevice in $OldDevicesData) {
+            Foreach($Key in $Global:ReportObjects.Keys) {
+                If (-not $null -eq $Global:ReportObjects[$Key].LoadBalancer -and $Global:ReportObjects[$Key].LoadBalancer.name -eq $OldDevice.name) {
+                    $Global:ReportObjects[$Key].LoadBalancer.supportErrorMessage = $OldDevice.supportErrorMessage
+                    $Global:ReportObjects[$Key].LoadBalancer.hasSupport = $OldDevice.hasSupport
+                    Continue
+                }
+            }
+        }
     }
 }
 
