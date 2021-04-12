@@ -311,7 +311,10 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.0"
+$Global:ScriptVersion = "5.5.2"
+
+# State file
+$Global:StateFilePath = $Global:ConfigurationFile -replace '.xml', '-state.json'
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -423,6 +426,36 @@ if (Test-Path $ConfigurationFile) {
     Exit
 }
 log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile PollLoadBalancer=$PollLoadBalancer Location=$Location PSScriptRoot=$PSScriptRoot"
+
+################################################################################################################################################
+#
+#    Load the state file
+#    It is meant to be used for transferring state between runs.
+#    That said, treat this file as expendable. This is not a database.
+#
+#    Since there may be multiple configurations we'll use the path of the
+#    configuration file as key in the state. All state properties
+#
+################################################################################################################################################
+
+if (Test-Path $Global:StateFilePath) {
+    log verbose "Loading state file $Global:StateFilePath"
+
+    $Global:ScriptState = Get-Content $Global:StateFilePath | ConvertFrom-Json -AsHashtable
+
+    #Verify that the file was succssfully loaded, otherwise exit
+    if ($?) {
+        $Outputlevel = $Global:Bigipreportconfig.Settings.Outputlevel
+        log success "Successfully loaded the state file: $($Global:StateFilePath)"
+    } else {
+        log error "Can't read the state file: $($Global:StateFilePath), or the file might be corrupt. Delete the file manually and try again. Aborting."
+        Exit
+    }
+
+} else {
+    log info "State file did not exist, creating a new one"
+    $Global:ScriptState = @{}
+}
 
 ################################################################################################################################################
 #
@@ -2061,46 +2094,59 @@ Function Write-TemporaryFiles {
 
 if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
 
-    log info "Support entitlement checks configured, validating serial numbers against F5"
-    $LoginBody = @{"user_id" = $Global:Bigipreportconfig.Settings.SupportCheck.Username; "user_secret" = $Global:Bigipreportconfig.Settings.SupportCheck.Password; "app_id"="support"}
-    
-    # Add the ignored devices
-    $IgnoredDevices = @()
-    If ($Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices -and $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device) {
-        $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
+    if ($null -eq $Global:ScriptState['LastSupportCheck'] ) {
+        $LastChecked = 0
+    } else {
+        $LastChecked = $Global:ScriptState['LastSupportCheck']
     }
 
-    Try {
-        # Get a session
-        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -SessionVariable F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
-    } Catch {
-        log error "Unable to login to F5s support API, skipping support entitlement checks"
-    }
+    # Validate that the last check was over 24 hours ago
+    if (([math]::Floor((Get-Date -UFormat %s)) - $LastChecked) -gt 86400) {
 
-    if ($F5SupportSession -ne $null){
-        Foreach($DeviceName in $Global:ReportObjects.Keys){
-            $Device = $Global:ReportObjects[$DeviceName]
+        log info "Support entitlement checks configured, and more than 24 hours since the last time, validating serial numbers against F5"
+        $LoginBody = @{"user_id" = $Global:Bigipreportconfig.Settings.SupportCheck.Username; "user_secret" = $Global:Bigipreportconfig.Settings.SupportCheck.Password; "app_id"="support"}
+        
+        # Add the ignored devices
+        $IgnoredDevices = @()
+        If ($Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices -and $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device) {
+            $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
+        }
 
-            if ($DeviceName -in $IgnoredDevices){
-                $Device.LoadBalancer.hasSupport = "ignored"
-                Continue
-            } 
-            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
-                # Note. There should only be one serial number.
-                # If there are more we might run into a bug where they overwrite each others statuses
-                
-                try {
-                    $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
-                    $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
-                    $Device.LoadBalancer.hasSupport = $ResponseData.valid
-                    If($ResponseData.ContainsKey("errorMessage")) {
-                        $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
+        Try {
+            # Get a session
+            $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -SessionVariable F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
+        } Catch {
+            log error "Unable to login to F5s support API, skipping support entitlement checks"
+        }
+
+        if ($F5SupportSession -ne $null){
+            Foreach($DeviceName in $Global:ReportObjects.Keys){
+                $Device = $Global:ReportObjects[$DeviceName]
+
+                if ($DeviceName -in $IgnoredDevices){
+                    $Device.LoadBalancer.hasSupport = "ignored"
+                    Continue
+                } 
+                Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
+                    # Note. There should only be one serial number.
+                    # If there are more we might run into a bug where they overwrite each others statuses
+                    
+                    try {
+                        $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
+                        $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
+                        $Device.LoadBalancer.hasSupport = $ResponseData.valid
+                        If($ResponseData.ContainsKey("errorMessage")) {
+                            $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
+                        }
+                    } catch {
+                        $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
                     }
-                } catch {
-                    $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
                 }
             }
+            $Global:ScriptState['LastSupportCheck'] = [math]::Floor((Get-Date -UFormat %s))
         }
+    } else {
+        log info "Less than 24 hours since the last support check, skipping."
     }
 }
 
@@ -2260,6 +2306,8 @@ if ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true) {
 }
 
 # Done
+
+$Global:ScriptState | ConvertTo-Json | Out-File $Global:StateFilePath
 
 $DoneMsg = "Done."
 $DoneMsg += " T:" + $($(Get-Date) - $StartTime).TotalSeconds
