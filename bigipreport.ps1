@@ -770,6 +770,9 @@ $Global:paths.loggederrors = $Global:bigipreportconfig.Settings.ReportRoot + "js
 $Global:paths.asmpolicies = $Global:bigipreportconfig.Settings.ReportRoot + "json/asmpolicies.json"
 $Global:paths.nat = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
 
+# Set the support state path
+$Global:SupportStatePath = $Global:bigipreportconfig.Settings.ReportRoot + "json/supportstate.json"
+
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
 
@@ -1951,7 +1954,7 @@ do {
     while ($DevicesToStart.length -gt 0 -and $running -lt $MaxJobs) {
         $Device, [string[]]$DevicesToStart = $DevicesToStart
         if (! $DevicesToStart) {
-            # powershell returns the last one as $null instead of an empty array
+            # Powershell returns the last one as $null instead of an empty array
             $DevicesToStart = @()
         }
         $running++
@@ -2068,10 +2071,8 @@ Function Write-TemporaryFiles {
 
 if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
 
-    $SupportStateFile = $Global:ConfigurationFile -replace '.xml', '-supportstate.json'
-
-    if (Test-Path $SupportStateFile) {
-        $SupportState = Get-Content $SupportStateFile | ConvertFrom-Json -AsHashtable
+    if (Test-Path $Global:SupportStatePath) {
+        $SupportState = Get-Content $Global:SupportStatePath | ConvertFrom-Json -AsHashtable
     } else {
         $SupportState = @{}
     }
@@ -2137,7 +2138,7 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
             }
         }
     }
-    $SupportState | ConvertTo-Json | Out-File $SupportStateFile
+    $SupportState | ConvertTo-Json | Out-File $Global:SupportStatePath
 }
 
 #EndRegion
