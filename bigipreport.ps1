@@ -311,7 +311,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.0"
+$Global:ScriptVersion = "5.5.2"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -769,6 +769,9 @@ $Global:paths.certificates = $Global:bigipreportconfig.Settings.ReportRoot + "js
 $Global:paths.loggederrors = $Global:bigipreportconfig.Settings.ReportRoot + "json/loggederrors.json"
 $Global:paths.asmpolicies = $Global:bigipreportconfig.Settings.ReportRoot + "json/asmpolicies.json"
 $Global:paths.nat = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
+
+# Set the support state path
+$Global:SupportStatePath = $Global:bigipreportconfig.Settings.ReportRoot + "json/supportstate.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -1871,18 +1874,25 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
         if ($null -eq $PollLoadBalancer) {
             $DevicesToStart += $Device
         } elseif ($Device -eq $PollLoadBalancer) {
+            # PollLoadbalancer indicates that this is a child process or a debug execution
             GetDeviceInfo($PollLoadBalancer)
             if ($null -eq $Location) {
                 log verbose "Testing, so not writing results"
             } else {
+                # Output the polled load balancer to JSON data and send the parent process
                 $Global:ReportObjects[$PollLoadBalancer] | ConvertTo-Json -Compress -Depth 10
             }
+            # Exit child process
             exit
         }
     }
     $Global:DeviceGroups += $ObjDeviceGroup
 }
 #EndRegion
+
+##################################################################################################
+#           Anything below this line is only executed by the main (parent) process
+##################################################################################################
 
 #Collect data from each load balancer
 $Global:Out = c@ {}
@@ -1944,7 +1954,7 @@ do {
     while ($DevicesToStart.length -gt 0 -and $running -lt $MaxJobs) {
         $Device, [string[]]$DevicesToStart = $DevicesToStart
         if (! $DevicesToStart) {
-            # powershell returns the last one as $null instead of an empty array
+            # Powershell returns the last one as $null instead of an empty array
             $DevicesToStart = @()
         }
         $running++
@@ -2061,23 +2071,31 @@ Function Write-TemporaryFiles {
 
 if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
 
-    log info "Support entitlement checks configured, validating serial numbers against F5"
-    $LoginBody = @{"user_id" = $Global:Bigipreportconfig.Settings.SupportCheck.Username; "user_secret" = $Global:Bigipreportconfig.Settings.SupportCheck.Password; "app_id"="support"}
-    
-    # Add the ignored devices
+    if (Test-Path $Global:SupportStatePath) {
+        $SupportState = Get-Content $Global:SupportStatePath | ConvertFrom-Json -AsHashtable
+    } else {
+        $SupportState = @{}
+    }
+
     $IgnoredDevices = @()
-    If ($Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices -and $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device) {
+    # Add the ignored devices
+    if ("Device" -in  $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.PSobject.Properties.Name) {
         $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
     }
 
+    log info "Support entitlement checks configured, checking support entitlements"
+    $LoginBody = @{"user_id" = $Global:Bigipreportconfig.Settings.SupportCheck.Username; "user_secret" = $Global:Bigipreportconfig.Settings.SupportCheck.Password; "app_id"="support"}
+
     Try {
         # Get a session
-        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -SessionVariable F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
+        $F5SupportSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -WebSession $F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
     } Catch {
         log error "Unable to login to F5s support API, skipping support entitlement checks"
     }
 
-    if ($F5SupportSession -ne $null){
+    if ($F5SupportSession.Cookies.Count -ne 0){
+
         Foreach($DeviceName in $Global:ReportObjects.Keys){
             $Device = $Global:ReportObjects[$DeviceName]
 
@@ -2088,20 +2106,39 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
             Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
                 # Note. There should only be one serial number.
                 # If there are more we might run into a bug where they overwrite each others statuses
-                
-                try {
-                    $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
-                    $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
-                    $Device.LoadBalancer.hasSupport = $ResponseData.valid
-                    If($ResponseData.ContainsKey("errorMessage")) {
-                        $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
+                if ($SupportState.ContainsKey($Serial)) {
+                    $LastChecked = $SupportState[$Serial].lastChecked
+                } else {
+                    $LastChecked = 0
+                }
+
+                if ([math]::Floor((Get-Date -UFormat %s)) - $LastChecked -gt 86400) {
+                    log info "More than 24 hours since the last support check for device $($Device.LoadBalancer.name), validating support"
+                    try {
+                        $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
+                        $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
+                        $Device.LoadBalancer.hasSupport = $ResponseData.valid
+                        If($ResponseData.ContainsKey("errorMessage")) {
+                            $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
+                        }
+                    } catch {
+                        $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
                     }
-                } catch {
-                    $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
+                    # Add to the support state file
+                    $SupportState[$Serial] = @{
+                        lastChecked = ([math]::Floor((Get-Date -UFormat %s)));
+                        supportErrorMessage = $Device.LoadBalancer.supportErrorMessage;
+                        hasSupport = $Device.LoadBalancer.hasSupport;
+                    }
+                } else {
+                    log info "Fresh support entitlement data exists, using the previous data"
+                    $Device.LoadBalancer.supportErrorMessage = $SupportState[$Serial].supportErrorMessage
+                    $Device.LoadBalancer.hasSupport = $SupportState[$Serial].hasSupport
                 }
             }
         }
     }
+    $SupportState | ConvertTo-Json | Out-File $Global:SupportStatePath
 }
 
 #EndRegion
