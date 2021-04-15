@@ -980,7 +980,7 @@ if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
             if ($ArrLine.Count -eq 2) {
                 $Global:NATdict[$arrLine[1]] = $arrLine[0]
             } else {
-                log error "Malformed NAT file content detected: Check $_"($null -eq $SupportCheckOption.Username -or $SupportCheckOption.Username -eq "" -or $null -eq $SupportCheckOption.Password -or $SupportCheckOption.Password -eq "")
+                log error "Malformed NAT file content detected: Check $_"
             }
         }
 
