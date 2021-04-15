@@ -268,6 +268,8 @@
 #        5.5.0        2021-04-07      Brotli compression, CIDR dest ips, IPv6 parsing, cluster sync status          Tim Riker       Yes
 #                                     Highlight active secondaries, bug fixes'
 #        5.5.1        2021-04-08      Verify support entitlement                                                    Patrik Jonsson  Yes
+#        5.5.2        2021-04-12      Only do support entitlement checks once per day                               Patrik Jonsson  No
+#        5.5.3        2021-04-15      Adding support for credentials as environment variables                       Patrik Jonsson  No
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -311,7 +313,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.2"
+$Global:ScriptVersion = "5.5.3"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
