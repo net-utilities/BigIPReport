@@ -536,7 +536,7 @@ log verbose "Pre-execution checks"
 
 $SaneConfig = $true
 
-if ($null -eq $Env:F5_USERNAME) { {
+if ($null -eq $Env:F5_USERNAME) {
     if ($null -eq $Global:Bigipreportconfig.Settings.Credentials.Username -or "" -eq $Global:Bigipreportconfig.Settings.Credentials.Username) {
         log error "No username found. You need to either configure the F5 credetnials in the configuration file or define an environment variable named F5_USERNAME with the password"
         $SaneConfig = $false
