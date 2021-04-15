@@ -537,13 +537,17 @@ log verbose "Pre-execution checks"
 $SaneConfig = $true
 
 if ($null -eq $Global:Bigipreportconfig.Settings.Credentials.Username -or "" -eq $Global:Bigipreportconfig.Settings.Credentials.Username) {
-    log error "No username configured"
-    $SaneConfig = $false
+    if ($null -eq $Env:F5_USERNAME) {
+        log error "No username found. You need to either configure the F5 credetnials in the configuration file or define an environment variable named F5_USERNAME with the password"
+        $SaneConfig = $false
+    }
 }
 
 if ($null -eq $Global:Bigipreportconfig.Settings.Credentials.Password -or "" -eq $Global:Bigipreportconfig.Settings.Credentials.Password) {
-    log error "No password configured"
-    $SaneConfig = $false
+    if ($null -eq $Env:F5_PASSWORD) {
+        log error "No password found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_PASSWORD with the password"
+        $SaneConfig = $false
+    }
 }
 
 if ($null -eq $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -or 0 -eq @($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count) {
@@ -623,8 +627,11 @@ if ($null -eq $Global:Bigipreportconfig.Settings.SupportCheck){
     $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
     if($SupportCheckOption.Enabled -eq "True") {
         if ($null -eq $SupportCheckOption.Username -or $SupportCheckOption.Username -eq "" -or $null -eq $SupportCheckOption.Password -or $SupportCheckOption.Password -eq "") {
-            log error "Option Support Check has been enabled but the credentials has not been populated. Either disable the support check or provide credentials"
-            $SaneConfig = $false
+            if ($null -eq $env:F5_SUPPORT_USERNAME -or $null -eq $env:F5_SUPPORT_PASSWORD) {
+                log error "Option Support Check has been enabled but the credentials has not been populated."
+                log error "Either disable the support check or provide credentials in the config file or via the environment variables F5_SUPPORT_USERNAME/F5_SUPPORT_PASSWORD"
+                $SaneConfig = $false
+            }
         }
     }
 }
@@ -1680,6 +1687,12 @@ function GetDeviceInfo {
     $User = $Global:Bigipreportconfig.Settings.Credentials.Username
     $Password = $Global:Bigipreportconfig.Settings.Credentials.Password
 
+    # If the credentials are empty, use the environment variables instead
+    if ($User -eq "" -or $Password -eq "") {
+        $User = $Env:F5_USERNAME
+        $Password = $Env:F5_PASSWORD
+    }
+
     #Create the string that is converted to Base64
     $Credentials = $User + ":" + $Password
 
@@ -2084,7 +2097,15 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
     }
 
     log info "Support entitlement checks configured, checking support entitlements"
-    $LoginBody = @{"user_id" = $Global:Bigipreportconfig.Settings.SupportCheck.Username; "user_secret" = $Global:Bigipreportconfig.Settings.SupportCheck.Password; "app_id"="support"}
+    $Username = $Global:Bigipreportconfig.Settings.SupportCheck.Username
+    $Password = $Global:Bigipreportconfig.Settings.SupportCheck.Password
+
+    if ($Username -eq "" -or $Password -eq "") {
+        $Username = $env:F5_SUPPORT_USERNAME
+        $Password = $env:F5_SUPPORT_PASSWORD
+    }
+
+    $LoginBody = @{"user_id" = $Username; "user_secret" = $Password; "app_id"="support"}
 
     Try {
         # Get a session
