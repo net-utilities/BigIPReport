@@ -32,27 +32,16 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
     [IO.Directory]::SetCurrentDirectory($PSScriptRoot)
 }
 
-#Script version
-$Global:ScriptVersion = "5.5.3"
-
-#Variable used to calculate the time used to generate the report.
-$Global:StartTime = Get-Date
-
-$Global:hostname = [System.Net.Dns]::GetHostName()
-
-#case sensitive dictionaries
+# Case sensitive dictionaries
 function c@ {
     New-Object Collections.Hashtable ([StringComparer]::CurrentCulture)
 }
 
-#Variables for storing handled error messages
+# Variables for storing handled error messages
 $Global:LoggedErrors = @()
 
-# balancer data for the report
+# Load balancer data for the report
 $Global:ReportObjects = c@ {};
-
-# preferences
-$Global:Preferences = c@ {}
 
 #No BOM Encoding in the log file
 $Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
@@ -63,7 +52,7 @@ $Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 #
 ################################################################################################################################################
 
-# default until we load the config
+# Default until we load the config
 $Global:Outputlevel = "Normal"
 Function log {
     Param ([string]$LogType = "info", [string]$Message = "")
@@ -121,12 +110,6 @@ Function log {
     }
 }
 
-################################################################################################################################################
-#
-#    Load the configration file
-#
-################################################################################################################################################
-
 #Check if the configuration file exists
 if (Test-Path $ConfigurationFile) {
     #Read the file as xml
@@ -144,135 +127,11 @@ if (Test-Path $ConfigurationFile) {
     log error "Failed to load config file $ConfigurationFile from $PSScriptRoot. Aborting."
     Exit
 }
+
+
 log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile PollLoadBalancer=$PollLoadBalancer Location=$Location PSScriptRoot=$PSScriptRoot"
 
-################################################################################################################################################
-#
-#    Function to send an error report if error reporting is configured
-#
-################################################################################################################################################
-Function Send-Errors {
-    #Check for errors when executing the script and send them
-    If ($Error.Count -gt 0 -or @($Global:LoggedErrors | Where-Object { $_.severity -eq "ERROR" }).Count -gt 0) {
-        log verbose "There were errors while generating the report"
-
-        if ($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true) {
-            $Errorsummary = @"
-<html>
-    <head>
-        <style type="text/css">
-            .errortable {
-                margin:0px;padding:0px;
-                box-shadow: 10px 10px 5px #888888;
-                border-collapse: collapse;
-                font-family:Ebrima;
-            }
-            .errortable table{
-                border-collapse: collapse;
-                border-spacing: 0;
-                height:100%;
-                margin:0px;
-                padding:0px;
-                border:1px solid #000000;
-            }
-            .errortable tr:nth-child(odd){
-                background-color:#ffffff;
-                border-collapse: collapse;
-            }
-            .oddrow{
-                background-color:#d3e9ff;
-            }
-            .errortable td{
-                vertical-align:middle;
-                border:1px solid #000000;
-                border-collapse: collapse;
-                text-align:left;
-                padding:7px;
-                font-size:12px;
-            }
-            .headerrow {
-                background-color:#024a91;
-                border:0px solid #000000;
-                border-collapse: collapse;
-                text-align:center;
-                font-size:14px;
-                font-weight:bold;
-                color:#ffffff;
-            }
-            .error {
-                color:red;
-            }
-        </style>
-
-    </head>
-    <body>
-"@
-
-            if ($Global:LoggedErrors.Count -gt 0) {
-                $Errorsummary += "<h4>The following handled errors was thrown during the execution</h4>"
-
-                Foreach ($HandledError in $Global:LoggedErrors | Where-Object { $_.severity -eq "ERROR" }) {
-                    $Errorsummary += "<font class=""error"">" + $HandledError.message + "</font><br>"
-                }
-            }
-
-            # PowerShell $Error
-            if ($Error.Count -gt 0) {
-                $Errorsummary += "<h4>The following exceptions were thrown during script execution</h4>"
-
-                $Errorsummary += "<table class=""errortable""><thead><tr class=""headerrow""><th>Category</th><th>Linenumber</th><th>Line</th><th>Stacktrace</th></tr></thead><tbody>"
-
-                Foreach ($ErrorItem in $Error) {
-                    if (Get-Member -inputobject $ErrorItem -name "ScriptStackTrace") {
-                        $ScriptStackTrace = $ErrorItem.ScriptStackTrace
-                        $Category = $ErrorItem.Categoryinfo.Reason
-                        $LineNumber = $ErrorItem.InvocationInfo.ScriptLineNumber
-                        $PositionMessage = $ErrorItem.InvocationInfo.PositionMessage
-
-                        $Errorsummary += "<tr><td>$Category</td><td>$Linenumber</td><td>$PositionMessage</td><td>$ScriptStackTrace</td></tr>"
-                    }
-                }
-
-                $Errorsummary += "</tbody></table></body></html>"
-            }
-            log verbose "Sending report"
-            $Subject = "BigIPReport on $($Global:hostname) encountered errors"
-            $Body = "$errorsummary"
-
-            Foreach ($Recipient in $Global:Bigipreportconfig.Settings.ErrorReporting.Recipients.Recipient) {
-                send-MailMessage -SmtpServer $Global:Bigipreportconfig.Settings.ErrorReporting.SMTPServer -To $Recipient -From $Global:Bigipreportconfig.Settings.ErrorReporting.Sender -Subject $Subject -Body $Body -BodyAsHtml
-            }
-        } else {
-            log error "No error mail reporting enabled/configured"
-        }
-    }
-}
-
 #Declaring variables
-
-#Variables used for storing report data
-$Global:NATdict = c@ {}
-
-$Global:DeviceGroups = @();
-
-
-#Build the path to the default document and json files
-$Global:paths = c@ {}
-$Global:paths.preferences = $Global:bigipreportconfig.Settings.ReportRoot + "json/preferences.json"
-$Global:paths.pools = $Global:bigipreportconfig.Settings.ReportRoot + "json/pools.json"
-$Global:paths.monitors = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
-$Global:paths.virtualservers = $Global:bigipreportconfig.Settings.ReportRoot + "json/virtualservers.json"
-$Global:paths.irules = $Global:bigipreportconfig.Settings.ReportRoot + "json/irules.json"
-$Global:paths.datagroups = $Global:bigipreportconfig.Settings.ReportRoot + "json/datagroups.json"
-$Global:paths.devicegroups = $Global:bigipreportconfig.Settings.ReportRoot + "json/devicegroups.json"
-$Global:paths.loadbalancers = $Global:bigipreportconfig.Settings.ReportRoot + "json/loadbalancers.json"
-$Global:paths.certificates = $Global:bigipreportconfig.Settings.ReportRoot + "json/certificates.json"
-$Global:paths.loggederrors = $Global:bigipreportconfig.Settings.ReportRoot + "json/loggederrors.json"
-$Global:paths.asmpolicies = $Global:bigipreportconfig.Settings.ReportRoot + "json/asmpolicies.json"
-$Global:paths.nat = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
-
-# Set the support state path
-$Global:SupportStatePath = $Global:bigipreportconfig.Settings.ReportRoot + "json/supportstate.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -378,31 +237,6 @@ Add-Type @'
         public string state;
     }
 
-    public class DeviceGroup {
-        public string name;
-        public string[] ips;
-    }
-
-    public class Loadbalancer {
-        public string name;
-        public string ip;
-        public string version;
-        public string build;
-        public string baseBuild;
-        public string model;
-        public string category;
-        public string serial;
-        public bool active;
-        public bool isonlydevice;
-        public string color;
-        public string sync;
-        public Hashtable modules;
-        public PoolStatusVip statusvip;
-        public bool success = true;
-        public string hasSupport = "unknown";
-        public string supportErrorMessage;
-    }
-
     public class ASMPolicy {
         public string name;
         public string learningMode;
@@ -429,6 +263,25 @@ Add-Type @'
         public string loadbalancer;
     }
 
+    public class Loadbalancer {
+        public string name;
+        public string ip;
+        public string version;
+        public string build;
+        public string baseBuild;
+        public string model;
+        public string category;
+        public string serial;
+        public bool active;
+        public bool isonlydevice;
+        public string color;
+        public string sync;
+        public Hashtable modules;
+        public PoolStatusVip statusvip;
+        public bool success = true;
+        public string hasSupport = "unknown";
+        public string supportErrorMessage;
+    }
 '@
 
 $Global:ModuleToDescription = @{
@@ -461,33 +314,6 @@ if ($Global:Bigipreportconfig.Settings.UseTLS12 -eq $true) {
 #Make sure that the text is in UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-#If configured, read the NAT rules from the specified NAT File
-
-if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
-    log verbose "NAT File has been configured"
-
-    if (Test-Path -Path $Global:Bigipreportconfig.Settings.NATFilePath) {
-        $NATContent = Get-Content $Global:Bigipreportconfig.Settings.NATFilePath
-
-        $NATContent | ForEach-Object {
-            $ArrLine = $_.split("=").Trim()
-            if ($ArrLine.Count -eq 2) {
-                $Global:NATdict[$arrLine[1]] = $arrLine[0]
-            } else {
-                log error "Malformed NAT file content detected: Check $_"
-            }
-        }
-
-        if ($NATdict.count -gt 0) {
-            log success "Loaded $($NATdict.count) NAT entries"
-        } else {
-            log error "No NAT entries loaded"
-        }
-    } else {
-        log error "NAT file could not be found in location $($Global:Bigipreportconfig.Settings.NATFilePath)"
-    }
-}
-
 Function Convert-MaskToCIDR([string] $dottedMask)
 {
   $result = 0;
@@ -510,9 +336,7 @@ Function Convert-MaskToCIDR([string] $dottedMask)
 #Function used to gather data from the load balancers
 function Get-LTMInformation {
     Param(
-        $Headers,
-        $LoadBalancerObjects,
-        $Session
+        $LoadBalancerObjects
     )
 
     #Set some variables to make the code nicer to read
@@ -520,7 +344,6 @@ function Get-LTMInformation {
     $LoadBalancerIP = $LoadBalancerObjects.LoadBalancer.ip
 
     $MajorVersion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[0]
-    #$Minorversion = $LoadBalancerObjects.LoadBalancer.version.Split(".")[1]
 
     #Region ASM Policies
 
@@ -1171,14 +994,12 @@ function Get-LTMInformation {
 #EndRegion
 
 
-function GetDeviceInfo {
+function Get-DeviceInfo {
     Param($LoadBalancerIP)
 
     $DevStartTime = Get-Date
 
     log verbose "Getting data from $LoadBalancerIP"
-
-    $Session = Get-AuthToken
 
     $ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
     $ObjLoadBalancer.ip = $LoadBalancerIP
@@ -1256,7 +1077,6 @@ function GetDeviceInfo {
 
     $ObjLoadBalancer.sync = $Response.entries.'https://localhost/mgmt/tm/cm/sync-status/0'.nestedStats.entries.color.description
 
-
     #Get provisioned modules
     $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/provision"
 
@@ -1284,7 +1104,7 @@ function GetDeviceInfo {
     $LoadBalancerObjects.LoadBalancer = $ObjLoadBalancer
 
     $Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
-
+    
     #Don't continue if this loadbalancer is not active
     If ($ObjLoadBalancer.active -or $ObjLoadBalancer.isonlydevice) {
         log verbose "Caching LTM information from $BigIPHostname"
@@ -1308,6 +1128,8 @@ function GetDeviceInfo {
 
 Function Get-AuthToken {
 
+    Param($LoadBalancer)
+
     $User = $Env:F5_USERNAME
     $Password = $Env:F5_PASSWORD
 
@@ -1318,8 +1140,6 @@ Function Get-AuthToken {
     if ($null -eq $Password) {
         $Password = $Global:Bigipreportconfig.Settings.Credentials.Password
     }
-
-    $Password = $Env:F5_PASSWORD
 
     #Create the string that is converted to Base64
     $Credentials = $User + ":" + $Password
@@ -1342,15 +1162,13 @@ Function Get-AuthToken {
     #Convert the body to Json
     $Body = $Body | ConvertTo-Json
 
-    $Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-
     # REST login sometimes works, and sometimes does not. Try 3 times in case it's flakey
     $tries = 0
     while ($tries -lt 4) {
         try {
             $tries++
-            $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
-            log success "Got auth token from $LoadBalancerIP"
+            $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancer/mgmt/shared/authn/login"
+            log success "Got auth token from $LoadBalancer"
             $AuthToken = $TokenRequest.token.token
             $TokenReference = $TokenRequest.token.name;
             $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
@@ -1360,22 +1178,34 @@ Function Get-AuthToken {
             $Body = @{ timeout = 7200 } | ConvertTo-Json
 
             # Extend the token to 120 minutes
-            Invoke-RestMethod -WebSession $Session -Method Patch -SkipCertificateCheck -Uri https://$LoadBalancerIP/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
+            Invoke-RestMethod -WebSession $Session -Method Patch -SkipCertificateCheck -Uri https://$LoadBalancer/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
             $ts = New-TimeSpan -Minutes (120)
             $ExpirationTime = $TokenStartTime + $ts
             $Session.Headers.Add('Token-Expiration', $ExpirationTime)
             $tries = 99
         } catch {
             $Line = $_.InvocationInfo.ScriptLineNumber
-            log error "Error getting auth token from $LoadBalancerIP : $_ (Line $Line, Tries $tries)"
+            log error "Error getting auth token from $LoadBalancer : $_ (Line $Line, Tries $tries)"
         }
     }
     if ($tries -ne 99) {
         Exit
     }
-
-    Return $Session
-
 }
 
-GetDeviceInfo($PollLoadBalancer)
+$Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+
+$DeviceGroup = $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup | Where-Object { $_.Device -contains $PollLoadBalancer }
+log info "Polling loadbalancer $PollLoadbalancer in device group $($DeviceGroup.name)"
+$IsOnlyDevice = @($DeviceGroup.Device).Count -eq 1
+$StatusVIP = $DeviceGroup.StatusVip
+
+Get-AuthToken -LoadBalancer $PollLoadBalancer
+Get-DeviceInfo $PollLoadBalancer
+
+if ($null -eq $Location) {
+    log verbose "Testing, so not writing results"
+} else {
+    # Output the polled load balancer to JSON data and send the parent process
+    $Global:ReportObjects[$PollLoadBalancer] | ConvertTo-Json -Compress -Depth 10
+}

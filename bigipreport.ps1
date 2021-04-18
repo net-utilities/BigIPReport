@@ -1975,7 +1975,6 @@ do {
         }
         $running++
         log success ("Start-Job $Device ($running / $MaxJobs)")
-        "$ConfigurationFile, $Device, $PSScriptRoot"
         $jobs += Start-Job -Name $Device -FilePath "data-collector-modules\Get-LTMInformation.ps1" -ArgumentList $ConfigurationFile, $Device, $PSScriptRoot
     }
     Write-Host -NoNewLine ("Waiting: " + $DevicesToStart.length + ", Running: $running, Completed: $completed, Failed: $failed, Time: " + $($(Get-Date) - $StartTime).TotalSeconds + "  `r")
