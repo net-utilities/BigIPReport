@@ -7,13 +7,7 @@ Param(
 )
 
 Set-StrictMode -Version Latest
-if ($null -eq $PollLoadBalancer) {
-    # parent process does not have a lb
-    $Error.Clear()
-    $ErrorActionPreference = "Stop"
-    $ProgressPreference = "Continue"
-    Set-Location -Path $PSScriptRoot
-} elseif ($null -ne $Location) {
+if ($null -ne $Location) {
     # child process has both lb and location
     $ErrorActionPreference = "SilentlyContinue"
     $ProgressPreference = "SilentlyContinue"
@@ -26,6 +20,9 @@ if ($null -eq $PollLoadBalancer) {
     $ProgressPreference = "SilentlyContinue"
     Set-Location -Path $PSScriptRoot
 }
+
+# Session object to store the session to the lb in
+$Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
 # PowerShell does not apply PWD to the IO library
 if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
@@ -57,12 +54,12 @@ $Global:Outputlevel = "Normal"
 Function log {
     Param ([string]$LogType = "info", [string]$Message = "")
 
-    #Initiate the log header with date and time
+    # Initiate the log header with date and time
     $CurrentTime = $(Get-Date -UFormat "%Y-%m-%d %H:%M:%S")
     $LogHeader = $CurrentTime + ' ' + $($LogType.toUpper()) + ' '
 
     if ($null -ne $Location) {
-        # child processes just log to stdout
+        # Child processes just log to stdout
         $LogLineDict = @{}
 
         $LogLineDict["datetime"] = $CurrentTime
@@ -73,7 +70,7 @@ Function log {
         return
     }
 
-    # log errors, warnings, info and success to loggederrors.json
+    # Log errors, warnings, info and success to loggederrors.json
     if ($LogType -eq "error" -Or $LogType -eq "warning" -Or $LogType -eq "info" -Or $LogType -eq "success") {
         $LogLineDict = @{}
 
@@ -999,12 +996,19 @@ function Get-DeviceInfo {
 
     $DevStartTime = Get-Date
 
-    log verbose "Getting data from $LoadBalancerIP"
+    $DeviceGroup = $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup | Where-Object { $_.Device -contains $PollLoadBalancer }
+    
+    $IsOnlyDevice = @($DeviceGroup.Device).Count -eq 1
+    $StatusVIP = $DeviceGroup.StatusVip
 
+    # Populate the global session object with an active session
+    Get-AuthToken -LoadBalancer $PollLoadBalancer
+
+    log info "Polling loadbalancer $PollLoadbalancer in device group $($DeviceGroup.name)"
+    
     $ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
     $ObjLoadBalancer.ip = $LoadBalancerIP
     $ObjLoadBalancer.statusvip = New-Object -TypeName "PoolStatusVip"
-
     $ObjLoadBalancer.isonlydevice = $IsOnlyDevice
 
     $BigIPHostname = ""
@@ -1104,7 +1108,7 @@ function Get-DeviceInfo {
     $LoadBalancerObjects.LoadBalancer = $ObjLoadBalancer
 
     $Global:ReportObjects.add($ObjLoadBalancer.ip, $LoadBalancerObjects)
-    
+
     #Don't continue if this loadbalancer is not active
     If ($ObjLoadBalancer.active -or $ObjLoadBalancer.isonlydevice) {
         log verbose "Caching LTM information from $BigIPHostname"
@@ -1178,7 +1182,7 @@ Function Get-AuthToken {
             $Body = @{ timeout = 7200 } | ConvertTo-Json
 
             # Extend the token to 120 minutes
-            Invoke-RestMethod -WebSession $Session -Method Patch -SkipCertificateCheck -Uri https://$LoadBalancer/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
+            $Response = Invoke-RestMethod -WebSession $Session -Method Patch -SkipCertificateCheck -Uri https://$LoadBalancer/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
             $ts = New-TimeSpan -Minutes (120)
             $ExpirationTime = $TokenStartTime + $ts
             $Session.Headers.Add('Token-Expiration', $ExpirationTime)
@@ -1193,15 +1197,7 @@ Function Get-AuthToken {
     }
 }
 
-$Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-
-$DeviceGroup = $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup | Where-Object { $_.Device -contains $PollLoadBalancer }
-log info "Polling loadbalancer $PollLoadbalancer in device group $($DeviceGroup.name)"
-$IsOnlyDevice = @($DeviceGroup.Device).Count -eq 1
-$StatusVIP = $DeviceGroup.StatusVip
-
-Get-AuthToken -LoadBalancer $PollLoadBalancer
-Get-DeviceInfo $PollLoadBalancer
+Get-DeviceInfo -LoadBalancerIP $PollLoadBalancer
 
 if ($null -eq $Location) {
     log verbose "Testing, so not writing results"
