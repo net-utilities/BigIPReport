@@ -1689,14 +1689,12 @@ function GetDeviceInfo {
     $Password = $Env:F5_PASSWORD
 
     # If the environment environment variables are not set, use the configuration file instead
-    if ($User -eq "") {
+    if ($null -eq $User) {
         $User = $Global:Bigipreportconfig.Settings.Credentials.Username
     }    
-    if ($Password -eq "") {
+    if ($null -eq $Password) {
         $Password = $Global:Bigipreportconfig.Settings.Credentials.Password
     }
-
-    $Password = $Env:F5_PASSWORD
 
     #Create the string that is converted to Base64
     $Credentials = $User + ":" + $Password
@@ -1723,7 +1721,7 @@ function GetDeviceInfo {
 
     # REST login sometimes works, and sometimes does not. Try 3 times in case it's flakey
     $tries = 0
-    while ($tries -lt 4) {
+    while ($tries -lt 1) {
         try {
             $tries++
             $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
@@ -2107,10 +2105,10 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
     $Password = $env:F5_SUPPORT_PASSWORD
 
     # If the environment variables are not set, use the configuration file credentials
-    if ($Username -eq "") {
+    if ($null -eq $Username) {
         $Username = $Global:Bigipreportconfig.Settings.SupportCheck.Username
     }
-    if ($Password -eq "") {
+    if ($null -eq $Password) {
         $Password = $Global:Bigipreportconfig.Settings.SupportCheck.Password
     }
 
