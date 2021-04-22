@@ -12,6 +12,7 @@ import IPool from './IPool';
 import IPreferences from './IPreferences';
 import IVirtualServer from './IVirtualServer';
 import IMemberState from './IMemberStates';
+import { IState } from './IState';
 import 'datatables.net';
 import 'datatables.net-buttons';
 
@@ -46,4 +47,5 @@ export default interface ISiteData {
   poolsMap: Map<string, IPool>,
   preferences: IPreferences,
   virtualservers: IVirtualServer[],
+  state: IState,
 }

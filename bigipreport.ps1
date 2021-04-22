@@ -281,7 +281,7 @@
 
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable','')]
 Param(
-    $Global:ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml",
+    $Global:ConfigurationFile = "$PSScriptRoot/config/bigipreportconfig.xml",
     $Global:PollLoadBalancer = $null,
     $Global:Location = $null
 )
@@ -780,7 +780,7 @@ $Global:paths.asmpolicies = $Global:bigipreportconfig.Settings.ReportRoot + "jso
 $Global:paths.nat = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
 
 # Set the support state path
-$Global:SupportStatePath = $Global:bigipreportconfig.Settings.ReportRoot + "json/supportstate.json"
+$Global:StatePath = $Global:bigipreportconfig.Settings.ReportRoot + "json/state.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -2083,92 +2083,25 @@ Function Write-TemporaryFiles {
 
 #EndRegion
 
-#Region Check Support Entitlement
+#Stateful checks
 
-if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
-
-    if (Test-Path $Global:SupportStatePath) {
-        $SupportState = Get-Content $Global:SupportStatePath | ConvertFrom-Json -AsHashtable
-    } else {
-        $SupportState = @{}
-    }
-
-    $IgnoredDevices = @()
-    # Add the ignored devices
-    if ("Device" -in  $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.PSobject.Properties.Name) {
-        $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
-    }
-
-    log info "Support entitlement checks configured, checking support entitlements"
-    $Username = $env:F5_SUPPORT_USERNAME
-    $Password = $env:F5_SUPPORT_PASSWORD
-
-    # If the environment variables are not set, use the configuration file credentials
-    if ($null -eq $Username) {
-        $Username = $Global:Bigipreportconfig.Settings.SupportCheck.Username
-    }
-    if ($null -eq $Password) {
-        $Password = $Global:Bigipreportconfig.Settings.SupportCheck.Password
-    }
-
-    $LoginBody = @{"user_id" = $Username; "user_secret" = $Password; "app_id"="support"}
-
-    Try {
-        # Get a session
-        $F5SupportSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -WebSession $F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
-    } Catch {
-        log error "Unable to login to F5s support API, skipping support entitlement checks"
-    }
-
-    if ($F5SupportSession.Cookies.Count -ne 0){
-
-        Foreach($DeviceName in $Global:ReportObjects.Keys){
-            $Device = $Global:ReportObjects[$DeviceName]
-
-            if ($DeviceName -in $IgnoredDevices){
-                $Device.LoadBalancer.hasSupport = "ignored"
-                Continue
-            } 
-            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
-                # Note. There should only be one serial number.
-                # If there are more we might run into a bug where they overwrite each others statuses
-                if ($SupportState.ContainsKey($Serial)) {
-                    $LastChecked = $SupportState[$Serial].lastChecked
-                } else {
-                    $LastChecked = 0
-                }
-
-                if ([math]::Floor((Get-Date -UFormat %s)) - $LastChecked -gt 86400) {
-                    log info "More than 24 hours since the last support check for device $($Device.LoadBalancer.name), validating support"
-                    try {
-                        $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
-                        $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
-                        $Device.LoadBalancer.hasSupport = $ResponseData.valid
-                        If($ResponseData.ContainsKey("errorMessage")) {
-                            $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
-                        }
-                    } catch {
-                        $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
-                    }
-                    # Add to the support state file
-                    $SupportState[$Serial] = @{
-                        lastChecked = ([math]::Floor((Get-Date -UFormat %s)));
-                        supportErrorMessage = $Device.LoadBalancer.supportErrorMessage;
-                        hasSupport = $Device.LoadBalancer.hasSupport;
-                    }
-                } else {
-                    log info "Fresh support entitlement data exists, using the previous data"
-                    $Device.LoadBalancer.supportErrorMessage = $SupportState[$Serial].supportErrorMessage
-                    $Device.LoadBalancer.hasSupport = $SupportState[$Serial].hasSupport
-                }
-            }
-        }
-    }
-    $SupportState | ConvertTo-Json | Out-File $Global:SupportStatePath
+if (Test-Path $Global:StatePath) {
+    $State = Get-Content $Global:StatePath | ConvertFrom-Json -AsHashtable
+} else {
+    $State = @{}
 }
 
-#EndRegion
+# Alerts
+$SlackWebHook = $Bigipreportconfig.Settings.SlackWebhook.trim()
+
+. .\data-collector-modules\CertificateAlerts.ps1
+$State["certificateAlerts"] = GenerateCertificateAlerts -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
+
+. .\data-collector-modules\Get-SupportEntitlements.ps1
+$State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
+$State | ConvertTo-Json | Out-File $Global:StatePath
+
+#End Region
 
 #Region Check for missing data
 

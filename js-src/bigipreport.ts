@@ -178,6 +178,9 @@ window.addEventListener('load', function () {
     $.getJSON('json/nat.json', function (result) {
       siteData.NATdict = result;
     }).fail(addJSONLoadingFailure),
+    $.getJSON('json/state.json', function (result) {
+      siteData.state = result;
+    }).fail(addJSONLoadingFailure),
     $.getJSON('json/loggederrors.json', function (result) {
       siteData.loggedErrors = result.concat(siteData.loggedErrors);
     }).fail(addJSONLoadingFailure)
@@ -2882,26 +2885,9 @@ function showDeviceOverview(updatehash) {
           <td>
               ${loadbalancer.serial}
           </td>
-          ${siteData.preferences.supportCheckEnabled ? `
-          <td>
-            ${loadbalancer.hasSupport === 'true' ? 
-            `
-            <img
-              class="support-icon"' +
-              src="images/check-box.png" title="This device has a valid support agreement"
-            />`:
-            loadbalancer.hasSupport === 'ignored' ? 
-             `<img
-                  class="support-icon" src="images/cone.png" 
-                  title="Support checks supressed in the BigIPReport config"
-             />` : `
-             <img
-                class="support-icon"
-                src="images/warning.png" 
-                title="${loadbalancer.supportErrorMessage}"
-             />`
-          }
-          </td>` : ''}
+          ${siteData.preferences.supportCheckEnabled ? 
+            generateSupportCell(loadbalancer)
+          : ''}
           <td>
               ${renderLoadBalancer(loadbalancer.ip, 'display')}
           </td>
@@ -2919,6 +2905,27 @@ function showDeviceOverview(updatehash) {
 
   $('div#deviceoverview').html(html);
   showMainSection('deviceoverview');
+}
+
+function generateSupportCell(loadbalancer: ILoadbalancer) {
+
+  const serial = loadbalancer.serial.split(/\s+/).find(s => /^(f5-|Z|chs)/.test(s));
+  const supportInfo = siteData.state.supportStates[serial];
+
+  const icon = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
+      : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
+      : 'images/warning.png';
+
+  const title = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
+      : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
+          : 'images/warning.png';
+
+        return `
+  <td>
+      <img
+        class="support-icon" src="${icon}" title="${title}"
+      />
+  </td>`;
 }
 
 function showLogs(updatehash) {
