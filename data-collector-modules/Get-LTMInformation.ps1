@@ -50,7 +50,7 @@ $Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 ################################################################################################################################################
 
 # Default until we load the config
-$Global:Outputlevel = "Normal"
+$Global:Outputlevel = "Verbose"
 Function log {
     Param ([string]$LogType = "info", [string]$Message = "")
 
@@ -81,7 +81,8 @@ Function log {
         $Global:LoggedErrors += $LogLineDict
     }
 
-    if ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true) {
+    if (Test-Path variable:global:Bigipreportconfig) {
+      if ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true) {
         $LogFilePath = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
         $LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
 
@@ -93,6 +94,7 @@ Function log {
             "verbose" { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
             default { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
         }
+      }
     }
 
     $ConsoleHeader = $CurrentTime + ' '
@@ -106,6 +108,8 @@ Function log {
         default { if ($OutputLevel -eq "Verbose") { Write-Host "$ConsoleHeader$Message" } }
     }
 }
+
+log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile PollLoadBalancer=$PollLoadBalancer Location=$Location PSScriptRoot=$PSScriptRoot"
 
 #Check if the configuration file exists
 if (Test-Path $ConfigurationFile) {
@@ -124,9 +128,6 @@ if (Test-Path $ConfigurationFile) {
     log error "Failed to load config file $ConfigurationFile from $PSScriptRoot. Aborting."
     Exit
 }
-
-
-log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile PollLoadBalancer=$PollLoadBalancer Location=$Location PSScriptRoot=$PSScriptRoot"
 
 #Declaring variables
 
@@ -997,7 +998,7 @@ function Get-DeviceInfo {
     $DevStartTime = Get-Date
 
     $DeviceGroup = $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup | Where-Object { $_.Device -contains $PollLoadBalancer }
-    
+
     $IsOnlyDevice = @($DeviceGroup.Device).Count -eq 1
     $StatusVIP = $DeviceGroup.StatusVip
 
@@ -1005,7 +1006,7 @@ function Get-DeviceInfo {
     Get-AuthToken -LoadBalancer $PollLoadBalancer
 
     log info "Polling loadbalancer $PollLoadbalancer in device group $($DeviceGroup.name)"
-    
+
     $ObjLoadBalancer = New-Object -TypeName "Loadbalancer"
     $ObjLoadBalancer.ip = $LoadBalancerIP
     $ObjLoadBalancer.statusvip = New-Object -TypeName "PoolStatusVip"
@@ -1140,7 +1141,7 @@ Function Get-AuthToken {
     # If the environment environment variables are not set, use the configuration file instead
     if ($null -eq $User) {
         $User = $Global:Bigipreportconfig.Settings.Credentials.Username
-    }    
+    }
     if ($null -eq $Password) {
         $Password = $Global:Bigipreportconfig.Settings.Credentials.Password
     }
