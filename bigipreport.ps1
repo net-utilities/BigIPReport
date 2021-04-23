@@ -344,7 +344,7 @@ $Global:Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 ################################################################################################################################################
 
 # default until we load the config
-$Global:Outputlevel = "Normal"
+$Global:Outputlevel = "Verbose"
 Function log {
     Param ([string]$LogType = "info", [string]$Message = "")
 
@@ -354,7 +354,7 @@ Function log {
 
     if ($null -ne $Location) {
         # child processes just log to stdout
-        $LogLineDict = @{}
+        $LogLineDict = [ordered]@{}
 
         $LogLineDict["datetime"] = $CurrentTime
         $LogLineDict["severity"] = $LogType.toupper()
@@ -375,17 +375,19 @@ Function log {
         $Global:LoggedErrors += $LogLineDict
     }
 
-    if ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true) {
-        $LogFilePath = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
-        $LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
+    if (Test-Path variable:global:Bigipreportconfig) {
+        if ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true) {
+            $LogFilePath = $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath
+            $LogLevel = $Global:Bigipreportconfig.Settings.LogSettings.LogLevel
 
-        switch ($Logtype) {
-            "error" { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
-            "warning" { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
-            "info" { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
-            "success" { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
-            "verbose" { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
-            default { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+            switch ($Logtype) {
+                "error" { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
+                "warning" { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) }
+                "info" { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+                "success" { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+                "verbose" { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+                default { if ($LogLevel -eq "Verbose") { [System.IO.File]::AppendAllText($LogFilePath, "$LogHeader$Message`n", $Global:Utf8NoBomEncoding) } }
+            }
         }
     }
 
@@ -407,6 +409,8 @@ Function log {
 #
 ################################################################################################################################################
 
+log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile PollLoadBalancer=$PollLoadBalancer Location=$Location PSScriptRoot=$PSScriptRoot"
+
 #Check if the configuration file exists
 if (Test-Path $ConfigurationFile) {
     #Read the file as xml
@@ -415,16 +419,15 @@ if (Test-Path $ConfigurationFile) {
     #Verify that the file was succssfully loaded, otherwise exit
     if ($?) {
         $Outputlevel = $Global:Bigipreportconfig.Settings.Outputlevel
-        log success "Successfully loaded the config file: $ConfigurationFile"
+        log success "Successfully loaded config file: $ConfigurationFile"
     } else {
-        log error "Can't read the config file: $ConfigurationFile from $PSScriptRoot, or config file corrupt. Aborting."
+        log error "Can't read config file: $ConfigurationFile from $PSScriptRoot, or config file corrupt. Aborting."
         Exit
     }
 } else {
     log error "Failed to load config file $ConfigurationFile from $PSScriptRoot. Aborting."
     Exit
 }
-log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile PollLoadBalancer=$PollLoadBalancer Location=$Location PSScriptRoot=$PSScriptRoot"
 
 ################################################################################################################################################
 #
@@ -533,8 +536,6 @@ Function Send-Errors {
 #    Pre-execution checks
 #
 ################################################################################################################################################
-
-log verbose "Pre-execution checks"
 
 $SaneConfig = $true
 
@@ -1022,6 +1023,8 @@ function Get-LTMInformation {
         $LoadBalancerObjects
     )
 
+    log verbose "Caching LTM information"
+
     #Set some variables to make the code nicer to read
     $LoadBalancerName = $LoadBalancerObjects.LoadBalancer.name
     $LoadBalancerIP = $LoadBalancerObjects.LoadBalancer.ip
@@ -1036,12 +1039,12 @@ function Get-LTMInformation {
     #Check if ASM is enabled
     if ($LoadBalancerObjects.LoadBalancer.modules["asm"]) {
 
-        log verbose "Getting ASM Policy information from $LoadBalancerName"
+        log verbose "Getting ASM Policy information"
         try {
             $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
         } Catch {
             $Line = $_.InvocationInfo.ScriptLineNumber
-            log error "Unable to load ASM policies from $LoadBalancerName. (line $Line)"
+            log error "Unable to load ASM policies. (line $Line)"
         }
 
         Foreach ($Policy in $Response.items) {
@@ -1067,7 +1070,7 @@ function Get-LTMInformation {
 
     #Region Cache certificate information
 
-    log verbose "Caching certificates from $LoadBalancerName"
+    log verbose "Caching certificates"
 
     $LoadBalancerObjects.Certificates = c@ {}
 
@@ -1076,7 +1079,7 @@ function Get-LTMInformation {
         $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/crypto/cert"
     } catch {
         $Line = $_.InvocationInfo.ScriptLineNumber
-        log error "Error loading certificates from $LoadBalancerIP : $_ (line $Line)"
+        log error "Error loading certificates. $_ (line $Line)"
     }
 
     $unixEpochStart = new-object DateTime 1970, 1, 1, 0, 0, 0, ([DateTimeKind]::Utc)
@@ -1132,7 +1135,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Nodes = c@ {}
 
-    log verbose "Caching nodes from $LoadBalancerName"
+    log verbose "Caching nodes"
 
     $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/node"
     $Nodes = $Response.items
@@ -1162,7 +1165,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Monitors = c@ {}
 
-    log verbose "Caching monitors from $LoadBalancerName"
+    log verbose "Caching monitors"
 
     $Monitors = $()
     Foreach ($MonitorType in ("http", "https", "icmp", "gateway-icmp", "real-server", "snmp-dca", "tcp-half-open", "tcp", "udp")) {
@@ -1204,7 +1207,7 @@ function Get-LTMInformation {
 
     #Region Caching Pool information
 
-    log verbose "Caching Pools from $LoadBalancerName"
+    log verbose "Caching Pools"
 
     $LoadBalancerObjects.Pools = c@ {}
 
@@ -1311,7 +1314,7 @@ function Get-LTMInformation {
 
     #Region Cache DataGroups
 
-    log verbose "Caching datagroups from $LoadBalancerName"
+    log verbose "Caching datagroups"
 
     $LoadBalancerObjects.DataGroups = c@ {}
     $Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object -Unique
@@ -1382,7 +1385,7 @@ function Get-LTMInformation {
 
     #Region Cache iRules
 
-    log verbose "Caching iRules from $LoadBalancerName"
+    log verbose "Caching iRules"
 
     $DataGroups = $LoadBalancerObjects.DataGroups.Keys | Sort-Object -Unique
 
@@ -1430,7 +1433,7 @@ function Get-LTMInformation {
 
     #Region Cache profiles
 
-    log verbose "Caching profiles from $LoadBalancerName"
+    log verbose "Caching profiles"
 
     $ProfileLinks = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/profile"
 
@@ -1463,7 +1466,7 @@ function Get-LTMInformation {
 
     #Region Cache Virtual Server information
 
-    log verbose "Caching Virtual servers from $LoadBalancerName"
+    log verbose "Caching Virtual servers"
 
     $LoadBalancerObjects.VirtualServers = c@ {}
 
@@ -1648,13 +1651,13 @@ function Get-LTMInformation {
         }
     } Catch {
         $Line = $_.InvocationInfo.ScriptLineNumber
-        log error "Unable to cache virtual servers from $LoadBalancerName : $_ (line $Line)"
+        log error "Unable to cache virtual servers: $_ (line $Line)"
     }
 
     #EndRegion
 
     #Region Get Orphaned Pools
-    log verbose "Detecting orphaned pools on $LoadBalancerName"
+    log verbose "Detecting orphaned pools"
 
     try {
         $VirtualServerPools = $LoadBalancerObjects.VirtualServers.Values.Pools | Sort-Object -Unique
@@ -1683,7 +1686,7 @@ function GetDeviceInfo {
 
     $DevStartTime = Get-Date
 
-    log verbose "Getting data from $LoadBalancerIP"
+    log verbose "Getting device info"
 
     $User = $Env:F5_USERNAME
     $Password = $Env:F5_PASSWORD
@@ -1691,7 +1694,7 @@ function GetDeviceInfo {
     # If the environment environment variables are not set, use the configuration file instead
     if ($null -eq $User) {
         $User = $Global:Bigipreportconfig.Settings.Credentials.Username
-    }    
+    }
     if ($null -eq $Password) {
         $Password = $Global:Bigipreportconfig.Settings.Credentials.Password
     }
@@ -1725,7 +1728,7 @@ function GetDeviceInfo {
         try {
             $tries++
             $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
-            log success "Got auth token from $LoadBalancerIP"
+            log success "Got auth token"
             $AuthToken = $TokenRequest.token.token
             $TokenReference = $TokenRequest.token.name;
             $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
@@ -1742,7 +1745,7 @@ function GetDeviceInfo {
             $tries = 99
         } catch {
             $Line = $_.InvocationInfo.ScriptLineNumber
-            log error "Error getting auth token from $LoadBalancerIP : $_ (Line $Line, Tries $tries)"
+            log error "Error getting auth token: $_ (Line $Line, Tries $tries)"
         }
     }
     if ($tries -ne 99) {
@@ -1759,7 +1762,7 @@ function GetDeviceInfo {
     $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/global-settings"
     $BigIPHostname = $Response.hostname
 
-    log verbose "Hostname is $BigipHostname for $LoadBalancerIP"
+    log verbose "Hostname: $BigipHostname"
 
     $ObjLoadBalancer.name = $BigIPHostname
 
@@ -1804,7 +1807,7 @@ function GetDeviceInfo {
     $ObjLoadBalancer.statusvip.url = $StatusVIP
 
     #Region Cache Load balancer information
-    log verbose "Fetching information about $BigIPHostname"
+    log verbose "Fetching information"
 
     #Get the version information
     $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/version"
@@ -1856,10 +1859,9 @@ function GetDeviceInfo {
 
     #Don't continue if this loadbalancer is not active
     If ($ObjLoadBalancer.active -or $ObjLoadBalancer.isonlydevice) {
-        log verbose "Caching LTM information from $BigIPHostname"
         Get-LTMInformation -LoadBalancer $LoadBalancerObjects
         # Record some stats
-        $StatsMsg = "$BigIPHostname Stats:"
+        $StatsMsg = "Stats:"
         $StatsMsg += " VS:" + $LoadBalancerObjects.VirtualServers.Keys.Count
         $StatsMsg += " P:" + $LoadBalancerObjects.Pools.Keys.Count
         $StatsMsg += " R:" + $LoadBalancerObjects.iRules.Keys.Count
@@ -1870,7 +1872,7 @@ function GetDeviceInfo {
         $StatsMsg += " T:" + $($(Get-Date) - $DevStartTime).TotalSeconds
         log success $StatsMsg
     } else {
-        log info "$BigIPHostname is not active, and won't be indexed"
+        log info "Not active, and won't be indexed"
         return
     }
 }
@@ -2087,6 +2089,8 @@ Function Write-TemporaryFiles {
 
 if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
 
+    log info "Checking support entitlements"
+
     if (Test-Path $Global:SupportStatePath) {
         $SupportState = Get-Content $Global:SupportStatePath | ConvertFrom-Json -AsHashtable
     } else {
@@ -2099,7 +2103,6 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
         $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
     }
 
-    log info "Support entitlement checks configured, checking support entitlements"
     $Username = $env:F5_SUPPORT_USERNAME
     $Password = $env:F5_SUPPORT_PASSWORD
 
@@ -2129,7 +2132,8 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
             if ($DeviceName -in $IgnoredDevices){
                 $Device.LoadBalancer.hasSupport = "ignored"
                 Continue
-            } 
+            }
+
             Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
                 # Note. There should only be one serial number.
                 # If there are more we might run into a bug where they overwrite each others statuses
@@ -2158,7 +2162,7 @@ if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfi
                         hasSupport = $Device.LoadBalancer.hasSupport;
                     }
                 } else {
-                    log info "Fresh support entitlement data exists, using the previous data"
+                    log info "Using cached support for $($Device.LoadBalancer.name)"
                     $Device.LoadBalancer.supportErrorMessage = $SupportState[$Serial].supportErrorMessage
                     $Device.LoadBalancer.hasSupport = $SupportState[$Serial].hasSupport
                 }
