@@ -282,12 +282,12 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable','')]
 Param(
     $Global:ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml",
-    $Global:PollLoadBalancer = $null,
+    $Global:CurrentJob = $null,
     $Global:Location = $null
 )
 
 Set-StrictMode -Version Latest
-if ($null -eq $PollLoadBalancer) {
+if ($null -eq $CurrentJob) {
     # parent process does not have a lb
     $Error.Clear()
     $ErrorActionPreference = "Stop"
@@ -409,7 +409,7 @@ Function log {
 #
 ################################################################################################################################################
 
-log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile PollLoadBalancer=$PollLoadBalancer Location=$Location PSScriptRoot=$PSScriptRoot"
+log verbose "Starting: PSCommandPath=$PSCommandPath ConfigurationFile=$ConfigurationFile CurrentJob=$CurrentJob Location=$Location PSScriptRoot=$PSScriptRoot"
 
 #Check if the configuration file exists
 if (Test-Path $ConfigurationFile) {
@@ -537,6 +537,7 @@ Function Send-Errors {
 #
 ################################################################################################################################################
 
+#Region pre-execution
 $SaneConfig = $true
 
 if ($null -eq $Env:F5_USERNAME) {
@@ -750,20 +751,20 @@ if (-not $SaneConfig) {
 } else {
     log success "Pre execution checks were successful"
 }
+#EndRegion pre-execution
 
 ################################################################################################################################################
 #
-#    Pre-execution checks
+#    Variables
 #
 ################################################################################################################################################
 
-#Declaring variables
+#Region variables
 
 #Variables used for storing report data
 $Global:NATdict = c@ {}
-
+$Global:SupportState = @{}
 $Global:DeviceGroups = @();
-
 
 #Build the path to the default document and json files
 $Global:paths = c@ {}
@@ -779,9 +780,7 @@ $Global:paths.certificates = $Global:bigipreportconfig.Settings.ReportRoot + "js
 $Global:paths.loggederrors = $Global:bigipreportconfig.Settings.ReportRoot + "json/loggederrors.json"
 $Global:paths.asmpolicies = $Global:bigipreportconfig.Settings.ReportRoot + "json/asmpolicies.json"
 $Global:paths.nat = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
-
-# Set the support state path
-$Global:SupportStatePath = $Global:bigipreportconfig.Settings.ReportRoot + "json/supportstate.json"
+$Global:paths.supportstate = $Global:bigipreportconfig.Settings.ReportRoot + "json/supportstate.json"
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -960,6 +959,7 @@ $Global:ModuleToDescription = @{
     "avr"      = "The Application Visualization and Reporting Module";
     "ilx"      = "iRulesLX"
 }
+#EndRegion variables
 
 #Enable of disable the use of TLS1.2
 if ($Global:Bigipreportconfig.Settings.UseTLS12 -eq $true) {
@@ -1014,7 +1014,7 @@ Function Convert-MaskToCIDR([string] $dottedMask)
   return $result;
 }
 
-#Region function Get-LTMInformation
+#Region Get-LTMInformation
 
 #Function used to gather data from the load balancers
 function Get-LTMInformation {
@@ -1678,8 +1678,7 @@ function Get-LTMInformation {
     }
     #EndRegion
 }
-#EndRegion
-
+#EndRegion Get-LTMInformation
 
 function GetDeviceInfo {
     Param($LoadBalancerIP)
@@ -1745,7 +1744,7 @@ function GetDeviceInfo {
             $tries = 99
         } catch {
             $Line = $_.InvocationInfo.ScriptLineNumber
-            log error "Error getting auth token: $_ (Line $Line, Tries $tries)"
+            log error "Error getting auth token from $LoadBalancerIP : $_ (Line $Line, Tries $tries)"
         }
     }
     if ($tries -ne 99) {
@@ -1877,9 +1876,110 @@ function GetDeviceInfo {
     }
 }
 
+#Region Get-SupportState
+Function Get-SupportState {
+    log info "Checking support state"
 
-#Region Call Cache LTM information
-$DevicesToStart = @()
+    if (Test-Path $Global:paths.supportstate) {
+        $Global:SupportState = Get-Content $Global:paths.supportstate | ConvertFrom-Json -AsHashtable
+    }
+
+    $IgnoredDevices = @()
+    # Add the ignored devices
+    if ("Device" -in  $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.PSobject.Properties.Name) {
+        $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
+    }
+
+    $Username = $env:F5_SUPPORT_USERNAME
+    $Password = $env:F5_SUPPORT_PASSWORD
+
+    # If the environment variables are not set, use the configuration file credentials
+    if ($null -eq $Username) {
+        $Username = $Global:Bigipreportconfig.Settings.SupportCheck.Username
+    }
+    if ($null -eq $Password) {
+        $Password = $Global:Bigipreportconfig.Settings.SupportCheck.Password
+    }
+
+    $LoginBody = @{"user_id" = $Username; "user_secret" = $Password; "app_id"="support"}
+
+    Try {
+        # Get a session
+        $F5SupportSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -WebSession $F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
+    } Catch {
+        log error "Unable to login to F5s support API, skipping support entitlement checks"
+    }
+
+    if ($F5SupportSession.Cookies.Count -ne 0){
+        Foreach($DeviceName in $Global:ReportObjects.Keys){
+            $Device = $Global:ReportObjects[$DeviceName]
+
+            if ($DeviceName -in $IgnoredDevices){
+                $Device.LoadBalancer.hasSupport = "ignored"
+                Continue
+            }
+
+            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
+                # Note. There should only be one serial number.
+                # If there are more we might run into a bug where they overwrite each others statuses
+                if ($Global:SupportState.ContainsKey($Serial)) {
+                    $LastChecked = $Global:SupportState[$Serial].lastChecked
+                } else {
+                    $LastChecked = 0
+                }
+
+                if ([math]::Floor((Get-Date -UFormat %s)) - $LastChecked -gt 86400) {
+                    log info "Validating support for $($Device.LoadBalancer.name) ($Serial)"
+                    try {
+                        $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
+                        $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
+                        $Device.LoadBalancer.hasSupport = $ResponseData.valid
+                        If($ResponseData.ContainsKey("errorMessage")) {
+                            $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
+                        }
+                    } catch {
+                        $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
+                    }
+                    # Add to the support state file
+                    $Global:SupportState[$Serial] = @{
+                        lastChecked = ([math]::Floor((Get-Date -UFormat %s)));
+                        supportErrorMessage = $Device.LoadBalancer.supportErrorMessage;
+                        hasSupport = $Device.LoadBalancer.hasSupport;
+                    }
+                } else {
+                    log info "Using cached support for $($Device.LoadBalancer.name) ($Serial)"
+                    $Device.LoadBalancer.supportErrorMessage = $Global:SupportState[$Serial].supportErrorMessage
+                    $Device.LoadBalancer.hasSupport = $Global:SupportState[$Serial].hasSupport
+                }
+            }
+        }
+    }
+}
+#EndRegion
+
+$JobsToStart = @()
+
+#Region Job handling
+if ($null -ne $CurrentJob) {
+    # CurrentJob indicates that this is a child process or a debug execution
+    GetDeviceInfo($CurrentJob)
+    if ($null -eq $Location) {
+        log verbose "Testing, so not writing results"
+    } else {
+        # Output the polled load balancer to JSON data and send the parent process
+        $Global:ReportObjects[$CurrentJob] | ConvertTo-Json -Compress -Depth 10
+    }
+    # Exit child process
+    exit
+}
+#EndRegion
+
+##################################################################################################
+#           Anything below this line is only executed by the main (parent) process
+##################################################################################################
+
+#Region Job creation
 Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $IsOnlyDevice = @($DeviceGroup.Device).Count -eq 1
     $StatusVIP = $DeviceGroup.StatusVip
@@ -1889,28 +1989,13 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
 
     Foreach ($Device in $DeviceGroup.Device) {
         $ObjDeviceGroup.ips += $Device
-        if ($null -eq $PollLoadBalancer) {
-            $DevicesToStart += $Device
-        } elseif ($Device -eq $PollLoadBalancer) {
-            # PollLoadbalancer indicates that this is a child process or a debug execution
-            GetDeviceInfo($PollLoadBalancer)
-            if ($null -eq $Location) {
-                log verbose "Testing, so not writing results"
-            } else {
-                # Output the polled load balancer to JSON data and send the parent process
-                $Global:ReportObjects[$PollLoadBalancer] | ConvertTo-Json -Compress -Depth 10
-            }
-            # Exit child process
-            exit
-        }
+        $JobsToStart += $Device
     }
     $Global:DeviceGroups += $ObjDeviceGroup
 }
 #EndRegion
 
-##################################################################################################
-#           Anything below this line is only executed by the main (parent) process
-##################################################################################################
+#Region Call Cache LTM information
 
 #Collect data from each load balancer
 $Global:Out = c@ {}
@@ -1969,19 +2054,21 @@ do {
             $running++
         }
     }
-    while ($DevicesToStart.length -gt 0 -and $running -lt $MaxJobs) {
-        $Device, [string[]]$DevicesToStart = $DevicesToStart
-        if (! $DevicesToStart) {
+    while ($JobsToStart.length -gt 0 -and $running -lt $MaxJobs) {
+        $Device, [string[]]$JobsToStart = $JobsToStart
+        if (! $JobsToStart) {
             # Powershell returns the last one as $null instead of an empty array
-            $DevicesToStart = @()
+            $JobsToStart = @()
         }
         $running++
         log success ("Start-Job $Device ($running / $MaxJobs)")
         $jobs += Start-Job -Name $Device -FilePath $PSCommandPath -ArgumentList $ConfigurationFile, $Device, $PSScriptRoot
     }
-    Write-Host -NoNewLine ("Waiting: " + $DevicesToStart.length + ", Running: $running, Completed: $completed, Failed: $failed, Time: " + $($(Get-Date) - $StartTime).TotalSeconds + "  `r")
+    Write-Host -NoNewLine ("Waiting: " + $JobsToStart.length + ", Running: $running, Completed: $completed, Failed: $failed, Time: " + $($(Get-Date) - $StartTime).TotalSeconds + "  `r")
     Start-Sleep 1
-} until ($DevicesToStart.length -eq 0 -and $running -eq 0)
+} until ($JobsToStart.length -eq 0 -and $running -eq 0)
+# clear the status line
+Write-Host -NoNewLine "                                                                       `r"
 # remove completed jobs
 $jobs | Remove-Job
 
@@ -2049,14 +2136,11 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.devicegroups -Data @( $Global:DeviceGroups | Sort-Object name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.loadbalancers -Data @( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.nat -Data $Global:NATdict
-
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.pools -Data @( $Global:Out.Pools | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.monitors -Data @( $Global:Out.Monitors | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data @( $Global:Out.VirtualServers | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:Out.Certificates | Sort-Object loadbalancer, fileName )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.asmpolicies -Data @( $Global:Out.ASMPolicies | Sort-Object loadbalancer, name )
-    $Global:Preferences['executionTime'] = $($(Get-Date) - $StartTime).TotalMinutes
-    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.preferences -Data $Global:Preferences
 
     if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true) {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.irules -Data @($Global:Out.iRules | Sort-Object loadbalancer, name )
@@ -2080,105 +2164,26 @@ Function Write-TemporaryFiles {
     } else {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @()
     }
+
+    if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
+        $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.supportstate -Data $Global:SupportState
+    }
+
+    # write preferences last time is most accurate
+    $Global:Preferences['executionTime'] = $($(Get-Date) - $StartTime).TotalMinutes
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.preferences -Data $Global:Preferences
     Return -not $( $WriteStatuses -Contains $false)
 }
-
 #EndRegion
-
-#Region Check Support Entitlement
 
 if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
-
-    log info "Checking support entitlements"
-
-    if (Test-Path $Global:SupportStatePath) {
-        $SupportState = Get-Content $Global:SupportStatePath | ConvertFrom-Json -AsHashtable
-    } else {
-        $SupportState = @{}
-    }
-
-    $IgnoredDevices = @()
-    # Add the ignored devices
-    if ("Device" -in  $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.PSobject.Properties.Name) {
-        $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
-    }
-
-    $Username = $env:F5_SUPPORT_USERNAME
-    $Password = $env:F5_SUPPORT_PASSWORD
-
-    # If the environment variables are not set, use the configuration file credentials
-    if ($null -eq $Username) {
-        $Username = $Global:Bigipreportconfig.Settings.SupportCheck.Username
-    }
-    if ($null -eq $Password) {
-        $Password = $Global:Bigipreportconfig.Settings.SupportCheck.Password
-    }
-
-    $LoginBody = @{"user_id" = $Username; "user_secret" = $Password; "app_id"="support"}
-
-    Try {
-        # Get a session
-        $F5SupportSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -WebSession $F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
-    } Catch {
-        log error "Unable to login to F5s support API, skipping support entitlement checks"
-    }
-
-    if ($F5SupportSession.Cookies.Count -ne 0){
-
-        Foreach($DeviceName in $Global:ReportObjects.Keys){
-            $Device = $Global:ReportObjects[$DeviceName]
-
-            if ($DeviceName -in $IgnoredDevices){
-                $Device.LoadBalancer.hasSupport = "ignored"
-                Continue
-            }
-
-            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
-                # Note. There should only be one serial number.
-                # If there are more we might run into a bug where they overwrite each others statuses
-                if ($SupportState.ContainsKey($Serial)) {
-                    $LastChecked = $SupportState[$Serial].lastChecked
-                } else {
-                    $LastChecked = 0
-                }
-
-                if ([math]::Floor((Get-Date -UFormat %s)) - $LastChecked -gt 86400) {
-                    log info "More than 24 hours since the last support check for device $($Device.LoadBalancer.name), validating support"
-                    try {
-                        $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
-                        $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
-                        $Device.LoadBalancer.hasSupport = $ResponseData.valid
-                        If($ResponseData.ContainsKey("errorMessage")) {
-                            $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
-                        }
-                    } catch {
-                        $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
-                    }
-                    # Add to the support state file
-                    $SupportState[$Serial] = @{
-                        lastChecked = ([math]::Floor((Get-Date -UFormat %s)));
-                        supportErrorMessage = $Device.LoadBalancer.supportErrorMessage;
-                        hasSupport = $Device.LoadBalancer.hasSupport;
-                    }
-                } else {
-                    log info "Using cached support for $($Device.LoadBalancer.name)"
-                    $Device.LoadBalancer.supportErrorMessage = $SupportState[$Serial].supportErrorMessage
-                    $Device.LoadBalancer.hasSupport = $SupportState[$Serial].hasSupport
-                }
-            }
-        }
-    }
-    $SupportState | ConvertTo-Json | Out-File $Global:SupportStatePath
+  Get-SupportState
 }
 
-#EndRegion
-
 #Region Check for missing data
-
 #Verify that data from all the load balancers has been indexed by checking the pools variable
 $MissingData = $false
-log verbose "Verifying load balancer data to make sure that no load balancer is missing"
+log verbose "Checking for missing data"
 #For every load balancer IP we will check that no pools or virtual servers are missing
 Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $DeviceGroupHasData = $False
@@ -2238,13 +2243,12 @@ if ($MissingData) {
     }
     log error "Missing load balancer data, writing report anyway"
 } else {
-    log success "No missing loadbalancer data was detected, compiling the report"
+    log success "No missing data was detected, compiling the report"
 }
 
 #EndRegion
 
-# Record some stats
-
+#Region report stats
 $StatsMsg = "Stats:"
 $StatsMsg += " G:" + $Global:DeviceGroups.Count
 $StatsMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
@@ -2257,25 +2261,25 @@ $StatsMsg += " M:" + $Global:Out.Monitors.Length
 $StatsMsg += " ASM:" + $Global:Out.ASMPolicies.Length
 $StatsMsg += " T:" + $($(Get-Date) - $StartTime).TotalSeconds
 log success $StatsMsg
+#EndRegion
 
-# Write temporary files and then update the report
-
+#Region Write temporary files and update the report
 $TemporaryFilesWritten = $false
 
 if (-not (Write-TemporaryFiles)) {
     #Failed to write the temporary files
-    log error "Failed to write the temporary files, waiting 2 minutes and trying again"
+    log error "Failed to write temporary files, waiting 2 minutes and trying again"
     Start-Sleep 120
 
     if (Write-TemporaryFiles) {
         $TemporaryFilesWritten = $true
-        log success "Successfully wrote the temporary files"
+        log success "Wrote temporary files"
     } else {
-        log error "Failed to write the temporary files. No report has been created/updated"
+        log error "Failed to write temporary files. No report has been created/updated"
     }
 } else {
     $TemporaryFilesWritten = $true
-    log success "Successfully wrote the temporary files"
+    log success "Wrote temporary files"
 }
 
 if ($TemporaryFilesWritten) {
@@ -2305,11 +2309,12 @@ if ($TemporaryFilesWritten) {
     }
 
     if ($MovedFiles) {
-        log success "The report has been successfully been updated"
+        log success "The report has been updated"
     }
 } else {
-    log error "The writing of the temporary files failed, no report files will be updated"
+    log error "Writing temporary files failed. No report files updated"
 }
+#EndRegion
 
 # send errors if there where any
 Send-Errors
@@ -2328,7 +2333,6 @@ if ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq $true) {
 }
 
 # Done
-
 $DoneMsg = "Done."
 $DoneMsg += " T:" + $($(Get-Date) - $StartTime).TotalSeconds
 log verbose $DoneMsg
