@@ -64,6 +64,7 @@ Function Get-SupportEntitlements {
                 $SupportState = @{
                     hasSupport = $false;
                     lastChecked = 0;
+                    lastAlerted = 0;
                     supportErrorMessage = $null;
                 }
             }
@@ -78,7 +79,7 @@ Function Get-SupportEntitlements {
                 log info "Fresh support entitlement data exists, using the previous data"
                 Continue
             }
-                
+
             log info "More than 24 hours since the last support check for device $($Device.LoadBalancer.name), validating support"
             try {
                 $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
@@ -92,21 +93,21 @@ Function Get-SupportEntitlements {
             }
             $SupportState.lastChecked = $Now;
             
-            #If($SupportState.)
-            
             # Add to the support state file
             $SupportStates[$Serial] = $SupportState
         }
     }
 
-    $AlertsToSend = $SupportStates.Values | Where-Object { $_.lastAlerted -eq $Now }
+    $AlertsToSend = $SupportStates.Values | Where-Object { $_.hasSupport -ne "ignored" -and ($now - $_.lastAlerted) -gt $WaitSecondsBetween }
     
     if ($null -ne $AlertsToSend) {
-        . .\data-collector-modules\SlackAlerts\Send-SlackCertificateAlert.ps1
-        Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld
+        . .\data-collector-modules\SlackAlerts\Send-SlackSupportStateAlert.ps1
+        Send-SlackSupportStateAlert -AlertsToSend $AlertsToSend
+        if($?){
+            $SupportStates.Values | ForEach-Object { $_.lastAlerted = $Now}
+        }
     }
 
-    
     Return $SupportStates
 }
     
