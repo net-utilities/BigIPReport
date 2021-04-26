@@ -64,23 +64,19 @@ Function GenerateCertificateAlerts {
                     }
                 }
 
-                # Expired certificate has an existing alert, either update the time stamp and alert or configure not to alert
-                if (($Now - $CertificateAlert.lastAlerted) -gt $WaitSecondsBetween){
-                    log verbose "Adding certificate $AlertKey to the alert list"
-                    $CertificateAlert.lastAlerted = $Now
-                } else {
-                    log verbose "Last alert sent within $WaitHoursBetween hours, skipping sending alert"
-                }
                 $CertificateAlerts[$AlertKey] = $CertificateAlert
             }
         }
     }
 
-    $AlertsToSend = $CertificateAlerts.Values | Where-Object { $_.lastAlerted -eq $Now }
+    $AlertsToSend = $CertificateAlerts.Values | Where-Object { ($Now - $_.lastAlerted) -gt $WaitSecondsBetween }
     
     if ($null -ne $AlertsToSend) {
         . .\data-collector-modules\SlackAlerts\Send-SlackCertificateAlert.ps1
         Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld
+        if($?){
+            $SupportStates.Values | ForEach-Object { $_.lastAlerted = $Now}
+        }
     }
 
     Return $CertificateAlerts
