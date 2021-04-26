@@ -528,6 +528,14 @@ Function Send-Errors {
     }
 }
 
+Function Test-ConfigPath {
+    Param($XPath)
+
+    $NodeList = $Global:Bigipreportconfig.SelectNodes($XPath)
+    Return $NodeList.Count -gt 0
+}
+
+
 ################################################################################################################################################
 #
 #    Pre-execution checks
@@ -701,6 +709,29 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
 
     If ($null -eq $DeviceGroup.Device -or @($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
         log error "A device group does not have any devices, please re-check your configuration"
+        $SaneConfig = $false
+    }
+}
+
+if ($null -ne $Env:SLACK_WEBHOOK) {
+    $SlackWebhook = $Env:SLACK_WEBHOOK
+} elseif (Test-ConfigPath "/Settings/SlackWebhook"){
+    $SlackWebHook = $Global:Bigipreportconfig.Settings.SlackWebhook.Trim()
+} else {
+    log error "Slack Webhook config not present in the configuration, please upgrade your configuration file"
+    $SaneConfig = $false
+}
+
+if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
+    if($Bigipreportconfig.Settings.Alerts.CertificateExpiration.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+        $SaneConfig = $false
+    }
+}
+
+if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
+    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $null -eq $SlackWebHook) {
+        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
         $SaneConfig = $false
     }
 }
