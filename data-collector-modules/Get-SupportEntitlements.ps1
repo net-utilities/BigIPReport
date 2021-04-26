@@ -62,6 +62,8 @@ Function Get-SupportEntitlements {
                 $SupportState = $SupportStates[$Serial] 
             } else {
                 $SupportState = @{
+                    loadbalancer = $DeviceName;
+                    serial = $Serial;
                     hasSupport = $false;
                     lastChecked = 0;
                     lastAlerted = 0;
@@ -102,7 +104,7 @@ Function Get-SupportEntitlements {
     
     if ($null -ne $AlertsToSend) {
         . .\data-collector-modules\SlackAlerts\Send-SlackSupportStateAlert.ps1
-        Send-SlackSupportStateAlert -AlertsToSend $AlertsToSend
+        Send-SlackSupportStateAlert -AlertsToSend $AlertsToSend -SlackWebhook $SlackWebHook
         if($?){
             $SupportStates.Values | ForEach-Object { $_.lastAlerted = $Now}
         }
