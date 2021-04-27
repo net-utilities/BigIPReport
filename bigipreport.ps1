@@ -734,7 +734,7 @@ if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
 }
 
 if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
-    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $null -eq $SlackWebHook) {
+    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
         log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
         $SaneConfig = $false
     }
