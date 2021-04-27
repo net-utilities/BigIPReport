@@ -2140,13 +2140,13 @@ if (Test-Path $Global:StatePath) {
 }
 
 # Alerts
-$SlackWebHook = $Bigipreportconfig.Settings.SlackWebhook.trim()
-
 . .\data-collector-modules\CertificateAlerts.ps1
 $State["certificateAlerts"] = GenerateCertificateAlerts -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
 
 . .\data-collector-modules\Get-SupportEntitlements.ps1
 $State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
+
+# Write the final support state to file 
 $State | ConvertTo-Json | Out-File $Global:StatePath
 
 #End Region
