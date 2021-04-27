@@ -1,0 +1,30 @@
+name: Lint the ts code
+on: 
+  pull_request:
+    paths:
+      - "**.ps1"
+jobs:
+  build_and_deploy_ci:
+    name: Linting
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@aabbfeb2ce60b5bd82389903509092c4648a9713
+        with:
+          ref: master
+      - run: |
+          MASTER_VERSION=$(awk 'BEGIN { FS="="};/^\s*\$Global:ScriptVersion *= *"[0-9]+\.[0-9]+\.[0-9]+/{ gsub(/[" ]/, "", $2); gsub(/\./, " ", $2); print $2 }' < ./bigipreport.ps1)
+          if [[ -z $MASTER_VERSION ]]; then echo "Unable to detect master version"; exit 1; fi
+          echo $MASTER_VERSION
+          echo "MASTER_VERSION=$MASTER_VERSION" >> $MASTER_VERSION
+      - name: Check out repository
+        uses: actions/checkout@aabbfeb2ce60b5bd82389903509092c4648a9713
+      - run: |
+          CURRENT_VERSION=$(awk 'BEGIN { FS="="};/^\s*\$Global:ScriptVersion *= *"[0-9]+\.[0-9]+\.[0-9]+/{ gsub(/[" ]/, "", $2); gsub(/\./, " ", $2); print $2 }' < ./bigipreport.ps1)
+          if [[ -z $CURRENT_VERSION ]]; then echo "Unable to detect master version"; exit 1; fi
+          echo $CURRENT_VERSION
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $CURRENT_VERSION
+      - name: Install pre-requisites
+        run: npm install
+      - name: Lint
+        run: npm test
