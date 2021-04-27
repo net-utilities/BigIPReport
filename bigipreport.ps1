@@ -313,7 +313,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.3"
+$Global:ScriptVersion = "5.5.6"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -2116,10 +2116,23 @@ Function Write-TemporaryFiles {
 
 #Stateful checks
 
+# Init script state template
+
 if (Test-Path $Global:StatePath) {
     $State = Get-Content $Global:StatePath | ConvertFrom-Json -AsHashtable
-} else {
-    $State = @{}
+    # If the script version does not exist or the script version is different
+    # we need to create a new state to ensure that the script logic and 
+    # state object is compatible
+    If (-not $State.ContainsKey('scriptVersion') -or $Global:ScriptVersion -ne $State.scriptVersion){
+        log verbose "Script version been changed, forcing creation of new state file"
+        $State = @{
+            scriptVersion = $Global:ScriptVersion
+        }
+    }
+} Else {
+    $State = @{
+        scriptVersion = $Global:ScriptVersion
+    }
 }
 
 # Alerts
