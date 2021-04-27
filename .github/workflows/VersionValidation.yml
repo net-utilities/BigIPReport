@@ -1,8 +1,5 @@
 name: Lint the ts code
-on: 
-  pull_request:
-    paths:
-      - "**.ps1"
+on: pull_request
 jobs:
   build_and_deploy_ci:
     name: Linting
