@@ -569,12 +569,11 @@
             <CertificateExpiration>
                 <AlertWhenDaysToExpiration>30</AlertWhenDaysToExpiration>
                 <WaitHoursBetween>24</WaitHoursBetween>
-                <SlackEnabled>True</SlackEnabled>
+                <SlackEnabled>False</SlackEnabled>
             </CertificateExpiration>
             <FailedSupportChecks>
-                <Enabled>True</Enabled>
                 <WaitHoursBetween>168</WaitHoursBetween>
-                <SlackEnabled>True</SlackEnabled>
+                <SlackEnabled>False</SlackEnabled>
             </FailedSupportChecks>
         </Alerts>
     </Settings>
