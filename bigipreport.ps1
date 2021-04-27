@@ -270,6 +270,10 @@
 #        5.5.1        2021-04-08      Verify support entitlement                                                    Patrik Jonsson  Yes
 #        5.5.2        2021-04-12      Only do support entitlement checks once per day                               Patrik Jonsson  No
 #        5.5.3        2021-04-15      Adding support for credentials as environment variables                       Patrik Jonsson  No
+#        5.5.4        2021-04-18      Fixing bug with config file credentials not being used even if specified      Patrik Jonsson  No
+#        5.5.6        2021-04-27      Adding Slack Alert support for expired certificates                           Patrik Jonsson  Yes
+#                                     Adding Slack Alert support for expired support entitlements
+#                                     Removing state if new script version or script version in state is missing 
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
