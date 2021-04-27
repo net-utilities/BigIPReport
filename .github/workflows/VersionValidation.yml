@@ -41,7 +41,7 @@ jobs:
             VERSIONS_OK=0
           fi
           if [[ "${{ env.CONFIG_VERSION }}" != "${{ env.CURRENT_VERSION }}" ]]; then
-            echo "Version of the branch and the version of the bigipreport.ps1 file does not match"
+            echo "Version of the branch bigipreportconfig.xml and the version of the bigipreport.ps1 file does not match"
             VERSIONS_OK=0
           fi
           if [[ "$VERSIONS_OK" == 0 ]]; then
