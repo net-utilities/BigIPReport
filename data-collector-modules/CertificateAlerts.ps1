@@ -75,7 +75,7 @@ Function GenerateCertificateAlerts {
         . .\data-collector-modules\SlackAlerts\Send-SlackCertificateAlert.ps1
         Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld
         if($?){
-            $SupportStates.Values | ForEach-Object { $_.lastAlerted = $Now}
+            $CertificateAlerts.Values | ForEach-Object { $_.lastAlerted = $Now}
         }
     }
 
