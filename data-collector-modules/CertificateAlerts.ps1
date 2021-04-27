@@ -71,7 +71,7 @@ Function GenerateCertificateAlerts {
 
     $AlertsToSend = $CertificateAlerts.Values | Where-Object { ($Now - $_.lastAlerted) -gt $WaitSecondsBetween }
     
-    if ($null -ne $AlertsToSend) {
+    if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
         . .\data-collector-modules\SlackAlerts\Send-SlackCertificateAlert.ps1
         Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld
         if($?){
