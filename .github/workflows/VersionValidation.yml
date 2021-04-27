@@ -2,7 +2,7 @@ name: Version checks
 on: pull_request
 jobs:
   build_and_deploy_ci:
-    name: Version CHecks
+    name: Validate that the version has been bumped
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
