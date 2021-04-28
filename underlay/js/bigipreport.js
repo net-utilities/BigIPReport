@@ -2452,110 +2452,119 @@ function showDeviceOverview(updatehash) {
                 </thead>
                 <tbody>`;
     for (const d in deviceGroups) {
-        let firstDevice = true;
         const deviceGroup = deviceGroups[d];
         // Get an icon from a functioning device, if any
-        let icon = '';
-        let successFound = false;
+        let icon = 'images/faileddevice.png';
         for (const i in deviceGroup.ips) {
             const loadbalancer = loadbalancers.find(function (o) {
                 return o.ip === deviceGroup.ips[i];
             });
             if (loadbalancer) {
                 const model = loadbalancer.model && loadbalancer.model.toUpperCase();
-                const deviceData = siteData.knownDevices[model] || false;
-                successFound = true;
-                if (deviceData) {
-                    icon = deviceData.icon;
-                    break;
-                }
+                icon = model in siteData.knownDevices ? siteData.knownDevices[model].icon : 'images/deviceicons/unknowndevice.png';
+                break;
             }
         }
-        if (icon === '' && successFound) {
-            icon = 'images/deviceicons/unknowndevice.png';
-        }
-        else if (icon === '') {
-            icon = 'images/faileddevice.png';
-        }
-        for (const i in deviceGroup.ips) {
+        deviceGroup.ips.forEach((deviceIP, deviceIndex) => {
             const loadbalancer = loadbalancers.find(function (o) {
-                return o.ip === deviceGroup.ips[i];
+                return o.ip === deviceIP;
             });
+            // This load balancer has failed to index
+            if (!loadbalancer) {
+                html += `
+                <tr>
+                  ${deviceIndex === 0 ? `<td rowspan="${deviceGroup.ips.length} class="deviceiconcell">
+                    <img class="deviceicon" alt="deviceicon" src="${icon}"/>
+                  </td>>
+                  <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>` : ''}
+                  <td>Unknown</td>
+                  <td>${deviceIP}</td>
+                  <td>Unknown</td>
+                  <td>Unknown</td>
+                  <td>Unknown</td>
+                  <td>Unknown</td>
+                  ${siteData.preferences.supportCheckEnabled ?
+                    '<td>&nbsp;</td>'
+                    : ''}
+                  <td>Unknown</td>
+                  <td>Unknown</td>`;
+                return;
+            }
             let pollingStatus = 'N/A (passive device)';
-            if (loadbalancer) {
-                if (loadbalancer.active || loadbalancer.isonlydevice) {
-                    if (loadbalancer.statusvip.url === '') {
-                        pollingStatus =
-                            '<span class="devicepollingnotconfigured">Not configured</span>';
-                    }
-                    else if (loadbalancer.statusvip.working) {
-                        pollingStatus = '<span class="devicepollingsuccess">Working</span>';
-                    }
-                    else {
-                        pollingStatus = '<span class="devicepollingfailed">Failed</span>';
-                    }
+            if (loadbalancer.active || loadbalancer.isonlydevice) {
+                const { url, working } = loadbalancer.statusvip;
+                if (url === '') {
+                    pollingStatus =
+                        '<span class="devicepollingnotconfigured">Not configured</span>';
                 }
-                const devicestatus = loadbalancer.color || 'red';
-                if (firstDevice) {
-                    html +=
-                        `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">` +
-                            `<img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
-                            `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">` +
-                            renderLoadBalancer(deviceGroup.name, 'display') +
-                            '</td>';
-                    firstDevice = false;
-                }
-                else if (devicestatus == 'green') {
-                    html += '<tr title="Secondary device is Active" style="background-color: #FFF8F0;">';
+                else if (working) {
+                    pollingStatus = '<span class="devicepollingsuccess">Working</span>';
                 }
                 else {
-                    html += '<tr>';
+                    pollingStatus = '<span class="devicepollingfailed">Failed</span>';
                 }
-                let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">No</span>';
-                const { sync } = loadbalancer;
-                if (sync === 'yellow') {
-                    syncSpan = '<span style="color:#ED833A;font-weight:bold;">Pending</span>';
-                }
-                else if (sync === 'green') {
-                    syncSpan = '<span style="color:#8DA54B;font-weight:bold;">Yes</span>';
-                }
-                html +=
-                    `
-          <td>
-            <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
-                class="plainLink" target="_blank">
-              ${syncSpan}
-            </a>
-          </td>
-          <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
-              src="images/devicestatus${devicestatus}.png"/>
-              ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
-                        '<span class="devicefailed">Failed to index</span>')}
-          </td>
-          <td>
-              ${loadbalancer.category || 'N/A'}
-          </td>
-          <td>
-              ${loadbalancer.model || 'N/A'}
-          </td>
-          <td>
-              ${loadbalancer.version || 'N/A'}
-          </td>
-          <td>
-              ${loadbalancer.serial}
-          </td>
-          ${siteData.preferences.supportCheckEnabled ?
-                        generateSupportCell(loadbalancer)
-                        : ''}
-          <td>
-              ${renderLoadBalancer(loadbalancer.ip, 'display')}
-          </td>
-          <td>
-              ${pollingStatus}
-          </td>
-        </tr>`;
             }
-        }
+            const deviceStatus = loadbalancer.color || 'red';
+            if (deviceIndex === 0) {
+                html +=
+                    `<tr>
+             <td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
+               <img class="deviceicon" alt="deviceicon" src="${icon}"/>
+             </td>
+             <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">
+                ${renderLoadBalancer(deviceGroup.name, 'display')}
+             </td>`;
+            }
+            else if (deviceStatus == 'green') {
+                html += '<tr title="Secondary device is Active" style="background-color: #FFF8F0;">';
+            }
+            else {
+                html += '<tr>';
+            }
+            let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">No</span>';
+            const { sync } = loadbalancer;
+            if (sync === 'yellow') {
+                syncSpan = '<span style="color:#ED833A;font-weight:bold;">Pending</span>';
+            }
+            else if (sync === 'green') {
+                syncSpan = '<span style="color:#8DA54B;font-weight:bold;">Yes</span>';
+            }
+            html +=
+                `
+        <td>
+          <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
+              class="plainLink" target="_blank">
+            ${syncSpan}
+          </a>
+        </td>
+        <td class="devicenamecell"><img class="devicestatusicon" alt="${deviceStatus}"
+            src="images/devicestatus${deviceStatus}.png"/>
+            ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
+                    '<span class="devicefailed">Failed to index</span>')}
+        </td>
+        <td>
+            ${loadbalancer.category || 'N/A'}
+        </td>
+        <td>
+            ${loadbalancer.model || 'N/A'}
+        </td>
+        <td>
+            ${loadbalancer.version || 'N/A'}
+        </td>
+        <td>
+            ${loadbalancer.serial}
+        </td>
+        ${siteData.preferences.supportCheckEnabled ?
+                    generateSupportCell(loadbalancer)
+                    : ''}
+        <td>
+            ${renderLoadBalancer(loadbalancer.ip, 'display')}
+        </td>
+        <td>
+            ${pollingStatus}
+        </td>
+      </tr>`;
+        });
     }
     html += `
                 </tbody>
