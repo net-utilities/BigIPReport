@@ -2454,14 +2454,15 @@ function showDeviceOverview(updatehash) {
     for (const d in deviceGroups) {
         const deviceGroup = deviceGroups[d];
         // Get an icon from a functioning device, if any
-        let icon = 'images/faileddevice.png';
+        let deviceIcon = 'images/deviceicons/unknowndevice.png';
         for (const i in deviceGroup.ips) {
             const loadbalancer = loadbalancers.find(function (o) {
                 return o.ip === deviceGroup.ips[i];
             });
             if (loadbalancer) {
                 const model = loadbalancer.model && loadbalancer.model.toUpperCase();
-                icon = model in siteData.knownDevices ? siteData.knownDevices[model].icon : 'images/deviceicons/unknowndevice.png';
+                deviceIcon = model in siteData.knownDevices ? siteData.knownDevices[model].icon :
+                    'images/deviceicons/unknowndevice.png';
                 break;
             }
         }
@@ -2472,19 +2473,24 @@ function showDeviceOverview(updatehash) {
             // This load balancer has failed to index
             if (!loadbalancer) {
                 html += `
-                <tr>
-                  ${deviceIndex === 0 ? `<td rowspan="${deviceGroup.ips.length} class="deviceiconcell">
-                    <img class="deviceicon" alt="deviceicon" src="${icon}"/>
+                <tr class="failed-device" title="BigIPReport has failed to index this device">
+                  ${deviceIndex === 0 ? `
+                    <td
+                        rowspan="${deviceGroup.ips.length}"
+                        class="deviceiconcell"
+                    >
+                    <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
                   </td>>
                   <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>` : ''}
-                  <td>Unknown</td>
-                  <td>${deviceIP}</td>
+                  <td>FAILED TO INDEX</td>
+                  <td><img class="devicestatusicon" alt="Failed to index"
+            src="images/devicestatusred.png"/> ${renderLoadBalancer(deviceIP, '')}</td>
                   <td>Unknown</td>
                   <td>Unknown</td>
                   <td>Unknown</td>
                   <td>Unknown</td>
                   ${siteData.preferences.supportCheckEnabled ?
-                    '<td>&nbsp;</td>'
+                    '<td>Unknown</td>'
                     : ''}
                   <td>Unknown</td>
                   <td>Unknown</td>`;
@@ -2509,14 +2515,14 @@ function showDeviceOverview(updatehash) {
                 html +=
                     `<tr>
              <td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
-               <img class="deviceicon" alt="deviceicon" src="${icon}"/>
+               <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
              </td>
              <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">
                 ${renderLoadBalancer(deviceGroup.name, 'display')}
              </td>`;
             }
             else if (deviceStatus == 'green') {
-                html += '<tr title="Secondary device is Active" style="background-color: #FFF8F0;">';
+                html += '<tr title="Secondary device is Active" class="out-of-sync-device">';
             }
             else {
                 html += '<tr>';
