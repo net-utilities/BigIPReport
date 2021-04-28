@@ -11,4 +11,4 @@ node_modules
 underlay/json/*.json
 !underlay/json/knowndevices.json
 underlay/web.config
-config/bigipreportconfig.xml
+config/
