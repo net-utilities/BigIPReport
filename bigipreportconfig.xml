@@ -542,6 +542,7 @@
                 <Device></Device>
             </IgnoredDevices>
         </SupportCheck>
+
        <!--
             *************************************************
             *  The webhook to use when sending Slack alerts
