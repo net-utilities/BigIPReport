@@ -2117,7 +2117,7 @@ Function Write-TemporaryFiles {
 
 #EndRegion
 
-#Stateful checks
+#Region Stateful checks
 
 # Init script state template
 
