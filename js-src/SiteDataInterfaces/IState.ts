@@ -11,12 +11,15 @@ interface ICertificateAlert {
 }
 
 interface ISupportState {
-    supportErrorMessage: string,
-    lastChecked: string,
+    supportErrorMessage: string
+    lastChecked: string
     hasSupport: hasSupport
+    serial: string
+
 }
 
 export interface IState {
-    certificateAlerts: { [key: string]: ICertificateAlert }
-    supportStates: { [key: string]: ISupportState }
+    scriptVersion: string
+    certificateAlerts?: { [key: string]: ICertificateAlert }
+    supportStates?: { [key: string]: ISupportState }
 }
