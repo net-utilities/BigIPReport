@@ -47,7 +47,6 @@ Function GenerateCertificateAlerts {
 
                 # Certificate does not expire within the configured alert period
                 if (-not $ExpiresWithinAlertPeriod) {
-                    log "verbose" "Certificate $AlertKey does not expire within the configured time frame ($AlertWhenDaysOld days)"
                     Continue
                 }
 
