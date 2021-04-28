@@ -37,14 +37,14 @@ Function GenerateCertificateAlerts {
 
                 $HasExistingAlert = $CertificateAlerts.ContainsKey($AlertKey)
                 $ExpiresWithinAlertPeriod = ($Certificate.expirationDate - $Now) -lt $AlertWhenSecondsOld
-                
+
                 # Remove alerts for valid certificates
                 if (-not $ExpiresWithinAlertPeriod -and $HasExistingAlert) {
                     log "verbose" "Cleaning old certificate alert for $AlertKey which is now expiring within the configured time frame of $AlertWhenDaysOld"
                     $CertificateAlerts.Remove($AlertKey)
                     Continue
                 }
-                
+
                 # Certificate does not expire within the configured alert period
                 if (-not $ExpiresWithinAlertPeriod) {
                     log "verbose" "Certificate $AlertKey does not expire within the configured time frame ($AlertWhenDaysOld days)"
@@ -70,7 +70,7 @@ Function GenerateCertificateAlerts {
     }
 
     $AlertsToSend = $CertificateAlerts.Values | Where-Object { ($Now - $_.lastAlerted) -gt $WaitSecondsBetween }
-    
+
     if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
         . .\data-collector-modules\SlackAlerts\Send-SlackCertificateAlert.ps1
         Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld

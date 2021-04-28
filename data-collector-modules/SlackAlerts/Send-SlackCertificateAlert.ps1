@@ -57,7 +57,7 @@ Function Send-SlackCertificateAlert {
                     }
                 )
             }
-        )   
+        )
     }
 
     Try {

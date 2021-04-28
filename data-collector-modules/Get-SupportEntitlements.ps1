@@ -17,17 +17,17 @@ Function Get-SupportEntitlements {
     } else {
         $SupportStates = @{}
     }
-    
+
     $IgnoredDevices = @()
     # Add the ignored devices
     if ("Device" -in  $SupportCheckConfig.IgnoredDevices.PSobject.Properties.Name) {
         $IgnoredDevices = $SupportCheckConfig.IgnoredDevices.Device
     }
-    
+
     log info "Support entitlement checks configured, checking support entitlements"
     $Username = $env:F5_SUPPORT_USERNAME
     $Password = $env:F5_SUPPORT_PASSWORD
-    
+
     # If the environment variables are not set, use the configuration file credentials
     if ($null -eq $Username) {
         $Username = $SupportCheckConfig.Username
@@ -35,9 +35,9 @@ Function Get-SupportEntitlements {
     if ($null -eq $Password) {
         $Password = $SupportCheckConfig.Password
     }
-    
+
     $LoginBody = @{"user_id" = $Username; "user_secret" = $Password; "app_id"="support"}
-    
+
     Try {
         # Get a session
         $F5SupportSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
@@ -46,7 +46,7 @@ Function Get-SupportEntitlements {
         log error "Unable to login to F5s support API, skipping support entitlement checks"
         Return @{}
     }
-    
+
     if ($F5SupportSession.Cookies.Count -eq 0){
         log error "Unable to get a session to the F5 support portal"
         Return @{}
@@ -59,7 +59,7 @@ Function Get-SupportEntitlements {
             # Note. There should only be one serial number.
             # If there are more we might run into a bug where they overwrite each others statuses
             if ($SupportStates.ContainsKey($Serial)) {
-                $SupportState = $SupportStates[$Serial] 
+                $SupportState = $SupportStates[$Serial]
             } else {
                 $SupportState = @{
                     loadbalancer = $DeviceName;
@@ -94,7 +94,7 @@ Function Get-SupportEntitlements {
                 $SupportState = "Failed to connect to F5 API when retrieving support entitlement"
             }
             $SupportState.lastChecked = $Now;
-            
+
             # Add to the support state file
             $SupportStates[$Serial] = $SupportState
         }
@@ -102,7 +102,7 @@ Function Get-SupportEntitlements {
 
     if ($AlertConfig.SlackEnabled.Trim() -eq "True") {
         $AlertsToSend = $SupportStates.Values | Where-Object { $_.hasSupport -ne "ignored" -and ($now - $_.lastAlerted) -gt $WaitSecondsBetween }
-        
+
         if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
             . .\data-collector-modules\SlackAlerts\Send-SlackSupportStateAlert.ps1
             Send-SlackSupportStateAlert -AlertsToSend $AlertsToSend -SlackWebhook $SlackWebHook
@@ -114,4 +114,4 @@ Function Get-SupportEntitlements {
 
     Return $SupportStates
 }
-    
+

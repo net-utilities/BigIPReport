@@ -273,7 +273,7 @@
 #        5.5.4        2021-04-18      Fixing bug with config file credentials not being used even if specified      Patrik Jonsson  No
 #        5.5.6        2021-04-27      Adding Slack Alert support for expired certificates                           Patrik Jonsson  Yes
 #                                     Adding Slack Alert support for expired support entitlements
-#                                     Removing state if new script version or script version in state is missing 
+#                                     Removing state if new script version or script version in state is missing
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -1725,7 +1725,7 @@ function GetDeviceInfo {
     # If the environment environment variables are not set, use the configuration file instead
     if ($null -eq $User) {
         $User = $Global:Bigipreportconfig.Settings.Credentials.Username
-    }    
+    }
     if ($null -eq $Password) {
         $Password = $Global:Bigipreportconfig.Settings.Credentials.Password
     }
@@ -2124,7 +2124,7 @@ Function Write-TemporaryFiles {
 if (Test-Path $Global:StatePath) {
     $State = Get-Content $Global:StatePath | ConvertFrom-Json -AsHashtable
     # If the script version does not exist or the script version is different
-    # we need to create a new state to ensure that the script logic and 
+    # we need to create a new state to ensure that the script logic and
     # state object is compatible
     If (-not $State.ContainsKey('scriptVersion') -or $Global:ScriptVersion -ne $State.scriptVersion){
         log verbose "Script version been changed, forcing creation of new state file"
@@ -2145,7 +2145,7 @@ $State["certificateAlerts"] = GenerateCertificateAlerts -Devices $ReportObjects 
 . .\data-collector-modules\Get-SupportEntitlements.ps1
 $State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
 
-# Write the final support state to file 
+# Write the final support state to file
 $State | ConvertTo-Json | Out-File $Global:StatePath
 
 #End Region
