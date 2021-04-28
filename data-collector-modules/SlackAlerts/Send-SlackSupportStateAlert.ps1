@@ -1,4 +1,3 @@
-
 Function Send-SlackSupportStateAlert {
 
     Param($AlertsToSend, $SlackWebHook)

@@ -114,4 +114,3 @@ Function Get-SupportEntitlements {
 
     Return $SupportStates
 }
-
