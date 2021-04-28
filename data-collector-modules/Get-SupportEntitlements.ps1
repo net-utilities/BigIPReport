@@ -64,7 +64,7 @@ Function Get-SupportEntitlements {
                 $SupportState = @{
                     loadbalancer = $DeviceName;
                     serial = $Serial;
-                    hasSupport = $false;
+                    hasSupport = "false";
                     lastChecked = 0;
                     lastAlerted = 0;
                     supportErrorMessage = $null;
