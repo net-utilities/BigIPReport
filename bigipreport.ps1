@@ -285,7 +285,7 @@
 
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable','')]
 Param(
-    $Global:ConfigurationFile = "$PSScriptRoot/config/bigipreportconfig.xml",
+    $Global:ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml",
     $Global:PollLoadBalancer = $null,
     $Global:Location = $null
 )
