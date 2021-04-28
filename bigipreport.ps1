@@ -942,7 +942,6 @@ Add-Type @'
         public Hashtable modules;
         public PoolStatusVip statusvip;
         public bool success = true;
-        public string hasSupport = "unknown";
         public string supportErrorMessage;
     }
 
