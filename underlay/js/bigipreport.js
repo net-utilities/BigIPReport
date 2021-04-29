@@ -2580,11 +2580,18 @@ function showDeviceOverview(updatehash) {
 }
 function generateSupportCell(loadbalancer) {
     const serial = loadbalancer.serial.split(/\s+/).find(s => /^(f5-|Z|chs)/.test(s));
-    const supportInfo = siteData.state.supportStates[serial];
-    const icon = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
+    const supportInfo = serial in siteData.state.supportStates ? siteData.state.supportStates[serial] : {
+        hasSupport: 'unknown',
+        supportErrorMessage: 'Device has no serial number',
+        lastChecked: 'unknown',
+        serial: '',
+    };
+    const icon = ['ignored', 'unknown'].includes(supportInfo.hasSupport) ? 'images/cone.png'
         : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
             : 'images/warning.png';
-    const title = supportInfo.hasSupport === 'true' ? 'Device has active support' : supportInfo.supportErrorMessage;
+    const title = supportInfo.hasSupport === 'true' ? 'Device has active support'
+        : supportInfo.hasSupport === 'ignored' ? 'Support checks ignored in config'
+            : supportInfo.supportErrorMessage;
     return `
   <td>
       <img

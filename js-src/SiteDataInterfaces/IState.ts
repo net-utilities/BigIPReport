@@ -10,11 +10,11 @@ interface ICertificateAlert {
     lastAlerted: number,
 }
 
-interface ISupportState {
+export interface ISupportState {
     supportErrorMessage: string
     lastChecked: string
     hasSupport: hasSupport
-    serial: string
+    serial?: string
 
 }
 

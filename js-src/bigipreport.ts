@@ -9,6 +9,7 @@ import IDataGroup from './SiteDataInterfaces/IDataGroup.js';
 import ILoadbalancer, { IStatusVIP } from './SiteDataInterfaces/ILoadbalancer.js';
 import IDeviceGroup from './SiteDataInterfaces/IDeviceGroup.js';
 import showPoolDetails from './PoolDetails/showPoolDetails.js';
+import {ISupportState} from './SiteDataInterfaces/IState';
 
 /** ********************************************************************************************************************
 
@@ -2926,13 +2927,20 @@ function showDeviceOverview(updatehash) {
 function generateSupportCell(loadbalancer: ILoadbalancer) {
 
   const serial = loadbalancer.serial.split(/\s+/).find(s => /^(f5-|Z|chs)/.test(s));
-  const supportInfo = siteData.state.supportStates[serial];
+  const supportInfo: ISupportState = serial in siteData.state.supportStates ? siteData.state.supportStates[serial] : {
+    hasSupport: 'unknown',
+    supportErrorMessage: 'Device has no serial number',
+    lastChecked: 'unknown',
+    serial: '',
+  }
 
-  const icon = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
+  const icon = ['ignored', 'unknown'].includes(supportInfo.hasSupport) ? 'images/cone.png'
       : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
       : 'images/warning.png';
 
-  const title = supportInfo.hasSupport === 'true' ? 'Device has active support': supportInfo.supportErrorMessage;
+  const title = supportInfo.hasSupport === 'true' ? 'Device has active support'
+      : supportInfo.hasSupport === 'ignored' ? 'Support checks ignored in config'
+      : supportInfo.supportErrorMessage;
 
         return `
   <td>
