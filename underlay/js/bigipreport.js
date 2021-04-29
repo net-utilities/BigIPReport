@@ -2588,7 +2588,7 @@ function generateSupportCell(loadbalancer) {
     return `
   <td>
       <img
-        class="support-icon" src="${icon}" title="${title}"
+        class="support-icon" src="${icon}" title='${title}'
       />
   </td>`;
 }
