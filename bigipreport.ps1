@@ -1757,7 +1757,7 @@ function GetDeviceInfo {
 
     # REST login sometimes works, and sometimes does not. Try 3 times in case it's flakey
     $tries = 0
-    while ($tries -lt 1) {
+    while ($tries -lt 4) {
         try {
             $tries++
             $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
