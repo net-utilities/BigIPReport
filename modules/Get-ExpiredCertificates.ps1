@@ -1,4 +1,4 @@
-Function GenerateCertificateAlerts {
+Function Get-ExpiredCertificates {
     Param($Devices, $State, $AlertConfig, $SlackWebHook)
 
     # Check if any Alert Transport has been enabled, return if not
@@ -71,7 +71,7 @@ Function GenerateCertificateAlerts {
     $AlertsToSend = $CertificateAlerts.Values | Where-Object { ($Now - $_.lastAlerted) -gt $WaitSecondsBetween }
 
     if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
-        . .\data-collector-modules\SlackAlerts\Send-SlackCertificateAlert.ps1
+        . .\modules\Send-SlackCertificateAlert.ps1
         Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld
         if($?){
             $CertificateAlerts.Values | ForEach-Object { $_.lastAlerted = $Now}

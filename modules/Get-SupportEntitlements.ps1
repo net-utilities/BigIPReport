@@ -78,7 +78,7 @@ Function Get-SupportEntitlements {
             }
 
             if ([math]::Floor((Get-Date -UFormat %s)) - $SupportState.lastChecked -lt 86400) {
-                log info "Fresh support entitlement data exists, using the previous data"
+                log info "Fresh support entitlement data exists, using the previous data for $DeviceName ($Serial)"
                 Continue
             }
 
@@ -91,6 +91,7 @@ Function Get-SupportEntitlements {
                     $SupportState.supportErrorMessage = $ResponseData.errorMessage
                 }
             } catch {
+                log error "Failed to connect to F5 API when retrieving support entitlement"
                 $SupportState = "Failed to connect to F5 API when retrieving support entitlement"
             }
             $SupportState.lastChecked = $Now;
@@ -104,7 +105,7 @@ Function Get-SupportEntitlements {
         $AlertsToSend = $SupportStates.Values | Where-Object { $_.hasSupport -ne "ignored" -and ($now - $_.lastAlerted) -gt $WaitSecondsBetween }
 
         if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
-            . .\data-collector-modules\SlackAlerts\Send-SlackSupportStateAlert.ps1
+            . .\modules\Send-SlackSupportStateAlert.ps1
             Send-SlackSupportStateAlert -AlertsToSend $AlertsToSend -SlackWebhook $SlackWebHook
             if($?){
                 $SupportStates.Values | ForEach-Object { $_.lastAlerted = $Now}

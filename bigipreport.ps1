@@ -798,7 +798,6 @@ if (-not $SaneConfig) {
 
 #Variables used for storing report data
 $Global:NATdict = c@ {}
-$Global:SupportState = @{}
 $Global:DeviceGroups = @();
 
 #Build the path to the default document and json files
@@ -815,9 +814,7 @@ $Global:paths.certificates = $Global:bigipreportconfig.Settings.ReportRoot + "js
 $Global:paths.loggederrors = $Global:bigipreportconfig.Settings.ReportRoot + "json/loggederrors.json"
 $Global:paths.asmpolicies = $Global:bigipreportconfig.Settings.ReportRoot + "json/asmpolicies.json"
 $Global:paths.nat = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
-
-# Set the support state path
-$Global:StatePath = $Global:bigipreportconfig.Settings.ReportRoot + "json/state.json"
+$Global:paths.state = $Global:bigipreportconfig.Settings.ReportRoot + "json/state.json"
 
 
 #Create types used to store the data gathered from the load balancers
@@ -1913,88 +1910,6 @@ function GetDeviceInfo {
     }
 }
 
-#Region Get-SupportState
-Function Get-SupportState {
-    log info "Checking support state"
-
-    if (Test-Path $Global:paths.supportstate) {
-        $Global:SupportState = Get-Content $Global:paths.supportstate | ConvertFrom-Json -AsHashtable
-    }
-
-    $IgnoredDevices = @()
-    # Add the ignored devices
-    if ("Device" -in  $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.PSobject.Properties.Name) {
-        $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
-    }
-
-    $Username = $env:F5_SUPPORT_USERNAME
-    $Password = $env:F5_SUPPORT_PASSWORD
-
-    # If the environment variables are not set, use the configuration file credentials
-    if ($null -eq $Username) {
-        $Username = $Global:Bigipreportconfig.Settings.SupportCheck.Username
-    }
-    if ($null -eq $Password) {
-        $Password = $Global:Bigipreportconfig.Settings.SupportCheck.Password
-    }
-
-    $LoginBody = @{"user_id" = $Username; "user_secret" = $Password; "app_id"="support"}
-
-    Try {
-        # Get a session
-        $F5SupportSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -WebSession $F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
-    } Catch {
-        log error "Unable to login to F5s support API, skipping support entitlement checks"
-    }
-
-    if ($F5SupportSession.Cookies.Count -ne 0){
-        Foreach($DeviceName in $Global:ReportObjects.Keys){
-            $Device = $Global:ReportObjects[$DeviceName]
-
-            if ($DeviceName -in $IgnoredDevices){
-                $Device.LoadBalancer.hasSupport = "ignored"
-                Continue
-            }
-
-            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
-                # Note. There should only be one serial number.
-                # If there are more we might run into a bug where they overwrite each others statuses
-                if ($Global:SupportState.ContainsKey($Serial)) {
-                    $LastChecked = $Global:SupportState[$Serial].lastChecked
-                } else {
-                    $LastChecked = 0
-                }
-
-                if ([math]::Floor((Get-Date -UFormat %s)) - $LastChecked -gt 86400) {
-                    log info "Validating support for $($Device.LoadBalancer.name) ($Serial)"
-                    try {
-                        $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
-                        $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
-                        $Device.LoadBalancer.hasSupport = $ResponseData.valid
-                        If($ResponseData.ContainsKey("errorMessage")) {
-                            $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
-                        }
-                    } catch {
-                        $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
-                    }
-                    # Add to the support state file
-                    $Global:SupportState[$Serial] = @{
-                        lastChecked = ([math]::Floor((Get-Date -UFormat %s)));
-                        supportErrorMessage = $Device.LoadBalancer.supportErrorMessage;
-                        hasSupport = $Device.LoadBalancer.hasSupport;
-                    }
-                } else {
-                    log info "Using cached support for $($Device.LoadBalancer.name) ($Serial)"
-                    $Device.LoadBalancer.supportErrorMessage = $Global:SupportState[$Serial].supportErrorMessage
-                    $Device.LoadBalancer.hasSupport = $Global:SupportState[$Serial].hasSupport
-                }
-            }
-        }
-    }
-}
-#EndRegion
-
 $JobsToStart = @()
 
 #Region Job handling
@@ -2162,8 +2077,8 @@ Function Write-JSONFile {
 
 #Region Function Write-TemporaryFiles
 Function Write-TemporaryFiles {
-    #This is done to save some downtime if writing the report over a slow connection
-    #or if the report is really big.
+    # This is done to save some downtime if writing the report over a slow connection
+    # or if the report is really big.
 
     $WriteStatuses = @()
 
@@ -2178,6 +2093,7 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data @( $Global:Out.VirtualServers | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:Out.Certificates | Sort-Object loadbalancer, fileName )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.asmpolicies -Data @( $Global:Out.ASMPolicies | Sort-Object loadbalancer, name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.state -Data $Global:State
 
     if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true) {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.irules -Data @($Global:Out.iRules | Sort-Object loadbalancer, name )
@@ -2202,10 +2118,6 @@ Function Write-TemporaryFiles {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @()
     }
 
-    if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.supportstate -Data $Global:SupportState
-    }
-
     # write preferences last time is most accurate
     $Global:Preferences['executionTime'] = $($(Get-Date) - $StartTime).TotalMinutes
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.preferences -Data $Global:Preferences
@@ -2218,32 +2130,29 @@ Function Write-TemporaryFiles {
 
 # Init script state template
 
-if (Test-Path $Global:StatePath) {
-    $State = Get-Content $Global:StatePath | ConvertFrom-Json -AsHashtable
+if (Test-Path $Global:paths.state) {
+    $Global:State = Get-Content $Global:paths.state | ConvertFrom-Json -AsHashtable
     # If the script version does not exist or the script version is different
     # we need to create a new state to ensure that the script logic and
     # state object is compatible
-    If (-not $State.ContainsKey('scriptVersion') -or $Global:ScriptVersion -ne $State.scriptVersion){
+    If (-not $Global:State.ContainsKey('scriptVersion') -or $Global:ScriptVersion -ne $Global:State.scriptVersion){
         log verbose "Script version been changed, forcing creation of new state file"
-        $State = @{
+        $Global:State = @{
             scriptVersion = $Global:ScriptVersion
         }
     }
 } Else {
-    $State = @{
+    $Global:State = @{
         scriptVersion = $Global:ScriptVersion
     }
 }
 
 # Alerts
-. .\data-collector-modules\CertificateAlerts.ps1
-$State["certificateAlerts"] = GenerateCertificateAlerts -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
+. .\modules\Get-ExpiredCertificates.ps1
+$Global:State["certificateAlerts"] = Get-ExpiredCertificates -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
 
-. .\data-collector-modules\Get-SupportEntitlements.ps1
-$State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
-
-# Write the final support state to file
-$State | ConvertTo-Json | Out-File $Global:StatePath
+. .\modules\Get-SupportEntitlements.ps1
+$Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
 
 #End Region
 
