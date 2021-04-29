@@ -67,7 +67,7 @@ Function Get-SupportEntitlements {
                     hasSupport = "false";
                     lastChecked = 0;
                     lastAlerted = 0;
-                    supportErrorMessage = $null;
+                    supportErrorMessage = "";
                 }
             }
 

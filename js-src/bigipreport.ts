@@ -2824,7 +2824,7 @@ function showDeviceOverview(updatehash) {
                   </td>>
                   <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>` : '' }
                   <td>FAILED TO INDEX</td>
-                  <td><img class="devicestatusicon" alt="Failed to index"
+                  <td><img class="devicestatusicon" title="Failed to index" alt="Failed to index"
             src="images/devicestatusred.png"/> ${renderLoadBalancer(deviceIP, '')}</td>
                   <td>Unknown</td>
                   <td>Unknown</td>
@@ -2932,9 +2932,7 @@ function generateSupportCell(loadbalancer: ILoadbalancer) {
       : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
       : 'images/warning.png';
 
-  const title = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
-      : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
-          : 'images/warning.png';
+  const title = supportInfo.hasSupport === 'true' ? 'Device has active support': supportInfo.supportErrorMessage;
 
         return `
   <td>
