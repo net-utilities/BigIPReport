@@ -78,7 +78,7 @@ Function Get-SupportEntitlements {
             }
 
             if ([math]::Floor((Get-Date -UFormat %s)) - $SupportState.lastChecked -lt 86400) {
-                log info "Fresh support entitlement data exists, using the previous data for $DeviceName ($Serial)"
+                log info "Using cached support data for $DeviceName ($Serial)"
                 Continue
             }
 
