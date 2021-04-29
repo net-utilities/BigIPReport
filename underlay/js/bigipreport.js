@@ -2580,7 +2580,7 @@ function showDeviceOverview(updatehash) {
 }
 function generateSupportCell(loadbalancer) {
     const serial = loadbalancer.serial.split(/\s+/).find(s => /^(f5-|Z|chs)/.test(s));
-    const supportInfo = siteData.state.supportStates[serial];
+    const supportInfo = siteData.state.supportStates[];
     const icon = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
         : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
             : 'images/warning.png';

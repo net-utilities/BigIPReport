@@ -1757,7 +1757,7 @@ function GetDeviceInfo {
 
     # REST login sometimes works, and sometimes does not. Try 3 times in case it's flakey
     $tries = 0
-    while ($tries -lt 1) {
+    while ($tries -lt 3) {
         try {
             $tries++
             $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
@@ -2156,13 +2156,16 @@ $Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects
 #End Region
 
 #Region Check for missing data
-#Verify that data from all the load balancers has been indexed by checking the pools variable
+# Verify that data from all the load balancers has been indexed by checking the pools variable
 $MissingData = $false
+$FailedLoadbalancers = @()
+
 log verbose "Checking for missing data"
-#For every load balancer IP we will check that no pools or virtual servers are missing
+# For every load balancer IP we will check that no pools or virtual servers are missing
 Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $DeviceGroupHasData = $False
     ForEach ($Device in $DeviceGroup.Device) {
+        $FailedDevice = $False
         $LoadBalancerObjects = $Global:ReportObjects[$Device]
         If ($LoadBalancerObjects) {
             $LoadBalancer = $LoadBalancerObjects.LoadBalancer
@@ -2173,35 +2176,45 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
                 If ($LoadBalancerObjects.VirtualServers.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Virtual Server data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 If ($LoadBalancerObjects.Pools.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Pool data"
+                    $MissingData = $true
+                    $FailedDevice = $true
                 }
                 If ($LoadBalancerObjects.Monitors.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Monitor data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 If ($LoadBalancerObjects.iRules.Count -eq 0) {
                     log error "$LoadBalancerName does not have any iRule data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 if ($LoadBalancerObjects.Nodes.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Node data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 if ($LoadBalancerObjects.DataGroups.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Data group data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 if ($LoadBalancerObjects.Certificates.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Certificate data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
             }
         } Else {
             log error "$Device does not seem to have been indexed"
             $MissingData = $true
+            $FailedDevice = $true
         }
+        If ($FailedDevice) { $FailedLoadbalancers += $Device }
     }
     If (-Not $DeviceGroupHasData) {
         log error "Missing data from device group containing $($DeviceGroup.Device -Join ", ")."
@@ -2211,11 +2224,10 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
 
 if ($MissingData) {
     log error "Missing data, run script with xml and a loadbalancer name for more information"
-    if (-not $Global:Bigipreportconfig.Settings.ErrorReportAnyway -eq $true) {
-        log error "Missing load balancer data, no report will be written"
-        Send-Errors
-        Exit
-    }
+    log info "Trying to use data from a previous batch"
+    
+    $FailedLoadbalancers
+
     log error "Missing load balancer data, writing report anyway"
 } else {
     log success "No missing data was detected, compiling the report"
@@ -2257,7 +2269,8 @@ if (-not (Write-TemporaryFiles)) {
     log success "Wrote temporary files"
 }
 
-if ($TemporaryFilesWritten) {
+#Debugging reasons
+if ($false -and $TemporaryFilesWritten) {
     #Had some problems with the move of the temporary files
     #Adding a sleep to allow the script to finish writing
     Start-Sleep 5
