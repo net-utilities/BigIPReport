@@ -56,9 +56,9 @@ window.addEventListener('load', function () {
         $('#firstlayerdiv').fadeIn();
     };
     /** ******************************************************************************************************************
-
+  
           Lightbox related functions
-
+  
       *******************************************************************************************************************/
     /* Hide the lightbox if clicking outside the information box*/
     $('body').on('click', function (e) {
@@ -107,19 +107,19 @@ window.addEventListener('load', function () {
             siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
             poolNum++;
         });
-    }).fail(addJSONLoadingFailure),
+    }).fail(addJSONLoadingFailure), 
     // Get the monitor data
     $.getJSON('json/monitors.json', function (result) {
         siteData.monitors = result;
-    }).fail(addJSONLoadingFailure),
+    }).fail(addJSONLoadingFailure), 
     // Get the virtual servers data
     $.getJSON('json/virtualservers.json', function (result) {
         siteData.virtualservers = result;
-    }).fail(addJSONLoadingFailure),
+    }).fail(addJSONLoadingFailure), 
     // Get the irules data
     $.getJSON('json/irules.json', function (result) {
         siteData.irules = result;
-    }).fail(addJSONLoadingFailure),
+    }).fail(addJSONLoadingFailure), 
     // Get the datagroup data
     $.getJSON('json/datagroups.json', function (result) {
         siteData.datagroups = result;
@@ -155,9 +155,9 @@ window.addEventListener('load', function () {
       </div>
     `);
         /** ***********************************************************************************************************
-
+    
                 All pre-requisite things have loaded
-
+    
             **************************************************************************************************************/
         // Show statistics from siteData arrays
         log('Loaded: ' +
@@ -166,15 +166,15 @@ window.addEventListener('load', function () {
                 .map((k) => `${k}: ${siteData[k].length}`)
                 .join(', '), 'INFO');
         /** ***********************************************************************************************************
-
+    
                 Load preferences
-
+    
             **************************************************************************************************************/
         loadPreferences();
         /** ***********************************************************************************************************
-
+    
                 Test the status VIPs
-
+    
         **************************************************************************************************************/
         initializeStatusVIPs();
         /* highlight selected menu option */
@@ -1188,9 +1188,9 @@ function setupVirtualServerTable() {
     </table>`;
     $('div#virtualservers').html(content);
     /** ***********************************************************************************************************
-
+  
           Initiate data tables, add a search all columns header and save the standard table header values
-
+  
       **************************************************************************************************************/
     siteData.bigipTable = $('table#allbigips').DataTable({
         autoWidth: false,
@@ -1442,9 +1442,9 @@ function setupVirtualServerTable() {
         updateLocationHash();
     });
     /** ******************************************************************************************************************
-
+  
           Add custom data tables functions
-
+  
     *********************************************************************************************************************/
     // Prevents sorting the columns when clicking on the sorting headers
     $('table#allbigips thead th input').on('click', function (e) {
@@ -1464,9 +1464,9 @@ function setupVirtualServerTable() {
         setPoolTableCellWidth();
     });
     /** ***********************************************************************************************************
-
+  
           If any search parameters has been sent, populate the search
-
+  
       **************************************************************************************************************/
     siteData.bigipTable.draw();
 }
@@ -2483,7 +2483,7 @@ function showDeviceOverview(updatehash) {
                   </td>>
                   <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>` : ''}
                   <td>FAILED TO INDEX</td>
-                  <td><img class="devicestatusicon" alt="Failed to index"
+                  <td><img class="devicestatusicon" title="Failed to index" alt="Failed to index"
             src="images/devicestatusred.png"/> ${renderLoadBalancer(deviceIP, '')}</td>
                   <td>Unknown</td>
                   <td>Unknown</td>
@@ -2584,9 +2584,7 @@ function generateSupportCell(loadbalancer) {
     const icon = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
         : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
             : 'images/warning.png';
-    const title = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
-        : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
-            : 'images/warning.png';
+    const title = supportInfo.hasSupport === 'true' ? 'Device has active support' : supportInfo.supportErrorMessage;
     return `
   <td>
       <img
