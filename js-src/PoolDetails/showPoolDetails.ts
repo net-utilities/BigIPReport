@@ -212,7 +212,7 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
 
               curllink = `<a href="${url}" target="_blank"
                             class="monitortest"
-                            data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand" 
+                            data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand"
                             class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
             }
 
