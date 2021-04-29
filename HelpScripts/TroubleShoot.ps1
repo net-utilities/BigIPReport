@@ -32,7 +32,7 @@ Function Test-F5Connectivity {
     $Result = Test-NetConnection 192.168.70.117 -Port 443
 
     If($Result.TcpTestSucceeded){
-        Write-Host "Network connectivity: " -NoNewLine; Write-Host "Successful" -ForegroundColor Green 
+        Write-Host "Network connectivity: " -NoNewLine; Write-Host "Successful" -ForegroundColor Green
     } Else {
         Write-Host "Network connectivity: " -NoNewLine; Write-Host "Failed" -ForegroundColor Red
     }
@@ -122,7 +122,7 @@ Function Test-PSVersion {
 Test-F5Connectivity $Device
 
 if($Device -Match '^[0-9\.]+$'){
-    Write-Host "Device IP was used instead of device FQDN, skipping cipher tests" -ForegroundColor "Red" 
+    Write-Host "Device IP was used instead of device FQDN, skipping cipher tests" -ForegroundColor "Red"
 } Else {
     "Supported ciphers"
     $Ciphers = Test-ServerSSLSupport $Device

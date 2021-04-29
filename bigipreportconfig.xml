@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
     <!--Leave the version information intact-->
-    <Settings version="5.5.3">
+    <Settings version="5.5.6">
 
         <!--
         ***************************************************************************
@@ -543,4 +543,38 @@
             </IgnoredDevices>
         </SupportCheck>
 
+       <!--
+            *************************************************
+            *  The webhook to use when sending Slack alerts
+            *  Leave empty if not using Slack alerts
+            *************************************************
+        -->
+
+        <SlackWebhook></SlackWebhook>
+
+        <!--
+            **********************************************************************************************************
+            * CertificateExpiration
+            * Description: Have BigIPReport alert when certificates are about to expire
+            * WaitHoursBetween: How many hours between alerting, per certificate
+            * SlackEnabled: If you want to send this alert via Slack (don't forget to configure the web hook above)
+            *
+            * FailedSupportChecks
+            * Description: Have BigIPReport alert when it find a serial number that does not
+            *              have support entitlement
+            * WaitHoursBetween: How many hours between alerts, per serial
+            * SlackEnabled: If you want to send this alert via Slack (don't forget to configure the web hook above)
+        -->
+
+        <Alerts>
+            <CertificateExpiration>
+                <AlertWhenDaysToExpiration>30</AlertWhenDaysToExpiration>
+                <WaitHoursBetween>24</WaitHoursBetween>
+                <SlackEnabled>False</SlackEnabled>
+            </CertificateExpiration>
+            <FailedSupportChecks>
+                <WaitHoursBetween>168</WaitHoursBetween>
+                <SlackEnabled>False</SlackEnabled>
+            </FailedSupportChecks>
+        </Alerts>
     </Settings>

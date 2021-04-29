@@ -960,6 +960,14 @@ table#deviceoverviewtable img.support-icon {
     max-width: 30px;
 }
 
+table#deviceoverviewtable tr.out-of-sync-device {
+    background: #FFF8F0;
+}
+
+table#deviceoverviewtable tr.failed-device {
+    background: #fff7f7;
+}
+
 /****************************************************************************************************************************
     This section contains the style for the preferences
 *****************************************************************************************************************************/

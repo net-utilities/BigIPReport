@@ -270,6 +270,10 @@
 #        5.5.1        2021-04-08      Verify support entitlement                                                    Patrik Jonsson  Yes
 #        5.5.2        2021-04-12      Only do support entitlement checks once per day                               Patrik Jonsson  No
 #        5.5.3        2021-04-15      Adding support for credentials as environment variables                       Patrik Jonsson  No
+#        5.5.4        2021-04-18      Fixing bug with config file credentials not being used even if specified      Patrik Jonsson  No
+#        5.5.6        2021-04-27      Adding Slack Alert support for expired certificates                           Patrik Jonsson  Yes
+#                                     Adding Slack Alert support for expired support entitlements
+#                                     Removing state if new script version or script version in state is missing
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -313,7 +317,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.3"
+$Global:ScriptVersion = "5.5.6"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -531,6 +535,14 @@ Function Send-Errors {
     }
 }
 
+Function Test-ConfigPath {
+    Param($XPath)
+
+    $NodeList = $Global:Bigipreportconfig.SelectNodes($XPath)
+    Return $NodeList.Count -gt 0
+}
+
+
 ################################################################################################################################################
 #
 #    Pre-execution checks
@@ -707,6 +719,29 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
     }
 }
 
+if ($null -ne $Env:SLACK_WEBHOOK) {
+    $SlackWebhook = $Env:SLACK_WEBHOOK
+} elseif (Test-ConfigPath "/Settings/SlackWebhook"){
+    $SlackWebHook = $Global:Bigipreportconfig.Settings.SlackWebhook.Trim()
+} else {
+    log error "Slack Webhook config not present in the configuration, please upgrade your configuration file"
+    $SaneConfig = $false
+}
+
+if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
+    if($Bigipreportconfig.Settings.Alerts.CertificateExpiration.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+        $SaneConfig = $false
+    }
+}
+
+if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
+    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+        $SaneConfig = $false
+    }
+}
+
 # Load Preferences
 $Global:Preferences['HideLoadBalancerFQDN'] = ($Global:Bigipreportconfig.Settings.HideLoadBalancerFQDN -eq $true)
 $Global:Preferences['PollingMaxPools'] = [int]$Global:Bigipreportconfig.Settings.RealTimeMemberStates.MaxPools
@@ -763,7 +798,6 @@ if (-not $SaneConfig) {
 
 #Variables used for storing report data
 $Global:NATdict = c@ {}
-$Global:SupportState = @{}
 $Global:DeviceGroups = @();
 
 #Build the path to the default document and json files
@@ -780,7 +814,8 @@ $Global:paths.certificates = $Global:bigipreportconfig.Settings.ReportRoot + "js
 $Global:paths.loggederrors = $Global:bigipreportconfig.Settings.ReportRoot + "json/loggederrors.json"
 $Global:paths.asmpolicies = $Global:bigipreportconfig.Settings.ReportRoot + "json/asmpolicies.json"
 $Global:paths.nat = $Global:bigipreportconfig.Settings.ReportRoot + "json/nat.json"
-$Global:paths.supportstate = $Global:bigipreportconfig.Settings.ReportRoot + "json/supportstate.json"
+$Global:paths.state = $Global:bigipreportconfig.Settings.ReportRoot + "json/state.json"
+
 
 #Create types used to store the data gathered from the load balancers
 Add-Type @'
@@ -907,7 +942,6 @@ Add-Type @'
         public Hashtable modules;
         public PoolStatusVip statusvip;
         public bool success = true;
-        public string hasSupport = "unknown";
         public string supportErrorMessage;
     }
 
@@ -1876,110 +1910,9 @@ function GetDeviceInfo {
     }
 }
 
-#Region Get-SupportState
-Function Get-SupportState {
-    log info "Checking support state"
-
-    if (Test-Path $Global:paths.supportstate) {
-        $Global:SupportState = Get-Content $Global:paths.supportstate | ConvertFrom-Json -AsHashtable
-    }
-
-    $IgnoredDevices = @()
-    # Add the ignored devices
-    if ("Device" -in  $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.PSobject.Properties.Name) {
-        $IgnoredDevices = $Global:Bigipreportconfig.Settings.SupportCheck.IgnoredDevices.Device
-    }
-
-    $Username = $env:F5_SUPPORT_USERNAME
-    $Password = $env:F5_SUPPORT_PASSWORD
-
-    # If the environment variables are not set, use the configuration file credentials
-    if ($null -eq $Username) {
-        $Username = $Global:Bigipreportconfig.Settings.SupportCheck.Username
-    }
-    if ($null -eq $Password) {
-        $Password = $Global:Bigipreportconfig.Settings.SupportCheck.Password
-    }
-
-    $LoginBody = @{"user_id" = $Username; "user_secret" = $Password; "app_id"="support"}
-
-    Try {
-        # Get a session
-        $F5SupportSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-        $Response = Invoke-WebRequest -Headers @{ "Content-Type" = "application/json"} -WebSession $F5SupportSession -Method Post -Body $($LoginBody | ConvertTo-Json) "https://api-u.f5.com/auth/pub/sso/login/user"
-    } Catch {
-        log error "Unable to login to F5s support API, skipping support entitlement checks"
-    }
-
-    if ($F5SupportSession.Cookies.Count -ne 0){
-        Foreach($DeviceName in $Global:ReportObjects.Keys){
-            $Device = $Global:ReportObjects[$DeviceName]
-
-            if ($DeviceName -in $IgnoredDevices){
-                $Device.LoadBalancer.hasSupport = "ignored"
-                Continue
-            }
-
-            Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
-                # Note. There should only be one serial number.
-                # If there are more we might run into a bug where they overwrite each others statuses
-                if ($Global:SupportState.ContainsKey($Serial)) {
-                    $LastChecked = $Global:SupportState[$Serial].lastChecked
-                } else {
-                    $LastChecked = 0
-                }
-
-                if ([math]::Floor((Get-Date -UFormat %s)) - $LastChecked -gt 86400) {
-                    log info "Validating support for $($Device.LoadBalancer.name) ($Serial)"
-                    try {
-                        $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
-                        $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
-                        $Device.LoadBalancer.hasSupport = $ResponseData.valid
-                        If($ResponseData.ContainsKey("errorMessage")) {
-                            $Device.LoadBalancer.supportErrorMessage = $ResponseData.errorMessage
-                        }
-                    } catch {
-                        $Device.LoadBalancer.supportErrorMessage = "Failed to connect to F5 API when retrieving support entitlement"
-                    }
-                    # Add to the support state file
-                    $Global:SupportState[$Serial] = @{
-                        lastChecked = ([math]::Floor((Get-Date -UFormat %s)));
-                        supportErrorMessage = $Device.LoadBalancer.supportErrorMessage;
-                        hasSupport = $Device.LoadBalancer.hasSupport;
-                    }
-                } else {
-                    log info "Using cached support for $($Device.LoadBalancer.name) ($Serial)"
-                    $Device.LoadBalancer.supportErrorMessage = $Global:SupportState[$Serial].supportErrorMessage
-                    $Device.LoadBalancer.hasSupport = $Global:SupportState[$Serial].hasSupport
-                }
-            }
-        }
-    }
-}
-#EndRegion
-
-$JobsToStart = @()
 
 #Region Job handling
-if ($null -ne $CurrentJob) {
-    # CurrentJob indicates that this is a child process or a debug execution
-    GetDeviceInfo($CurrentJob)
-    if ($null -eq $Location) {
-        log verbose "Testing, so not writing results"
-    } else {
-        # Output the polled load balancer to JSON data and send the parent process
-        $Global:ReportObjects[$CurrentJob] | ConvertTo-Json -Compress -Depth 10
-    }
-    # Exit child process
-    exit
-}
-#EndRegion
-
-##################################################################################################
-#           Anything below this line is only executed by the main (parent) process
-##################################################################################################
-
-#Region Job creation
+$JobsToStart = @()
 Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $IsOnlyDevice = @($DeviceGroup.Device).Count -eq 1
     $StatusVIP = $DeviceGroup.StatusVip
@@ -1989,11 +1922,29 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
 
     Foreach ($Device in $DeviceGroup.Device) {
         $ObjDeviceGroup.ips += $Device
-        $JobsToStart += $Device
+        if ($null -eq $CurrentJob) {
+            $JobsToStart += $Device
+        } elseif ($Device -eq $CurrentJob) {
+            # CurrentJob indicates that this is a child process or a debug execution
+            # also uses $IsOnlyDevice, $StatusVIP
+            GetDeviceInfo($CurrentJob)
+            if ($null -eq $Location) {
+                log verbose "Testing, so not writing results"
+            } else {
+                # Output the polled load balancer to JSON data and send the parent process
+                $Global:ReportObjects[$CurrentJob] | ConvertTo-Json -Compress -Depth 10
+            }
+            # Exit child process
+            exit
+        }
     }
     $Global:DeviceGroups += $ObjDeviceGroup
 }
 #EndRegion
+
+##################################################################################################
+#           Anything below this line is only executed by the main (parent) process
+##################################################################################################
 
 #Region Call Cache LTM information
 
@@ -2125,8 +2076,8 @@ Function Write-JSONFile {
 
 #Region Function Write-TemporaryFiles
 Function Write-TemporaryFiles {
-    #This is done to save some downtime if writing the report over a slow connection
-    #or if the report is really big.
+    # This is done to save some downtime if writing the report over a slow connection
+    # or if the report is really big.
 
     $WriteStatuses = @()
 
@@ -2141,6 +2092,7 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data @( $Global:Out.VirtualServers | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:Out.Certificates | Sort-Object loadbalancer, fileName )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.asmpolicies -Data @( $Global:Out.ASMPolicies | Sort-Object loadbalancer, name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.state -Data $Global:State
 
     if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true) {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.irules -Data @($Global:Out.iRules | Sort-Object loadbalancer, name )
@@ -2165,10 +2117,6 @@ Function Write-TemporaryFiles {
         $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.datagroups -Data @()
     }
 
-    if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
-        $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.supportstate -Data $Global:SupportState
-    }
-
     # write preferences last time is most accurate
     $Global:Preferences['executionTime'] = $($(Get-Date) - $StartTime).TotalMinutes
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.preferences -Data $Global:Preferences
@@ -2176,9 +2124,36 @@ Function Write-TemporaryFiles {
 }
 #EndRegion
 
-if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -eq "true") {
-  Get-SupportState
+
+#Region Stateful checks
+
+# Init script state template
+
+if (Test-Path $Global:paths.state) {
+    $Global:State = Get-Content $Global:paths.state | ConvertFrom-Json -AsHashtable
+    # If the script version does not exist or the script version is different
+    # we need to create a new state to ensure that the script logic and
+    # state object is compatible
+    If (-not $Global:State.ContainsKey('scriptVersion') -or $Global:ScriptVersion -ne $Global:State.scriptVersion){
+        log verbose "Script version been changed, forcing creation of new state file"
+        $Global:State = @{
+            scriptVersion = $Global:ScriptVersion
+        }
+    }
+} Else {
+    $Global:State = @{
+        scriptVersion = $Global:ScriptVersion
+    }
 }
+
+# Alerts
+. .\modules\Get-ExpiredCertificates.ps1
+$Global:State["certificateAlerts"] = Get-ExpiredCertificates -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
+
+. .\modules\Get-SupportEntitlements.ps1
+$Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
+
+#End Region
 
 #Region Check for missing data
 #Verify that data from all the load balancers has been indexed by checking the pools variable

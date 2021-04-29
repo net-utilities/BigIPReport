@@ -5,11 +5,7 @@ export interface IStatusVIP {
   reason: string
 }
 
-type hasSupport = 'unknown' | 'true' | 'false' | 'ignored';
-
 export default interface ILoadbalancer {
-  supportErrorMessage: string;
-  hasSupport: hasSupport;
   model: string,
   serial: string,
   name: string,

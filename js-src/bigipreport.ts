@@ -178,6 +178,9 @@ window.addEventListener('load', function () {
     $.getJSON('json/nat.json', function (result) {
       siteData.NATdict = result;
     }).fail(addJSONLoadingFailure),
+    $.getJSON('json/state.json', function (result) {
+      siteData.state = result;
+    }).fail(addJSONLoadingFailure),
     $.getJSON('json/loggederrors.json', function (result) {
       siteData.loggedErrors = result.concat(siteData.loggedErrors);
     }).fail(addJSONLoadingFailure)
@@ -2781,13 +2784,11 @@ function showDeviceOverview(updatehash) {
                 <tbody>`;
 
   for (const d in deviceGroups) {
-    let firstDevice = true;
+
     const deviceGroup = deviceGroups[d];
 
     // Get an icon from a functioning device, if any
-
-    let icon = '';
-    let successFound = false;
+    let deviceIcon = 'images/deviceicons/unknowndevice.png';
 
     for (const i in deviceGroup.ips) {
       const loadbalancer =
@@ -2797,120 +2798,121 @@ function showDeviceOverview(updatehash) {
 
       if (loadbalancer) {
         const model = loadbalancer.model && loadbalancer.model.toUpperCase();
-        const deviceData = siteData.knownDevices[model] || false;
-        successFound = true;
-
-        if (deviceData) {
-          icon = deviceData.icon;
-          break;
-        }
+        deviceIcon = model in siteData.knownDevices ? siteData.knownDevices[model].icon :
+            'images/deviceicons/unknowndevice.png';
+        break;
       }
     }
 
-    if (icon === '' && successFound) {
-      icon = 'images/deviceicons/unknowndevice.png';
-    } else if (icon === '') {
-      icon = 'images/faileddevice.png';
-    }
+    deviceGroup.ips.forEach((deviceIP, deviceIndex) => {
 
-    for (const i in deviceGroup.ips) {
       const loadbalancer =
         loadbalancers.find(function (o) {
-          return o.ip === deviceGroup.ips[i];
+          return o.ip === deviceIP;
         });
+
+      // This load balancer has failed to index
+      if(!loadbalancer) {
+        html += `
+                <tr class="failed-device" title="BigIPReport has failed to index this device">
+                  ${deviceIndex === 0 ? `
+                    <td
+                        rowspan="${deviceGroup.ips.length}"
+                        class="deviceiconcell"
+                    >
+                    <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
+                  </td>>
+                  <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>` : '' }
+                  <td>FAILED TO INDEX</td>
+                  <td><img class="devicestatusicon" title="Failed to index" alt="Failed to index"
+            src="images/devicestatusred.png"/> ${renderLoadBalancer(deviceIP, '')}</td>
+                  <td>Unknown</td>
+                  <td>Unknown</td>
+                  <td>Unknown</td>
+                  <td>Unknown</td>
+                  ${siteData.preferences.supportCheckEnabled ?
+                    '<td>Unknown</td>'
+                    : ''}
+                  <td>Unknown</td>
+                  <td>Unknown</td>`;
+        return;
+      }
 
       let pollingStatus = 'N/A (passive device)';
 
-      if (loadbalancer) {
-        if (loadbalancer.active || loadbalancer.isonlydevice) {
-          if (loadbalancer.statusvip.url === '') {
-            pollingStatus =
-              '<span class="devicepollingnotconfigured">Not configured</span>';
-          } else if (loadbalancer.statusvip.working) {
-            pollingStatus = '<span class="devicepollingsuccess">Working</span>';
-          } else {
-            pollingStatus = '<span class="devicepollingfailed">Failed</span>';
-          }
-        }
-
-        const devicestatus = loadbalancer.color || 'red';
-        if (firstDevice) {
-          html +=
-            `<tr><td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">` +
-            `<img class="deviceicon" alt="deviceicon" src="${icon}"/></td>` +
-            `<td class="devicenamecell" rowspan="${deviceGroup.ips.length}">` +
-            renderLoadBalancer(deviceGroup.name, 'display') +
-            '</td>';
-          firstDevice = false;
-        } else if (devicestatus == 'green') {
-          html += '<tr title="Secondary device is Active" style="background-color: #FFF8F0;">';
+      if (loadbalancer.active || loadbalancer.isonlydevice) {
+        const { url, working } = loadbalancer.statusvip;
+        if (url === '') {
+          pollingStatus =
+            '<span class="devicepollingnotconfigured">Not configured</span>';
+        } else if (working) {
+          pollingStatus = '<span class="devicepollingsuccess">Working</span>';
         } else {
-          html += '<tr>';
+          pollingStatus = '<span class="devicepollingfailed">Failed</span>';
         }
-
-        let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">No</span>';
-        const { sync } = loadbalancer;
-
-        if (sync === 'yellow') {
-          syncSpan = '<span style="color:#ED833A;font-weight:bold;">Pending</span>';
-        } else if (sync === 'green') {
-          syncSpan = '<span style="color:#8DA54B;font-weight:bold;">Yes</span>';
-        }
-
-        html +=
-          `
-          <td>
-            <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
-                class="plainLink" target="_blank">
-              ${syncSpan}
-            </a>
-          </td>
-          <td class="devicenamecell"><img class="devicestatusicon" alt="${devicestatus}"
-              src="images/devicestatus${devicestatus}.png"/>
-              ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
-                '<span class="devicefailed">Failed to index</span>')}
-          </td>
-          <td>
-              ${loadbalancer.category || 'N/A'}
-          </td>
-          <td>
-              ${loadbalancer.model || 'N/A'}
-          </td>
-          <td>
-              ${loadbalancer.version || 'N/A'}
-          </td>
-          <td>
-              ${loadbalancer.serial}
-          </td>
-          ${siteData.preferences.supportCheckEnabled ? `
-          <td>
-            ${loadbalancer.hasSupport === 'true' ? 
-            `
-            <img
-              class="support-icon"' +
-              src="images/check-box.png" title="This device has a valid support agreement"
-            />`:
-            loadbalancer.hasSupport === 'ignored' ? 
-             `<img
-                  class="support-icon" src="images/cone.png" 
-                  title="Support checks supressed in the BigIPReport config"
-             />` : `
-             <img
-                class="support-icon"
-                src="images/warning.png" 
-                title="${loadbalancer.supportErrorMessage}"
-             />`
-          }
-          </td>` : ''}
-          <td>
-              ${renderLoadBalancer(loadbalancer.ip, 'display')}
-          </td>
-          <td>
-              ${pollingStatus}
-          </td>
-        </tr>`;
       }
-    }
+
+      const deviceStatus = loadbalancer.color || 'red';
+      if (deviceIndex === 0) {
+        html +=
+          `<tr>
+             <td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
+               <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
+             </td>
+             <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">
+                ${renderLoadBalancer(deviceGroup.name, 'display')}
+             </td>`;
+      } else if (deviceStatus == 'green') {
+        html += '<tr title="Secondary device is Active" class="out-of-sync-device">';
+      } else {
+        html += '<tr>';
+      }
+
+      let syncSpan = '<span style="color:#B26F6F;font-weight:bold;">No</span>';
+      const { sync } = loadbalancer;
+
+      if (sync === 'yellow') {
+        syncSpan = '<span style="color:#ED833A;font-weight:bold;">Pending</span>';
+      } else if (sync === 'green') {
+        syncSpan = '<span style="color:#8DA54B;font-weight:bold;">Yes</span>';
+      }
+
+      html +=
+        `
+        <td>
+          <a href="https://${loadbalancer.name}/tmui/tmui/devmgmt/overview/app/index.html"
+              class="plainLink" target="_blank">
+            ${syncSpan}
+          </a>
+        </td>
+        <td class="devicenamecell"><img class="devicestatusicon" alt="${deviceStatus}"
+            src="images/devicestatus${deviceStatus}.png"/>
+            ${(loadbalancer.name ? renderLoadBalancer(loadbalancer.name, 'display') :
+              '<span class="devicefailed">Failed to index</span>')}
+        </td>
+        <td>
+            ${loadbalancer.category || 'N/A'}
+        </td>
+        <td>
+            ${loadbalancer.model || 'N/A'}
+        </td>
+        <td>
+            ${loadbalancer.version || 'N/A'}
+        </td>
+        <td>
+            ${loadbalancer.serial}
+        </td>
+        ${siteData.preferences.supportCheckEnabled ?
+          generateSupportCell(loadbalancer)
+        : ''}
+        <td>
+            ${renderLoadBalancer(loadbalancer.ip, 'display')}
+        </td>
+        <td>
+            ${pollingStatus}
+        </td>
+      </tr>`;
+    });
   }
 
   html += `
@@ -2919,6 +2921,25 @@ function showDeviceOverview(updatehash) {
 
   $('div#deviceoverview').html(html);
   showMainSection('deviceoverview');
+}
+
+function generateSupportCell(loadbalancer: ILoadbalancer) {
+
+  const serial = loadbalancer.serial.split(/\s+/).find(s => /^(f5-|Z|chs)/.test(s));
+  const supportInfo = siteData.state.supportStates[serial];
+
+  const icon = supportInfo.hasSupport === 'ignored' ? 'images/cone.png'
+      : supportInfo.hasSupport === 'true' ? 'images/check-box.png'
+      : 'images/warning.png';
+
+  const title = supportInfo.hasSupport === 'true' ? 'Device has active support': supportInfo.supportErrorMessage;
+
+        return `
+  <td>
+      <img
+        class="support-icon" src="${icon}" title='${title}'
+      />
+  </td>`;
 }
 
 function showLogs(updatehash) {
