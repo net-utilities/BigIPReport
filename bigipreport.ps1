@@ -1910,28 +1910,9 @@ function GetDeviceInfo {
     }
 }
 
-$JobsToStart = @()
 
 #Region Job handling
-if ($null -ne $CurrentJob) {
-    # CurrentJob indicates that this is a child process or a debug execution
-    GetDeviceInfo($CurrentJob)
-    if ($null -eq $Location) {
-        log verbose "Testing, so not writing results"
-    } else {
-        # Output the polled load balancer to JSON data and send the parent process
-        $Global:ReportObjects[$CurrentJob] | ConvertTo-Json -Compress -Depth 10
-    }
-    # Exit child process
-    exit
-}
-#EndRegion
-
-##################################################################################################
-#           Anything below this line is only executed by the main (parent) process
-##################################################################################################
-
-#Region Job creation
+$JobsToStart = @()
 Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $IsOnlyDevice = @($DeviceGroup.Device).Count -eq 1
     $StatusVIP = $DeviceGroup.StatusVip
@@ -1941,11 +1922,29 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
 
     Foreach ($Device in $DeviceGroup.Device) {
         $ObjDeviceGroup.ips += $Device
-        $JobsToStart += $Device
+        if ($null -eq $CurrentJob) {
+            $JobsToStart += $Device
+        } elseif ($Device -eq $CurrentJob) {
+            # CurrentJob indicates that this is a child process or a debug execution
+            # also uses $IsOnlyDevice, $StatusVIP
+            GetDeviceInfo($CurrentJob)
+            if ($null -eq $Location) {
+                log verbose "Testing, so not writing results"
+            } else {
+                # Output the polled load balancer to JSON data and send the parent process
+                $Global:ReportObjects[$CurrentJob] | ConvertTo-Json -Compress -Depth 10
+            }
+            # Exit child process
+            exit
+        }
     }
     $Global:DeviceGroups += $ObjDeviceGroup
 }
 #EndRegion
+
+##################################################################################################
+#           Anything below this line is only executed by the main (parent) process
+##################################################################################################
 
 #Region Call Cache LTM information
 
