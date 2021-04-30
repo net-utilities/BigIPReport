@@ -14,7 +14,7 @@ Function Get-FailedDeviceAlerts {
         $FailedDeviceAlerts = @{}
     }
 
-    log info "Checking for devices that was not indexed successfully"
+    log info "Checking for devices that were not indexed successfully"
 
     $WaitHoursBetween = [int]$AlertConfig.WaitHoursBetween
     $WaitSecondsBetween = $WaitHoursBetween * 3600
