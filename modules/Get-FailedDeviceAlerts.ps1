@@ -24,8 +24,7 @@ Function Get-FailedDeviceAlerts {
     $Now = ([math]::Floor((Get-Date -UFormat %s)));
 
     Foreach($DeviceName in $Devices.Keys){
-        $Device = $Devices[$DeviceName].loadbalancer
-        $DeviceName = $Device.Name
+        $Device = $Devices[$DeviceName].LoadBalancer
 
         $HasExistingAlert = $FailedDeviceAlerts.ContainsKey($DeviceName)
 

@@ -2223,7 +2223,7 @@ if ($MissingData) {
         $Global:ReportObjects[$LoadBalancerName] = @{}
         $LoadbalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.name -eq $LoadBalancerName }
         $LoadBalancerObj.success = $false
-        $Global:ReportObjects[$LoadBalancerName]["loadbalancer"] = $LoadbalancerObj
+        $Global:ReportObjects[$LoadBalancerName]["LoadBalancer"] = $LoadbalancerObj
 
         # This could be so much shorter if we used the same keys in paths and Out
         $Global:Out.iRules += $TemporaryCache['irules'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }

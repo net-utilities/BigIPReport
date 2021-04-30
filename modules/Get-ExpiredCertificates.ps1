@@ -74,7 +74,9 @@ Function Get-ExpiredCertificates {
         . .\modules\Send-SlackCertificateAlert.ps1
         Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld
         if($?){
-            $CertificateAlerts.Values | ForEach-Object { $_.lastAlerted = $Now}
+            ForEach($SentAlert in $AlertsToSend){
+                $CertificateAlerts[$SentAlert.key].lastAlerted = $Now
+            }
         }
     }
 

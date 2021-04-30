@@ -102,13 +102,15 @@ Function Get-SupportEntitlements {
     }
 
     if ($AlertConfig.SlackEnabled.Trim() -eq "True") {
-        $AlertsToSend = $SupportStates.Values | Where-Object { $_.hasSupport -ne "ignored" -and ($now - $_.lastAlerted) -gt $WaitSecondsBetween }
+        $AlertsToSend = $SupportStates.Values | Where-Object { $_.hasSupport -notin @("ignored", "true") -and ($now - $_.lastAlerted) -gt $WaitSecondsBetween }
 
         if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
             . .\modules\Send-SlackSupportStateAlert.ps1
             Send-SlackSupportStateAlert -AlertsToSend $AlertsToSend -SlackWebhook $SlackWebHook
             if($?){
-                $SupportStates.Values | ForEach-Object { $_.lastAlerted = $Now}
+                ForEach($SentAlert in $AlertsToSend){
+                    $SupportStates[$SentAlert.serial].lastAlerted = $Now
+                }
             }
         }
     }
