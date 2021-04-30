@@ -609,8 +609,13 @@ if (Test-ConfigPath "/Settings/MaxJobs"){
 }
        
 
-if ($null -eq $Global:Bigipreportconfig.Settings.Outputlevel -or "" -eq $Global:Bigipreportconfig.Settings.Outputlevel) {
-    log error "No Outputlevel configured"
+if (Test-ConfigPath "/Settings/Outputlevel"){
+    if($Global:Bigipreportconfig.Settings.Outputlevel -eq ""){
+        log error "No Outputlevel configured"
+        $SaneConfig = $false
+    }
+} Else {
+    log error "Output level missing from the configuration file, please look at the template for examples"
     $SaneConfig = $false
 }
 
@@ -629,35 +634,30 @@ if ($Global:Bigipreportconfig.Settings.SelectNodes("Shares/Share").Count) {
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.iRules -or $null -eq $Global:Bigipreportconfig.Settings.iRules.Enabled -or $null -eq $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks) {
+if (-not (Test-ConfigPath "/Settings/iRules/Enabled") -or -not (Test-ConfigPath "/Settings/iRules/ShowiRuleLinks") -or -not (Test-ConfigPath "/Settings/iRules/ShowDataGroupLinks")) {
     log error "Missing options in the global iRule section defined in the configuration file. Old config version of the configuration file?"
     $SaneConfig = $false
+} else {
+    if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true) {
+        log error "You can't show data group links without showing irules in the current version."
+        $SaneConfig = $false
+    }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks) {
-    log error "Missing options for showing data group links in the global irules section defined in the configuration file. Old config version of the configuration file?"
-    $SaneConfig = $false
-}
-
-if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true) {
-    log error "You can't show data group links without showing irules in the current version."
-    $SaneConfig = $false
-}
-
-if ($null -eq $Global:Bigipreportconfig.Settings.RealTimeMemberStates) {
+if (-not (Test-ConfigPath "/Settings/RealTimeMemberStates")) {
     log error "Real time member states is missing from the configuration file. Update the the latest version of the file and try again."
     $SaneConfig = $false
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.UseBrotli) {
+if (-not (Test-ConfigPath "/Settings/UseBrotli")) {
     log verbose "UseBrotli is not present in the configuration file. Update to the latest configuration file to get rid of this message."
     $Global:UseBrotli = $false
 } else {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.SupportCheck){
-    log error "Missing option Support check from the config file. Update the the latest version of the file and try again."
+if (-not (Test-ConfigPath "/Settings/SupportCheckOption/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheckOption/Username") -or -not (Test-ConfigPath "/Settings/SupportCheckOption/Password") ){
+    log error "Missing options in the Supportcheck config. Update the the latest version of the file and try again."
 } else {
     $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
     if($SupportCheckOption.Enabled -eq "True") {
@@ -671,16 +671,17 @@ if ($null -eq $Global:Bigipreportconfig.Settings.SupportCheck){
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.ReportRoot -or $Global:Bigipreportconfig.Settings.ReportRoot -eq "") {
-    log error "No report root configured"
-    $SaneConfig = $false
-} else {
-    #Make sure the report root ends with / or \
+if (Test-ConfigPath "/Settings/ReportRoot") {
+
+    # Make sure the report root ends with / or \
     if (-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("/") -and -not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")) {
         $Global:bigipreportconfig.Settings.ReportRoot += "/"
     }
 
-    if (-not (Test-Path -PathType Container $Global:Bigipreportconfig.Settings.ReportRoot)) {
+    if ($Global:bigipreportconfig.Settings.ReportRoot -eq "/"){
+        log error "Empty report root configuration, update the config and try again"
+        $SaneConfig = $false
+    } elseif (-not (Test-Path -PathType Container $Global:Bigipreportconfig.Settings.ReportRoot)) {
         log error "Can't access the site root $($Global:Bigipreportconfig.Settings.ReportRoot)"
         $SaneConfig = $false
     } else {
@@ -724,17 +725,25 @@ if ($null -eq $Global:Bigipreportconfig.Settings.ReportRoot -or $Global:Bigiprep
             $SaneConfig = $false
         }
     }
+} else {
+    log error "No report root configured"
+    $SaneConfig = $false
 }
 
-Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
-    If ($null -eq $DeviceGroup.name -or $DeviceGroup.name -eq "") {
-        log error "A device group does not have a name. Please check the latest version of the configuration file."
-        $SaneConfig = $false
-    }
+if (-not (Test-ConfigPath "/Settings/DeviceGroups/DeviceGroup")) {
+    log error "Missing device group configuration, look at the configuration template and try again"
+    $SaneConfig = $False
+} else {
+    Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
+        If ($null -eq $DeviceGroup.name -or $DeviceGroup.name -eq "") {
+            log error "A device group does not have a name. Please check the latest version of the configuration file."
+            $SaneConfig = $false
+        }
 
-    If ($null -eq $DeviceGroup.Device -or @($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
-        log error "A device group does not have any devices, please re-check your configuration"
-        $SaneConfig = $false
+        If ($null -eq $DeviceGroup.Device -or @($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
+            log error "A device group does not have any devices, please re-check your configuration"
+            $SaneConfig = $false
+        }
     }
 }
 
@@ -757,6 +766,13 @@ if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
 if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
     if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
         log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+        $SaneConfig = $false
+    }
+}
+
+if (Test-ConfigPath "/Settings/Alerts/FailedDevices/SlackEnabled"){
+    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+        log error "Slack reporting for failed devices enabled but the webhook has not been defined"
         $SaneConfig = $false
     }
 }
