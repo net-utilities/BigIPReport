@@ -757,18 +757,28 @@ if ($null -ne $Env:SLACK_WEBHOOK) {
     $SaneConfig = $false
 }
 
-if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
-    if($Bigipreportconfig.Settings.Alerts.CertificateExpiration.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
-        $SaneConfig = $false
+if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration"){
+    if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
+        if($Bigipreportconfig.Settings.Alerts.CertificateExpiration.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+            log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+            $SaneConfig = $false
+        }
     }
+} else {
+    log error "Missing certificate alert config, please update to the latest configuration file"
+    $SaneConfig = $false
 }
 
-if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
-    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
-        $SaneConfig = $false
+if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks") {
+    if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
+        if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+            log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+            $SaneConfig = $false
+        }
     }
+} else {
+    log error "Missing support check config, please update to the latest configuration file"
+    $SaneConfig = $false
 }
 
 if (Test-ConfigPath "/Settings/Alerts/FailedDevices"){
@@ -779,7 +789,7 @@ if (Test-ConfigPath "/Settings/Alerts/FailedDevices"){
         }
     }
 } else {
-    log error "Missing Failed devices config, please update to the latest configuration file"
+    log error "Missing failed devices alert config, please update to the latest configuration file"
     $SaneConfig = $false
 }
 
