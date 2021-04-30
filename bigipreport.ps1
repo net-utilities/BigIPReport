@@ -2242,6 +2242,7 @@ if ($MissingData) {
     }
 
     ForEach($Device in $FailedDevices){
+        log info "Trying to load the data for $Device from the previous execution"
         $LoadBalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.ip -eq $Device }
         If($null -eq $LoadBalancerObj){
             log error "Failed to fetch previous data matching device $Device"
