@@ -2251,9 +2251,12 @@ if ($MissingData) {
 
         $LoadBalancerName = $LoadBalancerObj.Name
 
-        # This could be so much shorter if we used the same name in paths and ReportObjects
         $Global:ReportObjects[$LoadBalancerName] = @{}
-        $Global:ReportObjects[$LoadBalancerName]["loadbalancer"] = $TemporaryCache['loadbalancers'] | Where-Object { $_.name -eq $LoadBalancerName }
+        $LoadbalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.name -eq $LoadBalancerName }
+        $LoadBalancerObj.success = $false
+        $Global:ReportObjects[$LoadBalancerName]["loadbalancer"] = $LoadbalancerObj
+
+        # This could be so much shorter if we used the same keys in paths and Out
         $Global:Out.iRules += $TemporaryCache['irules'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
         $Global:Out.Pools += $TemporaryCache['pools'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
         $Global:Out.Monitors += $TemporaryCache['monitors'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }

@@ -2513,7 +2513,7 @@ function showDeviceOverview(updatehash) {
             const deviceStatus = loadbalancer.color || 'red';
             if (deviceIndex === 0) {
                 html +=
-                    `<tr>
+                    `<tr ${loadbalancer.success ? '' : 'class="failed-device" title="Failed to index, using cached data"'}>
              <td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
                <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
              </td>
