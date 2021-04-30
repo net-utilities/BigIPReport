@@ -12,4 +12,4 @@ underlay/json/*.json
 !underlay/json/knowndevices.json
 underlay/web.config
 config/
-underlay/js/*
+underlay/js/
