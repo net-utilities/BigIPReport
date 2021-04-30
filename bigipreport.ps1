@@ -591,7 +591,7 @@ if (-not (Test-ConfigPath "/Settings/LogSettings/Enabled")) {
     log error "Mandatory fields from the LogSettings section has been removed, please look at the template for examples"
     $SaneConfig = $false
 } elseif ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq "True") {
-    if (-not (Test-ConfigPath "/Settigs/LogSettings/LogFilePath" -and Test-ConfigPath "/Settigs/LogSettings/LogLevel" -and Test-ConfigPath "/Settigs/LogSettings/MaximumLines")){
+    if (-not (Test-ConfigPath "/Settings/LogSettings/LogFilePath" -and Test-ConfigPath "/Settings/LogSettings/LogLevel" -and Test-ConfigPath "/Settings/LogSettings/MaximumLines")){
         log error "Logging has been enabled but all logging fields has not been configured"
         $SaneConfig = $false
     }
