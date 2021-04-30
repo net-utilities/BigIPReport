@@ -1,7 +1,7 @@
-Function Send-SlackCertificateAlert {
+Function Send-SlackFailedDeviceAlert(){
+    Param($AlertsToSend)
 
-    Param($AlertsToSend, $AlertWhenDaysOld)
-
+    
     if ($null -eq $AlertsToSend -or $AlertsToSend.Count -eq 0) {
         log error "Send-SlackCertificateAlert function got a call with no alerts to send"
         Return
@@ -13,25 +13,25 @@ Function Send-SlackCertificateAlert {
                 "type"= "header";
                 "text"= @{
                     "type"= "plain_text";
-                    "text"= "BigIPReport has detected expiring certificates";
+                    "text"= "BigIPReport has failed to index some device(s)";
                 }
             },
             @{
                 "type"= "section";
                 "text"= @{
                     "type"= "mrkdwn";
-                    "text"= "Certificates expiring withing the configured notice period of $AlertWhenDaysOld days has been detected when running the report on $([System.Net.Dns]::GetHostName()).`n`nRead more about how to configure these alerts <https://loadbalancing.se|here>."
+                    "text"= "The report script was not able to get all the data it needs in order to index at least one of your devices.`nMore information can be found in the BigIPReport logs section of your report and more information about configuring this alert can be found <https://loadbalancing.se|here>."
                 };
                 "accessory"= @{
                     "type"= "image";
                     "alt_text"= "alt text for image";
-                    "image_url"= "https://loadbalancing.se/slack/expiredcert.png";
+                    "image_url"= "https://loadbalancing.se/slack/indexingfailed3.png";
                 }
             }
         )
     }
 
-    ForEach($Certificate in $AlertsToSend) {
+    ForEach($FailedDevice in $AlertsToSend) {
         $Body.blocks += @(
             @{
                 "type"= "divider"
@@ -41,19 +41,11 @@ Function Send-SlackCertificateAlert {
                 "fields"= @(
                     @{
                         "type"= "mrkdwn";
-                        "text"= "*Loadbalancer:*`nhttps://$($Certificate.loadbalancer)";
+                        "text"= "*Loadbalancer:*`nhttps://$($FailedDevice.name)";
                     },
                     @{
                         "type"= "mrkdwn";
-                        "text"= "*File Name:*`n$($Certificate.fileName)";
-                    },
-                    @{
-                        "type"= "mrkdwn";
-                        "text"= "*Common Name:*`n$($Certificate.commonName)";
-                    },
-                    @{
-                        "type"= "mrkdwn";
-                        "text"= "*Expires in (days):*`n$($Certificate.expiresInDays)";
+                        "text"= "*Times failed:*`n$($FailedDevice.numberOfTimesFailed)";
                     }
                 )
             }
@@ -65,4 +57,6 @@ Function Send-SlackCertificateAlert {
     } Catch {
         log error "Failed to send Slack Web Hook"
     }
-}
+
+    
+} 

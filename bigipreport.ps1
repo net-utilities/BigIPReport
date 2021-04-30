@@ -274,6 +274,7 @@
 #        5.5.6        2021-04-27      Adding Slack Alert support for expired certificates                           Patrik Jonsson  Yes
 #                                     Adding Slack Alert support for expired support entitlements
 #                                     Removing state if new script version or script version in state is missing
+#        5.5.7        2021-04-30      Adding Slack Alert support for failed devices, refactoring pre-checks         Patrik Jonsson
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -317,7 +318,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.6"
+$Global:ScriptVersion = "5.5.7"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -553,45 +554,69 @@ Function Test-ConfigPath {
 $SaneConfig = $true
 
 if ($null -eq $Env:F5_USERNAME) {
-    if ($null -eq $Global:Bigipreportconfig.Settings.Credentials.Username -or "" -eq $Global:Bigipreportconfig.Settings.Credentials.Username) {
-        log error "No username found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_USERNAME with the password"
+    if (Test-ConfigPath "/Settings/Credentials/Username") {
+        if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
+            log error "No username found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_USERNAME with the password"
+            $SaneConfig = $false
+        }
+    } else {
+        log error "Username in the config is missing, please use the included config template to start a new one"
         $SaneConfig = $false
     }
 }
 
 if ($null -eq $Env:F5_PASSWORD) {
-    if ($null -eq $Global:Bigipreportconfig.Settings.Credentials.Password -or "" -eq $Global:Bigipreportconfig.Settings.Credentials.Password) {
-        log error "No password found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_PASSWORD with the password"
+    if (Test-ConfigPath "/Settings/Credentials/Password") {
+        if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
+            log error "No password found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_PASSWORD with the password"
+            $SaneConfig = $false
+        }
+    } else {
+        log error "Password in the config is missing, please use the included config template to start a new one"
         $SaneConfig = $false
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -or 0 -eq @($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count) {
-    log error "No load balancers configured"
+if (Test-ConfigPath "Settings/DeviceGroups/DeviceGroup/Device"){
+    if (@($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count -eq 0){
+        log error "No load balancers configured"
+        $SaneConfig = $false
+    }
+} else {
+    log error "Device config is missing from the configuration file, please look at the template for examples"
     $SaneConfig = $false
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.LogSettings -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled) {
-    log error "Mandatory fields from the LogSettings section has been removed"
+if (-not (Test-ConfigPath "/Settings/LogSettings/Enabled")) {
+    log error "Mandatory fields from the LogSettings section has been removed, please look at the template for examples"
     $SaneConfig = $false
-}
-
-if ("true" -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled) {
-    if ($null -eq $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.LogLevel -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines) {
+} elseif ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq "True") {
+    if (-not (Test-ConfigPath "/Settings/LogSettings/LogFilePath" -and Test-ConfigPath "/Settings/LogSettings/LogLevel" -and Test-ConfigPath "/Settings/LogSettings/MaximumLines")){
         log error "Logging has been enabled but all logging fields has not been configured"
         $SaneConfig = $false
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.MaxJobs -or "" -eq $Global:Bigipreportconfig.Settings.MaxJobs) {
-    log error "No MaxJobs configured"
+if (Test-ConfigPath "/Settings/MaxJobs"){
+    if ($Global:Bigipreportconfig.Settings.MaxJobs -eq "") {
+        log error "No MaxJobs configured"
+        $SaneConfig = $false
+    } else {
+        $MaxJobs = $Global:Bigipreportconfig.Settings.MaxJobs
+    }
+} Else {
+    log error "MaxJobs config is missing from the configuration file, please look at the template for examples"
     $SaneConfig = $false
-} else {
-    $MaxJobs = $Global:Bigipreportconfig.Settings.MaxJobs
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.Outputlevel -or "" -eq $Global:Bigipreportconfig.Settings.Outputlevel) {
-    log error "No Outputlevel configured"
+
+if (Test-ConfigPath "/Settings/Outputlevel"){
+    if($Global:Bigipreportconfig.Settings.Outputlevel -eq ""){
+        log error "No Outputlevel configured"
+        $SaneConfig = $false
+    }
+} Else {
+    log error "Output level missing from the configuration file, please look at the template for examples"
     $SaneConfig = $false
 }
 
@@ -610,35 +635,30 @@ if ($Global:Bigipreportconfig.Settings.SelectNodes("Shares/Share").Count) {
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.iRules -or $null -eq $Global:Bigipreportconfig.Settings.iRules.Enabled -or $null -eq $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks) {
+if (-not (Test-ConfigPath "/Settings/iRules/Enabled") -or -not (Test-ConfigPath "/Settings/iRules/ShowiRuleLinks") -or -not (Test-ConfigPath "/Settings/iRules/ShowDataGroupLinks")) {
     log error "Missing options in the global iRule section defined in the configuration file. Old config version of the configuration file?"
     $SaneConfig = $false
+} else {
+    if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true) {
+        log error "You can't show data group links without showing irules in the current version."
+        $SaneConfig = $false
+    }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks) {
-    log error "Missing options for showing data group links in the global irules section defined in the configuration file. Old config version of the configuration file?"
-    $SaneConfig = $false
-}
-
-if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true) {
-    log error "You can't show data group links without showing irules in the current version."
-    $SaneConfig = $false
-}
-
-if ($null -eq $Global:Bigipreportconfig.Settings.RealTimeMemberStates) {
+if (-not (Test-ConfigPath "/Settings/RealTimeMemberStates")) {
     log error "Real time member states is missing from the configuration file. Update the the latest version of the file and try again."
     $SaneConfig = $false
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.UseBrotli) {
+if (-not (Test-ConfigPath "/Settings/UseBrotli")) {
     log verbose "UseBrotli is not present in the configuration file. Update to the latest configuration file to get rid of this message."
     $Global:UseBrotli = $false
 } else {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.SupportCheck){
-    log error "Missing option Support check from the config file. Update the the latest version of the file and try again."
+if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
+    log error "Missing options in the Supportcheck config. Update the the latest version of the file and try again."
 } else {
     $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
     if($SupportCheckOption.Enabled -eq "True") {
@@ -652,16 +672,17 @@ if ($null -eq $Global:Bigipreportconfig.Settings.SupportCheck){
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.ReportRoot -or $Global:Bigipreportconfig.Settings.ReportRoot -eq "") {
-    log error "No report root configured"
-    $SaneConfig = $false
-} else {
-    #Make sure the report root ends with / or \
+if (Test-ConfigPath "/Settings/ReportRoot") {
+
+    # Make sure the report root ends with / or \
     if (-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("/") -and -not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")) {
         $Global:bigipreportconfig.Settings.ReportRoot += "/"
     }
 
-    if (-not (Test-Path -PathType Container $Global:Bigipreportconfig.Settings.ReportRoot)) {
+    if ($Global:bigipreportconfig.Settings.ReportRoot -eq "/"){
+        log error "Empty report root configuration, update the config and try again"
+        $SaneConfig = $false
+    } elseif (-not (Test-Path -PathType Container $Global:Bigipreportconfig.Settings.ReportRoot)) {
         log error "Can't access the site root $($Global:Bigipreportconfig.Settings.ReportRoot)"
         $SaneConfig = $false
     } else {
@@ -705,17 +726,25 @@ if ($null -eq $Global:Bigipreportconfig.Settings.ReportRoot -or $Global:Bigiprep
             $SaneConfig = $false
         }
     }
+} else {
+    log error "No report root configured"
+    $SaneConfig = $false
 }
 
-Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
-    If ($null -eq $DeviceGroup.name -or $DeviceGroup.name -eq "") {
-        log error "A device group does not have a name. Please check the latest version of the configuration file."
-        $SaneConfig = $false
-    }
+if (-not (Test-ConfigPath "/Settings/DeviceGroups/DeviceGroup")) {
+    log error "Missing device group configuration, look at the configuration template and try again"
+    $SaneConfig = $False
+} else {
+    Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
+        If ($null -eq $DeviceGroup.name -or $DeviceGroup.name -eq "") {
+            log error "A device group does not have a name. Please check the latest version of the configuration file."
+            $SaneConfig = $false
+        }
 
-    If ($null -eq $DeviceGroup.Device -or @($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
-        log error "A device group does not have any devices, please re-check your configuration"
-        $SaneConfig = $false
+        If ($null -eq $DeviceGroup.Device -or @($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
+            log error "A device group does not have any devices, please re-check your configuration"
+            $SaneConfig = $false
+        }
     }
 }
 
@@ -728,18 +757,40 @@ if ($null -ne $Env:SLACK_WEBHOOK) {
     $SaneConfig = $false
 }
 
-if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
-    if($Bigipreportconfig.Settings.Alerts.CertificateExpiration.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
-        $SaneConfig = $false
+if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration"){
+    if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
+        if($Bigipreportconfig.Settings.Alerts.CertificateExpiration.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+            log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+            $SaneConfig = $false
+        }
     }
+} else {
+    log error "Missing /Settings/Alerts/CertificateExpiration in the config, please update to the latest configuration file"
+    $SaneConfig = $false
 }
 
-if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
-    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-        log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
-        $SaneConfig = $false
+if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks") {
+    if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
+        if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+            log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+            $SaneConfig = $false
+        }
     }
+} else {
+    log error "Missing /Settings/Alerts/FailedSupportChecks in the config, please update to the latest configuration file"
+    $SaneConfig = $false
+}
+
+if (Test-ConfigPath "/Settings/Alerts/FailedDevices"){
+    if (Test-ConfigPath "/Settings/Alerts/FailedDevices/SlackEnabled"){
+        if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+            log error "Slack reporting for failed devices enabled but the webhook has not been defined"
+            $SaneConfig = $false
+        }
+    }
+} else {
+    log error "Missing /Settings/Alerts/FailedDevices in the config, please update to the latest configuration file"
+    $SaneConfig = $false
 }
 
 # Load Preferences
@@ -2124,6 +2175,122 @@ Function Write-TemporaryFiles {
 }
 #EndRegion
 
+#Region Check for missing data
+# Verify that data from all the load balancers has been indexed by checking the pools variable
+$MissingData = $false
+$FailedDevices= @()
+
+log verbose "Checking for missing data"
+# For every load balancer IP we will check that no pools or virtual servers are missing
+Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
+    $DeviceGroupHasData = $False
+    ForEach ($Device in $DeviceGroup.Device) {
+        $FailedDevice = $False
+        $LoadBalancerObjects = $Global:ReportObjects[$Device]
+        If ($LoadBalancerObjects) {
+            $LoadBalancer = $LoadBalancerObjects.LoadBalancer
+            $LoadBalancerName = $LoadBalancer.name
+            # Only check for load balancers that is alone in a device group, or active
+            if ($LoadBalancer.active -or $LoadBalancer.isonlydevice) {
+                $DeviceGroupHasData = $True
+                If ($LoadBalancerObjects.VirtualServers.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any Virtual Server data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+                If ($LoadBalancerObjects.Pools.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any Pool data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+                If ($LoadBalancerObjects.Monitors.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any Monitor data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+                If ($LoadBalancerObjects.iRules.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any iRule data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+                if ($LoadBalancerObjects.Nodes.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any Node data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+                if ($LoadBalancerObjects.DataGroups.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any Data group data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+                if ($LoadBalancerObjects.Certificates.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any Certificate data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+            }
+        } Else {
+            log error "$Device does not seem to have been indexed"
+            $MissingData = $true
+            $FailedDevice = $true
+        }
+        If ($FailedDevice) { $FailedDevices += $Device }
+    }
+    If (-Not $DeviceGroupHasData) {
+        log error "Missing data from device group containing $($DeviceGroup.Device -Join ", ")."
+        $MissingData = $true
+    }
+}
+
+if ($MissingData) {
+    log error "Missing data, run script with xml and a loadbalancer name for more information"
+    log info "Trying to use data from the previous execution"
+
+    $TemporaryCache = @{}
+    ForEach($Path in $Global:paths.Keys | Where-Object { $_ -notin @("preferences", "nat", "state")}) {
+        # Empty arrays are read as $null for some reason
+        $Content = Get-Content $Global:paths[$Path] | ConvertFrom-Json
+        if($null -eq $Content) {
+            $Content = @()
+        }
+        $TemporaryCache[$Path] = $Content
+    }
+
+    ForEach($Device in $FailedDevices){
+        log info "Trying to load the data for $Device from the previous execution"
+        $LoadBalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.ip -eq $Device }
+        If($null -eq $LoadBalancerObj){
+            log error "Failed to fetch previous data matching device $Device"
+            if (-not $Global:Bigipreportconfig.Settings.ErrorReportAnyway -eq $true) {
+                log error "Missing load balancer data, no report will be written"
+                Send-Errors
+                Exit
+            }
+            # If the option to write anyway is enabled we'll continue trying to get cached data from the next device
+            Continue
+        }
+
+        $LoadBalancerName = $LoadBalancerObj.Name
+
+        $Global:ReportObjects[$LoadBalancerName] = @{}
+        $LoadbalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.name -eq $LoadBalancerName }
+        $LoadBalancerObj.success = $false
+        $Global:ReportObjects[$LoadBalancerName]["LoadBalancer"] = $LoadbalancerObj
+
+        # This could be so much shorter if we used the same keys in paths and Out
+        $Global:Out.iRules += $TemporaryCache['irules'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.Pools += $TemporaryCache['pools'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.Monitors += $TemporaryCache['monitors'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.VirtualServers += $TemporaryCache['virtualservers'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.Certificates += $TemporaryCache['certificates'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.ASMPolicies += $TemporaryCache['asmpolicies'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.DataGroups += $TemporaryCache['datagroups'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+    }
+} else {
+    log success "No missing data was detected, sending alerts and compiling the report"
+}
+
+#EndRegion
 
 #Region Stateful checks
 
@@ -2153,75 +2320,10 @@ $Global:State["certificateAlerts"] = Get-ExpiredCertificates -Devices $ReportObj
 . .\modules\Get-SupportEntitlements.ps1
 $Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
 
+. .\modules\Get-FailedDeviceAlerts.ps1
+$Global:State["failedDevices"] = Get-FailedDeviceAlerts -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedDevices -SlackWebHook $SlackWebHook
+
 #End Region
-
-#Region Check for missing data
-#Verify that data from all the load balancers has been indexed by checking the pools variable
-$MissingData = $false
-log verbose "Checking for missing data"
-#For every load balancer IP we will check that no pools or virtual servers are missing
-Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
-    $DeviceGroupHasData = $False
-    ForEach ($Device in $DeviceGroup.Device) {
-        $LoadBalancerObjects = $Global:ReportObjects[$Device]
-        If ($LoadBalancerObjects) {
-            $LoadBalancer = $LoadBalancerObjects.LoadBalancer
-            $LoadBalancerName = $LoadBalancer.name
-            # Only check for load balancers that is alone in a device group, or active
-            if ($LoadBalancer.active -or $LoadBalancer.isonlydevice) {
-                $DeviceGroupHasData = $True
-                If ($LoadBalancerObjects.VirtualServers.Count -eq 0) {
-                    log error "$LoadBalancerName does not have any Virtual Server data"
-                    $MissingData = $true
-                }
-                If ($LoadBalancerObjects.Pools.Count -eq 0) {
-                    log error "$LoadBalancerName does not have any Pool data"
-                }
-                If ($LoadBalancerObjects.Monitors.Count -eq 0) {
-                    log error "$LoadBalancerName does not have any Monitor data"
-                    $MissingData = $true
-                }
-                If ($LoadBalancerObjects.iRules.Count -eq 0) {
-                    log error "$LoadBalancerName does not have any iRule data"
-                    $MissingData = $true
-                }
-                if ($LoadBalancerObjects.Nodes.Count -eq 0) {
-                    log error "$LoadBalancerName does not have any Node data"
-                    $MissingData = $true
-                }
-                if ($LoadBalancerObjects.DataGroups.Count -eq 0) {
-                    log error "$LoadBalancerName does not have any Data group data"
-                    $MissingData = $true
-                }
-                if ($LoadBalancerObjects.Certificates.Count -eq 0) {
-                    log error "$LoadBalancerName does not have any Certificate data"
-                    $MissingData = $true
-                }
-            }
-        } Else {
-            log error "$Device does not seem to have been indexed"
-            $MissingData = $true
-        }
-    }
-    If (-Not $DeviceGroupHasData) {
-        log error "Missing data from device group containing $($DeviceGroup.Device -Join ", ")."
-        $MissingData = $true
-    }
-}
-
-if ($MissingData) {
-    log error "Missing data, run script with xml and a loadbalancer name for more information"
-    if (-not $Global:Bigipreportconfig.Settings.ErrorReportAnyway -eq $true) {
-        log error "Missing load balancer data, no report will be written"
-        Send-Errors
-        Exit
-    }
-    log error "Missing load balancer data, writing report anyway"
-} else {
-    log success "No missing data was detected, compiling the report"
-}
-
-#EndRegion
 
 #Region report stats
 $StatsMsg = "Stats:"
