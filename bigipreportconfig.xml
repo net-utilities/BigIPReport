@@ -564,6 +564,12 @@
             *              have support entitlement
             * WaitHoursBetween: How many hours between alerts, per serial
             * SlackEnabled: If you want to send this alert via Slack (don't forget to configure the web hook above)
+            *
+            * FailedDevices:
+            * Description: Have BigIPReport alert when it's unable to index a device
+            * WaitHoursBetween: How many hours between alerts, per loadbalancer
+            * AlertAfterFailures: Don't alert until X failures to index the device
+            * SlackEnabled: If you want to send this alert via Slack (don't forget to configure the web hook above)
         -->
 
         <Alerts>
@@ -576,5 +582,10 @@
                 <WaitHoursBetween>168</WaitHoursBetween>
                 <SlackEnabled>False</SlackEnabled>
             </FailedSupportChecks>
+            <FailedDevices>
+                <WaitHoursBetween>2</WaitHoursBetween>
+                <AlertAfterFailures>2</AlertAfterFailures>
+                <SlackEnabled>False</SlackEnabled>
+            </FailedDevices>
         </Alerts>
     </Settings>
