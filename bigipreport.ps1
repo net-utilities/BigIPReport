@@ -274,6 +274,7 @@
 #        5.5.6        2021-04-27      Adding Slack Alert support for expired certificates                           Patrik Jonsson  Yes
 #                                     Adding Slack Alert support for expired support entitlements
 #                                     Removing state if new script version or script version in state is missing
+#        5.5.7        2021-04-30      Adding Slack Alert support for failed devices, refactoring pre-checks         Patrik Jonsson
 #
 #        This script generates a report of the LTM configuration on F5 BigIP's.
 #        It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -599,7 +600,7 @@ if (-not (Test-ConfigPath "/Settings/LogSettings/Enabled")) {
 if (Test-ConfigPath "/Settings/MaxJobs"){
     if ($Global:Bigipreportconfig.Settings.MaxJobs -eq "") {
         log error "No MaxJobs configured"
-        $SaneConfig = $false    
+        $SaneConfig = $false
     } else {
         $MaxJobs = $Global:Bigipreportconfig.Settings.MaxJobs
     }
@@ -607,7 +608,7 @@ if (Test-ConfigPath "/Settings/MaxJobs"){
     log error "MaxJobs config is missing from the configuration file, please look at the template for examples"
     $SaneConfig = $false
 }
-       
+
 
 if (Test-ConfigPath "/Settings/Outputlevel"){
     if($Global:Bigipreportconfig.Settings.Outputlevel -eq ""){
@@ -2229,7 +2230,7 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
 if ($MissingData) {
     log error "Missing data, run script with xml and a loadbalancer name for more information"
     log info "Trying to use data from the previous execution"
-    
+
     $TemporaryCache = @{}
     ForEach($Path in $Global:paths.Keys | Where-Object { $_ -notin @("preferences", "nat", "state")}) {
         # Empty arrays are read as $null for some reason

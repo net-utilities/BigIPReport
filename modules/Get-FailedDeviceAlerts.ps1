@@ -19,7 +19,7 @@ Function Get-FailedDeviceAlerts {
     $WaitHoursBetween = [int]$AlertConfig.WaitHoursBetween
     $WaitSecondsBetween = $WaitHoursBetween * 3600
     $AlertAfterFailures = [int]$AlertConfig.AlertAfterFailures
-    
+
     # Get current epoch date
     $Now = ([math]::Floor((Get-Date -UFormat %s)));
 
@@ -28,7 +28,7 @@ Function Get-FailedDeviceAlerts {
 
         $HasExistingAlert = $FailedDeviceAlerts.ContainsKey($DeviceName)
 
-        # Clear old alerts for successful load balancers 
+        # Clear old alerts for successful load balancers
         if ($Device.success){
             if($HasExistingAlert){
                 log verbose "Clearing failed device alert for $DeviceName"
