@@ -765,7 +765,7 @@ if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration"){
         }
     }
 } else {
-    log error "Missing certificate alert config, please update to the latest configuration file"
+    log error "Missing /Settings/Alerts/CertificateExpiration in the config, please update to the latest configuration file"
     $SaneConfig = $false
 }
 
@@ -777,7 +777,7 @@ if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks") {
         }
     }
 } else {
-    log error "Missing support check config, please update to the latest configuration file"
+    log error "Missing /Settings/Alerts/FailedSupportChecks in the config, please update to the latest configuration file"
     $SaneConfig = $false
 }
 
@@ -789,7 +789,7 @@ if (Test-ConfigPath "/Settings/Alerts/FailedDevices"){
         }
     }
 } else {
-    log error "Missing failed devices alert config, please update to the latest configuration file"
+    log error "Missing /Settings/Alerts/FailedDevices in the config, please update to the latest configuration file"
     $SaneConfig = $false
 }
 
