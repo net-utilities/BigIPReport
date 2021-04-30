@@ -285,7 +285,7 @@
 
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable','')]
 Param(
-    $Global:ConfigurationFile = "$PSScriptRoot/bigipreportconfig.xml",
+    $Global:ConfigurationFile = "$PSScriptRoot/config/bigipreportconfig.xml",
     $Global:CurrentJob = $null,
     $Global:Location = $null
 )
@@ -2156,13 +2156,16 @@ $Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects
 #End Region
 
 #Region Check for missing data
-#Verify that data from all the load balancers has been indexed by checking the pools variable
+# Verify that data from all the load balancers has been indexed by checking the pools variable
 $MissingData = $false
+$FailedDevices= @()
+
 log verbose "Checking for missing data"
-#For every load balancer IP we will check that no pools or virtual servers are missing
+# For every load balancer IP we will check that no pools or virtual servers are missing
 Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
     $DeviceGroupHasData = $False
     ForEach ($Device in $DeviceGroup.Device) {
+        $FailedDevice = $False
         $LoadBalancerObjects = $Global:ReportObjects[$Device]
         If ($LoadBalancerObjects) {
             $LoadBalancer = $LoadBalancerObjects.LoadBalancer
@@ -2173,35 +2176,45 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
                 If ($LoadBalancerObjects.VirtualServers.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Virtual Server data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 If ($LoadBalancerObjects.Pools.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Pool data"
+                    $MissingData = $true
+                    $FailedDevice = $true
                 }
                 If ($LoadBalancerObjects.Monitors.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Monitor data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 If ($LoadBalancerObjects.iRules.Count -eq 0) {
                     log error "$LoadBalancerName does not have any iRule data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 if ($LoadBalancerObjects.Nodes.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Node data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 if ($LoadBalancerObjects.DataGroups.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Data group data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
                 if ($LoadBalancerObjects.Certificates.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Certificate data"
                     $MissingData = $true
+                    $FailedDevice = $true
                 }
             }
         } Else {
             log error "$Device does not seem to have been indexed"
             $MissingData = $true
+            $FailedDevice = $true
         }
+        If ($FailedDevice) { $FailedDevices += $Device }
     }
     If (-Not $DeviceGroupHasData) {
         log error "Missing data from device group containing $($DeviceGroup.Device -Join ", ")."
@@ -2211,12 +2224,44 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
 
 if ($MissingData) {
     log error "Missing data, run script with xml and a loadbalancer name for more information"
-    if (-not $Global:Bigipreportconfig.Settings.ErrorReportAnyway -eq $true) {
-        log error "Missing load balancer data, no report will be written"
-        Send-Errors
-        Exit
+    log info "Trying to use data from the previous execution"
+    
+    $TemporaryCache = @{}
+    ForEach($Path in $Global:paths.Keys | Where-Object { $_ -notin @("preferences", "nat", "state")}) {
+        # Empty arrays are read as $null for some reason
+        $Content = Get-Content $Global:paths[$Path] | ConvertFrom-Json
+        if($null -eq $Content) {
+            $Content = @()
+        }
+        $TemporaryCache[$Path] = $Content
     }
-    log error "Missing load balancer data, writing report anyway"
+
+    ForEach($Device in $FailedDevices){
+        $LoadBalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.ip -eq $Device }
+        If($null -eq $LoadBalancerObj){
+            log error "Failed to fetch previous data matching device $Device"
+            if (-not $Global:Bigipreportconfig.Settings.ErrorReportAnyway -eq $true) {
+                log error "Missing load balancer data, no report will be written"
+                Send-Errors
+                Exit
+            }
+            # If the option to write anyway is enabled we'll continue trying to get cached data from the next device
+            Continue
+        }
+
+        $LoadBalancerName = $LoadBalancerObj.Name
+
+        # This could be so much shorter if we used the same name in paths and ReportObjects
+        $Global:ReportObjects[$LoadBalancerName] = @{}
+        $Global:ReportObjects[$LoadBalancerName]["loadbalancer"] = $TemporaryCache['loadbalancers'] | Where-Object { $_.name -eq $LoadBalancerName }
+        $Global:Out.iRules += $TemporaryCache['irules'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.Pools += $TemporaryCache['pools'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.Monitors += $TemporaryCache['monitors'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.VirtualServers += $TemporaryCache['virtualservers'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.Certificates += $TemporaryCache['certificates'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.ASMPolicies += $TemporaryCache['asmpolicies'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        $Global:Out.DataGroups += $TemporaryCache['datagroups'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+    }
 } else {
     log success "No missing data was detected, compiling the report"
 }
