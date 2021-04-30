@@ -2124,37 +2124,6 @@ Function Write-TemporaryFiles {
 }
 #EndRegion
 
-
-#Region Stateful checks
-
-# Init script state template
-
-if (Test-Path $Global:paths.state) {
-    $Global:State = Get-Content $Global:paths.state | ConvertFrom-Json -AsHashtable
-    # If the script version does not exist or the script version is different
-    # we need to create a new state to ensure that the script logic and
-    # state object is compatible
-    If (-not $Global:State.ContainsKey('scriptVersion') -or $Global:ScriptVersion -ne $Global:State.scriptVersion){
-        log verbose "Script version been changed, forcing creation of new state file"
-        $Global:State = @{
-            scriptVersion = $Global:ScriptVersion
-        }
-    }
-} Else {
-    $Global:State = @{
-        scriptVersion = $Global:ScriptVersion
-    }
-}
-
-# Alerts
-. .\modules\Get-ExpiredCertificates.ps1
-$Global:State["certificateAlerts"] = Get-ExpiredCertificates -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
-
-. .\modules\Get-SupportEntitlements.ps1
-$Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
-
-#End Region
-
 #Region Check for missing data
 # Verify that data from all the load balancers has been indexed by checking the pools variable
 $MissingData = $false
@@ -2266,10 +2235,43 @@ if ($MissingData) {
         $Global:Out.DataGroups += $TemporaryCache['datagroups'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
     }
 } else {
-    log success "No missing data was detected, compiling the report"
+    log success "No missing data was detected, sending alerts and compiling the report"
 }
 
 #EndRegion
+
+#Region Stateful checks
+
+# Init script state template
+
+if (Test-Path $Global:paths.state) {
+    $Global:State = Get-Content $Global:paths.state | ConvertFrom-Json -AsHashtable
+    # If the script version does not exist or the script version is different
+    # we need to create a new state to ensure that the script logic and
+    # state object is compatible
+    If (-not $Global:State.ContainsKey('scriptVersion') -or $Global:ScriptVersion -ne $Global:State.scriptVersion){
+        log verbose "Script version been changed, forcing creation of new state file"
+        $Global:State = @{
+            scriptVersion = $Global:ScriptVersion
+        }
+    }
+} Else {
+    $Global:State = @{
+        scriptVersion = $Global:ScriptVersion
+    }
+}
+
+# Alerts
+. .\modules\Get-ExpiredCertificates.ps1
+$Global:State["certificateAlerts"] = Get-ExpiredCertificates -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
+
+. .\modules\Get-SupportEntitlements.ps1
+$Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
+
+. .\modules\Get-FailedDeviceAlerts.ps1
+$Global:State["failedDevices"] = Get-FailedDeviceAlerts -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedDevices -SlackWebHook $SlackWebHook
+
+#End Region
 
 #Region report stats
 $StatsMsg = "Stats:"
