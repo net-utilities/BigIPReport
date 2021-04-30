@@ -1045,12 +1045,6 @@ $Global:ModuleToDescription = @{
 }
 #EndRegion variables
 
-#Enable of disable the use of TLS1.2
-if ($Global:Bigipreportconfig.Settings.UseTLS12 -eq $true) {
-    log verbose "Enabling TLS1.2"
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-}
-
 #Make sure that the text is in UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -1077,7 +1071,7 @@ if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
             log error "No NAT entries loaded"
         }
     } else {
-        log error "NAT file could not be found in location $($Global:Bigipreportconfig.Settings.NATFilePath)"
+        log error "NAT file not found in $($Global:Bigipreportconfig.Settings.NATFilePath)"
     }
 }
 
