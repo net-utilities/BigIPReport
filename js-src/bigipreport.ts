@@ -2857,13 +2857,15 @@ function showDeviceOverview(updatehash) {
 
       if (deviceIndex === 0) {
         html +=
-          `<tr ${loadbalancer.success ? '' : 'class="failed-device" title="Failed to index, using cached data"'}>
+            `<tr ${loadbalancer.success ? '' : 'class="failed-device" title="Failed to index, using cached data"'}>
              <td rowspan="${deviceGroup.ips.length}" class="deviceiconcell">
                <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
              </td>
              <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">
                 ${renderLoadBalancer(deviceGroup.name, 'display')}
              </td>`;
+      } else if (!loadbalancer.success) {
+        html += '<tr class="failed-device" title="Failed to index, using cached data">';
       } else if (deviceStatus == 'green') {
         html += '<tr title="Secondary device is Active" class="out-of-sync-device">';
       } else {

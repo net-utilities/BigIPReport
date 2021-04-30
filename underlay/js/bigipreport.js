@@ -2521,6 +2521,9 @@ function showDeviceOverview(updatehash) {
                 ${renderLoadBalancer(deviceGroup.name, 'display')}
              </td>`;
             }
+            else if (!loadbalancer.success) {
+                html += '<tr class="failed-device" title="Failed to index, using cached data">';
+            }
             else if (deviceStatus == 'green') {
                 html += '<tr title="Secondary device is Active" class="out-of-sync-device">';
             }
