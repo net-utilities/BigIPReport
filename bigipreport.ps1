@@ -657,7 +657,7 @@ if (-not (Test-ConfigPath "/Settings/UseBrotli")) {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
 }
 
-if (-not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
+if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
     log error "Missing options in the Supportcheck config. Update the the latest version of the file and try again."
 } else {
     $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
@@ -771,11 +771,16 @@ if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
     }
 }
 
-if (Test-ConfigPath "/Settings/Alerts/FailedDevices/SlackEnabled"){
-    if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-        log error "Slack reporting for failed devices enabled but the webhook has not been defined"
-        $SaneConfig = $false
+if (Test-ConfigPath "/Settings/Alerts/FailedDevices"){
+    if (Test-ConfigPath "/Settings/Alerts/FailedDevices/SlackEnabled"){
+        if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
+            log error "Slack reporting for failed devices enabled but the webhook has not been defined"
+            $SaneConfig = $false
+        }
     }
+} else {
+    log error "Missing Failed devices config, please update to the latest configuration file"
+    $SaneConfig = $false
 }
 
 # Load Preferences
