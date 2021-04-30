@@ -553,42 +553,61 @@ Function Test-ConfigPath {
 $SaneConfig = $true
 
 if ($null -eq $Env:F5_USERNAME) {
-    if ($null -eq $Global:Bigipreportconfig.Settings.Credentials.Username -or "" -eq $Global:Bigipreportconfig.Settings.Credentials.Username) {
-        log error "No username found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_USERNAME with the password"
+    if (Test-ConfigPath "/Settings/Credentials/Username") {
+        if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
+            log error "No username found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_USERNAME with the password"
+            $SaneConfig = $false
+        }
+    } else {
+        log error "Username in the config is missing, please use the included config template to start a new one"
         $SaneConfig = $false
     }
 }
 
 if ($null -eq $Env:F5_PASSWORD) {
-    if ($null -eq $Global:Bigipreportconfig.Settings.Credentials.Password -or "" -eq $Global:Bigipreportconfig.Settings.Credentials.Password) {
-        log error "No password found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_PASSWORD with the password"
+    if (Test-ConfigPath "/Settings/Credentials/Password") {
+        if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
+            log error "No password found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_PASSWORD with the password"
+            $SaneConfig = $false
+        }
+    } else {
+        log error "Password in the config is missing, please use the included config template to start a new one"
         $SaneConfig = $false
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup -or 0 -eq @($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count) {
-    log error "No load balancers configured"
+if (Test-ConfigPath "Settings/DeviceGroups/DeviceGroup/Device"){
+    if (@($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count -eq 0){
+        log error "No load balancers configured"
+        $SaneConfig = $false
+    }
+} else {
+    log error "Device config is missing from the configuration file, please look at the template for examples"
     $SaneConfig = $false
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.LogSettings -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled) {
-    log error "Mandatory fields from the LogSettings section has been removed"
+if (-not (Test-ConfigPath "/Settings/LogSettings/Enabled")) {
+    log error "Mandatory fields from the LogSettings section has been removed, please look at the template for examples"
     $SaneConfig = $false
-}
-
-if ("true" -eq $Global:Bigipreportconfig.Settings.LogSettings.Enabled) {
-    if ($null -eq $Global:Bigipreportconfig.Settings.LogSettings.LogFilePath -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.LogLevel -or $null -eq $Global:Bigipreportconfig.Settings.LogSettings.MaximumLines) {
+} elseif ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq "True") {
+    if (-not (Test-ConfigPath "/Settigs/LogSettings/LogFilePath" -and Test-ConfigPath "/Settigs/LogSettings/LogLevel" -and Test-ConfigPath "/Settigs/LogSettings/MaximumLines")){
         log error "Logging has been enabled but all logging fields has not been configured"
         $SaneConfig = $false
     }
 }
 
-if ($null -eq $Global:Bigipreportconfig.Settings.MaxJobs -or "" -eq $Global:Bigipreportconfig.Settings.MaxJobs) {
-    log error "No MaxJobs configured"
+if (Test-ConfigPath "/Settings/MaxJobs"){
+    if ($Global:Bigipreportconfig.Settings.MaxJobs -eq "") {
+        log error "No MaxJobs configured"
+        $SaneConfig = $false    
+    } else {
+        $MaxJobs = $Global:Bigipreportconfig.Settings.MaxJobs
+    }
+} Else {
+    log error "MaxJobs config is missing from the configuration file, please look at the template for examples"
     $SaneConfig = $false
-} else {
-    $MaxJobs = $Global:Bigipreportconfig.Settings.MaxJobs
 }
+       
 
 if ($null -eq $Global:Bigipreportconfig.Settings.Outputlevel -or "" -eq $Global:Bigipreportconfig.Settings.Outputlevel) {
     log error "No Outputlevel configured"
