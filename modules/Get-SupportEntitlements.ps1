@@ -24,7 +24,7 @@ Function Get-SupportEntitlements {
         $IgnoredDevices = $SupportCheckConfig.IgnoredDevices.Device
     }
 
-    log info "Support entitlement checks configured, checking support entitlements"
+    log info "Checking support entitlements"
     $Username = $env:F5_SUPPORT_USERNAME
     $Password = $env:F5_SUPPORT_PASSWORD
 
@@ -82,7 +82,7 @@ Function Get-SupportEntitlements {
                 Continue
             }
 
-            log info "More than 24 hours since the last support check for device $($Device.LoadBalancer.name), validating support"
+            log info "Validating support for device $DeviceName ($Serial)"
             try {
                 $Response = Invoke-WebRequest -WebSession $F5SupportSession -uri https://api-u.f5.com/support/cases/serialno -Method POST -Headers @{ "Content-Type" = "application/json;charset=UTF-8"} -Body $(@{"serialNo" = $Serial} | ConvertTo-Json)
                 $ResponseData = $Response.Content | ConvertFrom-Json -AsHashtable
@@ -91,7 +91,7 @@ Function Get-SupportEntitlements {
                     $SupportState.supportErrorMessage = $ResponseData.errorMessage
                 }
             } catch {
-                log error "Failed to connect to F5 API when retrieving support entitlement"
+                log error "Failed to connect to F5 API when retrieving support entitlement for $DeviceName ($Serial)"
                 $SupportState = "Failed to connect to F5 API when retrieving support entitlement"
             }
             $SupportState.lastChecked = $Now;
