@@ -657,7 +657,7 @@ if (-not (Test-ConfigPath "/Settings/UseBrotli")) {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
 }
 
-if (-not (Test-ConfigPath "/Settings/SupportCheckOption/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheckOption/Username") -or -not (Test-ConfigPath "/Settings/SupportCheckOption/Password") ){
+if (-not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
     log error "Missing options in the Supportcheck config. Update the the latest version of the file and try again."
 } else {
     $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
