@@ -244,23 +244,6 @@
         <!--
         **************************************************************************************************************************************
         *
-        *    This variable enables or disables the use of TLS1.2. If disabled the script will revert to TLS1.0
-        *
-        *    To enable, set the variable to true, otherwise false
-        *
-        *    Example:
-        *    <UseTLS12>true</UseTLS12>
-        *    or
-        *    <UseTLS12>false</UseTLS12>
-        *
-        **************************************************************************************************************************************
-        -->
-
-        <UseTLS12>true</UseTLS12>
-
-        <!--
-        **************************************************************************************************************************************
-        *
         *    This variable enables or disables the use of brotli compression.
         *    If enabled .br files will be created. The web server needs to offer these precompressed files transparently.
         *

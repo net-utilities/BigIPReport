@@ -531,7 +531,7 @@ Function Send-Errors {
                 send-MailMessage -SmtpServer $Global:Bigipreportconfig.Settings.ErrorReporting.SMTPServer -To $Recipient -From $Global:Bigipreportconfig.Settings.ErrorReporting.Sender -Subject $Subject -Body $Body -BodyAsHtml
             }
         } else {
-            log error "No error mail reporting enabled/configured"
+            log warning "No error mail reporting enabled/configured"
         }
     }
 }
@@ -556,11 +556,11 @@ $SaneConfig = $true
 if ($null -eq $Env:F5_USERNAME) {
     if (Test-ConfigPath "/Settings/Credentials/Username") {
         if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
-            log error "No username found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_USERNAME with the password"
+            log error "Username empty. Configure Username in the configuration file or define an environment variable named F5_USERNAME"
             $SaneConfig = $false
         }
     } else {
-        log error "Username in the config is missing, please use the included config template to start a new one"
+        log error "Configuration file missing Username"
         $SaneConfig = $false
     }
 }
@@ -568,55 +568,71 @@ if ($null -eq $Env:F5_USERNAME) {
 if ($null -eq $Env:F5_PASSWORD) {
     if (Test-ConfigPath "/Settings/Credentials/Password") {
         if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
-            log error "No password found. You need to either configure the F5 credentials in the configuration file or define an environment variable named F5_PASSWORD with the password"
+            log error "Password empty. Configure Password in the configuration file or define an environment variable named F5_PASSWORD"
             $SaneConfig = $false
         }
     } else {
-        log error "Password in the config is missing, please use the included config template to start a new one"
+        log error "Configuration file missing Password"
         $SaneConfig = $false
     }
 }
 
 if (Test-ConfigPath "Settings/DeviceGroups/DeviceGroup/Device"){
-    if (@($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count -eq 0){
-        log error "No load balancers configured"
-        $SaneConfig = $false
-    }
+  if (@($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count -eq 0){
+      log error "No load balancers configured"
+      $SaneConfig = $false
+  }
 } else {
-    log error "Device config is missing from the configuration file, please look at the template for examples"
-    $SaneConfig = $false
+  log error "Configuration file missing Device entries"
+  $SaneConfig = $false
+}
+
+if (-not (Test-ConfigPath "/Settings/DeviceGroups/DeviceGroup")) {
+    log error "Configuration file missing DeviceGroup entries."
+    $SaneConfig = $False
+} else {
+    Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
+        If ($null -eq $DeviceGroup.Name -or $DeviceGroup.Name -eq "") {
+            log error "A DeviceGroup does not have a name."
+            $SaneConfig = $false
+        }
+        If (@($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
+            log error "DeviceGroup `"$($DeviceGroup.Name)`" does not have any devices."
+            $SaneConfig = $false
+        }
+    }
 }
 
 if (-not (Test-ConfigPath "/Settings/LogSettings/Enabled")) {
-    log error "Mandatory fields from the LogSettings section has been removed, please look at the template for examples"
+    log error "Configuration file missing or has invalid LogSettings"
     $SaneConfig = $false
 } elseif ($Global:Bigipreportconfig.Settings.LogSettings.Enabled -eq "True") {
     if (-not (Test-ConfigPath "/Settings/LogSettings/LogFilePath" -and Test-ConfigPath "/Settings/LogSettings/LogLevel" -and Test-ConfigPath "/Settings/LogSettings/MaximumLines")){
-        log error "Logging has been enabled but all logging fields has not been configured"
+        log error "Logging has been enabled but all logging fields have not been configured"
         $SaneConfig = $false
     }
 }
 
 if (Test-ConfigPath "/Settings/MaxJobs"){
     if ($Global:Bigipreportconfig.Settings.MaxJobs -eq "") {
-        log error "No MaxJobs configured"
+        log error "Configuration file MaxJobs is empty"
         $SaneConfig = $false
     } else {
         $MaxJobs = $Global:Bigipreportconfig.Settings.MaxJobs
     }
 } Else {
-    log error "MaxJobs config is missing from the configuration file, please look at the template for examples"
+    log error "Configuration file missing MaxJobs"
     $SaneConfig = $false
 }
 
 
 if (Test-ConfigPath "/Settings/Outputlevel"){
     if($Global:Bigipreportconfig.Settings.Outputlevel -eq ""){
-        log error "No Outputlevel configured"
+        log error "Configuration file Outputlevel is empty"
         $SaneConfig = $false
     }
 } Else {
-    log error "Output level missing from the configuration file, please look at the template for examples"
+    log error "Configuration file missing Outputlevel"
     $SaneConfig = $false
 }
 
@@ -636,7 +652,7 @@ if ($Global:Bigipreportconfig.Settings.SelectNodes("Shares/Share").Count) {
 }
 
 if (-not (Test-ConfigPath "/Settings/iRules/Enabled") -or -not (Test-ConfigPath "/Settings/iRules/ShowiRuleLinks") -or -not (Test-ConfigPath "/Settings/iRules/ShowDataGroupLinks")) {
-    log error "Missing options in the global iRule section defined in the configuration file. Old config version of the configuration file?"
+    log error "Missing options in the global iRules section in the configuration file."
     $SaneConfig = $false
 } else {
     if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true -and $Global:Bigipreportconfig.Settings.iRules.ShowiRuleLinks -eq $false -and $Global:Bigipreportconfig.Settings.iRules.ShowDataGroupLinks -eq $true) {
@@ -646,26 +662,26 @@ if (-not (Test-ConfigPath "/Settings/iRules/Enabled") -or -not (Test-ConfigPath 
 }
 
 if (-not (Test-ConfigPath "/Settings/RealTimeMemberStates")) {
-    log error "Real time member states is missing from the configuration file. Update the the latest version of the file and try again."
+    log error "Configuration file missing RealTimeMemberStates"
     $SaneConfig = $false
 }
 
 if (-not (Test-ConfigPath "/Settings/UseBrotli")) {
-    log verbose "UseBrotli is not present in the configuration file. Update to the latest configuration file to get rid of this message."
+    log verbose "Configuration file missing UseBrotli"
     $Global:UseBrotli = $false
 } else {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
 }
 
 if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
-    log error "Missing options in the Supportcheck config. Update the the latest version of the file and try again."
+    log error "Configuration file missing SupportCheck options"
 } else {
     $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
     if($SupportCheckOption.Enabled -eq "True") {
         if ($null -eq $env:F5_SUPPORT_USERNAME -or $null -eq $env:F5_SUPPORT_PASSWORD) {
             if ($null -eq $SupportCheckOption.Username -or $SupportCheckOption.Username -eq "" -or $null -eq $SupportCheckOption.Password -or $SupportCheckOption.Password -eq "") {
-                log error "Option Support Check has been enabled but the credentials has not been populated."
-                log error "Either disable the support check or provide credentials in the config file or via the environment variables F5_SUPPORT_USERNAME/F5_SUPPORT_PASSWORD"
+                log error "Option SupportCheck has been enabled but the credentials have not been populated."
+                log error "Either disable SupportCheck or provide credentials in the config file or via the environment variables F5_SUPPORT_USERNAME/F5_SUPPORT_PASSWORD"
                 $SaneConfig = $false
             }
         }
@@ -673,20 +689,20 @@ if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/
 }
 
 if (Test-ConfigPath "/Settings/ReportRoot") {
-
     # Make sure the report root ends with / or \
     if (-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("/") -and -not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")) {
         $Global:bigipreportconfig.Settings.ReportRoot += "/"
     }
 
     if ($Global:bigipreportconfig.Settings.ReportRoot -eq "/"){
-        log error "Empty report root configuration, update the config and try again"
+        log error "Configuration file has empty ReportRoot"
         $SaneConfig = $false
     } elseif (-not (Test-Path -PathType Container $Global:Bigipreportconfig.Settings.ReportRoot)) {
         log error "Can't access the site root $($Global:Bigipreportconfig.Settings.ReportRoot)"
         $SaneConfig = $false
     } else {
         if ($null -eq $Location) {
+            # TODO: check if we can write to ReportRoot, but only copy underlay after the report has been written.
             # only copy if we're the parent script
             # if we're not testing in underlay/ then copy resources over to insure they are up to date.
             if ('underlay/' -ne $Global:bigipreportconfig.Settings.ReportRoot) {
@@ -695,7 +711,7 @@ if (Test-ConfigPath "/Settings/ReportRoot") {
             }
         }
         if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "json"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not exist in the report root directory."
             $SaneConfig = $false
         } elseif ( @(Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "json")).count -eq 0) {
             log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not contain any files. Did you accidentally delete some files?"
@@ -703,7 +719,7 @@ if (Test-ConfigPath "/Settings/ReportRoot") {
         }
 
         if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "js"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "js") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "js") does not exist in the report root directory."
             $SaneConfig = $false
         } elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "js")).count -eq 0) {
             log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "js") does not contain any files. Did you accidentally delete some files?"
@@ -711,7 +727,7 @@ if (Test-ConfigPath "/Settings/ReportRoot") {
         }
 
         if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "images"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "images") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "images") does not exist in the report root directory."
             $SaneConfig = $false
         } elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "images")).count -eq 0) {
             log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "images") does not contain any files. Did you accidentally delete some files?"
@@ -719,7 +735,7 @@ if (Test-ConfigPath "/Settings/ReportRoot") {
         }
 
         if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "css"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "css") does not exist in the report root directory. Did you forget to copy the html files from the zip file?"
+            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "css") does not exist in the report root directory."
             $SaneConfig = $false
         } elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "css")).count -eq 0) {
             log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "css") does not contain any files. Did you accidentally delete some files?"
@@ -727,25 +743,8 @@ if (Test-ConfigPath "/Settings/ReportRoot") {
         }
     }
 } else {
-    log error "No report root configured"
+    log error "Configuration file missing ReportRoot"
     $SaneConfig = $false
-}
-
-if (-not (Test-ConfigPath "/Settings/DeviceGroups/DeviceGroup")) {
-    log error "Missing device group configuration, look at the configuration template and try again"
-    $SaneConfig = $False
-} else {
-    Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup) {
-        If ($null -eq $DeviceGroup.name -or $DeviceGroup.name -eq "") {
-            log error "A device group does not have a name. Please check the latest version of the configuration file."
-            $SaneConfig = $false
-        }
-
-        If ($null -eq $DeviceGroup.Device -or @($DeviceGroup.Device | Where-Object { $_ -ne "" } ).Count -eq 0) {
-            log error "A device group does not have any devices, please re-check your configuration"
-            $SaneConfig = $false
-        }
-    }
 }
 
 if ($null -ne $Env:SLACK_WEBHOOK) {
@@ -753,43 +752,43 @@ if ($null -ne $Env:SLACK_WEBHOOK) {
 } elseif (Test-ConfigPath "/Settings/SlackWebhook"){
     $SlackWebHook = $Global:Bigipreportconfig.Settings.SlackWebhook.Trim()
 } else {
-    log error "Slack Webhook config not present in the configuration, please upgrade your configuration file"
+    log error "Configuration file missing SlackWebhook"
     $SaneConfig = $false
 }
 
 if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration"){
     if (Test-ConfigPath "/Settings/Alerts/CertificateExpiration/SlackEnabled"){
         if($Bigipreportconfig.Settings.Alerts.CertificateExpiration.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-            log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+            log error "Slack reporting for expired certificates enabled but SlackWebhook has not been defined"
             $SaneConfig = $false
         }
     }
 } else {
-    log error "Missing /Settings/Alerts/CertificateExpiration in the config, please update to the latest configuration file"
+    log error "Configuration file missing Alerts/CertificateExpiration"
     $SaneConfig = $false
 }
 
 if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks") {
     if (Test-ConfigPath "/Settings/Alerts/FailedSupportChecks/SlackEnabled"){
         if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-            log error "Slack reporting for expired certificates enabled but the webhook has not been defined"
+            log error "Slack reporting for expired certificates enabled but SlackWebhook has not been defined"
             $SaneConfig = $false
         }
     }
 } else {
-    log error "Missing /Settings/Alerts/FailedSupportChecks in the config, please update to the latest configuration file"
+    log error "Configuration file missing Alerts/FailedSupportChecks"
     $SaneConfig = $false
 }
 
 if (Test-ConfigPath "/Settings/Alerts/FailedDevices"){
     if (Test-ConfigPath "/Settings/Alerts/FailedDevices/SlackEnabled"){
         if($Bigipreportconfig.Settings.Alerts.FailedSupportChecks.SlackEnabled.Trim() -eq "True" -and $SlackWebHook -eq "") {
-            log error "Slack reporting for failed devices enabled but the webhook has not been defined"
+            log error "Slack reporting for failed devices enabled but SlackWebhook has not been defined"
             $SaneConfig = $false
         }
     }
 } else {
-    log error "Missing /Settings/Alerts/FailedDevices in the config, please update to the latest configuration file"
+    log error "Configuration file missing Alerts/FailedDevices"
     $SaneConfig = $false
 }
 
@@ -825,7 +824,7 @@ if ((Get-Member -inputobject $Global:Bigipreportconfig.Settings -name 'NavLinks'
 }
 
 if (-not $SaneConfig) {
-    log verbose "There were errors during the config file sanity check"
+    log verbose "There were errors during the config file sanity check. Please use the included config template to start a new one."
 
     if ($Global:Bigipreportconfig.Settings.ErrorReporting.Enabled -eq $true) {
         log verbose "Attempting to send an error report via mail"
@@ -1046,12 +1045,6 @@ $Global:ModuleToDescription = @{
 }
 #EndRegion variables
 
-#Enable of disable the use of TLS1.2
-if ($Global:Bigipreportconfig.Settings.UseTLS12 -eq $true) {
-    log verbose "Enabling TLS1.2"
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-}
-
 #Make sure that the text is in UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -1078,7 +1071,7 @@ if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
             log error "No NAT entries loaded"
         }
     } else {
-        log error "NAT file could not be found in location $($Global:Bigipreportconfig.Settings.NATFilePath)"
+        log error "NAT file not found in $($Global:Bigipreportconfig.Settings.NATFilePath)"
     }
 }
 
@@ -1812,7 +1805,7 @@ function GetDeviceInfo {
         try {
             $tries++
             $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
-            log success "Got auth token"
+            log success "Got auth token (Try $Tries)"
             $AuthToken = $TokenRequest.token.token
             $TokenReference = $TokenRequest.token.name;
             $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
@@ -1829,10 +1822,11 @@ function GetDeviceInfo {
             $tries = 99
         } catch {
             $Line = $_.InvocationInfo.ScriptLineNumber
-            log error "Error getting auth token from $LoadBalancerIP : $_ (Line $Line, Tries $tries)"
+            log info "Error getting auth token : $_ (Line $Line, Tries $tries)"
         }
     }
     if ($tries -ne 99) {
+        log error "Failed to get auth token"
         Exit
     }
 
@@ -2063,10 +2057,10 @@ do {
             $JobsToStart = @()
         }
         $running++
-        log success ("Start-Job $Device ($running / $MaxJobs)")
+        log success ("Start-Job $Device ($running / $MaxJobs, Wait: $($JobsToStart.length))")
         $jobs += Start-Job -Name $Device -FilePath $PSCommandPath -ArgumentList $ConfigurationFile, $Device, $PSScriptRoot
     }
-    Write-Host -NoNewLine ("Waiting: " + $JobsToStart.length + ", Running: $running, Completed: $completed, Failed: $failed, Time: " + $($(Get-Date) - $StartTime).TotalSeconds + "  `r")
+    Write-Host -NoNewLine ("Wait: $($JobsToStart.length), Run: $running, Done: $completed, Fail: $failed, Time: " + $($(Get-Date) - $StartTime).TotalSeconds + "  `r")
     Start-Sleep 1
 } until ($JobsToStart.length -eq 0 -and $running -eq 0)
 # clear the status line
@@ -2249,7 +2243,7 @@ if ($MissingData) {
     $TemporaryCache = @{}
     ForEach($Path in $Global:paths.Keys | Where-Object { $_ -notin @("preferences", "nat", "state")}) {
         # Empty arrays are read as $null for some reason
-        $Content = Get-Content $Global:paths[$Path] | ConvertFrom-Json
+        $Content = Get-Content $Global:paths[$Path] | ConvertFrom-Json -AsHashTable
         if($null -eq $Content) {
             $Content = @()
         }
