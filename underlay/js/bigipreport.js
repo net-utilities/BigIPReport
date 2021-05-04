@@ -2481,7 +2481,9 @@ function showDeviceOverview(updatehash) {
                     >
                     <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
                   </td>>
-                  <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>` : ''}
+                  <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">
+                    ${renderLoadBalancer(deviceGroup.name, 'display')}
+                  </td>` : ''}
                   <td>FAILED TO INDEX</td>
                   <td><img class="devicestatusicon" title="Failed to index" alt="Failed to index"
             src="images/devicestatusred.png"/> ${renderLoadBalancer(deviceIP, 'display')}</td>
