@@ -2252,8 +2252,25 @@ if ($MissingData) {
 
     ForEach($Device in $FailedDevices){
         log info "Trying to load the data for $Device from the previous execution"
-        $LoadBalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.ip -eq $Device }
-        If($null -eq $LoadBalancerObj){
+        try {
+            $LoadBalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.ip -eq $Device }
+
+            $LoadBalancerName = $LoadBalancerObj.Name
+
+            $Global:ReportObjects[$LoadBalancerName] = @{}
+            $LoadbalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.name -eq $LoadBalancerName }
+            $LoadBalancerObj.success = $false
+            $Global:ReportObjects[$LoadBalancerName]["LoadBalancer"] = $LoadbalancerObj
+
+            # This could be so much shorter if we used the same keys in paths and Out
+            $Global:Out.iRules += $TemporaryCache['irules'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.Pools += $TemporaryCache['pools'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.Monitors += $TemporaryCache['monitors'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.VirtualServers += $TemporaryCache['virtualservers'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.Certificates += $TemporaryCache['certificates'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.ASMPolicies += $TemporaryCache['asmpolicies'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.DataGroups += $TemporaryCache['datagroups'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+        } catch {
             log error "Failed to fetch previous data matching device $Device"
             if (-not $Global:Bigipreportconfig.Settings.ErrorReportAnyway -eq $true) {
                 log error "Missing load balancer data, no report will be written"
@@ -2263,22 +2280,6 @@ if ($MissingData) {
             # If the option to write anyway is enabled we'll continue trying to get cached data from the next device
             Continue
         }
-
-        $LoadBalancerName = $LoadBalancerObj.Name
-
-        $Global:ReportObjects[$LoadBalancerName] = @{}
-        $LoadbalancerObj = $TemporaryCache['loadbalancers'] | Where-Object { $_.name -eq $LoadBalancerName }
-        $LoadBalancerObj.success = $false
-        $Global:ReportObjects[$LoadBalancerName]["LoadBalancer"] = $LoadbalancerObj
-
-        # This could be so much shorter if we used the same keys in paths and Out
-        $Global:Out.iRules += $TemporaryCache['irules'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
-        $Global:Out.Pools += $TemporaryCache['pools'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
-        $Global:Out.Monitors += $TemporaryCache['monitors'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
-        $Global:Out.VirtualServers += $TemporaryCache['virtualservers'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
-        $Global:Out.Certificates += $TemporaryCache['certificates'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
-        $Global:Out.ASMPolicies += $TemporaryCache['asmpolicies'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
-        $Global:Out.DataGroups += $TemporaryCache['datagroups'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
     }
 } else {
     log success "No missing data was detected, sending alerts and compiling the report"
