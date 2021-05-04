@@ -2841,7 +2841,7 @@ function showDeviceOverview(updatehash) {
         return;
       }
 
-      let pollingStatus = 'N/A (passive device)';
+      let pollingStatus = 'Passive Device';
 
       if (loadbalancer.active || loadbalancer.isonlydevice) {
         const { url, working } = loadbalancer.statusvip;
