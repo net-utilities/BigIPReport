@@ -671,16 +671,6 @@ if (Test-ConfigPath "/Settings/ReportRoot") {
     } elseif (-not (Test-Path -PathType Container $Global:Bigipreportconfig.Settings.ReportRoot)) {
         log error "Can't access the site root $($Global:Bigipreportconfig.Settings.ReportRoot)"
         $SaneConfig = $false
-    } else {
-        if ($null -eq $Location) {
-            # TODO: check if we can write to ReportRoot, but only copy underlay after the report has been written.
-            # only copy if we're the parent script
-            # if we're not testing in underlay/ then copy resources over to insure they are up to date.
-            if ('underlay/' -ne $Global:bigipreportconfig.Settings.ReportRoot) {
-                log verbose "Copying underlay/* to $($Global:Bigipreportconfig.Settings.ReportRoot)"
-                Copy-Item -Recurse -Force -Path 'underlay/*' -Destination $Global:Bigipreportconfig.Settings.ReportRoot
-            }
-        }
     }
 } else {
     log error "Configuration file missing ReportRoot"
