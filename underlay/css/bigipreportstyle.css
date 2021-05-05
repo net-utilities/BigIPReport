@@ -1251,3 +1251,16 @@ button.dt-button.buttons-columnVisibility.active:hover {
     width: inherit !important;
     margin-right: 15px;
 }
+table.dataTable {
+    width: 100%;
+}
+table.dataTable thead th {
+    border-bottom: none;
+}
+.dataTables_wrapper .dataTables_length {
+    margin-left: 20px;
+    padding-top: .6em;
+}
+table.dataTable.no-footer {
+   border-bottom: none;
+}
