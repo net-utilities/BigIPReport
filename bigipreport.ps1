@@ -245,7 +245,7 @@
 #                        Adding Slack Alert support for expired support entitlements
 #                        Removing state if new script version or script version in state is missing
 #  5.5.7    2021-04-30   Adding Slack Alert support for failed devices, refactoring pre-checks         Patrik Jonsson  Yes
-#  5.5.8    2021-05-05   DeviceGroup failures, -AsHashTable for case-only differentiation, log msgs    Tim Riker       No
+#  5.5.8    2021-05-05   DeviceGroup failures, -AsHashTable, log msgs, jquery updated                  Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
