@@ -2172,8 +2172,9 @@ if ($MissingData) {
     $TemporaryCache = @{}
     ForEach($Path in $Global:paths.Keys | Where-Object { $_ -notin @("preferences", "nat", "state")}) {
         # Empty arrays are read as $null for some reason
-        $Content = Get-Content $Global:paths[$Path] | ConvertFrom-Json -AsHashTable
-        if($null -eq $Content) {
+        try {
+            $Content = Get-Content $Global:paths[$Path] | ConvertFrom-Json -AsHashTable
+        } catch {
             $Content = @()
         }
         $TemporaryCache[$Path] = $Content
