@@ -244,7 +244,8 @@
 #  5.5.6    2021-04-27   Adding Slack Alert support for expired certificates                           Patrik Jonsson  Yes
 #                        Adding Slack Alert support for expired support entitlements
 #                        Removing state if new script version or script version in state is missing
-#  5.5.7    2021-04-30   Adding Slack Alert support for failed devices, refactoring pre-checks         Patrik Jonsson
+#  5.5.7    2021-04-30   Adding Slack Alert support for failed devices, refactoring pre-checks         Patrik Jonsson  Yes
+#  5.5.8    2021-05-05   DeviceGroup failures, -AsHashTable for case-only differentiation, log msgs    Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -288,7 +289,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.7"
+$Global:ScriptVersion = "5.5.8"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -679,37 +680,6 @@ if (Test-ConfigPath "/Settings/ReportRoot") {
                 log verbose "Copying underlay/* to $($Global:Bigipreportconfig.Settings.ReportRoot)"
                 Copy-Item -Recurse -Force -Path 'underlay/*' -Destination $Global:Bigipreportconfig.Settings.ReportRoot
             }
-        }
-        if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "json"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not exist in the report root directory."
-            $SaneConfig = $false
-        } elseif ( @(Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "json")).count -eq 0) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "json") does not contain any files. Did you accidentally delete some files?"
-            $SaneConfig = $false
-        }
-
-        if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "js"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "js") does not exist in the report root directory."
-            $SaneConfig = $false
-        } elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "js")).count -eq 0) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "js") does not contain any files. Did you accidentally delete some files?"
-            $SaneConfig = $false
-        }
-
-        if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "images"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "images") does not exist in the report root directory."
-            $SaneConfig = $false
-        } elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "images")).count -eq 0) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "images") does not contain any files. Did you accidentally delete some files?"
-            $SaneConfig = $false
-        }
-
-        if (-not (Test-Path $($Global:Bigipreportconfig.Settings.ReportRoot + "css"))) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "css") does not exist in the report root directory."
-            $SaneConfig = $false
-        } elseif ( (Get-ChildItem -path $($Global:Bigipreportconfig.Settings.ReportRoot + "css")).count -eq 0) {
-            log error "The folder $($Global:Bigipreportconfig.Settings.ReportRoot + "css") does not contain any files. Did you accidentally delete some files?"
-            $SaneConfig = $false
         }
     }
 } else {
@@ -2304,7 +2274,14 @@ $StatsMsg += " T:" + $($(Get-Date) - $StartTime).TotalSeconds
 log success $StatsMsg
 #EndRegion
 
-#Region Write temporary files and update the report
+#Region Copy underlay, write temporary files and update the report
+
+# if we're not testing in underlay/ then copy resources over to insure they are up to date.
+if ('underlay/' -ne $Global:bigipreportconfig.Settings.ReportRoot) {
+    log verbose "Copying underlay/* to $($Global:Bigipreportconfig.Settings.ReportRoot)"
+    Copy-Item -Recurse -Force -Path 'underlay/*' -Destination $Global:Bigipreportconfig.Settings.ReportRoot
+}
+
 $TemporaryFilesWritten = $false
 
 if (-not (Write-TemporaryFiles)) {
