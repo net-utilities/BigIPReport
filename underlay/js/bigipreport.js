@@ -779,8 +779,8 @@ function renderCertificate(loadbalancer, name, type) {
         result += `
     <span class="adcLinkSpan">
       <a target="_blank"
-      href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?certificate_name=${name.replace(/\//, '%2F').replace(/.crt$/, '')}
-      ">
+      href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?` +
+            `certificate_name=${name.replace(/\//, '%2F').replace(/.crt$/, '')}">
         Edit
       </a>
     </span>`;
