@@ -2822,7 +2822,7 @@ function showDeviceOverview(updatehash) {
                         class="deviceiconcell"
                     >
                     <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
-                  </td>>
+                  </td>
                   <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">
                     ${renderLoadBalancer(deviceGroup.name, 'display')}
                   </td>` : '' }
