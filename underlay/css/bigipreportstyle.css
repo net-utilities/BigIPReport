@@ -1262,5 +1262,16 @@ table.dataTable thead th {
     padding-top: .6em;
 }
 table.dataTable.no-footer {
-   border-bottom: none;
+    border-bottom: none;
 }
+.dataTables_filter {
+    padding-top: 6px;
+}
+.dataTables_wrapper .dataTables_processing,
+.dataTables_wrapper .dataTables_filter {
+    float: left;
+    font-family: Arial;
+    margin-left: 15px;
+    text-align: left;
+    width: calc(100% - 50px);
+ }
