@@ -40,7 +40,7 @@ Function Get-ExpiredCertificates {
 
                 # Remove alerts for valid certificates
                 if (-not $ExpiresWithinAlertPeriod -and $HasExistingAlert) {
-                    log "verbose" "Cleaning old certificate alert for $AlertKey which is now expiring within the configured time frame of $AlertWhenDaysOld"
+                    log "verbose" "Cleaning alert for $AlertKey now within configured time frame of $AlertWhenDaysOld"
                     $CertificateAlerts.Remove($AlertKey)
                     Continue
                 }
@@ -81,5 +81,4 @@ Function Get-ExpiredCertificates {
     }
 
     Return $CertificateAlerts
-
 }
