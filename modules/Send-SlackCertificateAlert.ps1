@@ -13,18 +13,18 @@ Function Send-SlackCertificateAlert {
                 "type"= "header";
                 "text"= @{
                     "type"= "plain_text";
-                    "text"= "BigIPReport has detected expiring certificates";
+                    "text"= "BigIPReport detected expiring certificates";
                 }
             },
             @{
                 "type"= "section";
                 "text"= @{
                     "type"= "mrkdwn";
-                    "text"= "Certificates expiring withing the configured notice period of $AlertWhenDaysOld days has been detected when running the report on $([System.Net.Dns]::GetHostName()).`n`nRead more about how to configure these alerts <https://loadbalancing.se|here>."
+                    "text"= "Certificates expiring within notice period of $AlertWhenDaysOld days detected when running report on $([System.Net.Dns]::GetHostName()).`n`nRead more about how to configure these alerts <https://loadbalancing.se|here>."
                 };
                 "accessory"= @{
                     "type"= "image";
-                    "alt_text"= "alt text for image";
+                    "alt_text"= "expired certificate";
                     "image_url"= "https://loadbalancing.se/slack/expiredcert.png";
                 }
             }

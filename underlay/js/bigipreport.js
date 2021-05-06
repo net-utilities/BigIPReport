@@ -779,9 +779,8 @@ function renderCertificate(loadbalancer, name, type) {
         result += `
     <span class="adcLinkSpan">
       <a target="_blank"
-      href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?certificate_name=
-        ${name.replace(/\//, '%2F').replace(/.crt$/, '')}
-      ">
+      href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/ssl_certificate/properties.jsp?` +
+            `certificate_name=${name.replace(/\//, '%2F').replace(/.crt$/, '')}">
         Edit
       </a>
     </span>`;
@@ -2480,9 +2479,11 @@ function showDeviceOverview(updatehash) {
                         class="deviceiconcell"
                     >
                     <img class="deviceicon" alt="deviceicon" src="${deviceIcon}"/>
-                  </td>>
-                  <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">${deviceGroup.name}</td>` : ''}
-                  <td>FAILED TO INDEX</td>
+                  </td>
+                  <td class="devicenamecell" rowspan="${deviceGroup.ips.length}">
+                    ${renderLoadBalancer(deviceGroup.name, 'display')}
+                  </td>` : ''}
+                  <td>FAILED</td>
                   <td><img class="devicestatusicon" title="Failed to index" alt="Failed to index"
             src="images/devicestatusred.png"/> ${renderLoadBalancer(deviceIP, 'display')}</td>
                   <td>Unknown</td>
@@ -2496,7 +2497,7 @@ function showDeviceOverview(updatehash) {
                   <td>Unknown</td>`;
                 return;
             }
-            let pollingStatus = 'N/A (passive device)';
+            let pollingStatus = 'Passive Device';
             if (loadbalancer.active || loadbalancer.isonlydevice) {
                 const { url, working } = loadbalancer.statusvip;
                 if (url === '') {

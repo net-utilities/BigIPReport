@@ -57,5 +57,4 @@ Function Send-SlackSupportStateAlert {
     } Catch {
         log error "Failed to send Slack Web Hook"
     }
-
 }

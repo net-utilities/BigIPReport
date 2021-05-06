@@ -1251,3 +1251,34 @@ button.dt-button.buttons-columnVisibility.active:hover {
     width: inherit !important;
     margin-right: 15px;
 }
+table.dataTable {
+    width: 100%;
+}
+table.dataTable thead th {
+    border-bottom: none;
+}
+.dataTables_wrapper .dataTables_length {
+    margin-left: 20px;
+    padding-top: .6em;
+}
+table.dataTable.no-footer {
+    border-bottom: none;
+}
+.dataTables_filter {
+    padding-top: 6px;
+}
+.dataTables_wrapper .dataTables_processing,
+.dataTables_wrapper .dataTables_filter {
+    float: left;
+    font-family: Arial;
+    margin-left: 15px;
+    text-align: left;
+    width: calc(100% - 50px);
+ }
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_processing,
+.dataTables_wrapper .dataTables_paginate {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}

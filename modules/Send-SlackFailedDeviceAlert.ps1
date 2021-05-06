@@ -1,7 +1,6 @@
 Function Send-SlackFailedDeviceAlert(){
     Param($AlertsToSend)
 
-    
     if ($null -eq $AlertsToSend -or $AlertsToSend.Count -eq 0) {
         log error "Send-SlackCertificateAlert function got a call with no alerts to send"
         Return
@@ -13,7 +12,7 @@ Function Send-SlackFailedDeviceAlert(){
                 "type"= "header";
                 "text"= @{
                     "type"= "plain_text";
-                    "text"= "BigIPReport has failed to index some device(s)";
+                    "text"= "BigIPReport failed to index some device(s)";
                 }
             },
             @{
@@ -58,5 +57,4 @@ Function Send-SlackFailedDeviceAlert(){
         log error "Failed to send Slack Web Hook"
     }
 
-    
-} 
+}

@@ -91,8 +91,8 @@ Function Get-SupportEntitlements {
                     $SupportState.supportErrorMessage = $ResponseData.errorMessage
                 }
             } catch {
-                log error "Failed to connect to F5 API when retrieving support entitlement for $DeviceName ($Serial)"
-                $SupportState = "Failed to connect to F5 API when retrieving support entitlement"
+                log error "Failed to connect to F5 entitlement API for $DeviceName ($Serial)"
+                $SupportState = "Failed to connect to F5 entitlement API"
             }
             $SupportState.lastChecked = $Now;
 
