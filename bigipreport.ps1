@@ -246,6 +246,7 @@
 #                        Removing state if new script version or script version in state is missing
 #  5.5.7    2021-04-30   Adding Slack Alert support for failed devices, refactoring pre-checks         Patrik Jonsson  Yes
 #  5.5.8    2021-05-05   DeviceGroup failures, -AsHashTable, log msgs, jquery updated                  Tim Riker       No
+#  5.5.9    2021-05-11   SkipCertificateCheck global option                                            Tim Riker       Yes
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -289,7 +290,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.8"
+$Global:ScriptVersion = "5.5.9"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -642,6 +643,16 @@ if (-not (Test-ConfigPath "/Settings/UseBrotli")) {
     $Global:UseBrotli = $false
 } else {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
+}
+
+if (-not (Test-ConfigPath "/Settings/SkipCertificateCheck")) {
+    log error "Configuration file missing SkipCertificateCheck"
+    $SaneConfig = $false
+} else {
+    if ($Global:Bigipreportconfig.Settings.SkipCertificateCheck -eq "true") {
+        $PSDefaultParameterValues.Add("Invoke-RestMethod:SkipCertificateCheck",$true)
+        $PSDefaultParameterValues.Add("Invoke-WebRequest:SkipCertificateCheck",$true)
+    }
 }
 
 if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
@@ -1048,7 +1059,7 @@ function Get-LTMInformation {
 
         log verbose "Getting ASM Policy information"
         try {
-            $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
+            $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/asm/policies"
         } Catch {
             $Line = $_.InvocationInfo.ScriptLineNumber
             log error "Unable to load ASM policies. (line $Line)"
@@ -1083,7 +1094,7 @@ function Get-LTMInformation {
 
     $Response = ""
     try {
-        $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/crypto/cert"
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/crypto/cert"
     } catch {
         $Line = $_.InvocationInfo.ScriptLineNumber
         log error "Error loading certificates. $_ (line $Line)"
@@ -1144,7 +1155,7 @@ function Get-LTMInformation {
 
     log verbose "Caching nodes"
 
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/node"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/node"
     $Nodes = $Response.items
 
     Foreach ($Node in $Nodes) {
@@ -1176,7 +1187,7 @@ function Get-LTMInformation {
 
     $Monitors = $()
     Foreach ($MonitorType in ("http", "https", "icmp", "gateway-icmp", "real-server", "snmp-dca", "tcp-half-open", "tcp", "udp")) {
-        $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/monitor/$MonitorType"
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/monitor/$MonitorType"
         [array]$Monitors += $Response.items
     }
 
@@ -1218,13 +1229,13 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Pools = c@ {}
 
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/pool?expandSubcollections=true"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/pool?expandSubcollections=true"
     [array]$Pools = $Response.items
 
     $PoolStatsDict = c@ {}
     If ($MajorVersion -ge 12) {
         # Need 12+ to support members/stats
-        $Response = Invoke-WebRequest -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/pool/members/stats" |
+        $Response = Invoke-WebRequest -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/pool/members/stats" |
         ConvertFrom-Json -AsHashtable
         Foreach ($PoolStat in $Response.entries.Values) {
             $PoolStatsDict.add($PoolStat.nestedStats.entries.tmName.description, $PoolStat.nestedStats.entries)
@@ -1253,7 +1264,7 @@ function Get-LTMInformation {
             log verbose ("Polling stats for " + $Pool.fullPath)
             # < v12 does not support member/stats, poll stats for each pool
             $uri = "https://$LoadBalancerIP/mgmt/tm/ltm/pool/" + $Pool.fullPath.replace("/", "~") + "/stats?`$filter=partition%20eq%20" + $Pool.fullPath.Split("/")[1]
-            $Response = Invoke-WebRequest -WebSession $Session -SkipCertificateCheck -Uri $uri | ConvertFrom-Json -AsHashtable
+            $Response = Invoke-WebRequest -WebSession $Session -Uri $uri | ConvertFrom-Json -AsHashtable
             try {
                 $PoolStatsDict.add($Pool.fullPath, $Response.entries.Values.nestedStats.entries)
             } catch {
@@ -1271,7 +1282,7 @@ function Get-LTMInformation {
                 $MemberStats = $PoolStatsDict[$Pool.fullPath].$search.nestedStats.entries
             } catch {
                 $uri = "https://$LoadBalancerIP/mgmt/tm/ltm/pool/" + $Pool.fullPath.replace("/", "~") + "/members/stats"
-                $Response = Invoke-WebRequest -WebSession $Session -SkipCertificateCheck -Uri $uri | ConvertFrom-Json -AsHashtable
+                $Response = Invoke-WebRequest -WebSession $Session -Uri $uri | ConvertFrom-Json -AsHashtable
                 try {
                     $MemberStats = $Response.entries
                 } catch {
@@ -1326,7 +1337,7 @@ function Get-LTMInformation {
     $LoadBalancerObjects.DataGroups = c@ {}
     $Pools = $LoadBalancerObjects.Pools.Keys | Sort-Object -Unique
 
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/internal"
     $DataGroups = $Response.items
 
     Foreach ($DataGroup in $DataGroups) {
@@ -1374,7 +1385,7 @@ function Get-LTMInformation {
         $LoadBalancerObjects.DataGroups.add($ObjTempDataGroup.name, $ObjTempDataGroup)
     }
 
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/data-group/external"
 
     if (Get-Member -inputobject $Response -name 'items') {
         Foreach ($DataGroup in $Response.items) {
@@ -1398,7 +1409,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.iRules = c@ {}
 
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/rule"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/rule"
     $iRules = $Response.items
 
     $LastPartition = ''
@@ -1442,13 +1453,13 @@ function Get-LTMInformation {
 
     log verbose "Caching profiles"
 
-    $ProfileLinks = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/profile"
+    $ProfileLinks = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/profile"
 
     $ProfileDict = c@ {}
 
     Foreach ($ProfileLink in $ProfileLinks.items.reference.link) {
         $ProfileType = $ProfileLink.split("/")[7].split("?")[0]
-        $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/profile/${ProfileType}"
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/profile/${ProfileType}"
         if (Get-Member -inputobject $Response -name 'items') {
             Foreach ($Profile in $Response.items) {
                 $ProfileDict.add($Profile.fullPath, $Profile)
@@ -1460,7 +1471,7 @@ function Get-LTMInformation {
 
     #Region Cache virtual address information
 
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual-address"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual-address"
     $VirtualAddresses = $Response.items
 
     $TrafficGroupDict = c@ {}
@@ -1479,11 +1490,11 @@ function Get-LTMInformation {
 
     $Response = ""
     try {
-        $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual?expandSubcollections=true"
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual?expandSubcollections=true"
         [array]$VirtualServers = $Response.items
 
         $VirtualStatsDict = c@ {}
-        $Response = Invoke-WebRequest -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual/stats" |
+        $Response = Invoke-WebRequest -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual/stats" |
         ConvertFrom-Json -AsHashtable
         Foreach ($VirtualStat in $Response.entries.Values) {
             $VirtualStatsDict.add($VirtualStat.nestedStats.entries.tmName.description, $VirtualStat.nestedStats.entries)
@@ -1733,7 +1744,7 @@ function GetDeviceInfo {
     while ($tries -lt 4) {
         try {
             $tries++
-            $TokenRequest = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
+            $TokenRequest = Invoke-RestMethod -WebSession $Session -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
             log success "Got auth token (Try $Tries)"
             $AuthToken = $TokenRequest.token.token
             $TokenReference = $TokenRequest.token.name;
@@ -1744,7 +1755,7 @@ function GetDeviceInfo {
             $Body = @{ timeout = 7200 } | ConvertTo-Json
 
             # Extend the token to 120 minutes
-            Invoke-RestMethod -WebSession $Session -Method Patch -SkipCertificateCheck -Uri https://$LoadBalancerIP/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
+            Invoke-RestMethod -WebSession $Session -Method Patch -Uri https://$LoadBalancerIP/mgmt/shared/authz/tokens/$TokenReference -Body $Body | Out-Null
             $ts = New-TimeSpan -Minutes (120)
             $ExpirationTime = $TokenStartTime + $ts
             $Session.Headers.Add('Token-Expiration', $ExpirationTime)
@@ -1766,7 +1777,7 @@ function GetDeviceInfo {
     $ObjLoadBalancer.isonlydevice = $IsOnlyDevice
 
     $BigIPHostname = ""
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/global-settings"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/global-settings"
     $BigIPHostname = $Response.hostname
 
     log verbose "Hostname: $BigipHostname"
@@ -1774,7 +1785,7 @@ function GetDeviceInfo {
     $ObjLoadBalancer.name = $BigIPHostname
 
     #Get information about ip, name, model and category
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/hardware"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/hardware"
     $Platform = $Response.entries.'https://localhost/mgmt/tm/sys/hardware/platform'.nestedStats.entries
     $systemInfo = $Response.entries.'https://localhost/mgmt/tm/sys/hardware/system-info'.nestedStats.entries
 
@@ -1783,7 +1794,7 @@ function GetDeviceInfo {
 
     If ($ObjLoadBalancer.category -eq "Virtual Edition") {
         # Virtual Editions is using the base registration keys as serial numbers
-        $License = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/license"
+        $License = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/license"
         #$RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
         $BaseRegistrationKey = $License.entries."https://localhost/mgmt/tm/sys/license/0".nestedStats.entries.registrationKey.description
 
@@ -1817,7 +1828,7 @@ function GetDeviceInfo {
     log verbose "Fetching information"
 
     #Get the version information
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/version"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/version"
 
     $ObjLoadBalancer.version = $Response.entries.'https://localhost/mgmt/tm/sys/version/0'.nestedStats.entries.Version.description
     $ObjLoadBalancer.build = $Response.entries.'https://localhost/mgmt/tm/sys/version/0'.nestedStats.entries.Build.description
@@ -1825,19 +1836,19 @@ function GetDeviceInfo {
     $ObjLoadBalancer.baseBuild = "unknown"
 
     #Get failover status to determine if the load balancer is active
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/cm/failover-status"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/cm/failover-status"
 
     $ObjLoadBalancer.active = $Response.entries.'https://localhost/mgmt/tm/cm/failover-status/0'.nestedStats.entries.status.description -eq "ACTIVE"
     $ObjLoadBalancer.color = $Response.entries.'https://localhost/mgmt/tm/cm/failover-status/0'.nestedStats.entries.color.description
 
     #Get sync status
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/cm/sync-status"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/cm/sync-status"
 
     $ObjLoadBalancer.sync = $Response.entries.'https://localhost/mgmt/tm/cm/sync-status/0'.nestedStats.entries.color.description
 
 
     #Get provisioned modules
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/sys/provision"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/provision"
 
     $ModuleDict = c@ {}
 
