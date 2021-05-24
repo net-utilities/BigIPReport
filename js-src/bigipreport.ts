@@ -2930,7 +2930,7 @@ function showDeviceOverview(updatehash) {
 
 function generateSupportCell(loadbalancer: ILoadbalancer) {
 
-  const serial = loadbalancer.serial.split(/\s+/).find(s => /^(f5-|Z|chs)/.test(s));
+  const serial = loadbalancer.serial.split(/\s+/).find(s => /^(f5-|[A-Z]|chs)/.test(s));
   const supportInfo: ISupportState = serial in siteData.state.supportStates ? siteData.state.supportStates[serial] : {
     hasSupport: 'unknown',
     supportErrorMessage: 'Device has no serial number',

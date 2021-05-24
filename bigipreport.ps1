@@ -1741,7 +1741,7 @@ function GetDeviceInfo {
 
     # REST login sometimes works, and sometimes does not. Try 3 times in case it's flakey
     $tries = 0
-    while ($tries -lt 4) {
+    while ($tries -lt 3) {
         try {
             $tries++
             $TokenRequest = Invoke-RestMethod -WebSession $Session -Headers $Headers -Method "POST" -Body $Body -Uri "https://$LoadBalancerIP/mgmt/shared/authn/login"
@@ -1797,8 +1797,9 @@ function GetDeviceInfo {
         $License = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/license"
         #$RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
         $BaseRegistrationKey = $License.entries."https://localhost/mgmt/tm/sys/license/0".nestedStats.entries.registrationKey.description
-
-        $Serial = "Z" + $BaseRegistrationKey.split("-")[-1]
+	# Adding Z does not work for Tim
+        #$Serial = "Z" + $BaseRegistrationKey.split("-")[-1]
+        $Serial = $BaseRegistrationKey.split("-")[-1]
     } else {
         $Serial = $SystemInfo.psobject.properties.value.nestedStats.entries.bigipChassisSerialNum.description
         $BoardSerial = $SystemInfo.psobject.properties.value.nestedStats.entries.hostBoardSerialNum.description
