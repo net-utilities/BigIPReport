@@ -649,6 +649,7 @@ if (-not (Test-ConfigPath "/Settings/SkipCertificateCheck")) {
     log error "Configuration file missing SkipCertificateCheck"
     $SaneConfig = $false
 } else {
+    log warning "Insecure SkipCertificateCheck enabled, consider using valid certificates and DNS names"
     if ($Global:Bigipreportconfig.Settings.SkipCertificateCheck -eq "true") {
         $PSDefaultParameterValues.Add("Invoke-RestMethod:SkipCertificateCheck",$true)
         $PSDefaultParameterValues.Add("Invoke-WebRequest:SkipCertificateCheck",$true)
