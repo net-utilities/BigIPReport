@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
     <!--Leave the version information intact-->
-    <Settings version="5.5.8">
+    <Settings version="5.5.9">
 
         <!--
         ***************************************************************************
@@ -258,6 +258,25 @@
         -->
 
         <UseBrotli>true</UseBrotli>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This variable enables skipping certificate checks for Invoke-RestMethod and Invoke-WebRequest
+        *    We recommend using valid DNS hostnames and certificates on F5s. Wildcard certficates work.
+        *    Many sites use IP addresses and invalid device certificates, so skip is enabled by default.
+        *
+        *    To enable, set the variable to true, otherwise false
+        *
+        *    Example:
+        *    <SkipCertificateCheck>false</SkipCertificateCheck>
+        *    or
+        *    <SkipCertificateCheck>true</SkipCertificateCheck>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <SkipCertificateCheck>true</SkipCertificateCheck>
 
         <!--
         **************************************************************************************************************************************
