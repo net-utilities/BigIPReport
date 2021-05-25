@@ -262,8 +262,9 @@
         <!--
         **************************************************************************************************************************************
         *
-        *    This variable enables or disables skipping certificate checks for Invoke-RestMethod and Invoke-WebRequest
-        *    We recommend using valid hostnames and certificates on F5s. Wildcard certficates work.
+        *    This variable enables skipping certificate checks for Invoke-RestMethod and Invoke-WebRequest
+        *    We recommend using valid DNS hostnames and certificates on F5s. Wildcard certficates work.
+        *    Many sites use IP addresses and invalid device certificates, so skip is enabled by default.
         *
         *    To enable, set the variable to true, otherwise false
         *
@@ -275,7 +276,7 @@
         **************************************************************************************************************************************
         -->
 
-        <SkipCertificateCheck>false</SkipCertificateCheck>
+        <SkipCertificateCheck>true</SkipCertificateCheck>
 
         <!--
         **************************************************************************************************************************************
