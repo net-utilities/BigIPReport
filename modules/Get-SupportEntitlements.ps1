@@ -55,7 +55,6 @@ Function Get-SupportEntitlements {
     Foreach($DeviceName in $Global:ReportObjects.Keys){
         $Device = $Global:ReportObjects[$DeviceName]
 
-        #Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|Z|chs)' })){
         Foreach($Serial in @($Device.LoadBalancer.serial -split " " | Where-Object { $_ -match '^(f5-|[A-Z]|chs)' })){
             # Note. There should only be one serial number.
             # If there are more we might run into a bug where they overwrite each others statuses
