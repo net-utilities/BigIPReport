@@ -1474,13 +1474,13 @@ function setupVirtualServerTable() {
           if (row.profiletype === 'Fast L4') {
             result += row.profiletype;
           } else {
-            if (row.sslprofileclient === 'None') {
+            if (row.sslprofileclient.includes('None')) {
               result += 'No';
             } else {
               result += 'Yes';
             }
             result += '/';
-            if (row.sslprofileserver === 'None') {
+            if (row.sslprofileserver.includes('None')) {
               result += 'No';
             } else {
               result += 'Yes';
@@ -1490,14 +1490,14 @@ function setupVirtualServerTable() {
             if (
               row &&
               row.sslprofileclient &&
-              row.sslprofileclient !== 'None'
+              !row.sslprofileclient.includes('None')
             ) {
               result += ' ' + row.sslprofileclient;
             }
             if (
               row &&
               row.sslprofileserver &&
-              row.sslprofileserver !== 'None'
+              !row.sslprofileserver.includes('None')
             ) {
               result += ' ' + row.sslprofileserver;
             }
