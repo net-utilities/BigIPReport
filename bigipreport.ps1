@@ -247,6 +247,7 @@
 #  5.5.7    2021-04-30   Adding Slack Alert support for failed devices, refactoring pre-checks         Patrik Jonsson  Yes
 #  5.5.8    2021-05-05   DeviceGroup failures, -AsHashTable, log msgs, jquery updated                  Tim Riker       No
 #  5.5.9    2021-05-11   SkipCertificateCheck global option                                            Tim Riker       Yes
+#  5.6.0    2021-06-24   Fix SSL column on main table view                                             Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -290,7 +291,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.5.9"
+$Global:ScriptVersion = "5.6.0"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date

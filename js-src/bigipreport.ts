@@ -1474,17 +1474,9 @@ function setupVirtualServerTable() {
           if (row.profiletype === 'Fast L4') {
             result += row.profiletype;
           } else {
-            if (row.sslprofileclient.includes('None')) {
-              result += 'No';
-            } else {
-              result += 'Yes';
-            }
+            result += row.sslprofileclient.includes('None') ? 'No' : 'Yes';
             result += '/';
-            if (row.sslprofileserver.includes('None')) {
-              result += 'No';
-            } else {
-              result += 'Yes';
-            }
+            result += row.sslprofileserver.includes('None') ? 'No' : 'Yes';
           }
           if (type === 'filter') {
             if (
