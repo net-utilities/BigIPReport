@@ -1277,29 +1277,19 @@ function setupVirtualServerTable() {
                         result += row.profiletype;
                     }
                     else {
-                        if (row.sslprofileclient === 'None') {
-                            result += 'No';
-                        }
-                        else {
-                            result += 'Yes';
-                        }
+                        result += row.sslprofileclient.includes('None') ? 'No' : 'Yes';
                         result += '/';
-                        if (row.sslprofileserver === 'None') {
-                            result += 'No';
-                        }
-                        else {
-                            result += 'Yes';
-                        }
+                        result += row.sslprofileserver.includes('None') ? 'No' : 'Yes';
                     }
                     if (type === 'filter') {
                         if (row &&
                             row.sslprofileclient &&
-                            row.sslprofileclient !== 'None') {
+                            !row.sslprofileclient.includes('None')) {
                             result += ' ' + row.sslprofileclient;
                         }
                         if (row &&
                             row.sslprofileserver &&
-                            row.sslprofileserver !== 'None') {
+                            !row.sslprofileserver.includes('None')) {
                             result += ' ' + row.sslprofileserver;
                         }
                     }
