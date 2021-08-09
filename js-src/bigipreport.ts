@@ -1512,11 +1512,7 @@ function setupVirtualServerTable() {
       {
         className: 'centeredCell',
         render: function (data, type, row) {
-          if (row.persistence === 'None') {
-            return 'No';
-          } else {
-            return 'Yes';
-          }
+          return row.persistence.includes('None') ? 'No' : 'Yes';
         },
         visible: false,
       },
