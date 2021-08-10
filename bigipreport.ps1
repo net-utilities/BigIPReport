@@ -650,6 +650,8 @@ if (-not (Test-ConfigPath "/Settings/SkipCertificateCheck")) {
     log error "Configuration file missing SkipCertificateCheck"
     $SaneConfig = $false
 } else {
+    $PSDefaultParameterValues.Remove("Invoke-RestMethod:SkipCertificateCheck")
+    $PSDefaultParameterValues.Remove("Invoke-WebRequest:SkipCertificateCheck")
     if ($Global:Bigipreportconfig.Settings.SkipCertificateCheck -eq "true") {
         log warning "Insecure SkipCertificateCheck enabled, consider using valid certificates and DNS names"
         $PSDefaultParameterValues.Add("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -1799,7 +1801,7 @@ function GetDeviceInfo {
         $License = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/license"
         #$RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
         $BaseRegistrationKey = $License.entries."https://localhost/mgmt/tm/sys/license/0".nestedStats.entries.registrationKey.description
-	# Adding Z does not work for Tim
+        # Adding Z does not work for Tim
         #$Serial = "Z" + $BaseRegistrationKey.split("-")[-1]
         $Serial = $BaseRegistrationKey.split("-")[-1]
     } else {
