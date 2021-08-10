@@ -248,6 +248,7 @@
 #  5.5.8    2021-05-05   DeviceGroup failures, -AsHashTable, log msgs, jquery updated                  Tim Riker       No
 #  5.5.9    2021-05-11   SkipCertificateCheck global option                                            Tim Riker       Yes
 #  5.6.0    2021-06-24   Fix SSL column on main table view                                             Tim Riker       No
+#  5.6.1    2021-08-10   Fix compression column, add RestPageSize                                      Tim Riker       Yes
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -291,7 +292,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.0"
+$Global:ScriptVersion = "5.6.1"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -641,6 +642,7 @@ if (-not (Test-ConfigPath "/Settings/RealTimeMemberStates")) {
 
 if (-not (Test-ConfigPath "/Settings/UseBrotli")) {
     log verbose "Configuration file missing UseBrotli"
+    $SaneConfig = $false
     $Global:UseBrotli = $false
 } else {
     $Global:UseBrotli = $Global:Bigipreportconfig.Settings.UseBrotli -eq "true"
@@ -650,6 +652,8 @@ if (-not (Test-ConfigPath "/Settings/SkipCertificateCheck")) {
     log error "Configuration file missing SkipCertificateCheck"
     $SaneConfig = $false
 } else {
+    $PSDefaultParameterValues.Remove("Invoke-RestMethod:SkipCertificateCheck")
+    $PSDefaultParameterValues.Remove("Invoke-WebRequest:SkipCertificateCheck")
     if ($Global:Bigipreportconfig.Settings.SkipCertificateCheck -eq "true") {
         log warning "Insecure SkipCertificateCheck enabled, consider using valid certificates and DNS names"
         $PSDefaultParameterValues.Add("Invoke-RestMethod:SkipCertificateCheck",$true)
@@ -657,8 +661,16 @@ if (-not (Test-ConfigPath "/Settings/SkipCertificateCheck")) {
     }
 }
 
+if (-not (Test-ConfigPath "/Settings/RestPageSize")) {
+  log error "Configuration file missing RestPageSize"
+  $SaneConfig = $false
+} else {
+  $Global:RestPageSize = $Global:Bigipreportconfig.Settings.RestPageSize
+}
+
 if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
     log error "Configuration file missing SupportCheck options"
+    $SaneConfig = $false
 } else {
     $SupportCheckOption = $Global:Bigipreportconfig.Settings.SupportCheck
     if($SupportCheckOption.Enabled -eq "True") {
@@ -1231,14 +1243,19 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Pools = c@ {}
 
-    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/pool?expandSubcollections=true"
-    [array]$Pools = $Response.items
+    [array]$Pools = @()
+    $skip=0
+    Do {
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/pool?expandSubcollections=true&`$top=$Global:RestPageSize&`$skip=$skip"
+        [array]$Pools += $Response.items
+        $skip += $Global:RestPageSize
+    } Until ($Response.totalItems -eq $Response.startIndex - 1 + $Response.currentItemCount)
 
     $PoolStatsDict = c@ {}
     If ($MajorVersion -ge 12) {
         # Need 12+ to support members/stats
         $Response = Invoke-WebRequest -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/pool/members/stats" |
-        ConvertFrom-Json -AsHashtable
+                ConvertFrom-Json -AsHashtable
         Foreach ($PoolStat in $Response.entries.Values) {
             $PoolStatsDict.add($PoolStat.nestedStats.entries.tmName.description, $PoolStat.nestedStats.entries)
         }
@@ -1492,12 +1509,18 @@ function Get-LTMInformation {
 
     $Response = ""
     try {
-        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual?expandSubcollections=true"
-        [array]$VirtualServers = $Response.items
+
+        $skip=0
+        [array]$VirtualServers = @()
+        Do {
+            $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual?expandSubcollections=true&`$top=$Global:RestPageSize&`$skip=$skip"
+            [array]$VirtualServers += $Response.items
+            $skip += $Global:RestPageSize
+        } Until ($Response.totalItems -eq $Response.startIndex - 1 + $Response.currentItemCount)
 
         $VirtualStatsDict = c@ {}
         $Response = Invoke-WebRequest -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/virtual/stats" |
-        ConvertFrom-Json -AsHashtable
+                ConvertFrom-Json -AsHashtable
         Foreach ($VirtualStat in $Response.entries.Values) {
             $VirtualStatsDict.add($VirtualStat.nestedStats.entries.tmName.description, $VirtualStat.nestedStats.entries)
         }
@@ -1799,7 +1822,7 @@ function GetDeviceInfo {
         $License = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/sys/license"
         #$RegistrationKeys = $F5.ManagementLicenseAdministration.get_registration_keys();
         $BaseRegistrationKey = $License.entries."https://localhost/mgmt/tm/sys/license/0".nestedStats.entries.registrationKey.description
-	# Adding Z does not work for Tim
+        # Adding Z does not work for Tim
         #$Serial = "Z" + $BaseRegistrationKey.split("-")[-1]
         $Serial = $BaseRegistrationKey.split("-")[-1]
     } else {
