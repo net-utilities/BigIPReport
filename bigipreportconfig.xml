@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
     <!--Leave the version information intact-->
-    <Settings version="5.6.0">
+    <Settings version="5.6.1">
 
         <!--
         ***************************************************************************
@@ -277,6 +277,23 @@
         -->
 
         <SkipCertificateCheck>true</SkipCertificateCheck>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This variable sets the page size for requesting pools and virtualserver details.
+        *    The REST service slows down a lot with large configurations. This splits up the requests
+        *    so they are more likely to avoid timing out. You might also adjust the REST timeouts
+        *    if your version of BIG-IP supports it.
+        *    https://support.f5.com/csp/article/K94602685
+        *
+        *    Example:
+        *    <RestPageSize>50</RestPageSize>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <RestPageSize>50</RestPageSize>
 
         <!--
         **************************************************************************************************************************************
