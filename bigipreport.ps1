@@ -1150,8 +1150,8 @@ function Get-LTMInformation {
             } else {
                 $ObjCertificate.subjectAlternativeName = ""
             }
-            if (Get-Member -inputobject $Certificate -name "issuer") {
-                $ObjCertificate.issuer = $Certificate.issuer
+            if (Get-Member -inputobject $Certificate.apiRawValues -name "issuer") {
+                $ObjCertificate.issuer = $Certificate.apiRawValues.issuer -replace '.*CN=(.*?),.*','$1'
             } else {
                 $ObjCertificate.issuer = ""
             }
