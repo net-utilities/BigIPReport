@@ -1273,7 +1273,7 @@ function setupVirtualServerTable() {
                 className: 'centeredCell',
                 render: function (data, type, row) {
                     let result = '';
-                    if (row.profiletype === 'Fast L4') {
+                    if ((row.profiletype === 'Fast L4') || (row.profiletype === 'UDP')) {
                         result += row.profiletype;
                     }
                     else {
