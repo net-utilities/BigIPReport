@@ -1292,6 +1292,10 @@ function setupVirtualServerTable() {
                             !row.sslprofileserver.includes('None')) {
                             result += ' ' + row.sslprofileserver;
                         }
+                        if (row &&
+                            row.otherprofiles) {
+                            result += ' ' + row.otherprofiles;
+                        }
                     }
                     return result;
                 },
@@ -2886,6 +2890,10 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                     <td>${matchingvirtualserver.persistence.join('<br>')}</td>
                   </tr>
                   <tr><th>Source Translation</th><td>${xlate}</td></tr>
+                  <tr>
+                    <th>Other Profiles</th>
+                    <td>${matchingvirtualserver.otherprofiles.join('<br>')}</td>
+                  </tr>
                 </table>
              </td>
           </tr>

@@ -21,6 +21,7 @@ export default interface IVirtualServer {
     port: string;
     name: string;
     httpprofile: string;
+    otherprofiles?: string[];
     description: string;
     trafficgroup: string;
     profiletype: string;

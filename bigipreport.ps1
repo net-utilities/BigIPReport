@@ -836,6 +836,7 @@ Add-Type @'
         public string httpprofile;
         public string[] sslprofileclient;
         public string[] sslprofileserver;
+        public string[] otherprofiles;
         public string compressionprofile;
         public string[] persistence;
         public string[] irules;
@@ -1590,7 +1591,8 @@ function Get-LTMInformation {
                             $ObjTempVirtualServer.httpprofile = $Profile.fullPath
                         }
                         default {
-                            #$ProfileDict[$Profile.fullPath].kind + "|" + $Profile.fullPath
+                            $ObjTempVirtualServer.otherprofiles += $Profile.fullPath
+                            #log verbose ( "Unhandled profile|" + $ProfileDict[$Profile.fullPath].kind + "|" + $Profile.fullPath )
                         }
                     }
                 }
