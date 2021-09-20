@@ -1604,6 +1604,9 @@ function Get-LTMInformation {
             if ($null -eq $ObjTempVirtualServer.sslprofileserver) {
                 $ObjTempVirtualServer.sslprofileserver += "None";
             }
+            if ($null -eq $ObjTempVirtualServer.otherprofiles) {
+              $ObjTempVirtualServer.otherprofiles += "None";
+          }
 
             #Get the iRules of the Virtual server
             $ObjTempVirtualServer.irules = @();
