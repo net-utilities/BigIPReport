@@ -3784,7 +3784,7 @@ function customizeCSV(csv) {
   const csvRows = csv.split('\n');
   // table headings have a span and a placeholder, replace with placeholder
   csvRows[0] = csvRows[0].replace(
-    /<span[^>]*>[^<]*<\/span><[^>]* placeholder=""([^"]*)""[^>]*>/gi,
+    /<span[^>]*>[^<]*<\/span>[^>]*<[^>]* placeholder=""([^"]*)""[^>]*>/gi,
     '$1'
   );
   return csvRows.join('\n');
