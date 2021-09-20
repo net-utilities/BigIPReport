@@ -2863,6 +2863,10 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                   <td>${matchingvirtualserver.ip}:${matchingvirtualserver.port}</td>
                 </tr>
                 <tr>
+                  <th>Profile Type</th>
+                  <td>${matchingvirtualserver.profiletype}</td>
+                </tr>
+                <tr>
                   <th>Default pool</th>
                   <td>${renderPool(loadbalancer, defaultPool, 'display')}</td>
                 </tr>
