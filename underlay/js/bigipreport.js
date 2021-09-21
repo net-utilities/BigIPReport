@@ -1273,7 +1273,7 @@ function setupVirtualServerTable() {
                 className: 'centeredCell',
                 render: function (data, type, row) {
                     let result = '';
-                    if (row.profiletype === 'Fast L4') {
+                    if ((row.profiletype === 'Fast L4') || (row.profiletype === 'UDP')) {
                         result += row.profiletype;
                     }
                     else {
@@ -1291,6 +1291,10 @@ function setupVirtualServerTable() {
                             row.sslprofileserver &&
                             !row.sslprofileserver.includes('None')) {
                             result += ' ' + row.sslprofileserver;
+                        }
+                        if (row &&
+                            row.otherprofiles) {
+                            result += ' ' + row.otherprofiles;
                         }
                     }
                     return result;
@@ -2859,6 +2863,10 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                   <td>${matchingvirtualserver.ip}:${matchingvirtualserver.port}</td>
                 </tr>
                 <tr>
+                  <th>Profile Type</th>
+                  <td>${matchingvirtualserver.profiletype}</td>
+                </tr>
+                <tr>
                   <th>Default pool</th>
                   <td>${renderPool(loadbalancer, defaultPool, 'display')}</td>
                 </tr>
@@ -2886,6 +2894,10 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                     <td>${matchingvirtualserver.persistence.join('<br>')}</td>
                   </tr>
                   <tr><th>Source Translation</th><td>${xlate}</td></tr>
+                  <tr>
+                    <th>Other Profiles</th>
+                    <td>${matchingvirtualserver.otherprofiles.join('<br>')}</td>
+                  </tr>
                 </table>
              </td>
           </tr>
@@ -3285,7 +3297,7 @@ function activateMenuButton(b) {
 function customizeCSV(csv) {
     const csvRows = csv.split('\n');
     // table headings have a span and a placeholder, replace with placeholder
-    csvRows[0] = csvRows[0].replace(/<span[^>]*>[^<]*<\/span><[^>]* placeholder=""([^"]*)""[^>]*>/gi, '$1');
+    csvRows[0] = csvRows[0].replace(/<span[^>]*>[^<]*<\/span>[^>]*<[^>]* placeholder=""([^"]*)""[^>]*>/gi, '$1');
     return csvRows.join('\n');
 }
 function downLoadTextFile(data, fileName) {

@@ -249,6 +249,7 @@
 #  5.5.9    2021-05-11   SkipCertificateCheck global option                                            Tim Riker       Yes
 #  5.6.0    2021-06-24   Fix SSL column on main table view                                             Tim Riker       No
 #  5.6.1    2021-08-10   Fix compression column, add RestPageSize                                      Tim Riker       Yes
+#  5.6.2    2021-09-20   cert issuer, udp vs, otherprofiles, csv headings, profiletype in details      Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -292,7 +293,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.1"
+$Global:ScriptVersion = "5.6.2"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -836,6 +837,7 @@ Add-Type @'
         public string httpprofile;
         public string[] sslprofileclient;
         public string[] sslprofileserver;
+        public string[] otherprofiles;
         public string compressionprofile;
         public string[] persistence;
         public string[] irules;
@@ -1150,8 +1152,8 @@ function Get-LTMInformation {
             } else {
                 $ObjCertificate.subjectAlternativeName = ""
             }
-            if (Get-Member -inputobject $Certificate -name "issuer") {
-                $ObjCertificate.issuer = $Certificate.issuer
+            if (Get-Member -inputobject $Certificate.apiRawValues -name "issuer") {
+                $ObjCertificate.issuer = $Certificate.apiRawValues.issuer -replace '.*CN=(.*?),.*','$1'
             } else {
                 $ObjCertificate.issuer = ""
             }
@@ -1590,7 +1592,8 @@ function Get-LTMInformation {
                             $ObjTempVirtualServer.httpprofile = $Profile.fullPath
                         }
                         default {
-                            #$ProfileDict[$Profile.fullPath].kind + "|" + $Profile.fullPath
+                            $ObjTempVirtualServer.otherprofiles += $Profile.fullPath
+                            #log verbose ( "Unhandled profile|" + $ProfileDict[$Profile.fullPath].kind + "|" + $Profile.fullPath )
                         }
                     }
                 }
@@ -1602,6 +1605,9 @@ function Get-LTMInformation {
             if ($null -eq $ObjTempVirtualServer.sslprofileserver) {
                 $ObjTempVirtualServer.sslprofileserver += "None";
             }
+            if ($null -eq $ObjTempVirtualServer.otherprofiles) {
+              $ObjTempVirtualServer.otherprofiles += "None";
+          }
 
             #Get the iRules of the Virtual server
             $ObjTempVirtualServer.irules = @();
