@@ -1296,6 +1296,10 @@ function setupVirtualServerTable() {
                             row.otherprofiles) {
                             result += ' ' + row.otherprofiles;
                         }
+                        if (row &&
+                            row.protocol) {
+                            result += ' protocol=' + row.protocol;
+                        }
                     }
                     return result;
                 },

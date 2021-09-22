@@ -832,6 +832,7 @@ Add-Type @'
         public string description;
         public string ip;
         public string port;
+        public string protocol;
         public string profiletype;
         public string defaultpool;
         public string httpprofile;
@@ -1561,8 +1562,11 @@ function Get-LTMInformation {
                 $ObjTempVirtualServer.defaultpool = $VirtualServer.pool
             }
 
-            #Set the ssl profile to None by default, then check if there's an SSL profile and
+            if (Get-Member -inputobject $VirtualServer -name 'ipProtocol') {
+              $ObjTempVirtualServer.protocol = $VirtualServer.ipProtocol
+            }
 
+            #Set the ssl profile to None by default, then check if there's an SSL profile and
             $ObjTempVirtualServer.httpprofile = "None";
             $ObjTempVirtualServer.compressionprofile = "None";
             $ObjTempVirtualServer.profiletype = "Standard";
