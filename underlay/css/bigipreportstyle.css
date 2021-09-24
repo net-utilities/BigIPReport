@@ -1111,6 +1111,39 @@ table#logstable.logdatetime {
     white-space: nowrap;
 }
 
+/**********************************************************************************************************************************
+    CSS related to defined Policy
+***********************************************************************************************************************************/
+
+.PolicyTable {
+    border-collapse: collapse;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0 auto;
+}
+
+.PolicyTable tbody>tr>td {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    border: 1px solid var(--bordercolor);
+    border-collapse: collapse;
+    white-space: nowrap;
+    text-align: center;
+    padding: 10px;
+}
+
+.PolicyTable thead>tr>th {
+    text-align: center;
+    background-color: var(--headerbackgroundcolor);
+    color: var(--headerfontcolor);
+    white-space: nowrap;
+    padding: 10px;
+}
+
+.PolicyTable tbody>tr:nth-child(even)>td {
+    border-collapse: collapse;
+    white-space: nowrap;
+}
+
 /* Navigation buttons style for the top right information box */
 div#navbuttondiv {
     position: absolute;
