@@ -202,8 +202,6 @@ window.addEventListener('load', function () {
     // Attach click events to the main menu buttons and poller div
     document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
     document.querySelector('div#poolsbutton').addEventListener('click', showPools);
-
-document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
 	document.querySelector('div#policybutton').addEventListener('click', showPolicy);
     document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
     document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
@@ -3082,9 +3080,16 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                     <td>${matchingvirtualserver.persistence.join('<br>')}</td>
                   </tr>
                   <tr><th>Source Translation</th><td>${xlate}</td></tr>
-				  <tr>
-				  <th>Policy name</th>
-				  <td>`;
+                  <tr>
+                    <th>Other Profiles</th>
+                    <td>${matchingvirtualserver.otherprofiles.join('<br>')}</td>
+                  </tr>
+                </table>
+            </td>
+          </tr>
+        </tbody>
+    </table>
+    <br>`;
 		for (const p in matchingvirtualserver.policy){
 			table += `${renderPolicy(loadbalancer, matchingvirtualserver.policy[p], 'display')}`; //join does not work like also this replace function
 			table += `<br>`
@@ -3107,7 +3112,6 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                     </tr>
                     <tr>
                       <td>${matchingvirtualserver.currentconnections}</td>
-
                       <td>${matchingvirtualserver.maximumconnections}</td>
                       <td>${matchingvirtualserver.cpuavg5sec}</td>
                       <td>${matchingvirtualserver.cpuavg1min}</td>
@@ -3343,13 +3347,7 @@ function showPolicyDetails(policy, loadbalancer) {
     //If an policy was found, prepare the data to show it
     if (matchingpolicy) {
         //Populate the header
-        html = '<div class="policydetailsheader">';
-        html += '<span>Policy: ' + matchingpolicy.name + '</span><br>';
-        html += 
-			'<span>Load Balancer: ' +
-				renderLoadBalancer(loadbalancer, 'display') + 
-				'</span>';
-        html += '</div>';
+        html = '<div class="policydetailsheader"> <span>Policy: ${matchingpolicy.name} </span><br> <span>Load Balancer: ${renderLoadBalancer(loadbalancer, ${display})} </span> </div>'
 		const secondLayerContent = $('div#secondlayerdetailscontentdiv');
         secondLayerContent.attr('data-type', 'policy');
         secondLayerContent.attr('data-objectname', matchingpolicy.name);

@@ -2102,7 +2102,7 @@ do {
                         log $obj.severity ($job.name + ':' + $obj.message) $obj.datetime
                     } elseif ($obj["LoadBalancer"]) {
                         $Global:ReportObjects.add($obj.LoadBalancer.ip, $obj)
-                        Foreach ($thing in ("ASMPolicies", "Certificates", "DataGroups", "iRules", "Policies", "Monitors", "Pools", "VirtualServers")) {
+                        Foreach ($thing in ("ASMPolicies", "Certificates", "DataGroups", "iRules", "Monitors", "Policies", "Pools", "VirtualServers")) {
                             if ($obj[$thing]) {
                                 Foreach ($object in $obj.$thing.Values) {
                                     $Global:Out.$thing += $object
