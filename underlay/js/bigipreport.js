@@ -3343,10 +3343,11 @@ function getPolicy(policy, loadbalancer) {
 function showPolicyDetails(policy, loadbalancer) {
     //Get the policy object from the json file
     const matchingpolicy = getPolicy(policy, loadbalancer);
+    let html;
     //If an policy was found, prepare the data to show it
     if (matchingpolicy) {
         //Populate the header
-        let html = `<div class="policydetailsheader"> <span>Policy: ${matchingpolicy.name} </span><br> <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')} </span> </div>`;
+        html = `<div class="policydetailsheader"> <span>Policy: ${matchingpolicy.name} </span><br> <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')} </span> </div>`;
         const secondLayerContent = $('div#secondlayerdetailscontentdiv');
         secondLayerContent.attr('data-type', 'policy');
         secondLayerContent.attr('data-objectname', matchingpolicy.name);
