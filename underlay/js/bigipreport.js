@@ -3343,42 +3343,25 @@ function getPolicy(policy, loadbalancer) {
 function showPolicyDetails(policy, loadbalancer) {
     //Get the policy object from the json file
     const matchingpolicy = getPolicy(policy, loadbalancer);
-	let html;
     //If an policy was found, prepare the data to show it
     if (matchingpolicy) {
         //Populate the header
-        html = '<div class="policydetailsheader"> <span>Policy: ${matchingpolicy.name} </span><br> <span>Load Balancer: ${renderLoadBalancer(loadbalancer, ${display})} </span> </div>'
-		const secondLayerContent = $('div#secondlayerdetailscontentdiv');
+        let html = `<div class="policydetailsheader"> <span>Policy: ${matchingpolicy.name} </span><br> <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')} </span> </div>`;
+        const secondLayerContent = $('div#secondlayerdetailscontentdiv');
         secondLayerContent.attr('data-type', 'policy');
         secondLayerContent.attr('data-objectname', matchingpolicy.name);
         secondLayerContent.attr('data-loadbalancer', matchingpolicy.loadbalancer);
-		// Save the definition to a variable for some classic string mangling
+        // Save the definition to a variable for some classic string mangling
         let definition = matchingpolicy.definition;
         // Replace those tags with to be sure that the content won't be interpreted as HTML by the browser
         definition = definition.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         //Prepare the div content
-        html += 
-			`<table class="bigiptable display">
-                    <thead>
-                        <tr><th>Policy definition</th></tr>
-                    </thead>
-                    <tbody>
-                    <tr><td><pre class="sh_tcl">` + 
-					definition + 
-					`</pre></td></tr>`;
-		if (matchingpolicy.virtualservers && 
-			matchingpolicy.virtualservers.length > 0) {
-            html += 
-				`<tr><td>Used by ` +
-					matchingpolicy.virtualservers.length + 
-					` Virtual Servers:<br>` +
-                    matchingpolicy.virtualservers
-						.map(vs => renderVirtualServer(loadbalancer, vs, 'display'))
-						.join('<br>') + 
-					`</td></tr>`;
+        html += `<table class="bigiptable display"> <thead> <tr><th>Policy definition</th></tr> </thead> <tbody> <tr><td><pre class="sh_tcl"> ${definition} </pre></td></tr>`;
+        if (matchingpolicy.virtualservers && 
+            matchingpolicy.virtualservers.length > 0) {
+            html += `<tr><td>Used by ${matchingpolicy.virtualservers.length} Virtual Servers:<br> ${matchingpolicy.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display')).join('<br>')} </td></tr>`;
         }
-        html += `</tbody>
-                </table>`;
+        html += `</tbody> </table>`;
     }
     //Add the close button to the footer
     $("a#closesecondlayerbutton").text("Close policy details");
