@@ -1,4 +1,4 @@
-export interface Member {
+export interface IMember {
   ip: string;
   currentconnections: string;
   availability: string;
@@ -11,7 +11,7 @@ export interface Member {
   realtimestatus: string;
 }
 
-export default interface Pool {
+export default interface IPool {
   description: string;
   enabled: string;
   loadbalancingmethod: string;
@@ -22,7 +22,7 @@ export default interface Pool {
   allownat: string;
   actiononservicedown: string;
   orphaned: boolean;
-  members: Member[];
+  members: IMember[];
   loadbalancer: string;
   availability: string;
   poolNum?: number;

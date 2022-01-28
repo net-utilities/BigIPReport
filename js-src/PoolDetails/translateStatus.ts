@@ -2,9 +2,9 @@
  Translates the status and availability of a member to less cryptic text and returns a dictionary
  **********************************************************************************************************************/
 
-import { Member } from '../SiteDataInterfaces/IPool';
+import { IMember } from '../SiteDataInterfaces/IPool';
 
-export default function translateStatus(member: Member) {
+export default function translateStatus(member: IMember) {
   const translatedstatus = {
     availability: '',
     enabled: '',
