@@ -126,6 +126,4 @@ describe('Pool details should render properly', () => {
       })
     })
   })
-
-
 })
