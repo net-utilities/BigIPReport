@@ -250,6 +250,8 @@
 #  5.6.0    2021-06-24   Fix SSL column on main table view                                             Tim Riker       No
 #  5.6.1    2021-08-10   Fix compression column, add RestPageSize                                      Tim Riker       Yes
 #  5.6.2    2021-09-20   cert issuer, udp vs, otherprofiles, csv headings, profiletype in details      Tim Riker       No
+#  5.6.3    2021-09-24   Add function to crawl policies from f5, added some transcript logic for 
+#                        for the readability of the policies.                                          Marius Bauer    No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -813,6 +815,7 @@ $Global:paths.pools = $Global:bigipreportconfig.Settings.ReportRoot + "json/pool
 $Global:paths.monitors = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
 $Global:paths.virtualservers = $Global:bigipreportconfig.Settings.ReportRoot + "json/virtualservers.json"
 $Global:paths.irules = $Global:bigipreportconfig.Settings.ReportRoot + "json/irules.json"
+$Global:paths.policies = $Global:bigipreportconfig.Settings.ReportRoot + "json/policies.json"
 $Global:paths.datagroups = $Global:bigipreportconfig.Settings.ReportRoot + "json/datagroups.json"
 $Global:paths.devicegroups = $Global:bigipreportconfig.Settings.ReportRoot + "json/devicegroups.json"
 $Global:paths.loadbalancers = $Global:bigipreportconfig.Settings.ReportRoot + "json/loadbalancers.json"
@@ -841,6 +844,7 @@ Add-Type @'
         public string compressionprofile;
         public string[] persistence;
         public string[] irules;
+        public string[] policy;
         public string[] pools;
         public string[] vlans;
         public string trafficgroup;
@@ -890,6 +894,13 @@ Add-Type @'
         public string name;
         public string[] pools;
         public string[] datagroups;
+        public string[] virtualservers;
+        public string definition;
+        public string loadbalancer;
+    }
+
+    public class Policy {
+        public string name;
         public string[] virtualservers;
         public string definition;
         public string loadbalancer;
@@ -1351,6 +1362,71 @@ function Get-LTMInformation {
 
     #EndRegion
 
+    #Region Caching Policy information
+
+    log verbose "Caching Policies from $LoadBalancerName"
+
+    $LoadBalancerObjects.Policies = c@ {}
+
+    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/policy?expandSubcollections=true"
+    [array]$Policies = $Response.items
+	
+	Foreach ($Policy in $Policies) {
+		$ObjF5Policy = New-Object -Type Policy
+		$ObjF5Policy.loadbalancer = $LoadBalancerName
+		$ObjF5Policy.name = $Policy.fullPath
+		
+		$exactStrategy = $Policy.strategy -replace "/Common/",""
+		
+		$ObjF5Policy.definition = "{"
+		$ObjF5Policy.definition += "`n	Name: " + $Policy.name
+		$ObjF5Policy.definition += "`n	Strategy: " + $exactStrategy
+		$TempCount = 0
+		ForEach ($ruleSet in $Policy.rulesReference.items) {
+			$TempCount += 1
+			$ObjF5Policy.definition += "`n	Rule No." + $TempCount + ": " + $ruleSet.fullPath
+			try {
+				$ObjF5Policy.definition += "`n		Match all of the following conditions:"
+				ForEach ($condition in $ruleSet.conditionsReference.items) {
+					if($condition.tcp -eq "True" -And $condition.port -eq "True" -And $condition.request -eq "True"){
+						$ObjF5Policy.definition += "`n		-TCP port is '" + $condition.values + "' at request time.`n" 
+					} else {
+						$ObjF5Policy.definition += "`n		-Under Construction...`n		" #+ $condition + "`n" #please update the if statements to handle this policy
+					}
+				}
+			} catch {
+				$ObjF5Policy.definition += "`n		-All traffic.`n"
+			}
+			$ObjF5Policy.definition += "`n		Do the following when traffic matches:" 
+			ForEach ($action in $ruleSet.actionsReference.items) {
+				if ($action.asm -eq "true" -And $action.enable -eq "true" -And $action.request -eq "true"){
+					$ObjF5Policy.definition += "`n		-Enable asm for policy '" + $action.policy + "' at request time."
+				}
+				if ($action.asm -eq "true" -And $action.disable -eq "true" -And $action.request -eq "true"){
+					$ObjF5Policy.definition += "`n		-Disable asm at request time."
+				} 
+				if ($action.replace -eq "true" -And $action.httpHeader -eq "true" -And $action.request -eq "true"){
+					$ObjF5Policy.definition += "`n		-Replace HTTP Header named '" + $action.tmName + "' with value '" + $action.value + "' at request time."
+				}
+				if ($action.redirect -eq "true" -And $action.httpReply -eq "true" -And $action.request -eq "true"){
+					$ObjF5Policy.definition += "`n		-Redirect to location '" + $action.location + "' at request time."
+				}
+				if ($action.forward -eq "true" -And $action.select -eq "true" -And $action.request -eq "true"){ # maybe check if pool exists as well
+					$ObjF5Policy.definition += "`n		-Forward traffic to pool '" + $action.pool + "' at request time."
+				} else{
+					$ObjF5Policy.definition += "`n		-Under Construction...`n		" + $action + "`n" #please update the if statements to handle this policy
+				}
+			}
+		}
+		$ObjF5Policy.definition += "`n}"
+		
+		$ObjF5Policy.virtualServers = @()
+		
+		$LoadBalancerObjects.Policies.add($ObjF5Policy.name, $ObjF5Policy)
+	}
+	
+	#EndRegion
+
     #Region Cache DataGroups
 
     log verbose "Caching datagroups"
@@ -1632,6 +1708,32 @@ function Get-LTMInformation {
                     }
                 }
             }
+
+            #Get the policy reference for each of the virtual server
+			$ObjTempVirtualServer.policy = @(); 
+			
+			#hard coded check parameter to avoid the situation that every policy ref link has to be opened
+			if($VirtualServer.policiesReference -match "items=System.Object"){
+				try {
+					log verbose ("Polling policy reference information for " + $VirtualServer.fullPath)
+
+					$uri = "https://$LoadBalancerIP/mgmt/tm/ltm/virtual/" + $VirtualServer.fullPath.replace("/", "~") + "/policies"
+					$Response = Invoke-WebRequest -WebSession $Session -SkipCertificateCheck -Uri $uri | ConvertFrom-Json -AsHashtable
+					
+					ForEach ($PolicyReference in $Response.items){
+						$ObjTempVirtualServer.policy += $PolicyReference.fullPath
+					}
+					ForEach ($PolicyName in $ObjTempVirtualServer.policy){
+						#add LBname also to policy class
+						$TempLBlink = $PolicyName
+						$LoadBalancerObjects.Policies[$TempLBlink].virtualservers += $VirtualServer.fullPath
+					}
+				} catch {
+					log error "Policy on ${VirtualServer.policiesReference} not found for ${VirtualServer.name} on $LoadBalancerName"
+				}
+			} else {
+				$ObjTempVirtualServer.policy += "None"
+			}
 
             #Get the persistence profile of the Virtual server
 
@@ -1915,6 +2017,7 @@ function GetDeviceInfo {
         $StatsMsg += " VS:" + $LoadBalancerObjects.VirtualServers.Keys.Count
         $StatsMsg += " P:" + $LoadBalancerObjects.Pools.Keys.Count
         $StatsMsg += " R:" + $LoadBalancerObjects.iRules.Keys.Count
+        $StatsMsg += " POL:" + $LoadBalancerObjects.Policies.Keys.Count
         $StatsMsg += " DG:" + $LoadBalancerObjects.DataGroups.Keys.Count
         $StatsMsg += " C:" + $LoadBalancerObjects.Certificates.Keys.Count
         $StatsMsg += " M:" + $LoadBalancerObjects.Monitors.Keys.Count
@@ -1971,6 +2074,7 @@ $Global:Out.ASMPolicies = @()
 $Global:Out.Certificates = @()
 $Global:Out.DataGroups = @()
 $Global:Out.iRules = @()
+$Global:Out.Policies = @()
 $Global:Out.Monitors = @()
 $Global:Out.Pools = @()
 $Global:Out.VirtualServers = @()
@@ -1998,7 +2102,7 @@ do {
                         log $obj.severity ($job.name + ':' + $obj.message) $obj.datetime
                     } elseif ($obj["LoadBalancer"]) {
                         $Global:ReportObjects.add($obj.LoadBalancer.ip, $obj)
-                        Foreach ($thing in ("ASMPolicies", "Certificates", "DataGroups", "iRules", "Monitors", "Pools", "VirtualServers")) {
+                        Foreach ($thing in ("ASMPolicies", "Certificates", "DataGroups", "iRules", "Monitors", "Policies", "Pools", "VirtualServers")) {
                             if ($obj[$thing]) {
                                 Foreach ($object in $obj.$thing.Values) {
                                     $Global:Out.$thing += $object
@@ -2109,6 +2213,7 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data @( $Global:Out.VirtualServers | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:Out.Certificates | Sort-Object loadbalancer, fileName )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.asmpolicies -Data @( $Global:Out.ASMPolicies | Sort-Object loadbalancer, name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.policies -Data @( $Global:Out.Policies | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.state -Data $Global:State
 
     if ($Global:Bigipreportconfig.Settings.iRules.Enabled -eq $true) {
@@ -2168,6 +2273,10 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
                     log error "$LoadBalancerName does not have any Pool data"
                     $MissingData = $true
                     $FailedDevice = $true
+                }
+                #just as an information
+				If ($LoadBalancerObjects.Policies.Count -eq 0) {
+                    log verbose "$LoadBalancerName does not have any Policy data"
                 }
                 If ($LoadBalancerObjects.Monitors.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Monitor data"
@@ -2242,6 +2351,7 @@ if ($MissingData) {
             $Global:Out.VirtualServers += $TemporaryCache['virtualservers'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
             $Global:Out.Certificates += $TemporaryCache['certificates'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
             $Global:Out.ASMPolicies += $TemporaryCache['asmpolicies'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.Policies += $TemporaryCache['policies'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
             $Global:Out.DataGroups += $TemporaryCache['datagroups'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
         } catch {
             log error "Failed to fetch previous data matching device $Device"
@@ -2300,6 +2410,7 @@ $StatsMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
 $StatsMsg += " VS:" + $Global:Out.VirtualServers.Length
 $StatsMsg += " P:" + $Global:Out.Pools.Length
 $StatsMsg += " R:" + $Global:Out.iRules.Length
+$StatsMsg += " POL:" + $Global:Out.Policies.Length
 $StatsMsg += " DG:" + $Global:Out.DataGroups.Length
 $StatsMsg += " C:" + $Global:Out.Certificates.Length
 $StatsMsg += " M:" + $Global:Out.Monitors.Length
