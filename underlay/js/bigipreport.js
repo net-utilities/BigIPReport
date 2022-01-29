@@ -119,11 +119,7 @@ window.addEventListener('load', function () {
     // Get the irules data
     $.getJSON('json/irules.json', function (result) {
         siteData.irules = result;
-    }).fail(addJSONLoadingFailure),
-	//Get the policy data
-    $.getJSON("json/policies.json", function (result) {
-        siteData.policy = result;
-    }).fail(addJSONLoadingFailure),
+    }).fail(addJSONLoadingFailure), 
     // Get the datagroup data
     $.getJSON('json/datagroups.json', function (result) {
         siteData.datagroups = result;
@@ -143,6 +139,8 @@ window.addEventListener('load', function () {
         siteData.NATdict = result;
     }).fail(addJSONLoadingFailure), $.getJSON('json/state.json', function (result) {
         siteData.state = result;
+    }).fail(addJSONLoadingFailure), $.getJSON('json/policies.json', function (result) {
+        siteData.policies = result;
     }).fail(addJSONLoadingFailure), $.getJSON('json/loggederrors.json', function (result) {
         siteData.loggedErrors = result.concat(siteData.loggedErrors);
     }).fail(addJSONLoadingFailure)).then(function () {
@@ -202,9 +200,9 @@ window.addEventListener('load', function () {
     // Attach click events to the main menu buttons and poller div
     document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
     document.querySelector('div#poolsbutton').addEventListener('click', showPools);
-	document.querySelector('div#policybutton').addEventListener('click', showPolicy);
     document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
     document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
+    document.querySelector('div#policybutton').addEventListener('click', showPolicies);
     document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
     document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
     document.querySelector('div#logsbutton').addEventListener('click', showLogs);
@@ -752,21 +750,21 @@ function renderRule(loadbalancer, name, type) {
     return result;
 }
 function renderPolicy(loadbalancer, name, type) {
-	if (name === 'None') {
+    if (name === 'None') {
         return 'None';
     }
     //const policyName = name.replace(/^\/Common\//, ''); does not work for any reason
     let result = '';
-	    if (type === 'display') {
+    if (type === 'display') {
         result += `<span class="adcLinkSpan"></span>
-               <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
-                href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
+                <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
+                 href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
     }
     result += name;
     if (type === 'display') {
         result += `<span class="detailsicon"><img src="images/details.png" alt="details"></span>
-                      <p>Click to see policy details</p>
-                   </a>`;
+                       <p>Click to see policy details</p>
+                    </a>`;
     }
     return result;
 }
@@ -1086,8 +1084,8 @@ function populateSearchParameters(updatehash) {
                 case 'irules':
                     showiRules(updatehash);
                     break;
-		    case 'policy':
-                    showPolicy(updatehash);
+                case 'policy':
+                    showPolicies(updatehash);
                     break;
                 case 'deviceoverview':
                     showDeviceOverview(updatehash);
@@ -1154,13 +1152,11 @@ function populateSearchParameters(updatehash) {
             const loadBalancer = vars['irule'].split('@')[1];
             showiRuleDetails(iruleName, loadBalancer);
         }
-		if (vars['policy']) {
-            var policyName = vars['policy'].split('@')[0];
-            var loadBalancer = vars['policy'].split('@')[1];
-
+        if (vars['policy']) {
+            const policyName = vars['policy'].split('@')[0];
+            const loadBalancer = vars['policy'].split('@')[1];
             showPolicyDetails(policyName, loadBalancer);
         }
-
     }
 }
 /** ***********************************************************************************************************
@@ -1671,54 +1667,54 @@ function setupPolicyTable() {
         return;
     }
     const content = `
-    <table id="PolicyTable" class="bigiptable display">
-        <thead>
-            <tr>
-                <th class="loadbalancerHeaderCell">
-					<span style="display: none;">Load Balancer</span>
-					<input type="search" class="search" placeholder="Load Balancer" />
-				</th>
-                <th>
-					<span style="display: none;">Name</span>
-					<input type="search" class="search" placeholder="Name" />
-				</th>
-                <th>
-					<span style="display: none;">Virtualservers</span>
-					<input type="search" class="search" placeholder="Associated Virtual Servers" />
-				</th>
-			</tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>`;
-    $("div#policy").html(content);
+     <table id="PolicyTable" class="bigiptable display">
+         <thead>
+             <tr>
+                 <th class="loadbalancerHeaderCell">
+ 					<span style="display: none;">Load Balancer</span>
+ 					<input type="search" class="search" placeholder="Load Balancer" />
+ 				</th>
+                 <th>
+ 					<span style="display: none;">Name</span>
+ 					<input type="search" class="search" placeholder="Name" />
+ 				</th>
+                 <th>
+ 					<span style="display: none;">Virtualservers</span>
+ 					<input type="search" class="search" placeholder="Associated Virtual Servers" />
+ 				</th>
+ 			</tr>
+         </thead>
+         <tbody>
+         </tbody>
+     </table>`;
+    $('div#policy').html(content);
     siteData.PolicyTable = $('table#PolicyTable').DataTable({
         autoWidth: false,
         deferRender: true,
-        data: siteData.policy,
+        data: siteData.policies,
         columns: [
-			{
-				data: 'loadbalancer',
-				className: 'loadbalancerCell',
-				render: function (data, type, row) {
-					return renderLoadBalancer(data, type);
-				},
-			},
-			{
-				data: 'name',
-				className: 'PolicyCell',
-				render: function (data, type, row) {
-					return renderPolicy(row.loadbalancer, data, type);
-				},
-			},
-			{
-				data: 'virtualservers',
-				type: 'html-num',
-				render: function (data, type, row, meta) {
-					return renderList(data, type, row, meta, renderVirtualServer, 'virtualservers');
-				},
-			},
-		],
+            {
+                data: 'loadbalancer',
+                className: 'loadbalancerCell',
+                render: function (data, type, row) {
+                    return renderLoadBalancer(data, type);
+                },
+            },
+            {
+                data: 'name',
+                className: 'PolicyCell',
+                render: function (data, type, row) {
+                    return renderPolicy(row.loadbalancer, data, type);
+                },
+            },
+            {
+                data: 'virtualservers',
+                type: 'html-num',
+                render: function (data, type, row, meta) {
+                    return renderList(data, type, row, meta, renderVirtualServer, 'virtualservers');
+                },
+            },
+        ],
         pageLength: 10,
         language: {
             search: 'Search all columns:',
@@ -1798,8 +1794,8 @@ function setupPolicyTable() {
     // highlight matches
     siteData.PolicyTable.on('draw', function () {
         // reset toggleExpansion button
-        var button = $('div#PolicyTable_wrapper div.dt-buttons button.toggleExpansion');
-        button[0].innerHTML = '<span>Expand<span>'
+        const button = $('div#PolicyTable_wrapper div.dt-buttons button.toggleExpansion');
+        button[0].innerHTML = '<span>Expand<span>';
         button[0].title = 'Temporarily expand all';
         toggleAdcLinks();
         highlightAll(siteData.PolicyTable);
@@ -2495,13 +2491,13 @@ function showiRules(updatehash) {
     showMainSection('irules');
     toggleAdcLinks();
 }
-function showPolicy(updatehash) {
+function showPolicies(updatehash) {
     hideMainSection();
     setupPolicyTable();
-    activateMenuButton("div#policybutton");
-    $("div#mainholder").attr("data-activesection", "policy");
+    activateMenuButton('div#policybutton');
+    $('div#mainholder').attr('data-activesection', 'policy');
     updateLocationHash(updatehash);
-    showMainSection("policy");
+    showMainSection('policy');
     toggleAdcLinks();
 }
 function showPools(updatehash) {
@@ -2826,7 +2822,7 @@ function toggleRegexSearch() {
         siteData.bigipTable,
         siteData.poolTable,
         siteData.iRuleTable,
-	  siteData.PolicyTable,
+        siteData.PolicyTable,
         siteData.dataGroupTable,
         siteData.certificateTable,
         siteData.logTable,
@@ -3086,20 +3082,21 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                   </tr>
                 </table>
             </td>
-          </tr>
-        </tbody>
-    </table>
-    <br>`;
-		for (const p in matchingvirtualserver.policy){
-			table += `${renderPolicy(loadbalancer, matchingvirtualserver.policy[p], 'display')}`; //join does not work like also this replace function
-			table += `<br>`
-			}
-		table += `</td>
-				</tr>
-                </table>
-             </td>
-          </tr>
-        </tbody>
+           </tr>
+         </tbody>
+     </table>
+     <br>`;
+        for (const p in matchingvirtualserver.policy) {
+            //join does not work like also this replace function
+            table += `${renderPolicy(loadbalancer, matchingvirtualserver.policy[p], 'display')}`;
+            table += '<br>';
+        }
+        table += `</td>
+ 				</tr>
+                 </table>
+              </td>
+           </tr>
+         </tbody>
     </table>
     <br>`;
         table += `<table class="virtualserverdetailstable">
@@ -3324,10 +3321,10 @@ function getDataGroup(datagroup, loadbalancer) {
     return matchingdatagroup;
 }
 /** ********************************************************************************************************************
-    Returns a matching policy object from the policy json data
-**********************************************************************************************************************/
+ Returns a matching policy object from the policy json data
+ **********************************************************************************************************************/
 function getPolicy(policy, loadbalancer) {
-    const policies = siteData.policy;
+    const policies = siteData.policies;
     let matchingpolicy;
     //Find the matching policy from the JSON object
     for (const p in policies) {
@@ -3338,8 +3335,8 @@ function getPolicy(policy, loadbalancer) {
     return matchingpolicy;
 }
 /** ********************************************************************************************************************
-    Shows the policy details light box
-**********************************************************************************************************************/
+ Shows the policy details light box
+ **********************************************************************************************************************/
 function showPolicyDetails(policy, loadbalancer) {
     //Get the policy object from the json file
     const matchingpolicy = getPolicy(policy, loadbalancer);
@@ -3347,31 +3344,41 @@ function showPolicyDetails(policy, loadbalancer) {
     //If an policy was found, prepare the data to show it
     if (matchingpolicy) {
         //Populate the header
-        html = `<div class="policydetailsheader"> <span>Policy: ${matchingpolicy.name} </span><br> <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')} </span> </div>`;
-        const secondLayerContent = $('div#secondlayerdetailscontentdiv');
-        secondLayerContent.attr('data-type', 'policy');
-        secondLayerContent.attr('data-objectname', matchingpolicy.name);
-        secondLayerContent.attr('data-loadbalancer', matchingpolicy.loadbalancer);
+        html = `<div class="policydetailsheader">
+               <span>Policy: ${matchingpolicy.name} </span>
+               <br>
+               <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')} </span>
+            </div>`;
+        const firstLayerContent = $('div#firstlayerdetailscontentdiv');
+        firstLayerContent.attr('data-type', 'policy');
+        firstLayerContent.attr('data-objectname', matchingpolicy.name);
+        firstLayerContent.attr('data-loadbalancer', matchingpolicy.loadbalancer);
         // Save the definition to a variable for some classic string mangling
         let definition = matchingpolicy.definition;
         // Replace those tags with to be sure that the content won't be interpreted as HTML by the browser
         definition = definition.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         //Prepare the div content
-        html += `<table class="bigiptable display"> <thead> <tr><th>Policy definition</th></tr> </thead> <tbody> <tr><td><pre class="sh_tcl"> ${definition} </pre></td></tr>`;
-        if (matchingpolicy.virtualservers && 
+        html += `<table class="bigiptable display">
+               <thead>
+                  <tr><th>Policy definition</th></tr> </thead>
+               <tbody>
+                 <tr><td><pre class="sh_tcl"> ${definition} </pre></td></tr>`;
+        if (matchingpolicy.virtualservers &&
             matchingpolicy.virtualservers.length > 0) {
-            html += `<tr><td>Used by ${matchingpolicy.virtualservers.length} Virtual Servers:<br> ${matchingpolicy.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display')).join('<br>')} </td></tr>`;
+            html += `<tr><td>Used by ${matchingpolicy.virtualservers.length} Virtual Servers:<br>
+                  ${matchingpolicy.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display'))
+                .join('<br>')} </td></tr>`;
         }
-        html += `</tbody> </table>`;
+        html += '</tbody> </table>';
     }
     //Add the close button to the footer
-    $("a#closesecondlayerbutton").text("Close policy details");
+    $('a#closefirstlayerbutton').text('Close policy details');
     //Add the div content to the page
-    $("#secondlayerdetailscontentdiv").html(html);
+    $('#firstlayerdetailscontentdiv').html(html);
     /* redo syntax highlighting */
     // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
     //Show the div
-    $("#secondlayerdiv").fadeIn(updateLocationHash);
+    $('#firstlayerdiv').fadeIn(updateLocationHash);
     toggleAdcLinks();
 }
 /** ********************************************************************************************************************
