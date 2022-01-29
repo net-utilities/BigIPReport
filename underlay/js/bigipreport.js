@@ -3003,29 +3003,29 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
     }
     // If a pool was found, populate the pool details table and display it on the page
     if (matchingvirtualserver) {
+        const { name, currentconnections, cpuavg1min, cpuavg5min, cpuavg5sec, maximumconnections, loadbalancer, sourcexlatetype, sourcexlatepool, trafficgroup, defaultpool, description, sslprofileclient, sslprofileserver, compressionprofile, profiletype, persistence, otherprofiles, policies, irules, ip, port, } = matchingvirtualserver;
         html = '<div class="virtualserverdetailsheader">';
         html +=
-            '<span>Virtual Server: ' + matchingvirtualserver.name + '</span><br>';
+            '<span>Virtual Server: ' + name + '</span><br>';
         html +=
             '<span>Load Balancer: ' +
-                renderLoadBalancer(matchingvirtualserver.loadbalancer, 'display') +
+                renderLoadBalancer(loadbalancer, 'display') +
                 '</span>';
         html += '</div>';
         const firstLayer = $('div#firstlayerdetailscontentdiv');
         firstLayer.attr('data-type', 'virtualserver');
-        firstLayer.attr('data-objectname', matchingvirtualserver.name);
-        firstLayer.attr('data-loadbalancer', matchingvirtualserver.loadbalancer);
+        firstLayer.attr('data-objectname', name);
+        firstLayer.attr('data-loadbalancer', loadbalancer);
         let xlate;
-        switch (matchingvirtualserver.sourcexlatetype) {
+        switch (sourcexlatetype) {
             case 'snat':
-                xlate = 'SNAT:' + matchingvirtualserver.sourcexlatepool;
+                xlate = 'SNAT:' + sourcexlatepool;
                 break;
             default:
-                xlate = matchingvirtualserver.sourcexlatetype || 'Unknown';
+                xlate = sourcexlatetype || 'Unknown';
         }
-        const trafficGroup = matchingvirtualserver.trafficgroup || 'N/A';
-        const defaultPool = matchingvirtualserver.defaultpool || 'N/A';
-        const description = matchingvirtualserver.description || '';
+        const trafficGroup = trafficgroup || 'N/A';
+        const defaultPool = defaultpool || 'N/A';
         // Build the table and headers
         // First row containing simple properties in two cells which in turn contains subtables
         let table = `<table class="virtualserverdetailstablewrapper">
@@ -3037,23 +3037,23 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 <tr>
                   <th>Name</th>
                   <td>
-                    ${matchingvirtualserver.name}
+                    ${name}
                   </td>
                 </tr>
                 <tr>
                   <th>IP:Port</th>
-                  <td>${matchingvirtualserver.ip}:${matchingvirtualserver.port}</td>
+                  <td>${ip}:${port}</td>
                 </tr>
                 <tr>
                   <th>Profile Type</th>
-                  <td>${matchingvirtualserver.profiletype}</td>
+                  <td>${profiletype}</td>
                 </tr>
                 <tr>
                   <th>Default pool</th>
                   <td>${renderPool(loadbalancer, defaultPool, 'display')}</td>
                 </tr>
                 <tr><th>Traffic Group</th><td>${trafficGroup}</td></tr>
-                <tr><th>Description</th><td>${description}</td></tr>
+                <tr><th>Description</th><td>${description || ''}</td></tr>
             </table>
          </td>`;
         // Subtable 2
@@ -3061,24 +3061,24 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 <table class="virtualserverdetailstable">
                   <tr>
                     <th>Client SSL Profile</th>
-                    <td>${matchingvirtualserver.sslprofileclient.join('<br>')}</td>
+                    <td>${sslprofileclient.join('<br>')}</td>
                   </tr>
                   <tr>
                     <th>Server SSL Profile</th>
-                    <td>${matchingvirtualserver.sslprofileserver.join('<br>')}</td>
+                    <td>${sslprofileserver.join('<br>')}</td>
                   </tr>
                   <tr>
                     <th>Compression Profile</th>
-                    <td>${matchingvirtualserver.compressionprofile}</td>
+                    <td>${compressionprofile}</td>
                   </tr>
                   <tr>
                     <th>Persistence Profiles</th>
-                    <td>${matchingvirtualserver.persistence.join('<br>')}</td>
+                    <td>${persistence.join('<br>')}</td>
                   </tr>
                   <tr><th>Source Translation</th><td>${xlate}</td></tr>
                   <tr>
                     <th>Other Profiles</th>
-                    <td>${matchingvirtualserver.otherprofiles.join('<br>')}</td>
+                    <td>${otherprofiles.join('<br>')}</td>
                   </tr>
                 </table>
             </td>
@@ -3095,21 +3095,21 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                       <th>5 minute average CPU usage</th>
                     </tr>
                     <tr>
-                      <td>${matchingvirtualserver.currentconnections}</td>
-                      <td>${matchingvirtualserver.maximumconnections}</td>
-                      <td>${matchingvirtualserver.cpuavg5sec}</td>
-                      <td>${matchingvirtualserver.cpuavg1min}</td>
-                      <td>${matchingvirtualserver.cpuavg5min}</td>
+                      <td>${currentconnections}</td>
+                      <td>${maximumconnections}</td>
+                      <td>${cpuavg5sec}</td>
+                      <td>${cpuavg1min}</td>
+                      <td>${cpuavg5min}</td>
                      </tr>
               </table>
               <br>`;
         if (!matchingvirtualserver.policies.some(p => p === 'None')) {
             table += `<table class="virtualserverdetailstable">
                 <tr><th>Policy name</th></tr>
-                ${matchingvirtualserver.policies.map(p => `<tr><td>${renderPolicy(matchingvirtualserver.loadbalancer, p, 'display')}</td></tr>`)}`;
+                ${policies.map(p => `<tr><td>${renderPolicy(loadbalancer, p, 'display')}</td></tr>`)}`;
         }
         if (siteData.preferences.ShowiRules) {
-            if (matchingvirtualserver.irules.length > 0) {
+            if (irules.length > 0) {
                 // Add the assigned irules
                 table += '<table class="virtualserverdetailstable">';
                 if (siteData.preferences.ShowiRuleLinks) {
@@ -3118,11 +3118,11 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 else {
                     table += '    <tr><th>iRule name</th></tr>';
                 }
-                for (const i in matchingvirtualserver.irules) {
+                for (const i in irules) {
                     // If iRules linking has been set to true show iRule links
                     // and parse data groups
                     if (siteData.preferences.ShowiRuleLinks) {
-                        const iruleobj = getiRule(matchingvirtualserver.irules[i], loadbalancer);
+                        const iruleobj = getiRule(irules[i], loadbalancer);
                         if (Object.keys(iruleobj).length === 0) {
                             table +=
                                 '    <tr><td>' +
@@ -3149,7 +3149,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                         }
                     }
                     else {
-                        table += `        <tr><td>${matchingvirtualserver.irules[i]}</td></tr>`;
+                        table += `        <tr><td>${irules[i]}</td></tr>`;
                     }
                 }
                 table += '</table>';
