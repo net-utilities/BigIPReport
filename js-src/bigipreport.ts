@@ -3498,20 +3498,6 @@ function showVirtualServerDetails(virtualserver: string, loadbalancer: string) {
          </tbody>
      </table>
      <br>`;
-    for (const p in matchingvirtualserver.policy) {
-      //join does not work like also this replace function
-      table += `${renderPolicy(loadbalancer, matchingvirtualserver.policy[p], 'display')}`;
-      table += '<br>';
-    }
-    table += `</td>
- 				</tr>
-                 </table>
-              </td>
-           </tr>
-         </tbody>
-    </table>
-    <br>`;
-
 
     table += `<table class="virtualserverdetailstable">
                     <tr>
@@ -3530,6 +3516,14 @@ function showVirtualServerDetails(virtualserver: string, loadbalancer: string) {
                      </tr>
               </table>
               <br>`;
+
+    if (!matchingvirtualserver.policies.some(p => p === 'None')) {
+      table += `<table class="virtualserverdetailstable">
+                <tr><th>Policy name</th></tr>
+                ${matchingvirtualserver.policies.map(
+                  p => `<tr><td>${renderPolicy(matchingvirtualserver.loadbalancer, p, 'display')}</td></tr>`
+                )}`;
+    }
 
     if (siteData.preferences.ShowiRules) {
       if (matchingvirtualserver.irules.length > 0) {

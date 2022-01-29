@@ -844,7 +844,7 @@ Add-Type @'
         public string compressionprofile;
         public string[] persistence;
         public string[] irules;
-        public string[] policy;
+        public string[] policies;
         public string[] pools;
         public string[] vlans;
         public string trafficgroup;
@@ -1710,7 +1710,7 @@ function Get-LTMInformation {
             }
 
             #Get the policy reference for each of the virtual server
-            $ObjTempVirtualServer.policy = @();
+            $ObjTempVirtualServer.policies = @();
 
             #hard coded check parameter to avoid the situation that every policy ref link has to be opened
             if($VirtualServer.policiesReference -match "items=System.Object"){
@@ -1721,9 +1721,9 @@ function Get-LTMInformation {
                     $Response = Invoke-WebRequest -WebSession $Session -SkipCertificateCheck -Uri $uri | ConvertFrom-Json -AsHashtable
 
                     ForEach ($PolicyReference in $Response.items){
-                        $ObjTempVirtualServer.policy += $PolicyReference.fullPath
+                        $ObjTempVirtualServer.policies += $PolicyReference.fullPath
                     }
-                    ForEach ($PolicyName in $ObjTempVirtualServer.policy){
+                    ForEach ($PolicyName in $ObjTempVirtualServer.policies){
                         #add LBname also to policy class
                         $TempLBlink = $PolicyName
                         $LoadBalancerObjects.Policies[$TempLBlink].virtualservers += $VirtualServer.fullPath
@@ -1732,7 +1732,7 @@ function Get-LTMInformation {
                     log error "Policy on ${VirtualServer.policiesReference} not found for ${VirtualServer.name} on $LoadBalancerName"
                 }
             } else {
-                $ObjTempVirtualServer.policy += "None"
+                $ObjTempVirtualServer.policies += "None"
             }
 
             #Get the persistence profile of the Virtual server

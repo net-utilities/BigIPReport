@@ -14,7 +14,7 @@ export default interface IVirtualServer {
     sourcexlatepool: string,
     persistence: string[],
     asmPolicies?: string[],
-    policy: string[],
+    policies: string[],
     cpuavg5min: string,
     enabled: string,
     sslprofileserver: string[],
