@@ -13,3 +13,4 @@ underlay/json/*.json
 underlay/web.config
 config/
 underlay/js/
+underlay/*.pem
