@@ -1,5 +1,9 @@
 name: Version checks
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - 'js-src/**'
+      - 'bigipreport.ps1'
 jobs:
   build_and_deploy_ci:
     name: Validate that the version has been bumped
