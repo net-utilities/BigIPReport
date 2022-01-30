@@ -1,0 +1,17 @@
+name: Cypress tests
+on: pull_request
+jobs:
+  cypress-run:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: npm install http-server
+      - run: 'echo $CERT_PEM > underlay/cert.pem && echo $KEY_PEM > underlay/key.pem'
+        env:
+          CERT_PEM: ${{ secrets.CERT_PEM }}
+          KEY_PEM: ${{ secrets.KEY_PEM }}
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          start: 'cd underlay && npx http-server -b -S -p 8443 -C ./cert.pem'
