@@ -16,6 +16,11 @@ export const DIRECT_LINK_POOL_DETAILS_NAME = '/Common/loadbalancing-se';
 export const DIRECT_LINK_POOL_DETAILS_URL =
   `${REPORT_ROOT}/#mainsection=virtualservers&pool=${DIRECT_LINK_POOL_DETAILS_NAME}@bigip.xip.se`;
 
+// Direct link to a global search
+export const DIRECT_LINK_GLOBAL_SEARCH = 'select-pool';
+export const DIRECT_LINK_GLOBAL_SEARCH_URL =
+  `${REPORT_ROOT}/#mainsection=virtualservers&global_search=${DIRECT_LINK_GLOBAL_SEARCH}`;
+
 // Direct link to a search by the column name
 export const DIRECT_LINK_SEARCH_BY_VIP_NAME = 'select-pool';
 export const DIRECT_LINK_SEARCH_BY_VIP_NAME_URL =

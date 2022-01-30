@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'js-src/**'
+      - 'modules/**'
       - 'bigipreport.ps1'
 jobs:
   build_and_deploy_ci:
