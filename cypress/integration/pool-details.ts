@@ -126,4 +126,9 @@ describe('Pool details should render properly', () => {
       })
     })
   })
+
+  it('Clicking on the Close pool details button should close the pool details', () => {
+    cy.get('a#closefirstlayerbutton').click();
+    cy.get('div#firstlayerdiv').should('not.be.visible');
+  })
 })

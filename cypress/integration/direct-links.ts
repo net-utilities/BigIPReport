@@ -49,4 +49,5 @@ describe('Loading a page with direct links should yield the expected results', (
       cy.wrap(row).should('contain.text', DIRECT_LINK_SEARCH_BY_POOL);
     })
   });
+
 })
