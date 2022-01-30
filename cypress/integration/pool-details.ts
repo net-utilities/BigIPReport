@@ -1,7 +1,7 @@
 import IVirtualServer from '../../../js-src/SiteDataInterfaces/IVirtualServer';
 import IPool from '../../../js-src/SiteDataInterfaces/IPool';
 import IMonitor from '../../../js-src/SiteDataInterfaces/IMonitor';
-import {LOADBALANCING_SE_POOL, VIRTUAL_SERVER_WITH_IRULE} from '../../constants/constants';
+import {LOADBALANCING_SE_POOL, VIP_WITH_IRULE} from '../../constants/constants';
 
 let virtualServers: IVirtualServer[]
 let pools: IPool[]
@@ -34,7 +34,7 @@ describe('Pool details should render properly', () => {
   it('Should show the pool details table when clicking on a pool details link', () => {
 
     const index = virtualServers.findIndex(vip => {
-      return vip.name === VIRTUAL_SERVER_WITH_IRULE
+      return vip.name === VIP_WITH_IRULE
     });
 
     cy.get('table#allbigips > tbody > tr').eq(index).find('td.PoolCell').click().within(cell => {
