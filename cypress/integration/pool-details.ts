@@ -1,7 +1,7 @@
-import IVirtualServer from '../../../js-src/SiteDataInterfaces/IVirtualServer';
-import IPool from '../../../js-src/SiteDataInterfaces/IPool';
-import IMonitor from '../../../js-src/SiteDataInterfaces/IMonitor';
-import {LOADBALANCING_SE_POOL, VIP_WITH_IRULE} from '../../constants/constants';
+import IVirtualServer from '../../js-src/SiteDataInterfaces/IVirtualServer';
+import IPool from '../../js-src/SiteDataInterfaces/IPool';
+import IMonitor from '../../js-src/SiteDataInterfaces/IMonitor';
+import {LOADBALANCING_SE_POOL, VIP_WITH_IRULE} from '../constants/constants';
 
 let virtualServers: IVirtualServer[]
 let pools: IPool[]
