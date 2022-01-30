@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "eslint ./underlay/js/bigipreport.js && mocha -r ts-node/register js-src/**/*.spec.ts",
-    "e2e": "cypress open"
+    "start": "cd underlay && npx http-server -b -S -p 8443 -C ./cert.pem"
   },
   "repository": {
     "type": "git",

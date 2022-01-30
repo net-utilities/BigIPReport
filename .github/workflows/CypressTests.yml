@@ -14,4 +14,4 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
-          start: 'cd underlay && npx http-server -b -S -p 8443 -C ./cert.pem'
+          start: 'npm run start'
