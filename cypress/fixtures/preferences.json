@@ -1,0 +1,18 @@
+{
+  "supportCheckEnabled": false,
+  "startTime": "2022-01-29T23:09:26.198555+01:00",
+  "NavLinks": {},
+  "regexSearch": true,
+  "scriptServer": "MacBook-Pro.local",
+  "HideLoadBalancerFQDN": true,
+  "PollingMaxPools": 50,
+  "PollingMaxQueue": 2,
+  "scriptVersion": "5.6.3",
+  "ShowiRules": true,
+  "executionTime": 0.165633,
+  "PollingRefreshRate": 60,
+  "autoExpandPools": false,
+  "showAdcLinks": false,
+  "ShowDataGroupLinks": true,
+  "ShowiRuleLinks": true
+}

@@ -1,0 +1,77 @@
+[
+  {
+    "subjectAlternativeName": "",
+    "expirationDate": 1893455999,
+    "loadbalancer": "bigip.xip.se",
+    "issuer": "Starfield Services Root Certificate Authority",
+    "subject": {
+      "divisionName": "http://certificates.starfieldtech.com/repository/",
+      "stateName": "Arizona",
+      "localityName": "Scottsdale",
+      "countryName": "US",
+      "organizationName": "Starfield Technologies, Inc.",
+      "commonName": "Starfield Services Root Certificate Authority"
+    },
+    "fileName": "/Common/ca-bundle.crt"
+  },
+  {
+    "subjectAlternativeName": "",
+    "expirationDate": 1925311669,
+    "loadbalancer": "bigip.xip.se",
+    "issuer": "localhost.localdomain",
+    "subject": {
+      "divisionName": "IT",
+      "stateName": "WA",
+      "localityName": "Seattle",
+      "countryName": "US",
+      "organizationName": "MyCompany",
+      "commonName": "localhost.localdomain"
+    },
+    "fileName": "/Common/default.crt"
+  },
+  {
+    "subjectAlternativeName": "URI:https://api.f5.com/product/, URI:https://api.f5.com/reporting/",
+    "expirationDate": 1704560484,
+    "loadbalancer": "bigip.xip.se",
+    "issuer": "F5 PRD Issuing Certificate Authority F5API-PI V2",
+    "subject": {
+      "divisionName": "BIG-IP",
+      "stateName": "Washington",
+      "localityName": "Seattle",
+      "countryName": "US",
+      "organizationName": "F5 Networks Inc",
+      "commonName": "YJXDQ-IABOG-SMUHU-WVGPH-AWYTYQR"
+    },
+    "fileName": "/Common/f5_api_com.crt"
+  },
+  {
+    "subjectAlternativeName": "",
+    "expirationDate": 1922896554,
+    "loadbalancer": "bigip.xip.se",
+    "issuer": "Entrust Root Certification Authority - G2",
+    "subject": {
+      "divisionName": "See www.entrust.net/legal-terms",
+      "stateName": null,
+      "localityName": null,
+      "countryName": "US",
+      "organizationName": "Entrust, Inc.",
+      "commonName": "Entrust Root Certification Authority - G2"
+    },
+    "fileName": "/Common/f5-ca-bundle.crt"
+  },
+  {
+    "subjectAlternativeName": "",
+    "expirationDate": 1815944413,
+    "loadbalancer": "bigip.xip.se",
+    "issuer": "support.f5.com",
+    "subject": {
+      "divisionName": "Product Development",
+      "stateName": "Washington",
+      "localityName": "Seattle",
+      "countryName": "US",
+      "organizationName": "F5 Networks",
+      "commonName": "support.f5.com"
+    },
+    "fileName": "/Common/f5-irule.crt"
+  }
+]

@@ -1,0 +1,427 @@
+[
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "2.2.2.2",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Common/2.2.2.2:8080",
+        "priority": 0,
+        "port": "8080",
+        "currentconnections": "0"
+      },
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "2.2.2.3",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Common/2.2.2.3:8080",
+        "priority": 0,
+        "port": "8080",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Common/always_down_02-pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": true
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "1.1.1.1",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Common/down-01:7070",
+        "priority": 0,
+        "port": "7070",
+        "currentconnections": "0"
+      },
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "1.1.1.2",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Common/down-02:8080",
+        "priority": 0,
+        "port": "8080",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Common/always_down-pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": true
+  },
+  {
+    "description": "Pool using load balancing.se as pool member",
+    "monitors": [
+      "/Common/loadbalancing-se-https"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "available",
+        "ip": "68.183.223.252",
+        "enabled": "enabled",
+        "status": "up",
+        "name": "/Common/loadbalancing-se:443",
+        "priority": 0,
+        "port": "443",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "available",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The pool is available",
+    "allownat": "yes",
+    "name": "/Common/loadbalancing-se",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/example_NAT64/App1/grafana_http_monitor"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "172.22.0.3",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/example_NAT64/172.22.0.3:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/example_NAT64/App1/web_pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.6.10",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_01/192.0.6.10:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      },
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.6.11",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_01/192.0.6.11:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_01/A1/web_pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.3.10",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_02/192.0.3.10:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      },
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.3.11",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_02/192.0.3.11:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_02/A1/dfl_pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.3.20",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_02/192.0.3.20:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      },
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.3.21",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_02/192.0.3.21:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_02/A1/pvt_pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.7.10",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_03/192.0.7.10:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      },
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.7.11",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_03/192.0.7.11:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_03/A1/web_pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "10.128.0.209",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_07/10.128.0.209:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_07/A1/web_pool80",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "10.128.0.210",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_07/10.128.0.210:81",
+        "priority": 0,
+        "port": "81",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_07/A1/web_pool81",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "10.128.0.211",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_07/10.128.0.211:82",
+        "priority": 0,
+        "port": "82",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_07/A1/web_pool82",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": false
+  },
+  {
+    "description": "",
+    "monitors": [
+      "/Common/http"
+    ],
+    "members": [
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.2.10",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_08/192.0.2.10:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      },
+      {
+        "maximumconnections": "0",
+        "availability": "offline",
+        "ip": "192.0.2.11",
+        "enabled": "enabled",
+        "status": "down",
+        "name": "/Sample_http_08/192.0.2.11:80",
+        "priority": 0,
+        "port": "80",
+        "currentconnections": "0"
+      }
+    ],
+    "availability": "offline",
+    "loadbalancer": "bigip.xip.se",
+    "allowsnat": "yes",
+    "status": "The children pool member(s) are down",
+    "allownat": "yes",
+    "name": "/Sample_http_08/A1/web_pool",
+    "enabled": "enabled",
+    "actiononservicedown": "none",
+    "loadbalancingmethod": "round-robin",
+    "orphaned": true
+  }
+]

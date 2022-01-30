@@ -11,6 +11,8 @@ jobs:
         env:
           CERT_PEM: ${{ secrets.CERT_PEM }}
           KEY_PEM: ${{ secrets.KEY_PEM }}
+      - name: Copy json data files to underlay
+        run: 'cp cypress/fixtures/* underlay/json/'
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:

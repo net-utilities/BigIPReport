@@ -1,0 +1,28 @@
+[
+  {
+    "supportErrorMessage": null,
+    "category": "Virtual Edition",
+    "statusvip": {
+      "state": null,
+      "url": "",
+      "working": null
+    },
+    "success": true,
+    "model": "Z100",
+    "sync": "green",
+    "color": "green",
+    "isonlydevice": true,
+    "version": "16.0.1.1",
+    "name": "bigip.xip.se",
+    "baseBuild": "unknown",
+    "modules": {
+      "asm": "The Application Security Module.",
+      "ltm": "The Local Traffic Manager Module.",
+      "ilx": "iRulesLX"
+    },
+    "build": "0.0.6",
+    "serial": "IGDVXTR",
+    "active": true,
+    "ip": "bigip.xip.se"
+  }
+]
