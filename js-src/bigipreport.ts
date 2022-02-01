@@ -3416,7 +3416,7 @@ function showVirtualServerDetails(virtualserver: string, loadbalancer: string) {
       cpuavg1min,
       cpuavg5min,
       cpuavg5sec,
-      maximumconnections
+      maximumconnections,
       loadbalancer,
       sourcexlatetype,
       sourcexlatepool,
