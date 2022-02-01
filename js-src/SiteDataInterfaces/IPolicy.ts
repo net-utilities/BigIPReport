@@ -1,6 +1,6 @@
 export default interface IPolicy {
-    name: string,
     definition: string,
-    virtualservers: string[],
     loadbalancer: string,
+    name: string,
+    virtualservers: string[],
 }
