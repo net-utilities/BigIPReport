@@ -1368,7 +1368,7 @@ function Get-LTMInformation {
 
     $LoadBalancerObjects.Policies = c@ {}
 
-    $Response = Invoke-RestMethod -WebSession $Session -SkipCertificateCheck -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/policy?expandSubcollections=true"
+    $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/policy?expandSubcollections=true"
     [array]$Policies = $Response.items
 
     Foreach ($Policy in $Policies) {
@@ -1718,7 +1718,7 @@ function Get-LTMInformation {
                     log verbose ("Polling policy reference information for " + $VirtualServer.fullPath)
 
                     $uri = "https://$LoadBalancerIP/mgmt/tm/ltm/virtual/" + $VirtualServer.fullPath.replace("/", "~") + "/policies"
-                    $Response = Invoke-WebRequest -WebSession $Session -SkipCertificateCheck -Uri $uri | ConvertFrom-Json -AsHashtable
+                    $Response = Invoke-WebRequest -WebSession $Session -Uri $uri | ConvertFrom-Json -AsHashtable
 
                     ForEach ($PolicyReference in $Response.items){
                         $ObjTempVirtualServer.policies += $PolicyReference.fullPath
