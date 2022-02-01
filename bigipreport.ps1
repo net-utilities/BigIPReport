@@ -2274,7 +2274,7 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
                     $MissingData = $true
                     $FailedDevice = $true
                 }
-                #just as an information
+                #just as information
                 If ($LoadBalancerObjects.Policies.Count -eq 0) {
                     log verbose "$LoadBalancerName does not have any Policy data"
                 }
