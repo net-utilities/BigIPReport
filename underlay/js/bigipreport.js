@@ -1671,18 +1671,18 @@ function setupPolicyTable() {
          <thead>
              <tr>
                  <th class="loadbalancerHeaderCell">
- 					<span style="display: none;">Load Balancer</span>
- 					<input type="search" class="search" placeholder="Load Balancer" />
- 				</th>
+                    <span style="display: none;">Load Balancer</span>
+                    <input type="search" class="search" placeholder="Load Balancer" />
+                </th>
                  <th>
- 					<span style="display: none;">Name</span>
- 					<input type="search" class="search" placeholder="Name" />
- 				</th>
+                    <span style="display: none;">Name</span>
+                    <input type="search" class="search" placeholder="Name" />
+                </th>
                  <th>
- 					<span style="display: none;">Virtualservers</span>
- 					<input type="search" class="search" placeholder="Associated Virtual Servers" />
- 				</th>
- 			</tr>
+                    <span style="display: none;">Virtualservers</span>
+                    <input type="search" class="search" placeholder="Associated Virtual Servers" />
+                </th>
+            </tr>
          </thead>
          <tbody>
          </tbody>
