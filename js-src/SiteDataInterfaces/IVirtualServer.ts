@@ -21,6 +21,7 @@ export default interface IVirtualServer {
     pools: string[],
     port: string,
     profiletype: string,
+    protocol: string;
     sourcexlatepool: string,
     sourcexlatetype: string,
     sslprofileclient: string[],

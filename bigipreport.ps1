@@ -252,6 +252,7 @@
 #  5.6.2    2021-09-20   cert issuer, udp vs, otherprofiles, csv headings, profiletype in details      Tim Riker       No
 #  5.6.3    2021-09-24   Add function to crawl policies from f5, added some transcript logic for       Marius Bauer    No
 #                        for the readability of the policies.
+#  5.6.4    2021-09-20   track virtualserver protocol. Search as "protocol=udp" to see udp and any     Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -295,7 +296,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.3"
+$Global:ScriptVersion = "5.6.4"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -835,6 +836,7 @@ Add-Type @'
         public string description;
         public string ip;
         public string port;
+        public string protocol;
         public string profiletype;
         public string defaultpool;
         public string httpprofile;
@@ -1637,8 +1639,11 @@ function Get-LTMInformation {
                 $ObjTempVirtualServer.defaultpool = $VirtualServer.pool
             }
 
-            #Set the ssl profile to None by default, then check if there's an SSL profile and
+            if (Get-Member -inputobject $VirtualServer -name 'ipProtocol') {
+              $ObjTempVirtualServer.protocol = $VirtualServer.ipProtocol
+            }
 
+            #Set the ssl profile to None by default, then check if there's an SSL profile and
             $ObjTempVirtualServer.httpprofile = "None";
             $ObjTempVirtualServer.compressionprofile = "None";
             $ObjTempVirtualServer.profiletype = "Standard";
