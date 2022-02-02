@@ -387,6 +387,9 @@ function poolMemberStatus(member, type) {
   } else if (mStatus === 'enabled:offline') {
     return `<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"
                 title="${mStatus} - Member is unable to pass traffic"/></span>`;
+  } else if (mStatus === 'enabled:unavailable') {
+    return `<span class="statusicon"><img src="images/red-diamond-exclamationmark.png" alt="Unavailable (Enabled)"
+                title="${mStatus} - Member connection limit reached"/></span>`;
   } else if (mStatus === 'disabled:available') {
     return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)"
                 title="${mStatus} - Member is available, but disabled"/></span>`;
@@ -1533,6 +1536,12 @@ function setupVirtualServerTable() {
               row.otherprofiles
             ) {
               result += ' ' + row.otherprofiles;
+            }
+            if (
+              row &&
+              row.protocol
+            ) {
+              result += ' protocol=' + row.protocol;
             }
           }
           return result;
