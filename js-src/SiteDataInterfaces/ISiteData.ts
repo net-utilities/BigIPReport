@@ -15,6 +15,7 @@ import IMemberState from './IMemberStates';
 import { IState } from './IState';
 import 'datatables.net';
 import 'datatables.net-buttons';
+import IPolicy from './IPolicy';
 
 export interface PatchedSettings extends DataTables.Settings {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,6 +36,7 @@ export default interface ISiteData {
   datagroups: IDataGroup[],
   deviceGroups: IDeviceGroup[],
   iRuleTable: DataTables.Api,
+  PolicyTable: DataTables.Api,
   irules: IIrule[],
   knownDevices: IKnownDevice[],
   loadbalancers: ILoadbalancer[],
@@ -47,5 +49,6 @@ export default interface ISiteData {
   poolsMap: Map<string, IPool>,
   preferences: IPreferences,
   virtualservers: IVirtualServer[],
+  policies: IPolicy[],
   state: IState,
 }
