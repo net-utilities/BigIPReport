@@ -139,6 +139,8 @@ window.addEventListener('load', function () {
         siteData.NATdict = result;
     }).fail(addJSONLoadingFailure), $.getJSON('json/state.json', function (result) {
         siteData.state = result;
+    }).fail(addJSONLoadingFailure), $.getJSON('json/policies.json', function (result) {
+        siteData.policies = result;
     }).fail(addJSONLoadingFailure), $.getJSON('json/loggederrors.json', function (result) {
         siteData.loggedErrors = result.concat(siteData.loggedErrors);
     }).fail(addJSONLoadingFailure)).then(function () {
@@ -200,6 +202,7 @@ window.addEventListener('load', function () {
     document.querySelector('div#poolsbutton').addEventListener('click', showPools);
     document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
     document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
+    document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
     document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
     document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
     document.querySelector('div#logsbutton').addEventListener('click', showLogs);
@@ -215,6 +218,7 @@ window.addEventListener('load', function () {
     window['showVirtualServerDetails'] = showVirtualServerDetails;
     window['showDataGroupDetails'] = showDataGroupDetails;
     window['showiRuleDetails'] = showiRuleDetails;
+    window['showPolicyDetails'] = showPolicyDetails;
     window['siteData'] = siteData;
 });
 // update Navigation Buttons based on HEAD polling date (if available)
@@ -745,6 +749,25 @@ function renderRule(loadbalancer, name, type) {
     }
     return result;
 }
+function renderPolicy(loadbalancer, name, type) {
+    if (name === 'None') {
+        return 'None';
+    }
+    //const policyName = name.replace(/^\/Common\//, ''); does not work for any reason
+    let result = '';
+    if (type === 'display') {
+        result += `<span class="adcLinkSpan"></span>
+                <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
+                 href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
+    }
+    result += name;
+    if (type === 'display') {
+        result += `<span class="detailsicon"><img src="images/details.png" alt="details"></span>
+                       <p>Click to see policy details</p>
+                    </a>`;
+    }
+    return result;
+}
 function renderPool(loadbalancer, name, type) {
     if (name === 'N/A') {
         return name;
@@ -1061,6 +1084,9 @@ function populateSearchParameters(updatehash) {
                 case 'irules':
                     showiRules(updatehash);
                     break;
+                case 'policies':
+                    showPolicies(updatehash);
+                    break;
                 case 'deviceoverview':
                     showDeviceOverview(updatehash);
                     break;
@@ -1125,6 +1151,11 @@ function populateSearchParameters(updatehash) {
             const iruleName = vars['irule'].split('@')[0];
             const loadBalancer = vars['irule'].split('@')[1];
             showiRuleDetails(iruleName, loadBalancer);
+        }
+        if (vars['policy']) {
+            const policyName = vars['policy'].split('@')[0];
+            const loadBalancer = vars['policy'].split('@')[1];
+            showPolicyDetails(policyName, loadBalancer);
         }
     }
 }
@@ -1630,6 +1661,147 @@ function setupiRuleTable() {
         expandMatches(siteData.iRuleTable.table(null).body());
     });
     siteData.iRuleTable.draw();
+}
+function setupPolicyTable() {
+    if (siteData.PolicyTable) {
+        return;
+    }
+    const content = `
+     <table id="PolicyTable" class="bigiptable display">
+         <thead>
+             <tr>
+                 <th class="loadbalancerHeaderCell">
+                    <span style="display: none;">Load Balancer</span>
+                    <input type="search" class="search" placeholder="Load Balancer" />
+                </th>
+                 <th>
+                    <span style="display: none;">Name</span>
+                    <input type="search" class="search" placeholder="Name" />
+                </th>
+                 <th>
+                    <span style="display: none;">Virtualservers</span>
+                    <input type="search" class="search" placeholder="Associated Virtual Servers" />
+                </th>
+            </tr>
+         </thead>
+         <tbody>
+         </tbody>
+     </table>`;
+    $('div#policies').html(content);
+    siteData.PolicyTable = $('table#PolicyTable').DataTable({
+        autoWidth: false,
+        deferRender: true,
+        data: siteData.policies,
+        columns: [
+            {
+                data: 'loadbalancer',
+                className: 'loadbalancerCell',
+                render: function (data, type, row) {
+                    return renderLoadBalancer(data, type);
+                },
+            },
+            {
+                data: 'name',
+                className: 'PolicyCell',
+                render: function (data, type, row) {
+                    return renderPolicy(row.loadbalancer, data, type);
+                },
+            },
+            {
+                data: 'virtualservers',
+                type: 'html-num',
+                render: function (data, type, row, meta) {
+                    return renderList(data, type, row, meta, renderVirtualServer, 'virtualservers');
+                },
+            },
+        ],
+        pageLength: 10,
+        language: {
+            search: 'Search all columns:',
+        },
+        dom: 'fBrtilp',
+        buttons: {
+            buttons: [
+                {
+                    text: 'Reset filters',
+                    className: 'tableHeaderColumnButton resetFilters',
+                    action: resetFilters,
+                },
+                {
+                    text: 'Expand',
+                    titleAttr: 'Temporarily expand all',
+                    className: 'tableHeaderColumnButton toggleExpansion',
+                    action: toggleExpandCollapseRestore,
+                },
+                'columnsToggle',
+                {
+                    extend: 'copyHtml5',
+                    className: 'tableHeaderColumnButton exportFunctions',
+                    exportOptions: {
+                        columns: ':visible',
+                        stripHtml: false,
+                        orthogonal: 'export',
+                    },
+                },
+                {
+                    extend: 'print',
+                    className: 'tableHeaderColumnButton exportFunctions',
+                    exportOptions: {
+                        columns: ':visible',
+                        stripHtml: false,
+                        orthogonal: 'print',
+                    },
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'tableHeaderColumnButton exportFunctions',
+                    exportOptions: {
+                        columns: ':visible',
+                        stripHtml: false,
+                        orthogonal: 'export',
+                    },
+                    customize: customizeCSV,
+                },
+            ],
+        },
+        lengthMenu: [
+            [10, 25, 50, 100, -1],
+            [10, 25, 50, 100, 'All'],
+        ],
+        search: { regex: localStorage.getItem('regexSearch') === 'true' },
+        stateSave: true,
+    });
+    // Prevents sorting the columns when clicking on the sorting headers
+    $('table#PolicyTable thead th input').on('click', function (e) {
+        e.stopPropagation();
+    });
+    // Apply the search
+    siteData.PolicyTable.columns().every(function () {
+        // display cached column filter
+        $('input', this.header())[0].value = this.search();
+        const that = this;
+        $('input', this.header()).on('keyup change input search', function (e) {
+            const input = e.target;
+            if (that.search() !== input.value) {
+                if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
+                    that
+                        .search(input.value, localStorage.getItem('regexSearch') === 'true', false)
+                        .draw();
+                }
+            }
+        });
+    });
+    // highlight matches
+    siteData.PolicyTable.on('draw', function () {
+        // reset toggleExpansion button
+        const button = $('div#PolicyTable_wrapper div.dt-buttons button.toggleExpansion');
+        button[0].innerHTML = '<span>Expand<span>';
+        button[0].title = 'Temporarily expand all';
+        toggleAdcLinks();
+        highlightAll(siteData.PolicyTable);
+        expandMatches(siteData.PolicyTable.table(null).body());
+    });
+    siteData.PolicyTable.draw();
 }
 function setupPoolTable() {
     if (siteData.poolTable) {
@@ -2319,6 +2491,15 @@ function showiRules(updatehash) {
     showMainSection('irules');
     toggleAdcLinks();
 }
+function showPolicies(updatehash) {
+    hideMainSection();
+    setupPolicyTable();
+    activateMenuButton('div#policiesbutton');
+    $('div#mainholder').attr('data-activesection', 'policies');
+    updateLocationHash(updatehash);
+    showMainSection('policies');
+    toggleAdcLinks();
+}
 function showPools(updatehash) {
     hideMainSection();
     setupPoolTable();
@@ -2641,6 +2822,7 @@ function toggleRegexSearch() {
         siteData.bigipTable,
         siteData.poolTable,
         siteData.iRuleTable,
+        siteData.PolicyTable,
         siteData.dataGroupTable,
         siteData.certificateTable,
         siteData.logTable,
@@ -2821,29 +3003,29 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
     }
     // If a pool was found, populate the pool details table and display it on the page
     if (matchingvirtualserver) {
+        const { name, currentconnections, cpuavg1min, cpuavg5min, cpuavg5sec, maximumconnections, loadbalancer, sourcexlatetype, sourcexlatepool, trafficgroup, defaultpool, description, sslprofileclient, sslprofileserver, compressionprofile, profiletype, persistence, otherprofiles, policies, irules, ip, port, } = matchingvirtualserver;
         html = '<div class="virtualserverdetailsheader">';
         html +=
-            '<span>Virtual Server: ' + matchingvirtualserver.name + '</span><br>';
+            '<span>Virtual Server: ' + name + '</span><br>';
         html +=
             '<span>Load Balancer: ' +
-                renderLoadBalancer(matchingvirtualserver.loadbalancer, 'display') +
+                renderLoadBalancer(loadbalancer, 'display') +
                 '</span>';
         html += '</div>';
         const firstLayer = $('div#firstlayerdetailscontentdiv');
         firstLayer.attr('data-type', 'virtualserver');
-        firstLayer.attr('data-objectname', matchingvirtualserver.name);
-        firstLayer.attr('data-loadbalancer', matchingvirtualserver.loadbalancer);
+        firstLayer.attr('data-objectname', name);
+        firstLayer.attr('data-loadbalancer', loadbalancer);
         let xlate;
-        switch (matchingvirtualserver.sourcexlatetype) {
+        switch (sourcexlatetype) {
             case 'snat':
-                xlate = 'SNAT:' + matchingvirtualserver.sourcexlatepool;
+                xlate = 'SNAT:' + sourcexlatepool;
                 break;
             default:
-                xlate = matchingvirtualserver.sourcexlatetype || 'Unknown';
+                xlate = sourcexlatetype || 'Unknown';
         }
-        const trafficGroup = matchingvirtualserver.trafficgroup || 'N/A';
-        const defaultPool = matchingvirtualserver.defaultpool || 'N/A';
-        const description = matchingvirtualserver.description || '';
+        const trafficGroup = trafficgroup || 'N/A';
+        const defaultPool = defaultpool || 'N/A';
         // Build the table and headers
         // First row containing simple properties in two cells which in turn contains subtables
         let table = `<table class="virtualserverdetailstablewrapper">
@@ -2855,23 +3037,23 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 <tr>
                   <th>Name</th>
                   <td>
-                    ${matchingvirtualserver.name}
+                    ${name}
                   </td>
                 </tr>
                 <tr>
                   <th>IP:Port</th>
-                  <td>${matchingvirtualserver.ip}:${matchingvirtualserver.port}</td>
+                  <td>${ip}:${port}</td>
                 </tr>
                 <tr>
                   <th>Profile Type</th>
-                  <td>${matchingvirtualserver.profiletype}</td>
+                  <td>${profiletype}</td>
                 </tr>
                 <tr>
                   <th>Default pool</th>
                   <td>${renderPool(loadbalancer, defaultPool, 'display')}</td>
                 </tr>
                 <tr><th>Traffic Group</th><td>${trafficGroup}</td></tr>
-                <tr><th>Description</th><td>${description}</td></tr>
+                <tr><th>Description</th><td>${description || ''}</td></tr>
             </table>
          </td>`;
         // Subtable 2
@@ -2879,31 +3061,31 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 <table class="virtualserverdetailstable">
                   <tr>
                     <th>Client SSL Profile</th>
-                    <td>${matchingvirtualserver.sslprofileclient.join('<br>')}</td>
+                    <td>${sslprofileclient.join('<br>')}</td>
                   </tr>
                   <tr>
                     <th>Server SSL Profile</th>
-                    <td>${matchingvirtualserver.sslprofileserver.join('<br>')}</td>
+                    <td>${sslprofileserver.join('<br>')}</td>
                   </tr>
                   <tr>
                     <th>Compression Profile</th>
-                    <td>${matchingvirtualserver.compressionprofile}</td>
+                    <td>${compressionprofile}</td>
                   </tr>
                   <tr>
                     <th>Persistence Profiles</th>
-                    <td>${matchingvirtualserver.persistence.join('<br>')}</td>
+                    <td>${persistence.join('<br>')}</td>
                   </tr>
                   <tr><th>Source Translation</th><td>${xlate}</td></tr>
                   <tr>
                     <th>Other Profiles</th>
-                    <td>${matchingvirtualserver.otherprofiles.join('<br>')}</td>
+                    <td>${otherprofiles.join('<br>')}</td>
                   </tr>
                 </table>
-             </td>
-          </tr>
-        </tbody>
-    </table>
-    <br>`;
+            </td>
+           </tr>
+         </tbody>
+     </table>
+     <br>`;
         table += `<table class="virtualserverdetailstable">
                     <tr>
                       <th>Current Connections</th>
@@ -2913,16 +3095,21 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                       <th>5 minute average CPU usage</th>
                     </tr>
                     <tr>
-                      <td>${matchingvirtualserver.currentconnections}</td>
-                      <td>${matchingvirtualserver.maximumconnections}</td>
-                      <td>${matchingvirtualserver.cpuavg5sec}</td>
-                      <td>${matchingvirtualserver.cpuavg1min}</td>
-                      <td>${matchingvirtualserver.cpuavg5min}</td>
+                      <td>${currentconnections}</td>
+                      <td>${maximumconnections}</td>
+                      <td>${cpuavg5sec}</td>
+                      <td>${cpuavg1min}</td>
+                      <td>${cpuavg5min}</td>
                      </tr>
               </table>
               <br>`;
+        if (!matchingvirtualserver.policies.some(p => p === 'None')) {
+            table += `<table class="virtualserverdetailstable">
+                <tr><th>Policy name</th></tr>
+                ${policies.map(p => `<tr><td>${renderPolicy(loadbalancer, p, 'display')}</td></tr>`)}`;
+        }
         if (siteData.preferences.ShowiRules) {
-            if (matchingvirtualserver.irules.length > 0) {
+            if (irules.length > 0) {
                 // Add the assigned irules
                 table += '<table class="virtualserverdetailstable">';
                 if (siteData.preferences.ShowiRuleLinks) {
@@ -2931,11 +3118,11 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 else {
                     table += '    <tr><th>iRule name</th></tr>';
                 }
-                for (const i in matchingvirtualserver.irules) {
+                for (const i in irules) {
                     // If iRules linking has been set to true show iRule links
                     // and parse data groups
                     if (siteData.preferences.ShowiRuleLinks) {
-                        const iruleobj = getiRule(matchingvirtualserver.irules[i], loadbalancer);
+                        const iruleobj = getiRule(irules[i], loadbalancer);
                         if (Object.keys(iruleobj).length === 0) {
                             table +=
                                 '    <tr><td>' +
@@ -2962,7 +3149,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                         }
                     }
                     else {
-                        table += `        <tr><td>${matchingvirtualserver.irules[i]}</td></tr>`;
+                        table += `        <tr><td>${irules[i]}</td></tr>`;
                     }
                 }
                 table += '</table>';
@@ -3124,6 +3311,67 @@ function getDataGroup(datagroup, loadbalancer) {
         }
     }
     return matchingdatagroup;
+}
+/** ********************************************************************************************************************
+ Returns a matching policy object from the policy json data
+ **********************************************************************************************************************/
+function getPolicy(policy, loadbalancer) {
+    const policies = siteData.policies;
+    let matchingpolicy;
+    //Find the matching policy from the JSON object
+    for (const p in policies) {
+        if (policies[p].name === policy && policies[p].loadbalancer === loadbalancer) {
+            matchingpolicy = policies[p];
+        }
+    }
+    return matchingpolicy;
+}
+/** ********************************************************************************************************************
+ Shows the policy details light box
+ **********************************************************************************************************************/
+function showPolicyDetails(policy, loadbalancer) {
+    //Get the policy object from the json file
+    const matchingpolicy = getPolicy(policy, loadbalancer);
+    let html;
+    //If an policy was found, prepare the data to show it
+    if (matchingpolicy) {
+        //Populate the header
+        html = `<div class="policydetailsheader">
+               <span>Policy: ${matchingpolicy.name} </span>
+               <br>
+               <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')} </span>
+            </div>`;
+        const firstLayerContent = $('div#firstlayerdetailscontentdiv');
+        firstLayerContent.attr('data-type', 'policy');
+        firstLayerContent.attr('data-objectname', matchingpolicy.name);
+        firstLayerContent.attr('data-loadbalancer', matchingpolicy.loadbalancer);
+        // Save the definition to a variable for some classic string mangling
+        let definition = matchingpolicy.definition;
+        // Replace those tags with to be sure that the content won't be interpreted as HTML by the browser
+        definition = definition.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        //Prepare the div content
+        html += `<table class="bigiptable display">
+               <thead>
+                  <tr><th>Policy definition</th></tr> </thead>
+               <tbody>
+                 <tr><td><pre class="sh_tcl"> ${definition} </pre></td></tr>`;
+        if (matchingpolicy.virtualservers &&
+            matchingpolicy.virtualservers.length > 0) {
+            html += `<tr><td>Used by ${matchingpolicy.virtualservers.length} Virtual Servers:<br>
+                  ${matchingpolicy.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display'))
+                .join('<br>')} </td></tr>`;
+        }
+        html += '</tbody> </table>';
+    }
+    //Add the close button to the footer
+    $('a#closefirstlayerbutton').text('Close policy details');
+    //Add the div content to the page
+    $('#firstlayerdetailscontentdiv').html(html);
+    /* redo syntax highlighting */
+    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+    //Show the div
+    $('#firstlayerdiv').fadeIn(updateLocationHash);
+    toggleAdcLinks();
 }
 /** ********************************************************************************************************************
     Displays a data group in a lightbox
