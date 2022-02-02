@@ -1263,7 +1263,7 @@ function populateSearchParameters(updatehash: boolean) {
         case 'irules':
           showiRules(updatehash);
           break;
-        case 'policy':
+        case 'policies':
           showPolicies(updatehash);
           break;
         case 'deviceoverview':
@@ -1946,7 +1946,7 @@ function setupPolicyTable() {
          </tbody>
      </table>`;
 
-  $('div#policy').html(content);
+  $('div#policies').html(content);
   siteData.PolicyTable = $('table#PolicyTable').DataTable({
     autoWidth: false,
     deferRender: true,
@@ -2820,9 +2820,9 @@ function showPolicies(updatehash) {
   hideMainSection();
   setupPolicyTable();
   activateMenuButton('div#policiesbutton');
-  $('div#mainholder').attr('data-activesection', 'policy');
+  $('div#mainholder').attr('data-activesection', 'policies');
   updateLocationHash(updatehash);
-  showMainSection('policy');
+  showMainSection('policies');
   toggleAdcLinks();
 }
 
