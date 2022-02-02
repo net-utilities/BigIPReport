@@ -262,7 +262,7 @@ window.addEventListener('load', function () {
   document.querySelector('div#poolsbutton').addEventListener('click', showPools)
   document.querySelector('div#irulesbutton').addEventListener('click', showiRules)
   document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups)
-  document.querySelector('div#policybutton').addEventListener('click', showPolicies)
+  document.querySelector('div#policiesbutton').addEventListener('click', showPolicies)
   document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview)
   document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails)
   document.querySelector('div#logsbutton').addEventListener('click', showLogs)
@@ -2819,7 +2819,7 @@ function showiRules(updatehash) {
 function showPolicies(updatehash) {
   hideMainSection();
   setupPolicyTable();
-  activateMenuButton('div#policybutton');
+  activateMenuButton('div#policiesbutton');
   $('div#mainholder').attr('data-activesection', 'policy');
   updateLocationHash(updatehash);
   showMainSection('policy');
