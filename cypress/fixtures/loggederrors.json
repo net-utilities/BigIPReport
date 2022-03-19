@@ -1,0 +1,72 @@
+[
+  {
+    "datetime": "2022-01-29 23:09:26",
+    "message": "Successfully loaded config file: /Users/patrik/Documents/BigIPReport/bigipreportconfig.xml",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:26",
+    "message": "Insecure SkipCertificateCheck enabled, consider using valid certificates and DNS names",
+    "severity": "WARNING"
+  },
+  {
+    "datetime": "2022-01-29 23:09:26",
+    "message": "Pre execution checks were successful",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:26",
+    "message": "Start-Job bigip.xip.se (1 / 10, Wait: 0)",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:27",
+    "message": "bigip.xip.se:Successfully loaded config file: /Users/patrik/Documents/BigIPReport/bigipreportconfig.xml",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:27",
+    "message": "bigip.xip.se:Insecure SkipCertificateCheck enabled, consider using valid certificates and DNS names",
+    "severity": "WARNING"
+  },
+  {
+    "datetime": "2022-01-29 23:09:27",
+    "message": "bigip.xip.se:Pre execution checks were successful",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:28",
+    "message": "bigip.xip.se:Got auth token (Try 1)",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:34",
+    "message": "bigip.xip.se:Stats: VS:13 P:12 R:18 POL:2 DG:12 C:5 M:15 ASM:0 T:5.818693",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:35",
+    "message": "No missing data was detected, sending alerts and compiling the report",
+    "severity": "SUCCESS"
+  },
+  {
+    "datetime": "2022-01-29 23:09:35",
+    "message": "No certificate alerting channel has been enabled",
+    "severity": "INFO"
+  },
+  {
+    "datetime": "2022-01-29 23:09:35",
+    "message": "Support Checks has been disabled, skipping",
+    "severity": "INFO"
+  },
+  {
+    "datetime": "2022-01-29 23:09:35",
+    "message": "No failed devices alerting channel has been enabled",
+    "severity": "INFO"
+  },
+  {
+    "datetime": "2022-01-29 23:09:35",
+    "message": "Stats: G:1 LB:16 VS:13 P:12 R:18 POL:2 DG:12 C:5 M:15 ASM:0 T:9.710219",
+    "severity": "SUCCESS"
+  }
+]

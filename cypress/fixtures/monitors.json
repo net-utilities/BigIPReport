@@ -1,0 +1,152 @@
+[
+  {
+    "name": "/Common/gateway_icmp",
+    "receivestring": "",
+    "sendstring": "",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "gateway-icmp:gateway-icmpstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/http",
+    "receivestring": "",
+    "sendstring": "GET /\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "http:httpstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/http_head_f5",
+    "receivestring": "Server\\:",
+    "sendstring": "HEAD / HTTP/1.0\\r\\n\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "http:httpstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/https",
+    "receivestring": "",
+    "sendstring": "GET /\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "https:httpsstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/https_443",
+    "receivestring": "",
+    "sendstring": "GET /\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "https:httpsstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/https_head_f5",
+    "receivestring": "Server\\:",
+    "sendstring": "HEAD / HTTP/1.0\\r\\n\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "https:httpsstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/icmp",
+    "receivestring": "",
+    "sendstring": "",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "icmp:icmpstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/loadbalancing-se-https",
+    "receivestring": "Balanced",
+    "sendstring": "GET / HTTP/1.1\\r\\nHost: host.domain.com\\r\\nConnection: Close\\r\\n\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "https:httpsstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/real_server",
+    "receivestring": "",
+    "sendstring": "",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "real-server:real-serverstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/snmp_dca",
+    "receivestring": "",
+    "sendstring": "",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "10",
+    "type": "snmp-dca:snmp-dcastate",
+    "disablestring": "",
+    "timeout": "30"
+  },
+  {
+    "name": "/Common/tcp",
+    "receivestring": "",
+    "sendstring": "",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "tcp:tcpstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/tcp_half_open",
+    "receivestring": "",
+    "sendstring": "",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "tcp-half-open:tcp-half-openstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/Common/udp",
+    "receivestring": "",
+    "sendstring": "default send string",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "udp:udpstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/example_NAT64/App1/grafana_http_monitor",
+    "receivestring": "HTTP/1.",
+    "sendstring": "GET /index.html HTTP/1.1\\r\\nHost: grafana.xip.se\\r\\nConnection: Close\\r\\n\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "http:httpstate",
+    "disablestring": "",
+    "timeout": "16"
+  },
+  {
+    "name": "/TEST_HTTPSMonitor/Application/mymonitor",
+    "receivestring": "HTTP/1.",
+    "sendstring": "GET /index.html HTTP/1.1\\r\\nHost: grafana.xip.se\\r\\nConnection: Close\\r\\n\\r\\n",
+    "loadbalancer": "bigip.xip.se",
+    "interval": "5",
+    "type": "http:httpstate",
+    "disablestring": "",
+    "timeout": "16"
+  }
+]

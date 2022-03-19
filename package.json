@@ -5,7 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "eslint ./underlay/js/bigipreport.js && mocha -r ts-node/register js-src/**/*.spec.ts"
+    "e2e": "cypress run",
+    "e2e:dev": "cypress open",
+    "test": "eslint ./underlay/js/bigipreport.js && mocha -r ts-node/register js-src/**/*.spec.ts",
+    "start": "cd underlay && npx http-server -b -S -p 8443 -C ./cert.pem"
   },
   "repository": {
     "type": "git",
@@ -27,6 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "chai": "^4.3.6",
+    "cypress": "^9.5.2",
     "eslint": "^7.32.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jquery": "^1.5.1",

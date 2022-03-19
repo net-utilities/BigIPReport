@@ -1,0 +1,563 @@
+[
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "None"
+    ],
+    "defaultpool": null,
+    "port": "Any",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:10 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/ipother"
+    ],
+    "ip": "0.0.0.0",
+    "enabled": "enabled",
+    "httpprofile": "None",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "unknown",
+    "vlans": null,
+    "pools": null,
+    "policies": [
+      "None"
+    ],
+    "name": "/Common/forwardasd",
+    "sourcexlatetype": "none"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "None"
+    ],
+    "defaultpool": "/Common/loadbalancing-se",
+    "port": "443",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "/Common/clientssl"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/tcp"
+    ],
+    "ip": "10.10.10.1",
+    "enabled": "enabled",
+    "httpprofile": "None",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "available",
+    "vlans": null,
+    "pools": [
+      "/Common/loadbalancing-se"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Common/loadbalancing.se",
+    "sourcexlatetype": "none"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "None"
+    ],
+    "defaultpool": null,
+    "port": "443",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [
+      "/Common/select-loadbalancing-se-rule"
+    ],
+    "sslprofileclient": [
+      "/Common/clientssl"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/tcp"
+    ],
+    "ip": "10.10.10.2",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "available",
+    "vlans": null,
+    "pools": [
+      "",
+      "/Common/loadbalancing-se"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Common/select-pool-by-irule",
+    "sourcexlatetype": "none"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "None"
+    ],
+    "defaultpool": null,
+    "port": "80",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [
+      "/Common/respond"
+    ],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/tcp"
+    ],
+    "ip": "192.168.70.246",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "unknown",
+    "vlans": null,
+    "pools": null,
+    "policies": [
+      "None"
+    ],
+    "name": "/Common/working",
+    "sourcexlatetype": "none"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Common/cookie"
+    ],
+    "defaultpool": "/example_NAT64/App1/web_pool",
+    "port": "80",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:11 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "9161:7904:7539:6023:5c73:2b27:50c6:46ce",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/example_NAT64/App1/web_pool"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/example_NAT64/App1/service",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Sample_http_01/jsessionid"
+    ],
+    "defaultpool": "/Sample_http_01/A1/web_pool",
+    "port": "80",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:10 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "10.0.6.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/Sample_http_01/A1/web_pool"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Sample_http_01/A1/service",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Common/cookie"
+    ],
+    "defaultpool": "/Sample_http_02/A1/dfl_pool",
+    "port": "80",
+    "compressionprofile": "/Common/httpcompression",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [
+      "/Sample_http_02/A1/choose_pool"
+    ],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:10 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/mptcp-mobile-optimized"
+    ],
+    "ip": "10.0.3.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/Sample_http_02/A1/dfl_pool",
+      "/Sample_http_02/A1/pvt_pool"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Sample_http_02/A1/service",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Common/cookie"
+    ],
+    "defaultpool": "/Sample_http_03/A1/web_pool",
+    "port": "80",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:10 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "10.1.7.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/Sample_http_03/A1/web_pool"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Sample_http_03/A1/pvt_vs",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Sample_http_03/jsessionid"
+    ],
+    "defaultpool": "/Sample_http_03/A1/web_pool",
+    "port": "80",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:10 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "10.0.7.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/Sample_http_03/A1/web_pool"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Sample_http_03/A1/service",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Common/cookie"
+    ],
+    "defaultpool": "/Sample_http_07/A1/web_pool80",
+    "port": "80",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:10 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "10.1.10.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/Sample_http_07/A1/web_pool80"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Sample_http_07/A1/service",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Common/cookie"
+    ],
+    "defaultpool": "/Sample_http_07/A1/web_pool81",
+    "port": "81",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:11 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "10.1.10.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/Sample_http_07/A1/web_pool81"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Sample_http_07/A1/service_on_port81",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Common/cookie"
+    ],
+    "defaultpool": "/Sample_http_07/A1/web_pool82",
+    "port": "82",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:11 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "10.1.10.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "offline",
+    "vlans": null,
+    "pools": [
+      "/Sample_http_07/A1/web_pool82"
+    ],
+    "policies": [
+      "None"
+    ],
+    "name": "/Sample_http_07/A1/service_on_port82",
+    "sourcexlatetype": "automap"
+  },
+  {
+    "vlanstate": "disabled",
+    "cpuavg1min": "0",
+    "persistence": [
+      "/Common/cookie"
+    ],
+    "defaultpool": null,
+    "port": "80",
+    "compressionprofile": "None",
+    "loadbalancer": "bigip.xip.se",
+    "irules": [],
+    "sslprofileclient": [
+      "None"
+    ],
+    "trafficgroup": "/Common/traffic-group-1",
+    "cpuavg5sec": "0",
+    "description": "2021-04-29 13:21:11 Auto disabled due to low connections",
+    "profiletype": "Standard",
+    "cpuavg5min": "0",
+    "otherprofiles": [
+      "/Common/f5-tcp-progressive"
+    ],
+    "ip": "10.0.1.10",
+    "enabled": "enabled",
+    "httpprofile": "/Common/http",
+    "sourcexlatepool": "",
+    "currentconnections": "0",
+    "asmPolicies": null,
+    "maximumconnections": "0",
+    "sslprofileserver": [
+      "None"
+    ],
+    "availability": "unknown",
+    "vlans": null,
+    "pools": null,
+    "policies": [
+      "/Sample_http_08/A1/forward_policy"
+    ],
+    "name": "/Sample_http_08/A1/service",
+    "sourcexlatetype": "automap"
+  }
+]
