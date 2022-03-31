@@ -1,11 +1,57 @@
-import { siteData, updateLocationHash, renderLoadBalancer } from '../bigipreport.js';
-import translateStatus from './translateStatus.js';
-import selectMonitorInputText from './selectMonitorInputText.js';
-import parseHTTPMonitorSendString from './parseHTTPMonitorSendString.js';
+import { siteData, updateLocationHash, renderLoadBalancer } from '../bigipreport';
+import translateStatus from './translateStatus';
+import selectMonitorInputText from './selectMonitorInputText';
+import IMonitor from '../Interfaces/IMonitor';
+import generateMonitorTests from './generateMonitorTests';
+import ClickEvent = JQuery.ClickEvent;
+
+/**
+ * A more modern approach to copy a string into the clipboard
+ * @param str
+ * @Return Promise<void>
+ */
+const navCopy = (str: string): Promise<void> => {
+  if (navigator && navigator.clipboard && navigator.clipboard.writeText)
+    return navigator.clipboard.writeText(str);
+  return Promise.reject('The Clipboard API is not available.');
+};
+
+/**
+ * Copy data-copy attribute content from a monitor test button
+ * @param e
+ */
+const copyToClipBoard = async (e: MouseEvent): Promise<void> => {
+
+  const monitorButton = e.target as HTMLButtonElement;
+  const copyString = monitorButton.getAttribute('data-copy');
+
+  try {
+    await navCopy(copyString)
+  } catch(e) {
+    const el = document.createElement('textarea');
+    el.value = copyString;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  }
+};
+
+
 
 /** ********************************************************************************************************************
  Shows the pool details light box
  **********************************************************************************************************************/
+
+/**
+ * Renders the pool details div
+ * @param pool
+ * @param loadbalancer
+ * @param layer
+ */
 
 export default function showPoolDetails(pool: string, loadbalancer: string, layer = 'first'): void {
   const matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
@@ -71,7 +117,7 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
               <tbody>`;
 
     const poolmonitors = matchingpool.monitors;
-    const matchingmonitors = [];
+    const matchingMonitors: IMonitor[] = [];
 
     const monitors = siteData.monitors;
 
@@ -81,7 +127,7 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
           monitors[x].name === poolmonitors[i] &&
           monitors[x].loadbalancer === loadbalancer
         ) {
-          matchingmonitors.push(monitors[x]);
+          matchingMonitors.push(monitors[x]);
         }
       }
     }
@@ -110,19 +156,19 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
     table += `</tbody></table>
                     <br>`;
 
-    if (matchingmonitors.length > 0) {
+    if (matchingMonitors.length > 0) {
       table += '<div class="monitordetailsheader">Assigned monitors</div>';
 
-      for (const i in matchingmonitors) {
-        const matchingmonitor = matchingmonitors[i];
+      for (const i in matchingMonitors) {
+        const matchingMonitor = matchingMonitors[i];
 
-        matchingmonitor.sendstring = matchingmonitor.sendstring
+        matchingMonitor.sendstring = matchingMonitor.sendstring
           .replace('<', '&lt;')
           .replace('>', '&gt;');
-        matchingmonitor.receivestring = matchingmonitor.receivestring
+        matchingMonitor.receivestring = matchingMonitor.receivestring
           .replace('<', '&lt;')
           .replace('>', '&gt;');
-        matchingmonitor.disablestring = matchingmonitor.disablestring
+        matchingMonitor.disablestring = matchingMonitor.disablestring
           .replace('<', '&lt;')
           .replace('>', '&gt;');
 
@@ -130,33 +176,33 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
           <table class="monitordetailstable">
               <thead>
                 <tr>
-                    <th colspan=2>${matchingmonitor.name}</th>
+                    <th colspan=2>${matchingMonitor.name}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td class="monitordetailstablerowheader"><b>Type</td>
-                  <td>${matchingmonitor.type}</b></td>
+                  <td>${matchingMonitor.type}</b></td>
                 </tr>
                 <tr>
                   <td class="monitordetailstablerowheader"><b>Send string</td>
-                  <td>${matchingmonitor.sendstring}</b></td>
+                  <td>${matchingMonitor.sendstring}</b></td>
                 </tr>
                 <tr>
                   <td class="monitordetailstablerowheader"><b>Receive String</b></td>
-                  <td>${matchingmonitor.receivestring}</td>
+                  <td>${matchingMonitor.receivestring}</td>
                 </tr>
                 <tr>
                   <td class="monitordetailstablerowheader"><b>Disable String</b></td>
-                  <td>${matchingmonitor.disablestring}</td>
+                  <td>${matchingMonitor.disablestring}</td>
                 </tr>
                 <tr>
                   <td class="monitordetailstablerowheader"><b>Interval</b></td>
-                  <td>${matchingmonitor.interval}</td>
+                  <td>${matchingMonitor.interval}</td>
                 </tr>
                 <tr>
                   <td class="monitordetailstablerowheader"><b>Timeout</b></td>
-                  <td>${matchingmonitor.timeout}</td>
+                  <td>${matchingMonitor.timeout}</td>
                 </tr>
               </table>
 
@@ -172,90 +218,17 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
                     </thead>
                     <tbody>`;
 
-        for (const x in members) {
-          const member = members[x];
+        for (const member of members) {
 
-          const protocol = matchingmonitors[i].type.replace(/:.*$/, '');
-          const requestparameters = parseHTTPMonitorSendString(matchingmonitor.sendstring);
+          const { curl, http, netcat } = generateMonitorTests(matchingMonitor, member);
 
-          if (requestparameters && ['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)) {
-            let curllink; let netcatlink; let httplink; let url; let curlcommand;
-            const sendstring = matchingmonitors[i].sendstring;
-
-            if (['http', 'https'].includes(protocol)) {
-              if (
-                requestparameters['verb'] === 'GET' ||
-                requestparameters['verb'] === 'HEAD'
-              ) {
-                curlcommand = 'curl';
-
-                if (requestparameters['verb'] === 'HEAD') {
-                  curlcommand += ' -I';
-                }
-
-                if (requestparameters['version'] === 'HTTP/1.0') {
-                  curlcommand += ' -0';
-                }
-
-                for (const x in requestparameters['headers']) {
-                  const header = requestparameters['headers'][x];
-                  const headerarr = header.split(':');
-                  const headername = headerarr[0].trim();
-                  const headervalue = headerarr[1].trim();
-
-                  curlcommand += ` -H &quot;${headername}:${headervalue}&quot;`;
-                }
-
-                url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
-                curlcommand += ` ${url}`;
-              }
-
-              curllink = `<a href="${url}" target="_blank"
-                            class="monitortest"
-                            data-type="curl">curl<p>Curl command (CTRL+C)<input id="curlcommand"
-                            class="monitorcopybox" type="text" value="${curlcommand}"></p></a>`;
-            }
-
-            if (
-              protocol === 'http' ||
-              protocol === 'tcp' ||
-              protocol === 'tcp-half-open'
-            ) {
-              const netcatcommand = `echo -ne "${sendstring}" | nc ${member.ip} ${member.port}`;
-              netcatlink = `<a href="javascript:selectMonitorInpuText(this)" class="monitortest"
-                              data-type="netcat">Netcat<p>Netcat command (CTRL+C)<input id="curlcommand"
-                              class="monitorcopybox" type="text" value='${netcatcommand}'>
-                              </p>
-                            </a>`;
-            }
-
-            if (protocol === 'http' || protocol === 'https') {
-              const url = `${protocol}://${member.ip}:${member.port}${requestparameters['uri']}`;
-              httplink = `<a href="${url}" target="_blank" class="monitortest"
-                            data-type="http">
-                              HTTP
-                              <p>
-                                HTTP Link (CTL+C)
-                                <input id="curlcommand" class="monitorcopybox" type="text" value="${url}">
-                              </p>
-                          </a>`;
-            }
+          const curlLink = curl ? `<button class="monitor-copy" data-copy="${curl}">Copy</button>` : 'N/A';
+          const netcatLink = netcat ? `<button class="monitor-copy" data-copy="${netcat}">Copy</button>` : 'N/A';
+          const httpLink = http ? `<button class="monitor-copy" data-copy="${http}">Copy</button>` : 'N/A';
 
             table += `<tr><td>${member.name}</td><td>${member.ip}</td><td>${
               member.port
-            }</td><td>${httplink || 'N/A'}</td><td>${
-              curllink || 'N/A'
-            }</td><td>${netcatlink || 'N/A'}</td></tr>`;
-          } else {
-            table += `<tr>
-                        <td>${member.name}</td>
-                        <td>${member.ip}</td>
-                        <td>${member.port}</td>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                      </tr>`;
-          }
+            }</td><td>${httpLink}</td><td>${curlLink}</td><td>${netcatLink}</td></tr>`;
         }
 
         table += `
@@ -287,6 +260,11 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
 
   $(`a#close${layer}layerbutton`).text('Close pool details');
   layerContentDiv.html(html);
+
+  // Attach the copy function to the buttons
+  document.querySelectorAll('button.monitor-copy')
+    .forEach(el => el.addEventListener('click', copyToClipBoard));
+
   $(layerContentDiv).find('a.monitortest').on('mouseover', selectMonitorInputText);
   $(`#${layer}layerdiv`).fadeIn(updateLocationHash);
 }

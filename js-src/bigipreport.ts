@@ -1,15 +1,15 @@
 /* eslint-env jquery */
-import ISiteData, { PatchedSettings } from './SiteDataInterfaces/ISiteData.js';
-import IPool from './SiteDataInterfaces/IPool';
-import ICertificate from './SiteDataInterfaces/ICertificate.js';
-import ILoggedError from './SiteDataInterfaces/ILoggedErrors.js';
-import IVirtualServer from './SiteDataInterfaces/IVirtualServer.js';
-import IIrule from './SiteDataInterfaces/IIrule.js';
-import IDataGroup from './SiteDataInterfaces/IDataGroup.js';
-import ILoadbalancer, { IStatusVIP } from './SiteDataInterfaces/ILoadbalancer.js';
-import IDeviceGroup from './SiteDataInterfaces/IDeviceGroup.js';
-import showPoolDetails from './PoolDetails/showPoolDetails.js';
-import {ISupportState} from './SiteDataInterfaces/IState';
+import ISiteData, { PatchedSettings } from './Interfaces/ISiteData';
+import IPool from './Interfaces/IPool';
+import ICertificate from './Interfaces/ICertificate';
+import ILoggedError from './Interfaces/ILoggedErrors';
+import IVirtualServer from './Interfaces/IVirtualServer';
+import IIrule from './Interfaces/IIrule';
+import IDataGroup from './Interfaces/IDataGroup';
+import ILoadbalancer, { IStatusVIP } from './Interfaces/ILoadbalancer';
+import IDeviceGroup from './Interfaces/IDeviceGroup';
+import showPoolDetails from './PoolDetails/showPoolDetails';
+import {ISupportState} from './Interfaces/IState';
 
 /** ********************************************************************************************************************
 
@@ -1236,7 +1236,7 @@ function isRegExp(regExp) {
     Gets the query strings and populates the table
 ***********************************************************************************************************************/
 
-function populateSearchParameters(updatehash: boolean) {
+function populateSearchParameters(updateHash: boolean) {
 
   const vars = {};
   let hash;
@@ -1258,34 +1258,34 @@ function populateSearchParameters(updatehash: boolean) {
 
       switch (activeSection) {
         case 'virtualservers':
-          showVirtualServers(updatehash);
+          showVirtualServers(updateHash);
           break;
         case 'pools':
-          showPools(updatehash);
+          showPools(updateHash);
           break;
         case 'irules':
-          showiRules(updatehash);
+          showiRules(updateHash);
           break;
         case 'policies':
-          showPolicies(updatehash);
+          showPolicies(updateHash);
           break;
         case 'deviceoverview':
-          showDeviceOverview(updatehash);
+          showDeviceOverview(updateHash);
           break;
         case 'certificatedetails':
-          showCertificateDetails(updatehash);
+          showCertificateDetails(updateHash);
           break;
         case 'datagroups':
-          showDataGroups(updatehash);
+          showDataGroups(updateHash);
           break;
         case 'logs':
-          showLogs(updatehash);
+          showLogs(updateHash);
           break;
         case 'preferences':
-          showPreferences(updatehash);
+          showPreferences(updateHash);
           break;
         case 'help':
-          showHelp(updatehash);
+          showHelp(updateHash);
           break;
       }
     }

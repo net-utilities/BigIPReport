@@ -253,6 +253,9 @@
 #  5.6.3    2021-09-24   Add function to crawl policies from f5, added some transcript logic for       Marius Bauer    No
 #                        for the readability of the policies.
 #  5.6.4    2021-09-20   track virtualserver protocol. Search as "protocol=udp" to see udp and any     Tim Riker       No
+#  5.6.5    2022-03-31   Adding click to copy for monitor tests                                        Patrik Jonsson  No
+#                        Adding unit tests for monitor test rendering
+#                        Now building the javascript files using webpack
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -296,7 +299,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.4"
+$Global:ScriptVersion = "5.6.5"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date

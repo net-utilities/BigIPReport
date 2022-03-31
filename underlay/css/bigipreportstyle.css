@@ -436,42 +436,6 @@ div#consolediv {
     border: 1px solid var(--bordercolor);
 }
 
-
-/* The monitor tooltip that appears over the the curl, netcat links */
-a.monitortest {
-    position: relative;
-    display: inline;
-    color: #000000;
-}
-a.monitortest p {
-    position: absolute;
-    color: #000;
-    top: -60px;
-    left: -55px;
-    background: #fff;
-    border: 1px solid #000;
-    padding-left: 3px;
-    padding-right: 3px;
-    padding-top: 0px;
-    padding-bottom: 1px;
-    height: 40px;
-    text-align: center;
-    visibility: hidden;
-    border-radius: 2px;
-    font-size: 12px;
-    font-weight: bold;
-}
-a:hover.monitortest p {
-    visibility: visible;
-    bottom: 30px;
-    z-index: 999;
-}
-
-/* The actual text input box that contains the monitor test data */
-.monitorcopybox {
-    width: 140px;
-}
-
 /* The div that contains the button that closes the pool details  */
 .secondlayerdetailsfooter {
     margin-top: 20px;
