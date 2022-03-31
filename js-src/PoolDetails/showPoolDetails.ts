@@ -3,7 +3,6 @@ import translateStatus from './translateStatus';
 import selectMonitorInputText from './selectMonitorInputText';
 import IMonitor from '../Interfaces/IMonitor';
 import generateMonitorTests from './generateMonitorTests';
-import ClickEvent = JQuery.ClickEvent;
 
 /**
  * A more modern approach to copy a string into the clipboard

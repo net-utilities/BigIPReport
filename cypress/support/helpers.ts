@@ -3,7 +3,7 @@
  * @param url
  */
 
-export const waitForLoad = (url: string) => {
+export const waitForLoad = (url: string): void => {
   cy.visit(url);
   cy.get('div.pace.pace-active').should('be.visible');
   cy.get('div.pace.pace-inactive').should('not.be.visible');

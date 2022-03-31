@@ -9,7 +9,8 @@
     "e2e:dev": "cypress open",
     "build": "webpack",
     "build:dev": "webpack --watch",
-    "test": "eslint ./underlay/js/bigipreport.js && mocha -r ts-node/register js-src/**/*.spec.ts",
+    "lint": "eslint . --ext .ts",
+    "test": "mocha -r ts-node/register js-src/**/*.spec.ts",
     "start": "cd underlay && npx http-server -b -S -p 8443 -C ./cert.pem"
   },
   "repository": {
