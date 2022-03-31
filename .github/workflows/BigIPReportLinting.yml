@@ -15,4 +15,4 @@ jobs:
       - name: Install pre-requisites
         run: npm install
       - name: Lint
-        run: npm test
+        run: npm run test

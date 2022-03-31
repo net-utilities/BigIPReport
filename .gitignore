@@ -12,6 +12,7 @@ underlay/json/*.json
 !underlay/json/knowndevices.json
 underlay/web.config
 config/
-underlay/js/
+underlay/js/*
+!underlay/js/bigipreport.js
 underlay/*.pem
 cypress/videos
