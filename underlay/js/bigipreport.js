@@ -359,11 +359,23 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                     </thead>
                     <tbody>`;
                 for (const member of members) {
+                    const protocol = matchingMonitor.type.replace(/:.*$/, '').toLocaleLowerCase();
                     const { curl, http, netcat } = PoolDetails_generateMonitorTests(matchingMonitor, member);
                     const curlLink = curl ? `<button class="monitor-copy" data-copy="${curl}">Copy</button>` : 'N/A';
                     const netcatLink = netcat ? `<button class="monitor-copy" data-copy="${netcat}">Copy</button>` : 'N/A';
                     const httpLink = http ? `<button class="monitor-copy" data-copy="${http}">Copy</button>` : 'N/A';
-                    table += `<tr><td>${member.name}</td><td>${member.ip}</td><td>${member.port}</td><td>${httpLink}</td><td>${curlLink}</td><td>${netcatLink}</td></tr>`;
+                    table += `<tr>
+                        <td>${member.name}</td>
+                        <td>
+                            ${/^http[s]*$/.test(protocol) ?
+                        `<a href="${protocol}/${member.ip}">${member.ip}</a>` :
+                        member.ip}
+                        </td>
+                        <td>${member.port}</td>
+                        <td>${httpLink}</td>
+                        <td>${curlLink}</td>
+                        <td>${netcatLink}</td>
+                      </tr>`;
                 }
                 table += `
                         </table>
