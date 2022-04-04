@@ -1658,15 +1658,15 @@ function setupVirtualServerTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (data, type) {
-                    return renderLoadBalancer(data, type);
+                render: function (name, type) {
+                    return renderLoadBalancer(name, type);
                 },
             },
             {
                 data: 'name',
                 className: 'virtualServerCell',
-                render: function (data, type, row) {
-                    return renderVirtualServer(row.loadbalancer, data, type);
+                render: function (name, type, row) {
+                    return renderVirtualServer(row.loadbalancer, name, type);
                 }
             },
             {
@@ -2949,7 +2949,7 @@ function showDataGroups(updatehash) {
 }
 function showPreferences(updatehash) {
     hideMainSection();
-    activateMenuButton($('div#preferencesbutton'));
+    activateMenuButton('div#preferencesbutton');
     $('div#mainholder').attr('data-activesection', 'preferences');
     updateLocationHash(updatehash);
     // Prepare the content
@@ -3205,7 +3205,7 @@ function generateSupportCell(loadbalancer) {
 function showLogs(updatehash) {
     hideMainSection();
     setupLogsTable();
-    activateMenuButton($('div#logsbutton'));
+    activateMenuButton('div#logsbutton');
     $('div#mainholder').attr('data-activesection', 'logs');
     updateLocationHash(updatehash);
     showMainSection('logs');
@@ -3947,7 +3947,7 @@ function loadPreferences() {
     }
 }
 function getPool(pool, loadbalancer) {
-    return siteData.poolsMap.get(loadbalancer + ':' + pool);
+    return siteData.poolsMap.get(`${loadbalancer}:${pool}`);
 }
 function getVirtualServer(vs, loadbalancer) {
     return (siteData.virtualservers.find(function (o) {

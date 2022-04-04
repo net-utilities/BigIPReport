@@ -531,7 +531,7 @@ function virtualServerStatus(row: IVirtualServer, type: string) {
   return vsStatus;
 }
 
-function createdPoolCell(cell, cellData, rowData, rowIndex) {
+function createdPoolCell(cell: Node, cellData: any, rowData: any, rowIndex: number) {
   if (rowData.pools) {
     $(cell).addClass('PoolCell');
     $(cell).attr('id', 'vs-' + rowIndex);
@@ -875,7 +875,7 @@ function renderVirtualServer(loadbalancer, name, type) {
   return result;
 }
 
-function renderRule(loadbalancer, name, type) {
+function renderRule(loadbalancer: string, name: string, type: string) {
   const ruleName = name.replace(/^\/Common\//, '');
   let result = '';
   if (type === 'display') {
@@ -897,7 +897,7 @@ function renderRule(loadbalancer, name, type) {
   return result;
 }
 
-function renderPolicy(loadbalancer, name, type) {
+function renderPolicy(loadbalancer: string, name: string, type: string) {
   if (name === 'None') {
     return 'None';
   }
@@ -917,7 +917,7 @@ function renderPolicy(loadbalancer, name, type) {
   return result;
 }
 
-function renderPool(loadbalancer, name, type) {
+function renderPool(loadbalancer: string, name: string, type: string) {
   if (name === 'N/A') {
     return name;
   }
@@ -945,7 +945,7 @@ function renderPool(loadbalancer, name, type) {
   return result;
 }
 
-function renderCertificate(loadbalancer, name, type) {
+function renderCertificate(loadbalancer: string, name: string, type: string) {
   let result = name.replace(/^\/Common\//, '');
   if (type === 'display') {
     result += `
@@ -960,7 +960,7 @@ function renderCertificate(loadbalancer, name, type) {
   return result;
 }
 
-function renderDataGroup(loadbalancer, name, type) {
+function renderDataGroup(loadbalancer: string, name: string, type: string) {
   const datagroupName = name.replace(/^\/Common\//, '');
   let result = '';
   if (type === 'display') {
@@ -1027,7 +1027,7 @@ function resetClock() {
   siteData.clock = window.setInterval(countdownClock, 1000);
 }
 
-function getPoolStatus(poolCell) {
+function getPoolStatus(poolCell: HTMLElement) {
   if (
     siteData.memberStates.ajaxQueue.length >=
     siteData.preferences.PollingMaxQueue
@@ -1151,7 +1151,7 @@ function getPoolStatusPools(poolCell) {
   }
 }
 
-function decreaseAjaxQueue(url) {
+function decreaseAjaxQueue(url: string) {
   const index = siteData.memberStates.ajaxQueue.indexOf(url);
   if (index > -1) {
     siteData.memberStates.ajaxQueue.splice(index, 1);
@@ -1164,7 +1164,7 @@ function decreaseAjaxQueue(url) {
   $('span#ajaxqueue').text(siteData.memberStates.ajaxQueue.length);
 }
 
-function increaseAjaxQueue(url) {
+function increaseAjaxQueue(url: string) {
   if (
     siteData.memberStates.ajaxRecent.indexOf(url) === -1 &&
     siteData.memberStates.ajaxQueue.indexOf(url) === -1
@@ -1457,15 +1457,15 @@ function setupVirtualServerTable() {
       {
         data: 'loadbalancer',
         className: 'loadbalancerCell',
-        render: function (data, type) {
-          return renderLoadBalancer(data, type);
+        render: function (name: string, type: string) {
+          return renderLoadBalancer(name, type);
         },
       },
       {
         data: 'name',
         className: 'virtualServerCell',
-        render: function (data, type, row) {
-          return renderVirtualServer(row.loadbalancer, data, type);
+        render: function (name, type, row: IVirtualServer) {
+          return renderVirtualServer(row.loadbalancer, name, type);
         }
       },
       {
@@ -1475,7 +1475,7 @@ function setupVirtualServerTable() {
       },
       {
         className: 'centeredCell',
-        render: function (data, type, row) {
+        render: function (data: undefined, type: string, row: IVirtualServer) {
           let result = row.ip + ':' + row.port;
           if (siteData.NATdict[row.ip.split('%')[0]]) {
             result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
@@ -1485,7 +1485,7 @@ function setupVirtualServerTable() {
       },
       {
         className: 'centeredCell',
-        render: function (data, type, row) {
+        render: function (data: undefined, type: string, row: IVirtualServer) {
           if (!row.sourcexlatetype) {
             return 'Unknown';
           } else {
@@ -1793,7 +1793,7 @@ function setupiRuleTable() {
       {
         data: 'loadbalancer',
         className: 'loadbalancerCell',
-        render: function (data, type) {
+        render: function (data: string, type: string) {
           return renderLoadBalancer(data, type);
         },
       },
@@ -2877,7 +2877,7 @@ function showDataGroups(updatehash) {
 
 function showPreferences(updatehash) {
   hideMainSection();
-  activateMenuButton($('div#preferencesbutton'));
+  activateMenuButton('div#preferencesbutton');
   $('div#mainholder').attr('data-activesection', 'preferences');
   updateLocationHash(updatehash);
 
@@ -3166,7 +3166,7 @@ function generateSupportCell(loadbalancer: ILoadbalancer) {
 function showLogs(updatehash) {
   hideMainSection();
   setupLogsTable();
-  activateMenuButton($('div#logsbutton'));
+  activateMenuButton('div#logsbutton');
   $('div#mainholder').attr('data-activesection', 'logs');
 
   updateLocationHash(updatehash);
@@ -4054,8 +4054,8 @@ function loadPreferences() {
   }
 }
 
-function getPool(pool, loadbalancer) {
-  return siteData.poolsMap.get(loadbalancer + ':' + pool);
+function getPool(pool: string, loadbalancer: string) {
+  return siteData.poolsMap.get(`${loadbalancer}:${pool}`);
 }
 
 function getVirtualServer(vs: string, loadbalancer: string) {
@@ -4066,7 +4066,7 @@ function getVirtualServer(vs: string, loadbalancer: string) {
   );
 }
 
-function getLoadbalancer(loadbalancer) {
+function getLoadbalancer(loadbalancer: string) {
   return (
     siteData.loadbalancers.find(function (o) {
       return o.name === loadbalancer;
@@ -4075,7 +4075,7 @@ function getLoadbalancer(loadbalancer) {
 }
 
 // a and b are javascript Date objects
-function dateDiffInDays(a, b) {
+function dateDiffInDays(a: Date, b: Date) {
   const _MS_PER_DAY = 1000 * 60 * 60 * 24;
   // Discard the time and time-zone information.
   const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
@@ -4084,7 +4084,7 @@ function dateDiffInDays(a, b) {
   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 }
 
-function activateMenuButton(b) {
+function activateMenuButton(b: string) {
   $('div.menuitem').removeClass('menuitemactive');
   $(b).addClass('menuitemactive');
 }
