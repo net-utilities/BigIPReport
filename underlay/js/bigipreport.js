@@ -400,108 +400,150 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
 }
 
 ;// CONCATENATED MODULE: ./js-src/bigipreport.ts
+var bigipreport_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 /** ********************************************************************************************************************
 
     BigIPReport Javascript
 
 ***********************************************************************************************************************/
-const siteData = {};
-siteData.loggedErrors = [];
+const siteData = {
+    NATdict: [],
+    asmPolicies: [],
+    certificates: [],
+    countDown: 0,
+    datagroupdetailsTableData: [],
+    datagroups: [],
+    deviceGroups: [],
+    irules: [],
+    knownDevices: [],
+    loadbalancers: [],
+    loggedErrors: [],
+    monitors: [],
+    pools: [],
+    virtualservers: [],
+    policies: [],
+    poolsMap: new Map(),
+};
 /** ********************************************************************************************************************
 
     Waiting for all pre-requisite objects to load
 
 ***********************************************************************************************************************/
 window.addEventListener('load', function () {
-    // Animate loader off screen
-    log('Starting window on load', 'INFO');
-    // Prevent caching of ajax requests
-    $(function () {
-        $.ajaxSetup({ cache: false });
-    });
-    $('#firstlayerdetailscontentdiv').html(`
+    return bigipreport_awaiter(this, void 0, void 0, function* () {
+        // Animate loader off screen
+        log('Starting window on load', 'INFO');
+        // Prevent caching of ajax requests
+        $(function () {
+            $.ajaxSetup({ cache: false });
+        });
+        $('#firstlayerdetailscontentdiv').html(`
     <div id="jsonloadingerrors">
-        <h1 class="jsonloadingerrors">There were errors when loading the object json files</h1>
+        <span style="font-size: 20px">The following json file did not load:</span>
+        <div id="jsonloadingerrordetails"></div>
 
-        <h3>The following json files did not load:</h3>
-        <div id="jsonloadingerrordetails">
-        </div>
+        <br>
+        <span style="font-size: 18px;">Possible reasons</span>
 
-        <h3>Possible reasons</h3>
-
-        <h4>The web server hosting the report is IIS7.x or older</h4>
-        If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME
-        files settings.<br>
-        <a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">Detailed instructions are
-         available here</a>.<br>
-
-        <h4>File permissions or network issues</h4>
-        Script has had issues when creating the files due to lack of permissions or network issues.<br>
-        Double check your script execution logs, web folder content and try running the script manually.<br>
-
-        <h3>Please note that while you can close these details, the report won't function as it should until these
-        problems has been solved.</h3>
-
+        <ul>
+            <li>
+                The web server hosting the report is IIS7.x or older
+                If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to
+                the MIME files settings.<br>
+                <a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">
+                    Detailed instructions are available here</a>
+            </li>
+            <li>File permissions or network issues</li>
+            <li>
+                Script has had issues when creating the files due to lack of permissions or network issues.
+                Double check your script execution logs, web folder content and try running the script manually.
+            </li>
+        </ul>
+        <span style="font-style: italic;font-weight: bold;">
+            Please note that while you can close these details, the report won't function as it should until these
+            problems has been solved.
+         </span>
     </div>`);
-    const closeFirstLayerButton = $('a#closefirstlayerbutton');
-    closeFirstLayerButton.text('Close error details');
-    const addJSONLoadingFailure = function (jqxhr) {
-        // Remove the random query string not to confuse people
-        const url = this.url.split('?')[0];
-        $('#jsonloadingerrordetails').append(`
-                <div class="failedjsonitem"><span class="error">Failed object:</span><span class="errordetails">
-                <a href="${url}">${url}</a></span>
-                <br><span class="error">Status code:</span><span class="errordetails">${jqxhr.status}</span>
-                <br><span class="error">Reason:</span><span class="errordetails">${jqxhr.statusText}</div>`);
-        $('div.beforedocumentready').hide();
-        $('#firstlayerdiv').fadeIn();
-    };
-    /** ******************************************************************************************************************
-  
-          Lightbox related functions
-  
-      *******************************************************************************************************************/
-    /* Hide the lightbox if clicking outside the information box*/
-    $('body').on('click', function (e) {
-        if (e.target.classList.contains('lightbox')) {
-            $('div#' + e.target.id).fadeOut(function () {
-                updateLocationHash();
-            });
+        const closeFirstLayerButton = $('a#closefirstlayerbutton');
+        closeFirstLayerButton.text('Close error details');
+        /** ******************************************************************************************************************
+      
+              Lightbox related functions
+      
+          *******************************************************************************************************************/
+        /* Hide the lightbox if clicking outside the information box*/
+        $('body').on('click', function (e) {
+            if (e.target.classList.contains('lightbox')) {
+                $('div#' + e.target.id).fadeOut(function () {
+                    updateLocationHash();
+                });
+            }
+        });
+        closeFirstLayerButton.on('click', function () {
+            $('div#firstlayerdiv').trigger('click');
+        });
+        $('a#closesecondlayerbutton').on('click', function () {
+            $('div#secondlayerdiv').trigger('click');
+        });
+        /**
+         * Example use:
+         * $('div:icontains("Text in page")');
+         * Will return jQuery object containing any/all of the following:
+         * <div>text in page</div>
+         * <div>TEXT in PAGE</div>
+         * <div>Text in page</div>
+         */
+        $.expr[':'].icontains = $.expr.createPseudo(function (text) {
+            return function (e) {
+                return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
+            };
+        });
+        /* syntax highlighting */
+        // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+        const jsonFiles = [
+            'json/pools.json',
+            'json/monitors.json',
+            'json/virtualservers.json',
+            'json/irules.json',
+            'json/datagroups.json',
+            'json/loadbalancers.json',
+            'json/preferences.json',
+            'json/knowndevices.json',
+            'json/certificates.json',
+            'json/devicegroups.json',
+            'json/asmpolicies.json',
+            'json/nat.json',
+            'json/state.json',
+            'json/policies.json',
+            'json/loggederrors.json'
+        ];
+        let jsonResponses;
+        try {
+            jsonResponses = yield Promise.all(jsonFiles.map((url) => bigipreport_awaiter(this, void 0, void 0, function* () {
+                const resp = yield fetch(url);
+                if (resp.status !== 200) {
+                    throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
+                }
+                return resp.json();
+            })));
         }
-    });
-    /* Center the lightbox */
-    jQuery.fn['center'] = function () {
-        this.css('position', 'absolute');
-        // this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) + $(window).scrollTop()) + "px");
-        this.css('left', Math.max(0, ($(window).width() - $(this).outerWidth()) / 2 + $(window).scrollLeft()) + 'px');
-        return this;
-    };
-    closeFirstLayerButton.on('click', function () {
-        $('div#firstlayerdiv').trigger('click');
-    });
-    $('a#closesecondlayerbutton').on('click', function () {
-        $('div#secondlayerdiv').trigger('click');
-    });
-    /**
-     * Example use:
-     * $('div:icontains("Text in page")');
-     * Will return jQuery object containing any/all of the following:
-     * <div>text in page</div>
-     * <div>TEXT in PAGE</div>
-     * <div>Text in page</div>
-     */
-    $.expr[':'].icontains = $.expr.createPseudo(function (text) {
-        return function (e) {
-            return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
-        };
-    });
-    /* syntax highlighting */
-    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
-    $.when(
-    // Get pools
-    $.getJSON('json/pools.json', function (result) {
-        siteData.pools = result;
+        catch (e) {
+            $('#jsonloadingerrordetails').append(`${e.message}`);
+            $('div.beforedocumentready').hide();
+            $('#firstlayerdiv').fadeIn();
+            return;
+        }
+        const [pools, monitors, virtualservers, irules, datagroups, loadbalancers, preferences, knowndevices, certificates, devicegroups, asmpolicies, nat, state, policies, loggederrors,] = jsonResponses;
+        siteData.pools = pools;
         siteData.poolsMap = new Map();
         let poolNum = 0;
         siteData.pools.forEach((pool) => {
@@ -509,76 +551,53 @@ window.addEventListener('load', function () {
             siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
             poolNum++;
         });
-    }).fail(addJSONLoadingFailure), 
-    // Get the monitor data
-    $.getJSON('json/monitors.json', function (result) {
-        siteData.monitors = result;
-    }).fail(addJSONLoadingFailure), 
-    // Get the virtual servers data
-    $.getJSON('json/virtualservers.json', function (result) {
-        siteData.virtualservers = result;
-    }).fail(addJSONLoadingFailure), 
-    // Get the irules data
-    $.getJSON('json/irules.json', function (result) {
-        siteData.irules = result;
-    }).fail(addJSONLoadingFailure), 
-    // Get the datagroup data
-    $.getJSON('json/datagroups.json', function (result) {
-        siteData.datagroups = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/loadbalancers.json', function (result) {
-        siteData.loadbalancers = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/preferences.json', function (result) {
-        siteData.preferences = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/knowndevices.json', function (result) {
-        siteData.knownDevices = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/certificates.json', function (result) {
-        siteData.certificates = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/devicegroups.json', function (result) {
-        siteData.deviceGroups = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/asmpolicies.json', function (result) {
-        siteData.asmPolicies = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/nat.json', function (result) {
-        siteData.NATdict = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/state.json', function (result) {
-        siteData.state = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/policies.json', function (result) {
-        siteData.policies = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/loggederrors.json', function (result) {
-        siteData.loggedErrors = result.concat(siteData.loggedErrors);
-    }).fail(addJSONLoadingFailure)).then(function () {
+        siteData.monitors = monitors;
+        siteData.virtualservers = virtualservers;
+        siteData.irules = irules;
+        siteData.datagroups = datagroups;
+        siteData.loadbalancers = loadbalancers;
+        siteData.preferences = preferences;
+        siteData.knownDevices = knowndevices;
+        siteData.certificates = certificates;
+        siteData.deviceGroups = devicegroups;
+        siteData.asmPolicies = asmpolicies;
+        siteData.NATdict = nat;
+        siteData.state = state;
+        siteData.policies = policies;
+        siteData.loggedErrors = loggederrors.concat(siteData.loggedErrors);
         // Update the footer
         const localStartTime = new Date(siteData.preferences.startTime).toString();
         $('div#report-footer').html(`
-      <div class="footer">
-      The report was generated on ${siteData.preferences.scriptServer}
-      using BigIPReport version ${siteData.preferences.scriptVersion}.
-      Script started at <span id="Generationtime">${localStartTime}</span> and took
-      ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
-      BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
-      and <a href="https://rikers.org/">Tim Riker</a>.
-      </div>
-    `);
+    <div class="footer">
+    The report was generated on ${siteData.preferences.scriptServer}
+    using BigIPReport version ${siteData.preferences.scriptVersion}.
+    Script started at <span id="Generationtime">${localStartTime}</span> and took
+    ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
+    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+    and <a href="https://rikers.org/">Tim Riker</a>.
+    </div>
+  `);
         /** ***********************************************************************************************************
-    
+      
                 All pre-requisite things have loaded
-    
+      
             **************************************************************************************************************/
         // Show statistics from siteData arrays
         log('Loaded: ' +
             Object.keys(siteData)
-                .filter((k) => k !== 'bigipTable' && siteData[k].length !== undefined)
+                .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
                 .map((k) => `${k}: ${siteData[k].length}`)
                 .join(', '), 'INFO');
         /** ***********************************************************************************************************
-    
+      
                 Load preferences
-    
+      
             **************************************************************************************************************/
         loadPreferences();
         /** ***********************************************************************************************************
-    
+      
                 Test the status VIPs
-    
+      
         **************************************************************************************************************/
         initializeStatusVIPs();
         /* highlight selected menu option */
@@ -598,30 +617,30 @@ window.addEventListener('load', function () {
                 success: NavButtonDiv,
             });
         }, 60000);
+        // Attach click events to the main menu buttons and poller div
+        document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
+        document.querySelector('div#poolsbutton').addEventListener('click', showPools);
+        document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
+        document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
+        document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
+        document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
+        document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
+        document.querySelector('div#logsbutton').addEventListener('click', showLogs);
+        document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
+        document.querySelector('div#helpbutton').addEventListener('click', showHelp);
+        document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
+        // Attach module calls to window in order to call them from html rendered by js
+        // These should be removed in favor of event listeners later. See Virtual Server name column
+        // for an example
+        window['showPoolDetails'] = showPoolDetails;
+        window['togglePool'] = togglePool;
+        window['togglePoolHighlight'] = togglePoolHighlight;
+        window['showVirtualServerDetails'] = showVirtualServerDetails;
+        window['showDataGroupDetails'] = showDataGroupDetails;
+        window['showiRuleDetails'] = showiRuleDetails;
+        window['showPolicyDetails'] = showPolicyDetails;
+        window['siteData'] = siteData;
     });
-    // Attach click events to the main menu buttons and poller div
-    document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
-    document.querySelector('div#poolsbutton').addEventListener('click', showPools);
-    document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
-    document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
-    document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
-    document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
-    document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
-    document.querySelector('div#logsbutton').addEventListener('click', showLogs);
-    document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
-    document.querySelector('div#helpbutton').addEventListener('click', showHelp);
-    document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
-    // Attach module calls to window in order to call them from html rendered by js
-    // These should be removed in favor of event listeners later. See Virtual Server name column
-    // for an example
-    window['showPoolDetails'] = showPoolDetails;
-    window['togglePool'] = togglePool;
-    window['togglePoolHighlight'] = togglePoolHighlight;
-    window['showVirtualServerDetails'] = showVirtualServerDetails;
-    window['showDataGroupDetails'] = showDataGroupDetails;
-    window['showiRuleDetails'] = showiRuleDetails;
-    window['showPolicyDetails'] = showPolicyDetails;
-    window['siteData'] = siteData;
 });
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
@@ -925,12 +944,12 @@ function renderPoolCell(data, type, row, meta) {
                 poolCell += '<td>None</td>';
             }
             else {
-                poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
+                poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum || 0);
             }
             poolCell += '</tr>';
             if (pool.members !== null) {
                 for (let m = 1; m < pool.members.length; m++) {
-                    poolCell += `<tr class="${poolClass}">${renderPoolMemberCell(type, pool.members[m], pool.poolNum)}</tr>`;
+                    poolCell += `<tr class="${poolClass}">${renderPoolMemberCell(type, pool.members[m], pool.poolNum || 0)}</tr>`;
                 }
             }
         }
@@ -1274,9 +1293,9 @@ function countdownClock() {
 }
 function resetClock() {
     siteData.countDown = siteData.preferences.PollingRefreshRate + 1;
-    clearInterval(siteData.clock);
+    window.clearInterval(siteData.clock);
     countdownClock();
-    siteData.clock = setInterval(countdownClock, 1000);
+    siteData.clock = window.setInterval(countdownClock, 1000);
 }
 function getPoolStatus(poolCell) {
     if (siteData.memberStates.ajaxQueue.length >=
@@ -3198,7 +3217,7 @@ function showHelp(updatehash) {
     updateLocationHash(updatehash);
     showMainSection('helpcontent');
 }
-function log(message, severity = null, datetime = null) {
+function log(message, severity, datetime = undefined) {
     if (!datetime) {
         let now = new Date();
         const offset = now.getTimezoneOffset();
@@ -3213,7 +3232,7 @@ function log(message, severity = null, datetime = null) {
     });
     if (siteData.logTable) {
         siteData.logTable.destroy();
-        siteData.logTable = null;
+        delete siteData.logTable;
         setupLogsTable();
     }
 }
@@ -3933,7 +3952,7 @@ function getPool(pool, loadbalancer) {
 function getVirtualServer(vs, loadbalancer) {
     return (siteData.virtualservers.find(function (o) {
         return o.name === vs && o.loadbalancer === loadbalancer;
-    }) || false);
+    }));
 }
 function getLoadbalancer(loadbalancer) {
     return (siteData.loadbalancers.find(function (o) {

@@ -585,49 +585,10 @@ div.beforedocumentready {
     font-weight: normal;
 }
 
-/****************************************************************************************************************************
-    This section contains the style for the json loading error lightbox content
-*****************************************************************************************************************************/
-
-div.jsonloadingerrors {
-    display: table;
-    margin: 0 auto;
-    max-width: 95%;
-}
-
-h1.jsonloadingerrors {
-    color: #800000;
-    text-align: center;
-}
-
-#jsonloadingerrors li {
-    padding: 10px;
-}
-
-#jsonloadingerrordetails span.error {
-    color: red;
-    font-weight: bold;
-}
-
-#jsonloadingerrordetails span.errordetails {
-    font-style: italic;
-}
-
-div.failedjsonitem {
-    margin-bottom: 10px;
-}
-
-div.webconfig {
-    white-space: pre;
-    font-family: monospace;
-    background-color: #eff0f1;
-    color: black;
-}
 
 /****************************************************************************************************************************
     This section contains the style for object not found
 *****************************************************************************************************************************/
-
 
 div#objectnotfound {
     display: table;
@@ -643,8 +604,6 @@ div#objectnotfound h1 {
 div#objectnotfound h4 {
     margin-bottom: 1px;
 }
-
-
 
 /****************************************************************************************************************************
     This section contains the style for the irule details lightbox content
