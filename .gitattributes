@@ -6,3 +6,5 @@
 *.ps1 text
 *.tcl text
 *.ts text
+.git* text
+.eslint* text
