@@ -109,7 +109,7 @@ function parseMonitorRequestParameters(sendString) {
         headers: []
     };
     // Add only valid headers
-    for (const h of lines.filter(l => /^[^:]+: *[^:]+$/.test(l))) {
+    for (const h of lines.filter(l => /^[^:]+: *[^:]*$/.test(l))) {
         const [key, value] = h.split(/:\s*/);
         monitorComponents.headers.push({ key, value });
     }
