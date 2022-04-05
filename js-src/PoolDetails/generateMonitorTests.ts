@@ -6,6 +6,9 @@ import { IMember } from '../Interfaces/IPool';
 const generateMonitorTests = (monitor: IMonitor, member: IMember): IMonitorTests => {
 
   const { type, sendstring } = monitor;
+  const { ip, port } = member;
+
+  const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]`: ip;
 
   const protocol = type.replace(/:.*$/, '');
   const { verb, uri, version, headers } = parseMonitorRequestParameters(sendstring);
@@ -35,7 +38,7 @@ const generateMonitorTests = (monitor: IMonitor, member: IMember): IMonitorTests
           curl += ` -H &quot;${h.key}:${h.value}&quot;`;
         }
 
-        curl += ` ${protocol}://${member.ip}:${member.port}${uri}`;
+        curl += ` ${protocol}://${escapedIP}:${port}${uri}`;
       }
       monitorTests.curl = curl;
     }
@@ -45,13 +48,12 @@ const generateMonitorTests = (monitor: IMonitor, member: IMember): IMonitorTests
       protocol === 'tcp' ||
       protocol === 'tcp-half-open'
     ) {
-      netcat = `echo -ne &quot;${sendstring}&quot; | nc ${member.ip} ${member.port}`;
+      netcat = `echo -ne &quot;${sendstring}&quot; | nc ${ip} ${port}`;
     }
 
     if (protocol === 'http' || protocol === 'https') {
-      http = `${protocol}://${member.ip}:${member.port}${uri}`;
+      http = `${protocol}://${escapedIP}:${port}${uri}`;
     }
-    console.log('rasdasd')
   }
 
   return {

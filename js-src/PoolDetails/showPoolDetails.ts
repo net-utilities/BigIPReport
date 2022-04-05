@@ -219,6 +219,8 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
 
         for (const member of members) {
 
+          const {name, ip, port } = member;
+          const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]`: ip;
           const protocol = matchingMonitor.type.replace(/:.*$/, '').toLocaleLowerCase();
           const { curl, http, netcat } = generateMonitorTests(matchingMonitor, member);
 
@@ -227,15 +229,15 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
           const httpLink = http ? `<button class="monitor-copy" data-copy="${http}">Copy</button>` : 'N/A';
 
             table += `<tr>
-                        <td>${member.name}</td>
+                        <td>${name}</td>
                         <td>
                             ${
                               /^http[s]*$/.test(protocol) ?
-                              `<a href="${protocol}/${member.ip}">${member.ip}</a>`:
-                              member.ip
+                              `<a href="${protocol}://${escapedIP}">${ip}</a>`:
+                              ip
                             }
                         </td>
-                        <td>${member.port}</td>
+                        <td>${port}</td>
                         <td>${httpLink}</td>
                         <td>${curlLink}</td>
                         <td>${netcatLink}</td>

@@ -120,6 +120,8 @@ function parseMonitorRequestParameters(sendString) {
 
 const generateMonitorTests = (monitor, member) => {
     const { type, sendstring } = monitor;
+    const { ip, port } = member;
+    const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]` : ip;
     const protocol = type.replace(/:.*$/, '');
     const { verb, uri, version, headers } = parseMonitorRequestParameters(sendstring);
     const monitorTests = {};
@@ -138,19 +140,18 @@ const generateMonitorTests = (monitor, member) => {
                 for (const h of headers) {
                     curl += ` -H &quot;${h.key}:${h.value}&quot;`;
                 }
-                curl += ` ${protocol}://${member.ip}:${member.port}${uri}`;
+                curl += ` ${protocol}://${escapedIP}:${port}${uri}`;
             }
             monitorTests.curl = curl;
         }
         if (protocol === 'http' ||
             protocol === 'tcp' ||
             protocol === 'tcp-half-open') {
-            netcat = `echo -ne &quot;${sendstring}&quot; | nc ${member.ip} ${member.port}`;
+            netcat = `echo -ne &quot;${sendstring}&quot; | nc ${ip} ${port}`;
         }
         if (protocol === 'http' || protocol === 'https') {
-            http = `${protocol}://${member.ip}:${member.port}${uri}`;
+            http = `${protocol}://${escapedIP}:${port}${uri}`;
         }
-        console.log('rasdasd');
     }
     return {
         curl,
@@ -359,19 +360,21 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                     </thead>
                     <tbody>`;
                 for (const member of members) {
+                    const { name, ip, port } = member;
+                    const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]` : ip;
                     const protocol = matchingMonitor.type.replace(/:.*$/, '').toLocaleLowerCase();
                     const { curl, http, netcat } = PoolDetails_generateMonitorTests(matchingMonitor, member);
                     const curlLink = curl ? `<button class="monitor-copy" data-copy="${curl}">Copy</button>` : 'N/A';
                     const netcatLink = netcat ? `<button class="monitor-copy" data-copy="${netcat}">Copy</button>` : 'N/A';
                     const httpLink = http ? `<button class="monitor-copy" data-copy="${http}">Copy</button>` : 'N/A';
                     table += `<tr>
-                        <td>${member.name}</td>
+                        <td>${name}</td>
                         <td>
                             ${/^http[s]*$/.test(protocol) ?
-                        `<a href="${protocol}/${member.ip}">${member.ip}</a>` :
-                        member.ip}
+                        `<a href="${protocol}://${escapedIP}">${ip}</a>` :
+                        ip}
                         </td>
-                        <td>${member.port}</td>
+                        <td>${port}</td>
                         <td>${httpLink}</td>
                         <td>${curlLink}</td>
                         <td>${netcatLink}</td>

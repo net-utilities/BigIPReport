@@ -69,4 +69,38 @@ describe('HTTP send string tests', () => {
     );
     expect(http).to.equal('http://172.22.0.3:80/index.html');
   });
+
+  it('HTTP Monitor with IPv6', () => {
+    const monitor: IMonitor = {
+      'name': '/example_NAT64/App1/grafana_http_monitor',
+      'receivestring': 'HTTP/1.',
+      'sendstring': 'GET /index.html HTTP/1.1\\r\\nHost: grafana.xip.se\\r\\nConnection: Close\\r\\n\\r\\n',
+      'loadbalancer': 'bigip.xip.se',
+      'interval': '5',
+      'type': 'http:httpstate',
+      'disablestring': '',
+      'timeout': '16'
+    }
+
+    const member: IMember = {
+      'currentconnections': '0',
+      'priority': 0,
+      'name': '/Common/ipv6ex:8080',
+      'maximumconnections': '0',
+      'port': '8080',
+      'status': 'unchecked',
+      'enabled': 'enabled',
+      'availability': 'offline',
+      'ip': '2001:db8:85a3::8a2e:370:7334',
+    }
+
+    const { curl, netcat, http } = generateMonitorTests(monitor, member);
+    expect(curl).to.equal('curl -H &quot;Host:grafana.xip.se&quot; -H &quot;Connection:Close&quot;' +
+      ' http://[2001:db8:85a3::8a2e:370:7334]:8080/index.html');
+    expect(netcat).to.equal(
+      'echo -ne &quot;GET /index.html HTTP/1.1\\r\\nHost: grafana.xip.se\\r\\nConnection: Close' +
+      '\\r\\n\\r\\n&quot; | nc 2001:db8:85a3::8a2e:370:7334 8080'
+    );
+    expect(http).to.equal('http://[2001:db8:85a3::8a2e:370:7334]:8080/index.html');
+  });
 })
