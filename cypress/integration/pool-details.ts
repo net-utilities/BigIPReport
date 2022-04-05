@@ -14,6 +14,7 @@ describe('Pool details should render properly', () => {
     cy.intercept('/json/monitors.json').as('monitors');
 
     cy.visit('https://localhost:8443')
+    cy.get('div.pace.pace-active').should('be.visible');
 
     cy.wait('@virtualServers').then(response => {
       virtualServers = response.response.body;
@@ -25,8 +26,7 @@ describe('Pool details should render properly', () => {
       cy.wait('@monitors').then(response => {
         monitors = response.response.body;
       });
-
-      cy.get('div.pace.pace-active').should('be.visible');
+      
       cy.get('div.pace.pace-inactive').should('not.be.visible');
     })
   });
