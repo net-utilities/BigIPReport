@@ -541,7 +541,7 @@ window.addEventListener('load', function () {
         let jsonResponses;
         try {
             jsonResponses = yield Promise.all(jsonFiles.map((url) => bigipreport_awaiter(this, void 0, void 0, function* () {
-                const resp = yield fetch(url);
+                const resp = yield fetch(url, { cache: 'no-cache' });
                 if (resp.status !== 200) {
                     throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
                 }

@@ -151,7 +151,7 @@ window.addEventListener('load', async function () {
   try {
     jsonResponses = await Promise.all(
       jsonFiles.map(async (url) => {
-          const resp = await fetch(url);
+          const resp = await fetch(url, {cache: 'no-cache'});
           if (resp.status !== 200) {
             throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
           }
