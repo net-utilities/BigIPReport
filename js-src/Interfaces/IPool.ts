@@ -8,7 +8,7 @@ export interface IMember {
   maximumconnections: string;
   name: string;
   port: string;
-  realtimestatus: string;
+  realtimestatus?: string;
 }
 
 export default interface IPool {

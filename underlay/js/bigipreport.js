@@ -1,105 +1,564 @@
-import showPoolDetails from './PoolDetails/showPoolDetails.js';
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	// The require scope
+/******/ 	var __webpack_require__ = {};
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "av": () => (/* binding */ renderLoadBalancer),
+  "HM": () => (/* binding */ siteData),
+  "nJ": () => (/* binding */ updateLocationHash)
+});
+
+;// CONCATENATED MODULE: ./js-src/PoolDetails/translateStatus.ts
+/** ********************************************************************************************************************
+ Translates the status and availability of a member to less cryptic text and returns a dictionary
+ **********************************************************************************************************************/
+function translateStatus(member) {
+    const translatedStatus = {
+        availability: '',
+        enabled: '',
+        realtime: '',
+    };
+    switch (member.availability) {
+        case 'available':
+            translatedStatus['availability'] = '<span class="memberup">UP</span>';
+            break;
+        case 'unknown':
+            translatedStatus['availability'] =
+                '<span class="memberunknown">UNKNOWN</span>';
+            break;
+        default:
+            translatedStatus['availability'] = '<span class="memberdown">DOWN</span>';
+    }
+    switch (member.enabled) {
+        case 'enabled':
+            translatedStatus['enabled'] =
+                '<span class="memberenabled">Enabled</span>';
+            break;
+        case 'disabled-by-parent':
+            translatedStatus['enabled'] =
+                '<span class="memberdisabled">Disabled by parent</span>';
+            break;
+        case 'disabled':
+            translatedStatus['enabled'] =
+                '<span class="memberdisabled">Disabled</span>';
+            break;
+        default:
+            translatedStatus['enabled'] =
+                '<span class="memberunknown">Unknown</span>';
+    }
+    switch (member.realtimestatus) {
+        case 'up':
+            translatedStatus['realtime'] = '<span class="memberup">UP</span>';
+            break;
+        case 'down':
+            translatedStatus['realtime'] = '<span class="memberdown">DOWN</span>';
+            break;
+        case 'session_disabled':
+            translatedStatus['realtime'] =
+                '<span class="memberdisabled">DISABLED</span>';
+            break;
+        default:
+            translatedStatus['realtime'] = (member.realtimestatus || 'N/A').toUpperCase();
+    }
+    return translatedStatus;
+}
+
+;// CONCATENATED MODULE: ./js-src/PoolDetails/selectMonitorInputText.ts
+// Did not detect hoisting, disabled
+// eslint-disable-next-line no-unused-vars
+function selectMonitorInputText(e) {
+    $(e.target).find('p input').focus();
+    $(e.target).find('p input').select();
+}
+
+;// CONCATENATED MODULE: ./js-src/PoolDetails/parseMonitorRequestParameters.ts
+function parseMonitorRequestParameters(sendString) {
+    const lines = sendString.split(/\\r\\n|\\\\r\\\\n/);
+    const requestDataArr = lines[0].split(' ');
+    // Invalid HTTP request
+    if (requestDataArr.length !== 3)
+        return {};
+    const [verb, uri, version] = requestDataArr;
+    const monitorComponents = {
+        verb,
+        uri,
+        version,
+        headers: []
+    };
+    // Add only valid headers
+    for (const h of lines.filter(l => /^[^:]+: *[^:]*$/.test(l))) {
+        const [key, value] = h.split(/:\s*/);
+        monitorComponents.headers.push({ key, value });
+    }
+    return monitorComponents;
+}
+
+;// CONCATENATED MODULE: ./js-src/PoolDetails/generateMonitorTests.ts
+
+const generateMonitorTests = (monitor, member) => {
+    const { type, sendstring } = monitor;
+    const { ip, port } = member;
+    const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]` : ip;
+    const protocol = type.replace(/:.*$/, '');
+    const { verb, uri, version, headers } = parseMonitorRequestParameters(sendstring);
+    const monitorTests = {};
+    let curl, http, netcat;
+    if (['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)) {
+        if (['http', 'https'].includes(protocol)) {
+            if (verb === 'GET' ||
+                verb === 'HEAD') {
+                curl = 'curl';
+                if (verb === 'HEAD') {
+                    curl += ' -I';
+                }
+                if (version === 'HTTP/1.0') {
+                    curl += ' -0';
+                }
+                for (const h of headers) {
+                    curl += ` -H &quot;${h.key}:${h.value}&quot;`;
+                }
+                curl += ` ${protocol}://${escapedIP}:${port}${uri}`;
+            }
+            monitorTests.curl = curl;
+        }
+        if (protocol === 'http' ||
+            protocol === 'tcp' ||
+            protocol === 'tcp-half-open') {
+            netcat = `echo -ne &quot;${sendstring}&quot; | nc ${ip} ${port}`;
+        }
+        if (protocol === 'http' || protocol === 'https') {
+            http = `${protocol}://${escapedIP}:${port}${uri}`;
+        }
+    }
+    return {
+        curl,
+        http,
+        netcat,
+    };
+};
+/* harmony default export */ const PoolDetails_generateMonitorTests = (generateMonitorTests);
+
+;// CONCATENATED MODULE: ./js-src/PoolDetails/showPoolDetails.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+/**
+ * A more modern approach to copy a string into the clipboard
+ * @param str
+ * @Return Promise<void>
+ */
+const navCopy = (str) => {
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText)
+        return navigator.clipboard.writeText(str);
+    return Promise.reject('The Clipboard API is not available.');
+};
+/**
+ * Copy data-copy attribute content from a monitor test button
+ * @param e
+ */
+const copyToClipBoard = (e) => __awaiter(void 0, void 0, void 0, function* () {
+    const monitorButton = e.target;
+    const copyString = monitorButton.getAttribute('data-copy');
+    try {
+        yield navCopy(copyString);
+    }
+    catch (e) {
+        const el = document.createElement('textarea');
+        el.value = copyString;
+        el.setAttribute('readonly', '');
+        el.style.position = 'absolute';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+    }
+});
+/** ********************************************************************************************************************
+ Shows the pool details light box
+ **********************************************************************************************************************/
+/**
+ * Renders the pool details div
+ * @param pool
+ * @param loadbalancer
+ * @param layer
+ */
+function showPoolDetails(pool, loadbalancer, layer = 'first') {
+    const matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
+    const layerContentDiv = $(`#${layer}layerdetailscontentdiv`);
+    updateLocationHash(true);
+    let html;
+    // If a pool was found, populate the pool details table and display it on the page
+    if (matchingpool) {
+        // Build the table and headers
+        layerContentDiv.attr('data-type', 'pool');
+        layerContentDiv.attr('data-objectname', matchingpool.name);
+        layerContentDiv.attr('data-loadbalancer', matchingpool.loadbalancer);
+        html = `<div class="pooldetailsheader">
+                        <span>Pool: ${matchingpool.name}</span><br>
+                        <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')}</span>
+                    </div>`;
+        let table = `
+        <table class="pooldetailstable">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Load Balancing Method</th>
+                <th>Action On Service Down</th>
+                <th>Allow NAT</th>
+                <th>Allow SNAT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${matchingpool.description || ''}</td>
+                <td>${matchingpool.loadbalancingmethod}</td>
+                <td>${matchingpool.actiononservicedown}</td>
+                <td>${matchingpool.allownat}</td>
+                <td>${matchingpool.allowsnat}</td>
+              </tr>
+            </tbody>
+            </table>
+            <br>
+            <div class="monitordetailsheader">Member details</div>
+              <table class="pooldetailstable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>IP</th>
+                    <th>Port</th>
+                    <th>Priority Group</th>
+                    <th>Connections</th>
+                    <th>Max Connections</th>
+                    <th>Availability</th>
+                    <th>Enabled</th>
+                    <th>Status Description</th>
+                    <th>Realtime Availability</th>
+                  </tr>
+                </thead>
+              <tbody>`;
+        const poolmonitors = matchingpool.monitors;
+        const matchingMonitors = [];
+        const monitors = siteData.monitors;
+        for (const i in poolmonitors) {
+            for (const x in monitors) {
+                if (monitors[x].name === poolmonitors[i] &&
+                    monitors[x].loadbalancer === loadbalancer) {
+                    matchingMonitors.push(monitors[x]);
+                }
+            }
+        }
+        const members = matchingpool.members;
+        for (const i in members) {
+            const member = members[i];
+            const memberstatus = translateStatus(member);
+            table += `
+                    <tr>
+                        <td>${member.name}</td>
+                        <td>${member.ip}</td>
+                        <td>${member.port}</td>
+                        <td>${member.priority}</td>
+                        <td>${member.currentconnections}</td>
+                        <td>${member.maximumconnections}</td>
+                        <td>${memberstatus['availability']}</td>
+                        <td>${memberstatus['enabled']}</td>
+                        <td>${member.status}</td>
+                        <td>${memberstatus.realtime}</td>
+                    </tr>`;
+        }
+        table += `</tbody></table>
+                    <br>`;
+        if (matchingMonitors.length > 0) {
+            table += '<div class="monitordetailsheader">Assigned monitors</div>';
+            for (const i in matchingMonitors) {
+                const matchingMonitor = matchingMonitors[i];
+                matchingMonitor.sendstring = matchingMonitor.sendstring
+                    .replace('<', '&lt;')
+                    .replace('>', '&gt;');
+                matchingMonitor.receivestring = matchingMonitor.receivestring
+                    .replace('<', '&lt;')
+                    .replace('>', '&gt;');
+                matchingMonitor.disablestring = matchingMonitor.disablestring
+                    .replace('<', '&lt;')
+                    .replace('>', '&gt;');
+                table += `
+          <table class="monitordetailstable">
+              <thead>
+                <tr>
+                    <th colspan=2>${matchingMonitor.name}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="monitordetailstablerowheader"><b>Type</td>
+                  <td>${matchingMonitor.type}</b></td>
+                </tr>
+                <tr>
+                  <td class="monitordetailstablerowheader"><b>Send string</td>
+                  <td>${matchingMonitor.sendstring}</b></td>
+                </tr>
+                <tr>
+                  <td class="monitordetailstablerowheader"><b>Receive String</b></td>
+                  <td>${matchingMonitor.receivestring}</td>
+                </tr>
+                <tr>
+                  <td class="monitordetailstablerowheader"><b>Disable String</b></td>
+                  <td>${matchingMonitor.disablestring}</td>
+                </tr>
+                <tr>
+                  <td class="monitordetailstablerowheader"><b>Interval</b></td>
+                  <td>${matchingMonitor.interval}</td>
+                </tr>
+                <tr>
+                  <td class="monitordetailstablerowheader"><b>Timeout</b></td>
+                  <td>${matchingMonitor.timeout}</td>
+                </tr>
+              </table>
+
+                <table class="membermonitortable">
+                    <thead>
+                      <tr>
+                        <th>Member Name</th>
+                        <th>Member ip</th>
+                        <th>Member Port</th>
+                        <th>HTTP Link</th>
+                        <th>Curl Link</th>
+                        <th>Netcat Link</th>
+                    </thead>
+                    <tbody>`;
+                for (const member of members) {
+                    const { name, ip, port } = member;
+                    const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]` : ip;
+                    const protocol = matchingMonitor.type.replace(/:.*$/, '').toLocaleLowerCase();
+                    const { curl, http, netcat } = PoolDetails_generateMonitorTests(matchingMonitor, member);
+                    const curlLink = curl ? `<button class="monitor-copy" data-copy="${curl}">Copy</button>` : 'N/A';
+                    const netcatLink = netcat ? `<button class="monitor-copy" data-copy="${netcat}">Copy</button>` : 'N/A';
+                    const httpLink = http ? `<button class="monitor-copy" data-copy="${http}">Copy</button>` : 'N/A';
+                    table += `<tr>
+                        <td>${name}</td>
+                        <td>
+                            ${/^http[s]*$/.test(protocol) ?
+                        `<a href="${protocol}://${escapedIP}">${ip}</a>` :
+                        ip}
+                        </td>
+                        <td>${port}</td>
+                        <td>${httpLink}</td>
+                        <td>${curlLink}</td>
+                        <td>${netcatLink}</td>
+                      </tr>`;
+                }
+                table += `
+                        </table>
+                        <br>`;
+            }
+            table += '</tbody></table>';
+        }
+        html += table;
+    }
+    else {
+        html = `<div id="objectnotfound">
+            <h1>No matching Pool was found</h1>
+
+            <h4>What happened?</h4>
+            When clicking the report it will parse the JSON data to find the matching pool and display the details.
+            However, in this case it was not able to find any matching pool.
+
+            <h4>Possible reason</h4>
+            This might happen if the report is being updated as you navigate to the page. If you see this page often,
+            please report a bug <a href="https://devcentral.f5.com/codeshare/bigip-report">DevCentral</a>.
+
+            <h4>Possible solutions</h4>
+            Refresh the page and try again.
+
+        </div>`;
+    }
+    $(`a#close${layer}layerbutton`).text('Close pool details');
+    layerContentDiv.html(html);
+    // Attach the copy function to the buttons
+    document.querySelectorAll('button.monitor-copy')
+        .forEach(el => el.addEventListener('click', copyToClipBoard));
+    $(layerContentDiv).find('a.monitortest').on('mouseover', selectMonitorInputText);
+    $(`#${layer}layerdiv`).fadeIn(updateLocationHash);
+}
+
+;// CONCATENATED MODULE: ./js-src/bigipreport.ts
+var bigipreport_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
 /** ********************************************************************************************************************
 
     BigIPReport Javascript
 
 ***********************************************************************************************************************/
-export const siteData = {};
-siteData.loggedErrors = [];
+const siteData = {
+    NATdict: [],
+    asmPolicies: [],
+    certificates: [],
+    countDown: 0,
+    datagroupdetailsTableData: [],
+    datagroups: [],
+    deviceGroups: [],
+    irules: [],
+    knownDevices: [],
+    loadbalancers: [],
+    loggedErrors: [],
+    monitors: [],
+    pools: [],
+    virtualservers: [],
+    policies: [],
+    poolsMap: new Map(),
+};
 /** ********************************************************************************************************************
 
     Waiting for all pre-requisite objects to load
 
 ***********************************************************************************************************************/
 window.addEventListener('load', function () {
-    // Animate loader off screen
-    log('Starting window on load', 'INFO');
-    // Prevent caching of ajax requests
-    $(function () {
-        $.ajaxSetup({ cache: false });
-    });
-    $('#firstlayerdetailscontentdiv').html(`
+    return bigipreport_awaiter(this, void 0, void 0, function* () {
+        // Animate loader off screen
+        log('Starting window on load', 'INFO');
+        // Prevent caching of ajax requests
+        $(function () {
+            $.ajaxSetup({ cache: false });
+        });
+        $('#firstlayerdetailscontentdiv').html(`
     <div id="jsonloadingerrors">
-        <h1 class="jsonloadingerrors">There were errors when loading the object json files</h1>
+        <span style="font-size: 20px">The following json file did not load:</span>
+        <div id="jsonloadingerrordetails"></div>
 
-        <h3>The following json files did not load:</h3>
-        <div id="jsonloadingerrordetails">
-        </div>
+        <br>
+        <span style="font-size: 18px;">Possible reasons</span>
 
-        <h3>Possible reasons</h3>
-
-        <h4>The web server hosting the report is IIS7.x or older</h4>
-        If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME
-        files settings.<br>
-        <a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">Detailed instructions are
-         available here</a>.<br>
-
-        <h4>File permissions or network issues</h4>
-        Script has had issues when creating the files due to lack of permissions or network issues.<br>
-        Double check your script execution logs, web folder content and try running the script manually.<br>
-
-        <h3>Please note that while you can close these details, the report won't function as it should until these
-        problems has been solved.</h3>
-
+        <ul>
+            <li>
+                The web server hosting the report is IIS7.x or older
+                If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to
+                the MIME files settings.<br>
+                <a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">
+                    Detailed instructions are available here</a>
+            </li>
+            <li>File permissions or network issues</li>
+            <li>
+                Script has had issues when creating the files due to lack of permissions or network issues.
+                Double check your script execution logs, web folder content and try running the script manually.
+            </li>
+        </ul>
+        <span style="font-style: italic;font-weight: bold;">
+            Please note that while you can close these details, the report won't function as it should until these
+            problems has been solved.
+         </span>
     </div>`);
-    const closeFirstLayerButton = $('a#closefirstlayerbutton');
-    closeFirstLayerButton.text('Close error details');
-    const addJSONLoadingFailure = function (jqxhr) {
-        // Remove the random query string not to confuse people
-        const url = this.url.split('?')[0];
-        $('#jsonloadingerrordetails').append(`
-                <div class="failedjsonitem"><span class="error">Failed object:</span><span class="errordetails">
-                <a href="${url}">${url}</a></span>
-                <br><span class="error">Status code:</span><span class="errordetails">${jqxhr.status}</span>
-                <br><span class="error">Reason:</span><span class="errordetails">${jqxhr.statusText}</div>`);
-        $('div.beforedocumentready').hide();
-        $('#firstlayerdiv').fadeIn();
-    };
-    /** ******************************************************************************************************************
-  
-          Lightbox related functions
-  
-      *******************************************************************************************************************/
-    /* Hide the lightbox if clicking outside the information box*/
-    $('body').on('click', function (e) {
-        if (e.target.classList.contains('lightbox')) {
-            $('div#' + e.target.id).fadeOut(function () {
-                updateLocationHash();
-            });
+        const closeFirstLayerButton = $('a#closefirstlayerbutton');
+        closeFirstLayerButton.text('Close error details');
+        /** ******************************************************************************************************************
+      
+              Lightbox related functions
+      
+          *******************************************************************************************************************/
+        /* Hide the lightbox if clicking outside the information box*/
+        $('body').on('click', function (e) {
+            if (e.target.classList.contains('lightbox')) {
+                $('div#' + e.target.id).fadeOut(function () {
+                    updateLocationHash();
+                });
+            }
+        });
+        closeFirstLayerButton.on('click', function () {
+            $('div#firstlayerdiv').trigger('click');
+        });
+        $('a#closesecondlayerbutton').on('click', function () {
+            $('div#secondlayerdiv').trigger('click');
+        });
+        /**
+         * Example use:
+         * $('div:icontains("Text in page")');
+         * Will return jQuery object containing any/all of the following:
+         * <div>text in page</div>
+         * <div>TEXT in PAGE</div>
+         * <div>Text in page</div>
+         */
+        $.expr[':'].icontains = $.expr.createPseudo(function (text) {
+            return function (e) {
+                return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
+            };
+        });
+        /* syntax highlighting */
+        // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+        const jsonFiles = [
+            'json/pools.json',
+            'json/monitors.json',
+            'json/virtualservers.json',
+            'json/irules.json',
+            'json/datagroups.json',
+            'json/loadbalancers.json',
+            'json/preferences.json',
+            'json/knowndevices.json',
+            'json/certificates.json',
+            'json/devicegroups.json',
+            'json/asmpolicies.json',
+            'json/nat.json',
+            'json/state.json',
+            'json/policies.json',
+            'json/loggederrors.json'
+        ];
+        let jsonResponses;
+        try {
+            jsonResponses = yield Promise.all(jsonFiles.map((url) => bigipreport_awaiter(this, void 0, void 0, function* () {
+                const resp = yield fetch(url, { cache: 'no-cache' });
+                if (resp.status !== 200) {
+                    throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
+                }
+                return resp.json();
+            })));
         }
-    });
-    /* Center the lightbox */
-    jQuery.fn['center'] = function () {
-        this.css('position', 'absolute');
-        // this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) + $(window).scrollTop()) + "px");
-        this.css('left', Math.max(0, ($(window).width() - $(this).outerWidth()) / 2 + $(window).scrollLeft()) + 'px');
-        return this;
-    };
-    closeFirstLayerButton.on('click', function () {
-        $('div#firstlayerdiv').trigger('click');
-    });
-    $('a#closesecondlayerbutton').on('click', function () {
-        $('div#secondlayerdiv').trigger('click');
-    });
-    /**
-     * Example use:
-     * $('div:icontains("Text in page")');
-     * Will return jQuery object containing any/all of the following:
-     * <div>text in page</div>
-     * <div>TEXT in PAGE</div>
-     * <div>Text in page</div>
-     */
-    $.expr[':'].icontains = $.expr.createPseudo(function (text) {
-        return function (e) {
-            return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
-        };
-    });
-    /* syntax highlighting */
-    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
-    $.when(
-    // Get pools
-    $.getJSON('json/pools.json', function (result) {
-        siteData.pools = result;
+        catch (e) {
+            $('#jsonloadingerrordetails').append(`${e.message}`);
+            $('div.beforedocumentready').hide();
+            $('#firstlayerdiv').fadeIn();
+            return;
+        }
+        const [pools, monitors, virtualservers, irules, datagroups, loadbalancers, preferences, knowndevices, certificates, devicegroups, asmpolicies, nat, state, policies, loggederrors,] = jsonResponses;
+        siteData.pools = pools;
         siteData.poolsMap = new Map();
         let poolNum = 0;
         siteData.pools.forEach((pool) => {
@@ -107,76 +566,53 @@ window.addEventListener('load', function () {
             siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
             poolNum++;
         });
-    }).fail(addJSONLoadingFailure), 
-    // Get the monitor data
-    $.getJSON('json/monitors.json', function (result) {
-        siteData.monitors = result;
-    }).fail(addJSONLoadingFailure), 
-    // Get the virtual servers data
-    $.getJSON('json/virtualservers.json', function (result) {
-        siteData.virtualservers = result;
-    }).fail(addJSONLoadingFailure), 
-    // Get the irules data
-    $.getJSON('json/irules.json', function (result) {
-        siteData.irules = result;
-    }).fail(addJSONLoadingFailure), 
-    // Get the datagroup data
-    $.getJSON('json/datagroups.json', function (result) {
-        siteData.datagroups = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/loadbalancers.json', function (result) {
-        siteData.loadbalancers = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/preferences.json', function (result) {
-        siteData.preferences = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/knowndevices.json', function (result) {
-        siteData.knownDevices = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/certificates.json', function (result) {
-        siteData.certificates = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/devicegroups.json', function (result) {
-        siteData.deviceGroups = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/asmpolicies.json', function (result) {
-        siteData.asmPolicies = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/nat.json', function (result) {
-        siteData.NATdict = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/state.json', function (result) {
-        siteData.state = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/policies.json', function (result) {
-        siteData.policies = result;
-    }).fail(addJSONLoadingFailure), $.getJSON('json/loggederrors.json', function (result) {
-        siteData.loggedErrors = result.concat(siteData.loggedErrors);
-    }).fail(addJSONLoadingFailure)).then(function () {
+        siteData.monitors = monitors;
+        siteData.virtualservers = virtualservers;
+        siteData.irules = irules;
+        siteData.datagroups = datagroups;
+        siteData.loadbalancers = loadbalancers;
+        siteData.preferences = preferences;
+        siteData.knownDevices = knowndevices;
+        siteData.certificates = certificates;
+        siteData.deviceGroups = devicegroups;
+        siteData.asmPolicies = asmpolicies;
+        siteData.NATdict = nat;
+        siteData.state = state;
+        siteData.policies = policies;
+        siteData.loggedErrors = loggederrors.concat(siteData.loggedErrors);
         // Update the footer
         const localStartTime = new Date(siteData.preferences.startTime).toString();
         $('div#report-footer').html(`
-      <div class="footer">
-      The report was generated on ${siteData.preferences.scriptServer}
-      using BigIPReport version ${siteData.preferences.scriptVersion}.
-      Script started at <span id="Generationtime">${localStartTime}</span> and took
-      ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
-      BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
-      and <a href="https://rikers.org/">Tim Riker</a>.
-      </div>
-    `);
+    <div class="footer">
+    The report was generated on ${siteData.preferences.scriptServer}
+    using BigIPReport version ${siteData.preferences.scriptVersion}.
+    Script started at <span id="Generationtime">${localStartTime}</span> and took
+    ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
+    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+    and <a href="https://rikers.org/">Tim Riker</a>.
+    </div>
+  `);
         /** ***********************************************************************************************************
-    
+      
                 All pre-requisite things have loaded
-    
+      
             **************************************************************************************************************/
         // Show statistics from siteData arrays
         log('Loaded: ' +
             Object.keys(siteData)
-                .filter((k) => k !== 'bigipTable' && siteData[k].length !== undefined)
+                .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
                 .map((k) => `${k}: ${siteData[k].length}`)
                 .join(', '), 'INFO');
         /** ***********************************************************************************************************
-    
+      
                 Load preferences
-    
+      
             **************************************************************************************************************/
         loadPreferences();
         /** ***********************************************************************************************************
-    
+      
                 Test the status VIPs
-    
+      
         **************************************************************************************************************/
         initializeStatusVIPs();
         /* highlight selected menu option */
@@ -196,30 +632,30 @@ window.addEventListener('load', function () {
                 success: NavButtonDiv,
             });
         }, 60000);
+        // Attach click events to the main menu buttons and poller div
+        document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
+        document.querySelector('div#poolsbutton').addEventListener('click', showPools);
+        document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
+        document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
+        document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
+        document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
+        document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
+        document.querySelector('div#logsbutton').addEventListener('click', showLogs);
+        document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
+        document.querySelector('div#helpbutton').addEventListener('click', showHelp);
+        document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
+        // Attach module calls to window in order to call them from html rendered by js
+        // These should be removed in favor of event listeners later. See Virtual Server name column
+        // for an example
+        window['showPoolDetails'] = showPoolDetails;
+        window['togglePool'] = togglePool;
+        window['togglePoolHighlight'] = togglePoolHighlight;
+        window['showVirtualServerDetails'] = showVirtualServerDetails;
+        window['showDataGroupDetails'] = showDataGroupDetails;
+        window['showiRuleDetails'] = showiRuleDetails;
+        window['showPolicyDetails'] = showPolicyDetails;
+        window['siteData'] = siteData;
     });
-    // Attach click events to the main menu buttons and poller div
-    document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
-    document.querySelector('div#poolsbutton').addEventListener('click', showPools);
-    document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
-    document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
-    document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
-    document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
-    document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
-    document.querySelector('div#logsbutton').addEventListener('click', showLogs);
-    document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
-    document.querySelector('div#helpbutton').addEventListener('click', showHelp);
-    document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
-    // Attach module calls to window in order to call them from html rendered by js
-    // These should be removed in favor of event listeners later. See Virtual Server name column
-    // for an example
-    window['showPoolDetails'] = showPoolDetails;
-    window['togglePool'] = togglePool;
-    window['togglePoolHighlight'] = togglePoolHighlight;
-    window['showVirtualServerDetails'] = showVirtualServerDetails;
-    window['showDataGroupDetails'] = showDataGroupDetails;
-    window['showiRuleDetails'] = showiRuleDetails;
-    window['showPolicyDetails'] = showPolicyDetails;
-    window['siteData'] = siteData;
 });
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
@@ -523,12 +959,12 @@ function renderPoolCell(data, type, row, meta) {
                 poolCell += '<td>None</td>';
             }
             else {
-                poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
+                poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum || 0);
             }
             poolCell += '</tr>';
             if (pool.members !== null) {
                 for (let m = 1; m < pool.members.length; m++) {
-                    poolCell += `<tr class="${poolClass}">${renderPoolMemberCell(type, pool.members[m], pool.poolNum)}</tr>`;
+                    poolCell += `<tr class="${poolClass}">${renderPoolMemberCell(type, pool.members[m], pool.poolNum || 0)}</tr>`;
                 }
             }
         }
@@ -694,7 +1130,7 @@ function pollCurrentView() {
         }
     }
 }
-export function renderLoadBalancer(loadbalancer, type) {
+function renderLoadBalancer(loadbalancer, type) {
     let balancer;
     if (siteData.preferences.HideLoadBalancerFQDN) {
         balancer = loadbalancer.split('.')[0];
@@ -872,9 +1308,9 @@ function countdownClock() {
 }
 function resetClock() {
     siteData.countDown = siteData.preferences.PollingRefreshRate + 1;
-    clearInterval(siteData.clock);
+    window.clearInterval(siteData.clock);
     countdownClock();
-    siteData.clock = setInterval(countdownClock, 1000);
+    siteData.clock = window.setInterval(countdownClock, 1000);
 }
 function getPoolStatus(poolCell) {
     if (siteData.memberStates.ajaxQueue.length >=
@@ -1064,7 +1500,7 @@ function isRegExp(regExp) {
 /** ********************************************************************************************************************
     Gets the query strings and populates the table
 ***********************************************************************************************************************/
-function populateSearchParameters(updatehash) {
+function populateSearchParameters(updateHash) {
     const vars = {};
     let hash;
     if (window.location.href.indexOf('#') >= 0) {
@@ -1080,34 +1516,34 @@ function populateSearchParameters(updatehash) {
             const activeSection = vars['mainsection'];
             switch (activeSection) {
                 case 'virtualservers':
-                    showVirtualServers(updatehash);
+                    showVirtualServers(updateHash);
                     break;
                 case 'pools':
-                    showPools(updatehash);
+                    showPools(updateHash);
                     break;
                 case 'irules':
-                    showiRules(updatehash);
+                    showiRules(updateHash);
                     break;
                 case 'policies':
-                    showPolicies(updatehash);
+                    showPolicies(updateHash);
                     break;
                 case 'deviceoverview':
-                    showDeviceOverview(updatehash);
+                    showDeviceOverview(updateHash);
                     break;
                 case 'certificatedetails':
-                    showCertificateDetails(updatehash);
+                    showCertificateDetails(updateHash);
                     break;
                 case 'datagroups':
-                    showDataGroups(updatehash);
+                    showDataGroups(updateHash);
                     break;
                 case 'logs':
-                    showLogs(updatehash);
+                    showLogs(updateHash);
                     break;
                 case 'preferences':
-                    showPreferences(updatehash);
+                    showPreferences(updateHash);
                     break;
                 case 'help':
-                    showHelp(updatehash);
+                    showHelp(updateHash);
                     break;
             }
         }
@@ -1237,15 +1673,15 @@ function setupVirtualServerTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (data, type) {
-                    return renderLoadBalancer(data, type);
+                render: function (name, type) {
+                    return renderLoadBalancer(name, type);
                 },
             },
             {
                 data: 'name',
                 className: 'virtualServerCell',
-                render: function (data, type, row) {
-                    return renderVirtualServer(row.loadbalancer, data, type);
+                render: function (name, type, row) {
+                    return renderVirtualServer(row.loadbalancer, name, type);
                 }
             },
             {
@@ -2528,7 +2964,7 @@ function showDataGroups(updatehash) {
 }
 function showPreferences(updatehash) {
     hideMainSection();
-    activateMenuButton($('div#preferencesbutton'));
+    activateMenuButton('div#preferencesbutton');
     $('div#mainholder').attr('data-activesection', 'preferences');
     updateLocationHash(updatehash);
     // Prepare the content
@@ -2784,7 +3220,7 @@ function generateSupportCell(loadbalancer) {
 function showLogs(updatehash) {
     hideMainSection();
     setupLogsTable();
-    activateMenuButton($('div#logsbutton'));
+    activateMenuButton('div#logsbutton');
     $('div#mainholder').attr('data-activesection', 'logs');
     updateLocationHash(updatehash);
     showMainSection('logs');
@@ -2796,7 +3232,7 @@ function showHelp(updatehash) {
     updateLocationHash(updatehash);
     showMainSection('helpcontent');
 }
-function log(message, severity = null, datetime = null) {
+function log(message, severity, datetime = undefined) {
     if (!datetime) {
         let now = new Date();
         const offset = now.getTimezoneOffset();
@@ -2811,7 +3247,7 @@ function log(message, severity = null, datetime = null) {
     });
     if (siteData.logTable) {
         siteData.logTable.destroy();
-        siteData.logTable = null;
+        delete siteData.logTable;
         setupLogsTable();
     }
 }
@@ -2841,7 +3277,7 @@ function toggleRegexSearch() {
         }
     });
 }
-export function updateLocationHash(updatehash = true) {
+function updateLocationHash(updatehash = true) {
     const parameters = [];
     const activeSection = $('div#mainholder').attr('data-activesection');
     parameters.push(`mainsection=${activeSection}`);
@@ -3526,12 +3962,12 @@ function loadPreferences() {
     }
 }
 function getPool(pool, loadbalancer) {
-    return siteData.poolsMap.get(loadbalancer + ':' + pool);
+    return siteData.poolsMap.get(`${loadbalancer}:${pool}`);
 }
 function getVirtualServer(vs, loadbalancer) {
     return (siteData.virtualservers.find(function (o) {
         return o.name === vs && o.loadbalancer === loadbalancer;
-    }) || false);
+    }));
 }
 function getLoadbalancer(loadbalancer) {
     return (siteData.loadbalancers.find(function (o) {
@@ -3566,3 +4002,6 @@ function downLoadTextFile(data, fileName) {
     element.click();
     document.body.removeChild(element);
 }
+
+/******/ })()
+;

@@ -1,15 +1,21 @@
 /* eslint-env jquery */
-import ISiteData, { PatchedSettings } from './SiteDataInterfaces/ISiteData.js';
-import IPool from './SiteDataInterfaces/IPool';
-import ICertificate from './SiteDataInterfaces/ICertificate.js';
-import ILoggedError from './SiteDataInterfaces/ILoggedErrors.js';
-import IVirtualServer from './SiteDataInterfaces/IVirtualServer.js';
-import IIrule from './SiteDataInterfaces/IIrule.js';
-import IDataGroup from './SiteDataInterfaces/IDataGroup.js';
-import ILoadbalancer, { IStatusVIP } from './SiteDataInterfaces/ILoadbalancer.js';
-import IDeviceGroup from './SiteDataInterfaces/IDeviceGroup.js';
-import showPoolDetails from './PoolDetails/showPoolDetails.js';
-import {ISupportState} from './SiteDataInterfaces/IState';
+import ISiteData, { PatchedSettings } from './Interfaces/ISiteData';
+import IPool, {IMember} from './Interfaces/IPool';
+import ICertificate from './Interfaces/ICertificate';
+import ILoggedError from './Interfaces/ILoggedErrors';
+import IVirtualServer from './Interfaces/IVirtualServer';
+import IIrule from './Interfaces/IIrule';
+import IDataGroup from './Interfaces/IDataGroup';
+import ILoadbalancer, { IStatusVIP } from './Interfaces/ILoadbalancer';
+import IDeviceGroup from './Interfaces/IDeviceGroup';
+import showPoolDetails from './PoolDetails/showPoolDetails';
+import {IState, ISupportState} from './Interfaces/IState';
+import INAT from './Interfaces/INAT';
+import IASMPolicy from './Interfaces/IASMPolicy';
+import IKnownDevice from './Interfaces/IKnowndevice';
+import IMonitor from './Interfaces/IMonitor';
+import IPreferences from './Interfaces/IPreferences';
+import IPolicy from './Interfaces/IPolicy';
 
 /** ********************************************************************************************************************
 
@@ -17,8 +23,24 @@ import {ISupportState} from './SiteDataInterfaces/IState';
 
 ***********************************************************************************************************************/
 
-export const siteData: Partial<ISiteData> = {};
-siteData.loggedErrors = [];
+export const siteData: ISiteData = {
+  NATdict: [],
+  asmPolicies: [],
+  certificates: [],
+  countDown: 0,
+  datagroupdetailsTableData: [],
+  datagroups: [],
+  deviceGroups: [],
+  irules: [],
+  knownDevices: [],
+  loadbalancers: [],
+  loggedErrors: [],
+  monitors: [],
+  pools: [],
+  virtualservers: [],
+  policies: [],
+  poolsMap: new Map(),
+};
 
 /** ********************************************************************************************************************
 
@@ -26,7 +48,7 @@ siteData.loggedErrors = [];
 
 ***********************************************************************************************************************/
 
-window.addEventListener('load', function () {
+window.addEventListener('load', async function () {
 
   // Animate loader off screen
   log('Starting window on load', 'INFO');
@@ -38,44 +60,34 @@ window.addEventListener('load', function () {
 
   $('#firstlayerdetailscontentdiv').html(`
     <div id="jsonloadingerrors">
-        <h1 class="jsonloadingerrors">There were errors when loading the object json files</h1>
+        <span style="font-size: 20px">The following json file did not load:</span>
+        <div id="jsonloadingerrordetails"></div>
 
-        <h3>The following json files did not load:</h3>
-        <div id="jsonloadingerrordetails">
-        </div>
+        <br>
+        <span style="font-size: 18px;">Possible reasons</span>
 
-        <h3>Possible reasons</h3>
-
-        <h4>The web server hosting the report is IIS7.x or older</h4>
-        If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to the MIME
-        files settings.<br>
-        <a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">Detailed instructions are
-         available here</a>.<br>
-
-        <h4>File permissions or network issues</h4>
-        Script has had issues when creating the files due to lack of permissions or network issues.<br>
-        Double check your script execution logs, web folder content and try running the script manually.<br>
-
-        <h3>Please note that while you can close these details, the report won't function as it should until these
-        problems has been solved.</h3>
-
+        <ul>
+            <li>
+                The web server hosting the report is IIS7.x or older
+                If you're running the report on IIS7.x or older it's not able to handle Json files without a tweak to
+                the MIME files settings.<br>
+                <a href="https://loadbalancing.se/bigip-report/#The_script_reports_missing_JSON_files">
+                    Detailed instructions are available here</a>
+            </li>
+            <li>File permissions or network issues</li>
+            <li>
+                Script has had issues when creating the files due to lack of permissions or network issues.
+                Double check your script execution logs, web folder content and try running the script manually.
+            </li>
+        </ul>
+        <span style="font-style: italic;font-weight: bold;">
+            Please note that while you can close these details, the report won't function as it should until these
+            problems has been solved.
+         </span>
     </div>`);
 
   const closeFirstLayerButton = $('a#closefirstlayerbutton');
   closeFirstLayerButton.text('Close error details');
-
-  const addJSONLoadingFailure = function (jqxhr) {
-    // Remove the random query string not to confuse people
-    const url = this.url.split('?')[0];
-
-    $('#jsonloadingerrordetails').append(`
-                <div class="failedjsonitem"><span class="error">Failed object:</span><span class="errordetails">
-                <a href="${url}">${url}</a></span>
-                <br><span class="error">Status code:</span><span class="errordetails">${jqxhr.status}</span>
-                <br><span class="error">Reason:</span><span class="errordetails">${jqxhr.statusText}</div>`);
-    $('div.beforedocumentready').hide();
-    $('#firstlayerdiv').fadeIn();
-  };
 
   /** ******************************************************************************************************************
 
@@ -91,20 +103,6 @@ window.addEventListener('load', function () {
       });
     }
   });
-
-  /* Center the lightbox */
-  jQuery.fn['center'] = function () {
-    this.css('position', 'absolute');
-    // this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) + $(window).scrollTop()) + "px");
-    this.css(
-      'left',
-      Math.max(
-        0,
-        ($(window).width() - $(this).outerWidth()) / 2 + $(window).scrollLeft()
-      ) + 'px'
-    );
-    return this;
-  };
 
   closeFirstLayerButton.on('click', function () {
     $('div#firstlayerdiv').trigger('click');
@@ -130,145 +128,165 @@ window.addEventListener('load', function () {
   /* syntax highlighting */
   // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
 
-  $.when(
-    // Get pools
-    $.getJSON('json/pools.json', function (result) {
-      siteData.pools = result;
-      siteData.poolsMap = new Map<string, IPool>();
-      let poolNum = 0;
-      siteData.pools.forEach((pool) => {
-        pool.poolNum = poolNum;
-        siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
-        poolNum++;
-      });
-    }).fail(addJSONLoadingFailure),
-    // Get the monitor data
-    $.getJSON('json/monitors.json', function (result) {
-      siteData.monitors = result;
-    }).fail(addJSONLoadingFailure),
-    // Get the virtual servers data
-    $.getJSON('json/virtualservers.json', function (result) {
-      siteData.virtualservers = result;
-    }).fail(addJSONLoadingFailure),
-    // Get the irules data
-    $.getJSON('json/irules.json', function (result) {
-      siteData.irules = result;
-    }).fail(addJSONLoadingFailure),
-    // Get the datagroup data
-    $.getJSON('json/datagroups.json', function (result) {
-      siteData.datagroups = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/loadbalancers.json', function (result) {
-      siteData.loadbalancers = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/preferences.json', function (result) {
-      siteData.preferences = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/knowndevices.json', function (result) {
-      siteData.knownDevices = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/certificates.json', function (result) {
-      siteData.certificates = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/devicegroups.json', function (result) {
-      siteData.deviceGroups = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/asmpolicies.json', function (result) {
-      siteData.asmPolicies = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/nat.json', function (result) {
-      siteData.NATdict = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/state.json', function (result) {
-      siteData.state = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/policies.json', function (result) {
-      siteData.policies = result;
-    }).fail(addJSONLoadingFailure),
-    $.getJSON('json/loggederrors.json', function (result) {
-      siteData.loggedErrors = result.concat(siteData.loggedErrors);
-    }).fail(addJSONLoadingFailure)
-  ).then(function () {
+  const jsonFiles = [
+    'json/pools.json',
+    'json/monitors.json',
+    'json/virtualservers.json',
+    'json/irules.json',
+    'json/datagroups.json',
+    'json/loadbalancers.json',
+    'json/preferences.json',
+    'json/knowndevices.json',
+    'json/certificates.json',
+    'json/devicegroups.json',
+    'json/asmpolicies.json',
+    'json/nat.json',
+    'json/state.json',
+    'json/policies.json',
+    'json/loggederrors.json'
+  ];
 
-    // Update the footer
-    const localStartTime = new Date(siteData.preferences.startTime).toString();
+  let jsonResponses: any[];
 
-    $('div#report-footer').html(`
-      <div class="footer">
-      The report was generated on ${siteData.preferences.scriptServer}
-      using BigIPReport version ${siteData.preferences.scriptVersion}.
-      Script started at <span id="Generationtime">${localStartTime}</span> and took
-      ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
-      BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
-      and <a href="https://rikers.org/">Tim Riker</a>.
-      </div>
-    `);
-    /** ***********************************************************************************************************
+  try {
+    jsonResponses = await Promise.all(
+      jsonFiles.map(async (url) => {
+          const resp = await fetch(url, {cache: 'no-cache'});
+          if (resp.status !== 200) {
+            throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
+          }
+          return resp.json();
+        }
+      ));
+  } catch(e) {
+    $('#jsonloadingerrordetails').append(`${(e as Error).message}`);
+    $('div.beforedocumentready').hide();
+    $('#firstlayerdiv').fadeIn();
+    return;
+  }
 
-            All pre-requisite things have loaded
+  const [
+    pools,
+    monitors,
+    virtualservers,
+    irules,
+    datagroups,
+    loadbalancers,
+    preferences,
+    knowndevices,
+    certificates,
+    devicegroups,
+    asmpolicies,
+    nat,
+    state,
+    policies,
+    loggederrors,
+  ] = jsonResponses;
 
-        **************************************************************************************************************/
+  siteData.pools = pools;
+  siteData.poolsMap = new Map<string, IPool>();
 
-    // Show statistics from siteData arrays
-    log(
-      'Loaded: ' +
-      Object.keys(siteData)
-        .filter((k) => k !== 'bigipTable' && siteData[k].length !== undefined)
-        .map((k) => `${k}: ${siteData[k].length}`)
-        .join(', '),
-      'INFO'
-    );
-
-    /** ***********************************************************************************************************
-
-            Load preferences
-
-        **************************************************************************************************************/
-
-    loadPreferences();
-
-    /** ***********************************************************************************************************
-
-            Test the status VIPs
-
-    **************************************************************************************************************/
-    initializeStatusVIPs();
-
-    /* highlight selected menu option */
-
-    populateSearchParameters(false);
-    const currentSection = $('div#mainholder').attr('data-activesection');
-
-    if (currentSection === undefined) {
-      showVirtualServers(true);
-    }
-
-    /** ***********************************************************************************************************
-            This section adds the update check button div and initiates the update checks
-     **************************************************************************************************************/
-
-    NavButtonDiv(null, null, null); // eslint-disable-line new-cap
-    // Check if there's a new update
-    setInterval(function () {
-      $.ajax('json/preferences.json', {
-        type: 'HEAD',
-        success: NavButtonDiv,
-      });
-    }, 60000);
+  let poolNum = 0;
+  siteData.pools.forEach((pool) => {
+    pool.poolNum = poolNum;
+    siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
+    poolNum++;
   });
 
+  siteData.monitors = monitors as IMonitor[];
+  siteData.virtualservers = virtualservers as IVirtualServer[];
+  siteData.irules = irules as IIrule[];
+  siteData.datagroups = datagroups as IDataGroup[];
+  siteData.loadbalancers = loadbalancers as ILoadbalancer[];
+  siteData.preferences = preferences as IPreferences;
+  siteData.knownDevices = knowndevices as IKnownDevice[];
+  siteData.certificates = certificates as ICertificate[];
+  siteData.deviceGroups = devicegroups as IDeviceGroup[];
+  siteData.asmPolicies = asmpolicies as IASMPolicy[];
+  siteData.NATdict = nat as INAT[];
+  siteData.state = state as IState;
+  siteData.policies = policies as IPolicy[];
+  siteData.loggedErrors = (loggederrors as ILoggedError[]).concat(siteData.loggedErrors);
+
+  // Update the footer
+  const localStartTime = new Date(siteData.preferences.startTime).toString();
+
+  $('div#report-footer').html(`
+    <div class="footer">
+    The report was generated on ${siteData.preferences.scriptServer}
+    using BigIPReport version ${siteData.preferences.scriptVersion}.
+    Script started at <span id="Generationtime">${localStartTime}</span> and took
+    ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
+    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+    and <a href="https://rikers.org/">Tim Riker</a>.
+    </div>
+  `);
+  /** ***********************************************************************************************************
+
+          All pre-requisite things have loaded
+
+      **************************************************************************************************************/
+
+  // Show statistics from siteData arrays
+  log(
+    'Loaded: ' +
+    Object.keys(siteData)
+      .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
+      .map((k) => `${k}: ${siteData[k].length}`)
+      .join(', '),
+    'INFO'
+  );
+
+  /** ***********************************************************************************************************
+
+          Load preferences
+
+      **************************************************************************************************************/
+
+  loadPreferences();
+
+  /** ***********************************************************************************************************
+
+          Test the status VIPs
+
+  **************************************************************************************************************/
+  initializeStatusVIPs();
+
+  /* highlight selected menu option */
+
+  populateSearchParameters(false);
+  const currentSection = $('div#mainholder').attr('data-activesection');
+
+  if (currentSection === undefined) {
+    showVirtualServers(true);
+  }
+
+  /** ***********************************************************************************************************
+          This section adds the update check button div and initiates the update checks
+   **************************************************************************************************************/
+
+  NavButtonDiv(null, null, null); // eslint-disable-line new-cap
+  // Check if there's a new update
+  setInterval(function () {
+    $.ajax('json/preferences.json', {
+      type: 'HEAD',
+      success: NavButtonDiv,
+    });
+  }, 60000);
+
+
   // Attach click events to the main menu buttons and poller div
-  document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
-  document.querySelector('div#poolsbutton').addEventListener('click', showPools)
-  document.querySelector('div#irulesbutton').addEventListener('click', showiRules)
-  document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups)
-  document.querySelector('div#policiesbutton').addEventListener('click', showPolicies)
-  document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview)
-  document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails)
-  document.querySelector('div#logsbutton').addEventListener('click', showLogs)
-  document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences)
-  document.querySelector('div#helpbutton').addEventListener('click', showHelp)
-  document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView)
+  document.querySelector('div#virtualserversbutton')!.addEventListener('click', showVirtualServers);
+  document.querySelector('div#poolsbutton')!.addEventListener('click', showPools)
+  document.querySelector('div#irulesbutton')!.addEventListener('click', showiRules)
+  document.querySelector('div#datagroupbutton')!.addEventListener('click', showDataGroups)
+  document.querySelector('div#policiesbutton')!.addEventListener('click', showPolicies)
+  document.querySelector('div#deviceoverviewbutton')!.addEventListener('click', showDeviceOverview)
+  document.querySelector('div#certificatebutton')!.addEventListener('click', showCertificateDetails)
+  document.querySelector('div#logsbutton')!.addEventListener('click', showLogs)
+  document.querySelector('div#preferencesbutton')!.addEventListener('click', showPreferences)
+  document.querySelector('div#helpbutton')!.addEventListener('click', showHelp)
+  document.querySelector('div#realtimestatusdiv')!.addEventListener('click', pollCurrentView)
 
   // Attach module calls to window in order to call them from html rendered by js
   // These should be removed in favor of event listeners later. See Virtual Server name column
@@ -371,7 +389,7 @@ function initializeStatusVIPs() {
   }
 }
 
-function poolMemberStatus(member, type) {
+function poolMemberStatus(member: IMember, type: string) {
   const mStatus = member.enabled + ':' + member.availability;
 
   if (type === 'export') {
@@ -404,7 +422,7 @@ function poolMemberStatus(member, type) {
   return mStatus;
 }
 
-function poolStatus(pool, type) {
+function poolStatus(pool: IPool, type: string) {
   if (!pool || type === 'export') {
     return '';
   }
@@ -461,7 +479,7 @@ function poolStatus(pool, type) {
   }
 }
 
-function virtualServerStatus(row, type) {
+function virtualServerStatus(row: IVirtualServer, type: string) {
   if (!row.enabled || !row.availability) return '';
   const vsStatus = row.enabled + ':' + row.availability;
 
@@ -513,14 +531,14 @@ function virtualServerStatus(row, type) {
   return vsStatus;
 }
 
-function createdPoolCell(cell, cellData, rowData, rowIndex) {
+function createdPoolCell(cell: Node, cellData: any, rowData: any, rowIndex: number) {
   if (rowData.pools) {
     $(cell).addClass('PoolCell');
     $(cell).attr('id', 'vs-' + rowIndex);
   }
 }
 
-function renderPoolMember(loadbalancer, member, type) {
+function renderPoolMember(loadbalancer: string, member: IMember, type: string) {
   let result = '';
   if (member !== null) {
     if (type === 'display' || type === 'print') {
@@ -541,7 +559,7 @@ function renderPoolMember(loadbalancer, member, type) {
   return result;
 }
 
-function renderPoolMemberCell(type, member, poolNum) {
+function renderPoolMemberCell(type: string, member: IMember, poolNum: number) {
   return `
         <td class="PoolMember" data-pool="${poolNum}">
             ${renderPoolMember('', member, type)}
@@ -618,7 +636,7 @@ function renderPoolCell(data, type, row, meta) {
       if (pool.members == null) {
         poolCell += '<td>None</td>';
       } else {
-        poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum);
+        poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum || 0);
       }
       poolCell += '</tr>';
       if (pool.members !== null) {
@@ -626,7 +644,7 @@ function renderPoolCell(data, type, row, meta) {
           poolCell += `<tr class="${poolClass}">${renderPoolMemberCell(
             type,
             pool.members[m],
-            pool.poolNum
+            pool.poolNum || 0
           )}</tr>`;
         }
       }
@@ -857,7 +875,7 @@ function renderVirtualServer(loadbalancer, name, type) {
   return result;
 }
 
-function renderRule(loadbalancer, name, type) {
+function renderRule(loadbalancer: string, name: string, type: string) {
   const ruleName = name.replace(/^\/Common\//, '');
   let result = '';
   if (type === 'display') {
@@ -879,7 +897,7 @@ function renderRule(loadbalancer, name, type) {
   return result;
 }
 
-function renderPolicy(loadbalancer, name, type) {
+function renderPolicy(loadbalancer: string, name: string, type: string) {
   if (name === 'None') {
     return 'None';
   }
@@ -899,7 +917,7 @@ function renderPolicy(loadbalancer, name, type) {
   return result;
 }
 
-function renderPool(loadbalancer, name, type) {
+function renderPool(loadbalancer: string, name: string, type: string) {
   if (name === 'N/A') {
     return name;
   }
@@ -927,7 +945,7 @@ function renderPool(loadbalancer, name, type) {
   return result;
 }
 
-function renderCertificate(loadbalancer, name, type) {
+function renderCertificate(loadbalancer: string, name: string, type: string) {
   let result = name.replace(/^\/Common\//, '');
   if (type === 'display') {
     result += `
@@ -942,7 +960,7 @@ function renderCertificate(loadbalancer, name, type) {
   return result;
 }
 
-function renderDataGroup(loadbalancer, name, type) {
+function renderDataGroup(loadbalancer: string, name: string, type: string) {
   const datagroupName = name.replace(/^\/Common\//, '');
   let result = '';
   if (type === 'display') {
@@ -1004,12 +1022,12 @@ function countdownClock() {
 
 function resetClock() {
   siteData.countDown = siteData.preferences.PollingRefreshRate + 1;
-  clearInterval(siteData.clock);
+  window.clearInterval(siteData.clock);
   countdownClock();
-  siteData.clock = setInterval(countdownClock, 1000);
+  siteData.clock = window.setInterval(countdownClock, 1000);
 }
 
-function getPoolStatus(poolCell) {
+function getPoolStatus(poolCell: HTMLElement) {
   if (
     siteData.memberStates.ajaxQueue.length >=
     siteData.preferences.PollingMaxQueue
@@ -1133,7 +1151,7 @@ function getPoolStatusPools(poolCell) {
   }
 }
 
-function decreaseAjaxQueue(url) {
+function decreaseAjaxQueue(url: string) {
   const index = siteData.memberStates.ajaxQueue.indexOf(url);
   if (index > -1) {
     siteData.memberStates.ajaxQueue.splice(index, 1);
@@ -1146,7 +1164,7 @@ function decreaseAjaxQueue(url) {
   $('span#ajaxqueue').text(siteData.memberStates.ajaxQueue.length);
 }
 
-function increaseAjaxQueue(url) {
+function increaseAjaxQueue(url: string) {
   if (
     siteData.memberStates.ajaxRecent.indexOf(url) === -1 &&
     siteData.memberStates.ajaxQueue.indexOf(url) === -1
@@ -1236,7 +1254,7 @@ function isRegExp(regExp) {
     Gets the query strings and populates the table
 ***********************************************************************************************************************/
 
-function populateSearchParameters(updatehash: boolean) {
+function populateSearchParameters(updateHash: boolean) {
 
   const vars = {};
   let hash;
@@ -1258,34 +1276,34 @@ function populateSearchParameters(updatehash: boolean) {
 
       switch (activeSection) {
         case 'virtualservers':
-          showVirtualServers(updatehash);
+          showVirtualServers(updateHash);
           break;
         case 'pools':
-          showPools(updatehash);
+          showPools(updateHash);
           break;
         case 'irules':
-          showiRules(updatehash);
+          showiRules(updateHash);
           break;
         case 'policies':
-          showPolicies(updatehash);
+          showPolicies(updateHash);
           break;
         case 'deviceoverview':
-          showDeviceOverview(updatehash);
+          showDeviceOverview(updateHash);
           break;
         case 'certificatedetails':
-          showCertificateDetails(updatehash);
+          showCertificateDetails(updateHash);
           break;
         case 'datagroups':
-          showDataGroups(updatehash);
+          showDataGroups(updateHash);
           break;
         case 'logs':
-          showLogs(updatehash);
+          showLogs(updateHash);
           break;
         case 'preferences':
-          showPreferences(updatehash);
+          showPreferences(updateHash);
           break;
         case 'help':
-          showHelp(updatehash);
+          showHelp(updateHash);
           break;
       }
     }
@@ -1439,15 +1457,15 @@ function setupVirtualServerTable() {
       {
         data: 'loadbalancer',
         className: 'loadbalancerCell',
-        render: function (data, type) {
-          return renderLoadBalancer(data, type);
+        render: function (name: string, type: string) {
+          return renderLoadBalancer(name, type);
         },
       },
       {
         data: 'name',
         className: 'virtualServerCell',
-        render: function (data, type, row) {
-          return renderVirtualServer(row.loadbalancer, data, type);
+        render: function (name, type, row: IVirtualServer) {
+          return renderVirtualServer(row.loadbalancer, name, type);
         }
       },
       {
@@ -1457,7 +1475,7 @@ function setupVirtualServerTable() {
       },
       {
         className: 'centeredCell',
-        render: function (data, type, row) {
+        render: function (data: undefined, type: string, row: IVirtualServer) {
           let result = row.ip + ':' + row.port;
           if (siteData.NATdict[row.ip.split('%')[0]]) {
             result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
@@ -1467,7 +1485,7 @@ function setupVirtualServerTable() {
       },
       {
         className: 'centeredCell',
-        render: function (data, type, row) {
+        render: function (data: undefined, type: string, row: IVirtualServer) {
           if (!row.sourcexlatetype) {
             return 'Unknown';
           } else {
@@ -1775,7 +1793,7 @@ function setupiRuleTable() {
       {
         data: 'loadbalancer',
         className: 'loadbalancerCell',
-        render: function (data, type) {
+        render: function (data: string, type: string) {
           return renderLoadBalancer(data, type);
         },
       },
@@ -2859,7 +2877,7 @@ function showDataGroups(updatehash) {
 
 function showPreferences(updatehash) {
   hideMainSection();
-  activateMenuButton($('div#preferencesbutton'));
+  activateMenuButton('div#preferencesbutton');
   $('div#mainholder').attr('data-activesection', 'preferences');
   updateLocationHash(updatehash);
 
@@ -3148,7 +3166,7 @@ function generateSupportCell(loadbalancer: ILoadbalancer) {
 function showLogs(updatehash) {
   hideMainSection();
   setupLogsTable();
-  activateMenuButton($('div#logsbutton'));
+  activateMenuButton('div#logsbutton');
   $('div#mainholder').attr('data-activesection', 'logs');
 
   updateLocationHash(updatehash);
@@ -3165,7 +3183,7 @@ function showHelp(updatehash) {
   showMainSection('helpcontent');
 }
 
-function log(message, severity = null, datetime = null) {
+function log(message: string, severity: string, datetime: string | undefined = undefined) {
   if (!datetime) {
     let now = new Date();
     const offset = now.getTimezoneOffset();
@@ -3183,7 +3201,7 @@ function log(message, severity = null, datetime = null) {
 
   if (siteData.logTable) {
     siteData.logTable.destroy();
-    siteData.logTable = null;
+    delete siteData.logTable;
     setupLogsTable();
   }
 }
@@ -4036,19 +4054,19 @@ function loadPreferences() {
   }
 }
 
-function getPool(pool, loadbalancer) {
-  return siteData.poolsMap.get(loadbalancer + ':' + pool);
+function getPool(pool: string, loadbalancer: string) {
+  return siteData.poolsMap.get(`${loadbalancer}:${pool}`);
 }
 
-function getVirtualServer(vs, loadbalancer) {
+function getVirtualServer(vs: string, loadbalancer: string) {
   return (
     siteData.virtualservers.find(function (o) {
       return o.name === vs && o.loadbalancer === loadbalancer;
-    }) || false
+    })
   );
 }
 
-function getLoadbalancer(loadbalancer) {
+function getLoadbalancer(loadbalancer: string) {
   return (
     siteData.loadbalancers.find(function (o) {
       return o.name === loadbalancer;
@@ -4057,7 +4075,7 @@ function getLoadbalancer(loadbalancer) {
 }
 
 // a and b are javascript Date objects
-function dateDiffInDays(a, b) {
+function dateDiffInDays(a: Date, b: Date) {
   const _MS_PER_DAY = 1000 * 60 * 60 * 24;
   // Discard the time and time-zone information.
   const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
@@ -4066,7 +4084,7 @@ function dateDiffInDays(a, b) {
   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 }
 
-function activateMenuButton(b) {
+function activateMenuButton(b: string) {
   $('div.menuitem').removeClass('menuitemactive');
   $(b).addClass('menuitemactive');
 }

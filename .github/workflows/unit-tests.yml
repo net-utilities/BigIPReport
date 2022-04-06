@@ -6,8 +6,8 @@ on:
       - '.eslintrc.json'
       - '.github/workflows/'
 jobs:
-  build_and_deploy_ci:
-    name: Linting
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
@@ -15,4 +15,4 @@ jobs:
       - name: Install pre-requisites
         run: npm install
       - name: Lint
-        run: npm test
+        run: npm run test

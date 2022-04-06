@@ -2,10 +2,10 @@
  Translates the status and availability of a member to less cryptic text and returns a dictionary
  **********************************************************************************************************************/
 
-import { IMember } from '../SiteDataInterfaces/IPool';
+import { IMember } from '../Interfaces/IPool';
 
 export default function translateStatus(member: IMember) {
-  const translatedstatus = {
+  const translatedStatus = {
     availability: '',
     enabled: '',
     realtime: '',
@@ -13,50 +13,50 @@ export default function translateStatus(member: IMember) {
 
   switch (member.availability) {
     case 'available':
-      translatedstatus['availability'] = '<span class="memberup">UP</span>';
+      translatedStatus['availability'] = '<span class="memberup">UP</span>';
       break;
     case 'unknown':
-      translatedstatus['availability'] =
+      translatedStatus['availability'] =
         '<span class="memberunknown">UNKNOWN</span>';
       break;
     default:
-      translatedstatus['availability'] = '<span class="memberdown">DOWN</span>';
+      translatedStatus['availability'] = '<span class="memberdown">DOWN</span>';
   }
 
   switch (member.enabled) {
     case 'enabled':
-      translatedstatus['enabled'] =
+      translatedStatus['enabled'] =
         '<span class="memberenabled">Enabled</span>';
       break;
     case 'disabled-by-parent':
-      translatedstatus['enabled'] =
+      translatedStatus['enabled'] =
         '<span class="memberdisabled">Disabled by parent</span>';
       break;
     case 'disabled':
-      translatedstatus['enabled'] =
+      translatedStatus['enabled'] =
         '<span class="memberdisabled">Disabled</span>';
       break;
     default:
-      translatedstatus['enabled'] =
+      translatedStatus['enabled'] =
         '<span class="memberunknown">Unknown</span>';
   }
 
   switch (member.realtimestatus) {
     case 'up':
-      translatedstatus['realtime'] = '<span class="memberup">UP</span>';
+      translatedStatus['realtime'] = '<span class="memberup">UP</span>';
       break;
     case 'down':
-      translatedstatus['realtime'] = '<span class="memberdown">DOWN</span>';
+      translatedStatus['realtime'] = '<span class="memberdown">DOWN</span>';
       break;
     case 'session_disabled':
-      translatedstatus['realtime'] =
+      translatedStatus['realtime'] =
         '<span class="memberdisabled">DISABLED</span>';
       break;
     default:
-      translatedstatus['realtime'] = (
+      translatedStatus['realtime'] = (
         member.realtimestatus || 'N/A'
       ).toUpperCase();
   }
 
-  return translatedstatus;
+  return translatedStatus;
 }

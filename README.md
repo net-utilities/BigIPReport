@@ -23,6 +23,9 @@ DevCentral codeshare:
 # Developing Javascript
 1. Install NodeJS
 2. Run `npm install` which uses `package.json`
-4. Run `tsc --watch` which uses `tsconfig.json` or `tsc --build tsconfig.json` for single update.
+3. Run `npm run build:dev`
 
 The typescript files will now be transpiled and written to js folder path when changes are detected.
+
+[More details on how to contribute to BigIPReport](https://loadbalancing.se/2022/01/19/contributing-to-bigipreport/)
+
