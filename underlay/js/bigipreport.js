@@ -510,27 +510,24 @@ var bigipreport_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 };
 
 
-/** ********************************************************************************************************************
+/* *********************************************************************************************************************
 
     BigIPReport Javascript
 
-***********************************************************************************************************************/
+********************************************************************************************************************* */
+// eslint-disable-next-line import/no-mutable-exports
 let siteData = {
     loggedErrors: []
 };
-/** ********************************************************************************************************************
+/* *********************************************************************************************************************
 
     Waiting for all pre-requisite objects to load
 
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 window.addEventListener('load', function () {
     return bigipreport_awaiter(this, void 0, void 0, function* () {
         // Animate loader off screen
         log('Starting window on load', 'INFO');
-        // Prevent caching of ajax requests
-        $(function () {
-            $.ajaxSetup({ cache: false });
-        });
         $('#firstlayerdetailscontentdiv').html(`
     <div id="jsonloadingerrors">
         <span style="font-size: 20px">The following json file did not load:</span>
@@ -560,23 +557,21 @@ window.addEventListener('load', function () {
     </div>`);
         const closeFirstLayerButton = $('a#closefirstlayerbutton');
         closeFirstLayerButton.text('Close error details');
-        /** ******************************************************************************************************************
+        /* *******************************************************************************************************************
       
               Lightbox related functions
       
-          *******************************************************************************************************************/
-        /* Hide the lightbox if clicking outside the information box*/
+          ***************************************************************************************************************** */
+        /* Hide the lightbox if clicking outside the information box */
         $('body').on('click', function (e) {
             if (e.target.classList.contains('lightbox')) {
-                $('div#' + e.target.id).fadeOut(function () {
-                    updateLocationHash();
-                });
+                $(`div#${e.target.id}`).fadeOut(updateLocationHash);
             }
         });
-        closeFirstLayerButton.on('click', function () {
+        closeFirstLayerButton.on('click', () => {
             $('div#firstlayerdiv').trigger('click');
         });
-        $('a#closesecondlayerbutton').on('click', function () {
+        $('a#closesecondlayerbutton').on('click', () => {
             $('div#secondlayerdiv').trigger('click');
         });
         /**
@@ -607,28 +602,27 @@ window.addEventListener('load', function () {
       and <a href="https://rikers.org/">Tim Riker</a>.
     </div>
   `);
-        /** ***********************************************************************************************************
+        /* ************************************************************************************************************
       
                 All pre-requisite things have loaded
       
-            **************************************************************************************************************/
+           ********************************************************************************************************* */
         // Show statistics from siteData arrays
-        log('Loaded: ' +
-            Object.keys(siteData)
-                .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
-                .map((k) => `${k}: ${siteData[k].length}`)
-                .join(', '), 'INFO');
-        /** ***********************************************************************************************************
+        log(`Loaded: ${Object.keys(siteData)
+            .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
+            .map((k) => `${k}: ${siteData[k].length}`)
+            .join(', ')}`, 'INFO');
+        /* ************************************************************************************************************
       
                 Load preferences
       
-            **************************************************************************************************************/
+           ********************************************************************************************************* */
         loadPreferences();
-        /** ***********************************************************************************************************
+        /* ***********************************************************************************************************
       
                 Test the status VIPs
       
-        **************************************************************************************************************/
+        *********************************************************************************************************** */
         initializeStatusVIPs();
         /* highlight selected menu option */
         populateSearchParameters(false);
@@ -641,7 +635,7 @@ window.addEventListener('load', function () {
          **************************************************************************************************************/
         NavButtonDiv(null, null, null); // eslint-disable-line new-cap
         // Check if there's a new update
-        setInterval(function () {
+        setInterval(() => {
             $.ajax('json/preferences.json', {
                 type: 'HEAD',
                 success: NavButtonDiv,
@@ -697,10 +691,10 @@ function NavButtonDiv(response, status, xhr) {
         navbutton +=
             '<li><button onclick="document.location.reload()" class="navbutton">Refresh</button></li>';
     }
-    for (const key in siteData.preferences.NavLinks) {
+    Object.keys(siteData.preferences.NavLinks).forEach((key) => {
         navbutton += `<li><button onclick="window.location.href='${siteData.preferences.NavLinks[key]}'"
                     class="navbutton">${key}</button></li>`;
-    }
+    });
     navbutton += '</ul>';
     $('div#navbuttondiv').html(navbutton);
 }
@@ -714,20 +708,19 @@ function initializeStatusVIPs() {
     siteData.memberStates.ajaxQueue = [];
     siteData.memberStates.ajaxRecent = [];
     siteData.memberStates.ajaxFailures = [];
-    const loadbalancers = siteData.loadbalancers;
+    const { loadbalancers } = siteData;
     // Check if there is any functioning pool status vips
-    const hasConfiguredStatusVIP = loadbalancers.some(function (e) {
+    const hasConfiguredStatusVIP = loadbalancers.some((e) => {
         return /[a-b0-9]+/.test(e.statusvip.url);
     });
     if (hasConfiguredStatusVIP) {
-        for (const i in loadbalancers) {
-            const loadbalancer = loadbalancers[i];
+        loadbalancers.forEach(loadbalancer => {
             // Increase the not configured span for loadbalancers that is eligible for polling but has none configured
             if (loadbalancer.statusvip.url === '' &&
                 (loadbalancer.active || loadbalancer.isonlydevice)) {
                 log(`Loadbalancer ${loadbalancer.name} does not have any status VIP configured`, 'INFO');
                 const realTimeNotConfigured = $('span#realtimenotconfigured');
-                realTimeNotConfigured.text(parseInt(realTimeNotConfigured.text()) + 1);
+                realTimeNotConfigured.text(parseInt(realTimeNotConfigured.text(), 10) + 1);
                 loadbalancer.statusvip.working = false;
                 loadbalancer.statusvip.reason = 'None configured';
             }
@@ -735,7 +728,7 @@ function initializeStatusVIPs() {
                 (loadbalancer.active || loadbalancer.isonlydevice)) {
                 testStatusVIP(loadbalancer);
             }
-        }
+        });
     }
     else {
         log('No status VIPs has been configured', 'INFO');
@@ -744,89 +737,74 @@ function initializeStatusVIPs() {
     }
 }
 function poolMemberStatus(member, type) {
-    const mStatus = member.enabled + ':' + member.availability;
+    const memberStatus = `${member.enabled}:${member.availability}`;
     if (type === 'export') {
         return '';
     }
-    else if (type === 'filter') {
-        return mStatus;
+    if (type === 'filter') {
+        return memberStatus;
     }
-    else if (mStatus === 'enabled:available') {
-        return `<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"
-                title="${mStatus} - Member is able to pass traffic"/></span>`;
+    let returnValue = '';
+    if (memberStatus === 'enabled:available') {
+        returnValue = `<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"
+                title="${memberStatus} - Member is able to pass traffic"/></span>`;
     }
-    else if (mStatus === 'enabled:unknown') {
-        return `<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"
-                title="${mStatus} - Member status unknown"/></span>`;
+    else if (memberStatus === 'enabled:unknown') {
+        returnValue = `<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"
+                title="${memberStatus} - Member status unknown"/></span>`;
     }
-    else if (mStatus === 'enabled:offline') {
-        return `<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"
-                title="${mStatus} - Member is unable to pass traffic"/></span>`;
+    else if (memberStatus === 'enabled:offline') {
+        returnValue = `<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"
+                title="${memberStatus} - Member is unable to pass traffic"/></span>`;
     }
-    else if (mStatus === 'enabled:unavailable') {
-        return `<span class="statusicon"><img src="images/red-diamond-exclamationmark.png" alt="Unavailable (Enabled)"
-                title="${mStatus} - Member connection limit reached"/></span>`;
+    else if (memberStatus === 'enabled:unavailable') {
+        returnValue = `<span class="statusicon">
+                     <img src="images/red-diamond-exclamationmark.png" alt="Unavailable (Enabled)"
+                        title="${memberStatus} - Member connection limit reached"/></span>`;
     }
-    else if (mStatus === 'disabled:available') {
-        return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)"
-                title="${mStatus} - Member is available, but disabled"/></span>`;
+    else if (memberStatus === 'disabled:available') {
+        returnValue = `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)"
+                title="${memberStatus} - Member is available, but disabled"/></span>`;
     }
-    else if (mStatus === 'disabled:offline' ||
-        mStatus === 'disabled-by-parent:available' ||
-        mStatus === 'disabled-by-parent:offline') {
-        return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"
-                title="${mStatus} - Member is disabled"/></span>`;
+    else if (memberStatus === 'disabled:offline' ||
+        memberStatus === 'disabled-by-parent:available' ||
+        memberStatus === 'disabled-by-parent:offline') {
+        returnValue = `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"
+                title="${memberStatus} - Member is disabled"/></span>`;
     }
-    return mStatus;
+    return returnValue;
 }
 function poolStatus(pool, type) {
     if (!pool || type === 'export') {
         return '';
     }
-    const pStatus = pool.enabled + ':' + pool.availability;
+    const { enabled, availability, status } = pool;
+    const pStatus = `${enabled}:${availability}`;
     if (type === 'display' || type === 'print') {
         if (pStatus === 'enabled:available') {
-            return ('<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+            return (`<span class="statusicon">
+            <img src="images/green-circle-checkmark.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+        </span>`);
         }
-        else if (pStatus === 'enabled:unknown') {
-            return ('<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+        if (pStatus === 'enabled:unknown') {
+            return (`<span class="statusicon">
+            <img src="images/blue-square-questionmark.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+         </span>`);
         }
-        else if (pStatus === 'enabled:offline') {
-            return ('<span class="statusicon"><img src="images/red-circle-cross.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+        if (pStatus === 'enabled:offline') {
+            return (`<span class="statusicon">
+            <img src="images/red-circle-cross.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+        </span>`);
         }
-        else if (pStatus === 'disabled-by-parent:available' ||
+        if (pStatus === 'disabled-by-parent:available' ||
             pStatus === 'disabled-by-parent:offline') {
-            return ('<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+            return (`<span class="statusicon">
+            <img src="images/black-circle-checkmark.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+         </span>`);
         }
         return pStatus;
     }
-    else {
-        return pStatus;
-    }
+    return pStatus;
 }
 function virtualServerStatus(row, type) {
     if (!row.enabled || !row.availability)

@@ -33,6 +33,8 @@
     "quotes": ["error", "single"],
     "max-len": ["error", { "code": 120 }],
     "brace-style": ["error", "1tbs"],
+    "import/no-cycle": 0,
+    "no-param-reassign": 0,
     "@typescript-eslint/no-this-alias": 0,
     "space-before-blocks": 2,
     "jquery/no-fade": 0,
