@@ -414,6 +414,90 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
     $(`#${layer}layerdiv`).fadeIn(updateLocationHash);
 }
 
+;// CONCATENATED MODULE: ./js-src/Constants/JSONFiles.ts
+/**
+ * Which JSON Files to load when the script starts
+ * Remember to also change Init/getJSONFiles.ts if changing this
+ * to get the correct order when deconstructing the Promise.All
+ * array.
+ */
+/* harmony default export */ const JSONFiles = ([
+    'json/pools.json',
+    'json/monitors.json',
+    'json/virtualservers.json',
+    'json/irules.json',
+    'json/datagroups.json',
+    'json/loadbalancers.json',
+    'json/preferences.json',
+    'json/knowndevices.json',
+    'json/certificates.json',
+    'json/devicegroups.json',
+    'json/asmpolicies.json',
+    'json/nat.json',
+    'json/state.json',
+    'json/policies.json',
+    'json/loggederrors.json'
+]);
+
+;// CONCATENATED MODULE: ./js-src/Init/getJSONFiles.ts
+var getJSONFiles_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+/* harmony default export */ const getJSONFiles = (() => getJSONFiles_awaiter(void 0, void 0, void 0, function* () {
+    let jsonResponses;
+    try {
+        jsonResponses = yield Promise.all(JSONFiles.map((url) => getJSONFiles_awaiter(void 0, void 0, void 0, function* () {
+            const resp = yield fetch(url, { cache: 'no-cache' });
+            if (resp.status !== 200) {
+                throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
+            }
+            return resp.json();
+        })));
+    }
+    catch (e) {
+        $('#jsonloadingerrordetails').append(`${e.message}`);
+        $('div.beforedocumentready').hide();
+        $('#firstlayerdiv').fadeIn();
+        return;
+    }
+    const [pools, monitors, virtualservers, irules, datagroups, loadbalancers, preferences, knowndevices, certificates, devicegroups, asmpolicies, nat, state, policies, loggederrors,] = jsonResponses;
+    console.log(jsonResponses);
+    const siteData = {
+        NATdict: nat,
+        asmPolicies: asmpolicies,
+        certificates: certificates,
+        countDown: 0,
+        datagroupdetailsTableData: [],
+        datagroups: datagroups,
+        deviceGroups: devicegroups,
+        irules: irules,
+        loadbalancers: loadbalancers,
+        loggedErrors: loggederrors,
+        monitors: monitors,
+        pools: pools,
+        state: state,
+        virtualservers: virtualservers,
+        policies: policies,
+        knownDevices: knowndevices,
+        preferences: preferences,
+        poolsMap: new Map(),
+    };
+    let poolNum = 0;
+    siteData.pools.forEach((pool) => {
+        pool.poolNum = poolNum;
+        siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
+        poolNum++;
+    });
+    return siteData;
+}));
+
 ;// CONCATENATED MODULE: ./js-src/bigipreport.ts
 var bigipreport_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -425,28 +509,14 @@ var bigipreport_awaiter = (undefined && undefined.__awaiter) || function (thisAr
     });
 };
 
+
 /** ********************************************************************************************************************
 
     BigIPReport Javascript
 
 ***********************************************************************************************************************/
-const siteData = {
-    NATdict: [],
-    asmPolicies: [],
-    certificates: [],
-    countDown: 0,
-    datagroupdetailsTableData: [],
-    datagroups: [],
-    deviceGroups: [],
-    irules: [],
-    knownDevices: [],
-    loadbalancers: [],
-    loggedErrors: [],
-    monitors: [],
-    pools: [],
-    virtualservers: [],
-    policies: [],
-    poolsMap: new Map(),
+let siteData = {
+    loggedErrors: []
 };
 /** ********************************************************************************************************************
 
@@ -524,72 +594,17 @@ window.addEventListener('load', function () {
         });
         /* syntax highlighting */
         // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
-        const jsonFiles = [
-            'json/pools.json',
-            'json/monitors.json',
-            'json/virtualservers.json',
-            'json/irules.json',
-            'json/datagroups.json',
-            'json/loadbalancers.json',
-            'json/preferences.json',
-            'json/knowndevices.json',
-            'json/certificates.json',
-            'json/devicegroups.json',
-            'json/asmpolicies.json',
-            'json/nat.json',
-            'json/state.json',
-            'json/policies.json',
-            'json/loggederrors.json'
-        ];
-        let jsonResponses;
-        try {
-            jsonResponses = yield Promise.all(jsonFiles.map((url) => bigipreport_awaiter(this, void 0, void 0, function* () {
-                const resp = yield fetch(url, { cache: 'no-cache' });
-                if (resp.status !== 200) {
-                    throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
-                }
-                return resp.json();
-            })));
-        }
-        catch (e) {
-            $('#jsonloadingerrordetails').append(`${e.message}`);
-            $('div.beforedocumentready').hide();
-            $('#firstlayerdiv').fadeIn();
-            return;
-        }
-        const [pools, monitors, virtualservers, irules, datagroups, loadbalancers, preferences, knowndevices, certificates, devicegroups, asmpolicies, nat, state, policies, loggederrors,] = jsonResponses;
-        siteData.pools = pools;
-        siteData.poolsMap = new Map();
-        let poolNum = 0;
-        siteData.pools.forEach((pool) => {
-            pool.poolNum = poolNum;
-            siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
-            poolNum++;
-        });
-        siteData.monitors = monitors;
-        siteData.virtualservers = virtualservers;
-        siteData.irules = irules;
-        siteData.datagroups = datagroups;
-        siteData.loadbalancers = loadbalancers;
-        siteData.preferences = preferences;
-        siteData.knownDevices = knowndevices;
-        siteData.certificates = certificates;
-        siteData.deviceGroups = devicegroups;
-        siteData.asmPolicies = asmpolicies;
-        siteData.NATdict = nat;
-        siteData.state = state;
-        siteData.policies = policies;
-        siteData.loggedErrors = loggederrors.concat(siteData.loggedErrors);
+        siteData = yield getJSONFiles();
         // Update the footer
         const localStartTime = new Date(siteData.preferences.startTime).toString();
         $('div#report-footer').html(`
     <div class="footer">
-    The report was generated on ${siteData.preferences.scriptServer}
-    using BigIPReport version ${siteData.preferences.scriptVersion}.
-    Script started at <span id="Generationtime">${localStartTime}</span> and took
-    ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
-    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
-    and <a href="https://rikers.org/">Tim Riker</a>.
+      The report was generated on ${siteData.preferences.scriptServer}
+      using BigIPReport version ${siteData.preferences.scriptVersion}.
+      Script started at <span id="Generationtime">${localStartTime}</span> and took
+      ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
+      BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+      and <a href="https://rikers.org/">Tim Riker</a>.
     </div>
   `);
         /** ***********************************************************************************************************

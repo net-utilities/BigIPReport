@@ -9,13 +9,8 @@ import IDataGroup from './Interfaces/IDataGroup';
 import ILoadbalancer, { IStatusVIP } from './Interfaces/ILoadbalancer';
 import IDeviceGroup from './Interfaces/IDeviceGroup';
 import showPoolDetails from './PoolDetails/showPoolDetails';
-import {IState, ISupportState} from './Interfaces/IState';
-import INAT from './Interfaces/INAT';
-import IASMPolicy from './Interfaces/IASMPolicy';
-import IKnownDevice from './Interfaces/IKnowndevice';
-import IMonitor from './Interfaces/IMonitor';
-import IPreferences from './Interfaces/IPreferences';
-import IPolicy from './Interfaces/IPolicy';
+import { ISupportState} from './Interfaces/IState';
+import getJSONFiles from './Init/getJSONFiles';
 
 /** ********************************************************************************************************************
 
@@ -23,23 +18,8 @@ import IPolicy from './Interfaces/IPolicy';
 
 ***********************************************************************************************************************/
 
-export const siteData: ISiteData = {
-  NATdict: [],
-  asmPolicies: [],
-  certificates: [],
-  countDown: 0,
-  datagroupdetailsTableData: [],
-  datagroups: [],
-  deviceGroups: [],
-  irules: [],
-  knownDevices: [],
-  loadbalancers: [],
-  loggedErrors: [],
-  monitors: [],
-  pools: [],
-  virtualservers: [],
-  policies: [],
-  poolsMap: new Map(),
+export let siteData: Partial<ISiteData> = {
+  loggedErrors: []
 };
 
 /** ********************************************************************************************************************
@@ -128,97 +108,19 @@ window.addEventListener('load', async function () {
   /* syntax highlighting */
   // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
 
-  const jsonFiles = [
-    'json/pools.json',
-    'json/monitors.json',
-    'json/virtualservers.json',
-    'json/irules.json',
-    'json/datagroups.json',
-    'json/loadbalancers.json',
-    'json/preferences.json',
-    'json/knowndevices.json',
-    'json/certificates.json',
-    'json/devicegroups.json',
-    'json/asmpolicies.json',
-    'json/nat.json',
-    'json/state.json',
-    'json/policies.json',
-    'json/loggederrors.json'
-  ];
-
-  let jsonResponses: any[];
-
-  try {
-    jsonResponses = await Promise.all(
-      jsonFiles.map(async (url) => {
-          const resp = await fetch(url, {cache: 'no-cache'});
-          if (resp.status !== 200) {
-            throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
-          }
-          return resp.json();
-        }
-      ));
-  } catch(e) {
-    $('#jsonloadingerrordetails').append(`${(e as Error).message}`);
-    $('div.beforedocumentready').hide();
-    $('#firstlayerdiv').fadeIn();
-    return;
-  }
-
-  const [
-    pools,
-    monitors,
-    virtualservers,
-    irules,
-    datagroups,
-    loadbalancers,
-    preferences,
-    knowndevices,
-    certificates,
-    devicegroups,
-    asmpolicies,
-    nat,
-    state,
-    policies,
-    loggederrors,
-  ] = jsonResponses;
-
-  siteData.pools = pools;
-  siteData.poolsMap = new Map<string, IPool>();
-
-  let poolNum = 0;
-  siteData.pools.forEach((pool) => {
-    pool.poolNum = poolNum;
-    siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
-    poolNum++;
-  });
-
-  siteData.monitors = monitors as IMonitor[];
-  siteData.virtualservers = virtualservers as IVirtualServer[];
-  siteData.irules = irules as IIrule[];
-  siteData.datagroups = datagroups as IDataGroup[];
-  siteData.loadbalancers = loadbalancers as ILoadbalancer[];
-  siteData.preferences = preferences as IPreferences;
-  siteData.knownDevices = knowndevices as IKnownDevice[];
-  siteData.certificates = certificates as ICertificate[];
-  siteData.deviceGroups = devicegroups as IDeviceGroup[];
-  siteData.asmPolicies = asmpolicies as IASMPolicy[];
-  siteData.NATdict = nat as INAT[];
-  siteData.state = state as IState;
-  siteData.policies = policies as IPolicy[];
-  siteData.loggedErrors = (loggederrors as ILoggedError[]).concat(siteData.loggedErrors);
+  siteData = await getJSONFiles();
 
   // Update the footer
   const localStartTime = new Date(siteData.preferences.startTime).toString();
 
   $('div#report-footer').html(`
     <div class="footer">
-    The report was generated on ${siteData.preferences.scriptServer}
-    using BigIPReport version ${siteData.preferences.scriptVersion}.
-    Script started at <span id="Generationtime">${localStartTime}</span> and took
-    ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
-    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
-    and <a href="https://rikers.org/">Tim Riker</a>.
+      The report was generated on ${siteData.preferences.scriptServer}
+      using BigIPReport version ${siteData.preferences.scriptVersion}.
+      Script started at <span id="Generationtime">${localStartTime}</span> and took
+      ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
+      BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+      and <a href="https://rikers.org/">Tim Riker</a>.
     </div>
   `);
   /** ***********************************************************************************************************
