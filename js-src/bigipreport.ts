@@ -29,7 +29,7 @@ export let siteData: Partial<ISiteData> = {
 
 ********************************************************************************************************************* */
 
-window.addEventListener('load', async function () {
+window.addEventListener('load', async () => {
 
   // Animate loader off screen
   log('Starting window on load', 'INFO');
@@ -72,7 +72,7 @@ window.addEventListener('load', async function () {
     ***************************************************************************************************************** */
 
   /* Hide the lightbox if clicking outside the information box */
-  $('body').on('click', function (e) {
+  $('body').on('click', (e) => {
     if (e.target.classList.contains('lightbox')) {
       $(`div#${e.target.id}`).fadeOut(updateLocationHash);
     }
@@ -93,11 +93,8 @@ window.addEventListener('load', async function () {
    * <div>TEXT in PAGE</div>
    * <div>Text in page</div>
    */
-  $.expr[':'].icontains = $.expr.createPseudo(function (text) {
-    return function (e) {
-      return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
-    };
-  });
+  $.expr[':'].icontains = $.expr.createPseudo(
+    (text) => (e) => $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0);
 
   /* syntax highlighting */
   // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
@@ -157,9 +154,9 @@ window.addEventListener('load', async function () {
     showVirtualServers(true);
   }
 
-  /** ***********************************************************************************************************
+  /* ************************************************************************************************************
           This section adds the update check button div and initiates the update checks
-   **************************************************************************************************************/
+   *********************************************************************************************************** */
 
   NavButtonDiv(null, null, null); // eslint-disable-line new-cap
   // Check if there's a new update
@@ -201,12 +198,12 @@ window.addEventListener('load', async function () {
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
   let timesincerefresh = 0;
-  if (siteData.preferences.currentReportDate === undefined && xhr && null != xhr.getResponseHeader('Last-Modified')) {
+  if (siteData.preferences.currentReportDate === undefined && xhr && xhr.getResponseHeader('Last-Modified') != null) {
     // If we have not yet stored the currentReportDate, store it and return
     siteData.preferences.currentReportDate = new Date(
       xhr.getResponseHeader('Last-Modified')
     ).getTime();
-  } else if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
+  } else if (xhr && xhr.getResponseHeader('Last-Modified') != null) {
     const latestreport = new Date(
       xhr.getResponseHeader('Last-Modified')
     ).getTime();
@@ -250,9 +247,7 @@ function initializeStatusVIPs() {
   const { loadbalancers } = siteData;
 
   // Check if there is any functioning pool status vips
-  const hasConfiguredStatusVIP = loadbalancers.some((e) => {
-    return /[a-b0-9]+/.test(e.statusvip.url);
-  });
+  const hasConfiguredStatusVIP = loadbalancers.some((e) => /[a-b0-9]+/.test(e.statusvip.url));
 
   if (hasConfiguredStatusVIP) {
     loadbalancers.forEach(loadbalancer => {

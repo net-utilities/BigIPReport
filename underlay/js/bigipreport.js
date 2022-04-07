@@ -524,11 +524,10 @@ let siteData = {
     Waiting for all pre-requisite objects to load
 
 ********************************************************************************************************************* */
-window.addEventListener('load', function () {
-    return bigipreport_awaiter(this, void 0, void 0, function* () {
-        // Animate loader off screen
-        log('Starting window on load', 'INFO');
-        $('#firstlayerdetailscontentdiv').html(`
+window.addEventListener('load', () => bigipreport_awaiter(void 0, void 0, void 0, function* () {
+    // Animate loader off screen
+    log('Starting window on load', 'INFO');
+    $('#firstlayerdetailscontentdiv').html(`
     <div id="jsonloadingerrors">
         <span style="font-size: 20px">The following json file did not load:</span>
         <div id="jsonloadingerrordetails"></div>
@@ -555,44 +554,40 @@ window.addEventListener('load', function () {
             problems has been solved.
          </span>
     </div>`);
-        const closeFirstLayerButton = $('a#closefirstlayerbutton');
-        closeFirstLayerButton.text('Close error details');
-        /* *******************************************************************************************************************
-      
-              Lightbox related functions
-      
-          ***************************************************************************************************************** */
-        /* Hide the lightbox if clicking outside the information box */
-        $('body').on('click', function (e) {
-            if (e.target.classList.contains('lightbox')) {
-                $(`div#${e.target.id}`).fadeOut(updateLocationHash);
-            }
-        });
-        closeFirstLayerButton.on('click', () => {
-            $('div#firstlayerdiv').trigger('click');
-        });
-        $('a#closesecondlayerbutton').on('click', () => {
-            $('div#secondlayerdiv').trigger('click');
-        });
-        /**
-         * Example use:
-         * $('div:icontains("Text in page")');
-         * Will return jQuery object containing any/all of the following:
-         * <div>text in page</div>
-         * <div>TEXT in PAGE</div>
-         * <div>Text in page</div>
-         */
-        $.expr[':'].icontains = $.expr.createPseudo(function (text) {
-            return function (e) {
-                return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
-            };
-        });
-        /* syntax highlighting */
-        // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
-        siteData = yield getJSONFiles();
-        // Update the footer
-        const localStartTime = new Date(siteData.preferences.startTime).toString();
-        $('div#report-footer').html(`
+    const closeFirstLayerButton = $('a#closefirstlayerbutton');
+    closeFirstLayerButton.text('Close error details');
+    /* *******************************************************************************************************************
+  
+          Lightbox related functions
+  
+      ***************************************************************************************************************** */
+    /* Hide the lightbox if clicking outside the information box */
+    $('body').on('click', (e) => {
+        if (e.target.classList.contains('lightbox')) {
+            $(`div#${e.target.id}`).fadeOut(updateLocationHash);
+        }
+    });
+    closeFirstLayerButton.on('click', () => {
+        $('div#firstlayerdiv').trigger('click');
+    });
+    $('a#closesecondlayerbutton').on('click', () => {
+        $('div#secondlayerdiv').trigger('click');
+    });
+    /**
+     * Example use:
+     * $('div:icontains("Text in page")');
+     * Will return jQuery object containing any/all of the following:
+     * <div>text in page</div>
+     * <div>TEXT in PAGE</div>
+     * <div>Text in page</div>
+     */
+    $.expr[':'].icontains = $.expr.createPseudo((text) => (e) => $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0);
+    /* syntax highlighting */
+    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+    siteData = yield getJSONFiles();
+    // Update the footer
+    const localStartTime = new Date(siteData.preferences.startTime).toString();
+    $('div#report-footer').html(`
     <div class="footer">
       The report was generated on ${siteData.preferences.scriptServer}
       using BigIPReport version ${siteData.preferences.scriptVersion}.
@@ -602,78 +597,77 @@ window.addEventListener('load', function () {
       and <a href="https://rikers.org/">Tim Riker</a>.
     </div>
   `);
-        /* ************************************************************************************************************
-      
-                All pre-requisite things have loaded
-      
-           ********************************************************************************************************* */
-        // Show statistics from siteData arrays
-        log(`Loaded: ${Object.keys(siteData)
-            .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
-            .map((k) => `${k}: ${siteData[k].length}`)
-            .join(', ')}`, 'INFO');
-        /* ************************************************************************************************************
-      
-                Load preferences
-      
-           ********************************************************************************************************* */
-        loadPreferences();
-        /* ***********************************************************************************************************
-      
-                Test the status VIPs
-      
-        *********************************************************************************************************** */
-        initializeStatusVIPs();
-        /* highlight selected menu option */
-        populateSearchParameters(false);
-        const currentSection = $('div#mainholder').attr('data-activesection');
-        if (currentSection === undefined) {
-            showVirtualServers(true);
-        }
-        /** ***********************************************************************************************************
-                This section adds the update check button div and initiates the update checks
-         **************************************************************************************************************/
-        NavButtonDiv(null, null, null); // eslint-disable-line new-cap
-        // Check if there's a new update
-        setInterval(() => {
-            $.ajax('json/preferences.json', {
-                type: 'HEAD',
-                success: NavButtonDiv,
-            });
-        }, 60000);
-        // Attach click events to the main menu buttons and poller div
-        document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
-        document.querySelector('div#poolsbutton').addEventListener('click', showPools);
-        document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
-        document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
-        document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
-        document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
-        document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
-        document.querySelector('div#logsbutton').addEventListener('click', showLogs);
-        document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
-        document.querySelector('div#helpbutton').addEventListener('click', showHelp);
-        document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
-        // Attach module calls to window in order to call them from html rendered by js
-        // These should be removed in favor of event listeners later. See Virtual Server name column
-        // for an example
-        window['showPoolDetails'] = showPoolDetails;
-        window['togglePool'] = togglePool;
-        window['togglePoolHighlight'] = togglePoolHighlight;
-        window['showVirtualServerDetails'] = showVirtualServerDetails;
-        window['showDataGroupDetails'] = showDataGroupDetails;
-        window['showiRuleDetails'] = showiRuleDetails;
-        window['showPolicyDetails'] = showPolicyDetails;
-        window['siteData'] = siteData;
-    });
-});
+    /* ************************************************************************************************************
+  
+            All pre-requisite things have loaded
+  
+       ********************************************************************************************************* */
+    // Show statistics from siteData arrays
+    log(`Loaded: ${Object.keys(siteData)
+        .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
+        .map((k) => `${k}: ${siteData[k].length}`)
+        .join(', ')}`, 'INFO');
+    /* ************************************************************************************************************
+  
+            Load preferences
+  
+       ********************************************************************************************************* */
+    loadPreferences();
+    /* ***********************************************************************************************************
+  
+            Test the status VIPs
+  
+    *********************************************************************************************************** */
+    initializeStatusVIPs();
+    /* highlight selected menu option */
+    populateSearchParameters(false);
+    const currentSection = $('div#mainholder').attr('data-activesection');
+    if (currentSection === undefined) {
+        showVirtualServers(true);
+    }
+    /* ************************************************************************************************************
+            This section adds the update check button div and initiates the update checks
+     *********************************************************************************************************** */
+    NavButtonDiv(null, null, null); // eslint-disable-line new-cap
+    // Check if there's a new update
+    setInterval(() => {
+        $.ajax('json/preferences.json', {
+            type: 'HEAD',
+            success: NavButtonDiv,
+        });
+    }, 60000);
+    // Attach click events to the main menu buttons and poller div
+    document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
+    document.querySelector('div#poolsbutton').addEventListener('click', showPools);
+    document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
+    document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
+    document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
+    document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
+    document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
+    document.querySelector('div#logsbutton').addEventListener('click', showLogs);
+    document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
+    document.querySelector('div#helpbutton').addEventListener('click', showHelp);
+    document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
+    // Attach module calls to window in order to call them from html rendered by js
+    // These should be removed in favor of event listeners later. See Virtual Server name column
+    // for an example
+    window['showPoolDetails'] = showPoolDetails;
+    window['togglePool'] = togglePool;
+    window['togglePoolHighlight'] = togglePoolHighlight;
+    window['showVirtualServerDetails'] = showVirtualServerDetails;
+    window['showDataGroupDetails'] = showDataGroupDetails;
+    window['showiRuleDetails'] = showiRuleDetails;
+    window['showPolicyDetails'] = showPolicyDetails;
+    window['siteData'] = siteData;
+}));
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
     let timesincerefresh = 0;
-    if (siteData.preferences.currentReportDate === undefined && xhr && null != xhr.getResponseHeader('Last-Modified')) {
+    if (siteData.preferences.currentReportDate === undefined && xhr && xhr.getResponseHeader('Last-Modified') != null) {
         // If we have not yet stored the currentReportDate, store it and return
         siteData.preferences.currentReportDate = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
     }
-    else if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
+    else if (xhr && xhr.getResponseHeader('Last-Modified') != null) {
         const latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
         // If there's been a new report, how long ago (in minutes)
         timesincerefresh = Math.round((latestreport - siteData.preferences.currentReportDate) / 60000);
@@ -710,9 +704,7 @@ function initializeStatusVIPs() {
     siteData.memberStates.ajaxFailures = [];
     const { loadbalancers } = siteData;
     // Check if there is any functioning pool status vips
-    const hasConfiguredStatusVIP = loadbalancers.some((e) => {
-        return /[a-b0-9]+/.test(e.statusvip.url);
-    });
+    const hasConfiguredStatusVIP = loadbalancers.some((e) => /[a-b0-9]+/.test(e.statusvip.url));
     if (hasConfiguredStatusVIP) {
         loadbalancers.forEach(loadbalancer => {
             // Increase the not configured span for loadbalancers that is eligible for polling but has none configured

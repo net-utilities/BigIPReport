@@ -35,6 +35,7 @@
     "brace-style": ["error", "1tbs"],
     "import/no-cycle": 0,
     "no-param-reassign": 0,
+    "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-this-alias": 0,
     "space-before-blocks": 2,
     "jquery/no-fade": 0,
