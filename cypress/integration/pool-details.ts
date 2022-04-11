@@ -38,7 +38,7 @@ describe('Pool details should render properly', () => {
     cy.get('table#allbigips > tbody > tr').eq(index).find('td.PoolCell').click().within(cell => {
       cy.wrap(cell).find('table.pooltable').should('be.visible')
     })
-    cy.get('td.PoolCell#vs-3 table.pooltable a.tooltip').first().click();
+    cy.get('td.PoolCell#vs-2 table.pooltable a.tooltip').first().click();
     cy.get('div#firstlayerdiv').should('be.visible');
   });
 
