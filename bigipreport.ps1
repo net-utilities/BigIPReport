@@ -256,6 +256,7 @@
 #  5.6.5    2022-03-31   Adding click to copy for monitor tests                                        Patrik Jonsson  No
 #                        Adding unit tests for monitor test rendering
 #                        Now building the javascript files using webpack
+#  5.6.6    2022-04-11   Added stricter linting and parameter typing for functions                     Patrik Jonsson
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -299,7 +300,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.5"
+$Global:ScriptVersion = "5.6.6"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
