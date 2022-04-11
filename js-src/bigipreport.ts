@@ -3489,7 +3489,7 @@ function showVirtualServerDetails(virtualserver: string, loadbalancer: string) {
             const iruleobj: IIrule = siteData.irules.find(
               i => i.name === name && i.loadbalancer === loadbalancer);
 
-            if (Object.keys(iruleobj).length === 0) {
+            if (!iruleobj || Object.keys(iruleobj).length === 0) {
               table +=
                 `    <tr><td>${ 
                 iRule 
