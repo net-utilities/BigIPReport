@@ -16,3 +16,4 @@ underlay/js/*
 !underlay/js/bigipreport.js
 underlay/*.pem
 cypress/videos
+cypress/screenshots

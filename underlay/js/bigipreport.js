@@ -3500,19 +3500,19 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 else {
                     table += '    <tr><th>iRule name</th></tr>';
                 }
-                irules.forEach(iRule => {
+                irules.forEach(iRuleName => {
                     // If iRules linking has been set to true show iRule links
                     // and parse data groups
                     if (siteData.preferences.ShowiRuleLinks) {
-                        const iruleobj = siteData.irules.find(i => i.name === name && i.loadbalancer === loadbalancer);
-                        if (!iruleobj || Object.keys(iruleobj).length === 0) {
+                        const iRule = siteData.irules.find(i => i.name === iRuleName && i.loadbalancer === loadbalancer);
+                        if (!iRule || Object.keys(iRule).length === 0) {
                             table +=
-                                `    <tr><td>${iRule}</td><td>N/A (empty rule)</td></tr>`;
+                                `    <tr><td>${iRuleName}</td><td>N/A (empty rule)</td></tr>`;
                         }
                         else {
                             const datagroupdata = [];
-                            if (iruleobj.datagroups && iruleobj.datagroups.length > 0) {
-                                iruleobj.datagroups.forEach((datagroup) => {
+                            if (iRule.datagroups && iRule.datagroups.length > 0) {
+                                iRule.datagroups.forEach((datagroup) => {
                                     const dataGroupName = datagroup.split('/')[2];
                                     if (siteData.preferences.ShowDataGroupLinks) {
                                         datagroupdata.push(renderDataGroup(loadbalancer, datagroup, 'display'));
@@ -3525,11 +3525,11 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                             else {
                                 datagroupdata.push('N/A');
                             }
-                            table += `    <tr><td>${renderRule(loadbalancer, iruleobj.name, 'display')}</td><td>${datagroupdata.join('<br>')}</td></tr>`;
+                            table += `    <tr><td>${renderRule(loadbalancer, iRule.name, 'display')}</td><td>${datagroupdata.join('<br>')}</td></tr>`;
                         }
                     }
                     else {
-                        table += `        <tr><td>${iRule}</td></tr>`;
+                        table += `        <tr><td>${iRuleName}</td></tr>`;
                     }
                 });
                 table += '</table>';
