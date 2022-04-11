@@ -1,5 +1,4 @@
-
-interface DataGroupData {
+export interface IDataGroupData {
   [key: string]: string
 }
 
@@ -8,5 +7,5 @@ export default interface IDataGroup {
   type: string,
   loadbalancer: string,
   pools: string[],
-  data: DataGroupData
+  data: IDataGroupData
 }

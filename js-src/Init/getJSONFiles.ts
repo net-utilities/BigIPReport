@@ -55,9 +55,8 @@ export default async () => {
     loggederrors,
   ] = jsonResponses;
 
-  console.log(jsonResponses);
   const siteData: ISiteData = {
-    NATdict: nat as INAT[],
+    NATdict: nat as INAT,
     asmPolicies: asmpolicies as IASMPolicy[],
     certificates: certificates as ICertificate[],
     countDown: 0,

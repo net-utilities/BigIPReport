@@ -23,7 +23,7 @@ export interface PatchedSettings extends DataTables.Settings {
 }
 
 export default interface ISiteData {
-  NATdict: INAT[],
+  NATdict: INAT,
   asmPolicies: IASMPolicy[],
   bigipTable?: DataTables.Api,
   certificateTable?: DataTables.Api,

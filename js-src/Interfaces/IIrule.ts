@@ -3,6 +3,6 @@ export default interface IIrule{
   loadbalancer: string,
   name: string,
   virtualservers: string[],
-  pools: [],
+  pools: string[],
   definition: string,
 }
