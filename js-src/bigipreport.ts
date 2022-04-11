@@ -487,15 +487,19 @@ function renderPoolMemberCell(type: string, member: IMember, poolNum: number) {
     `;
 }
 
-function renderPoolCell(poolNames: string[],
-                        type: string,
-                        virtualServer: IVirtualServer,
-                        meta: DataTables.CellMetaSettings) {
+/**
+ * Renders the pools associated with a virtual server
+ * @param poolNames
+ * @param type
+ * @param virtualServer
+ * @param meta
+ */
+function renderVirtualServerPoolCell(poolNames: string[],
+                                     type: string,
+                                     virtualServer: IVirtualServer,
+                                     meta: DataTables.CellMetaSettings) {
   if (type === 'sort') {
-    if (poolNames) {
-      return poolNames.length;
-    }
-    return 0;
+    return poolNames ? poolNames.length: 0
   }
   if (!poolNames) {
     return 'N/A';
@@ -525,32 +529,36 @@ function renderPoolCell(poolNames: string[],
     });
     return poolCell;
   }
+
   if (type === 'display') {
     const tid = `vs-${meta.row}`;
     poolCell += `
-                    <div class="expand" id="expand-${tid}" style="display: none;">
-                        <a><img src="images/chevron-down.png" alt="down" onclick="togglePool('${tid}')"></a>
-                    </div>
-                    <div class="collapse" id="collapse-${tid}" style="display: block;">
-                        <a><img src="images/chevron-up.png" alt="up" onclick="togglePool('${tid}')"></a>
-                    </div>
-                    <div class="AssociatedPoolsInfo" onclick="togglePool('${tid}')"
-                        id="AssociatedPoolsInfo-${tid}" style="display: none;">
-                        Show ${poolNames.length} associated pools
-                    </div>
-                    <div id="PoolCell-${tid}" class="pooltablediv" style="display: block;">`;
+                      <div class="expand" id="expand-${tid}" style="display: none;">
+                          <a><img src="images/chevron-down.png" alt="down" onclick="togglePool('${tid}')"></a>
+                      </div>
+                      <div class="collapse" id="collapse-${tid}" style="display: block;">
+                          <a><img src="images/chevron-up.png" alt="up" onclick="togglePool('${tid}')"></a>
+                      </div>
+                      <div class="AssociatedPoolsInfo" onclick="togglePool('${tid}')"
+                          id="AssociatedPoolsInfo-${tid}" style="display: none;">
+                          Show ${poolNames.length} associated pools
+                      </div>
+                      <div id="PoolCell-${tid}" class="pooltablediv" style="display: block;">`;
   }
+
   poolCell += '<table class="pooltable"><tbody>';
   poolNames.forEach(poolName => {
     const pool = siteData.poolsMap.get(`${vipLoadbalancer}:${poolName}`);
-    // report dumps pools before virtualhosts, so pool might not exist
+    // Report dumps pools before virtualhosts, so pool might not exist
     if (pool) {
       const poolClass = `Pool-${pool.poolNum}`;
       poolCell += `<tr class="${poolClass}"`;
+
       if (type === 'display') {
         poolCell +=
           'onmouseover="javascript:togglePoolHighlight(this);" onmouseout="javascript:togglePoolHighlight(this);"';
       }
+
       poolCell += 'style="">';
       poolCell += '<td';
       if (pool.members !== null && pool.members.length > 1) {
@@ -565,18 +573,18 @@ function renderPoolCell(poolNames: string[],
         poolCell += renderPoolMemberCell(type, pool.members[0], pool.poolNum || 0);
       }
       poolCell += '</tr>';
-      const { loadbalancer: poolLoadbalancer, name, members, poolNum } = pool;
-      if (members !== null) {
-        members.forEach(m => {
+
+      if (pool.members !== null) {
+        for (let m = 1; m < pool.members.length; m+= 1) {
           poolCell += `<tr class="${poolClass}">${renderPoolMemberCell(
             type,
-            m,
-            poolNum || 0
+            pool.members[m],
+            pool.poolNum || 0
           )}</tr>`;
-        })
+        }
       }
     }
-  });
+  })
   poolCell += '</tbody></table>';
   poolCell += '</div>';
   return poolCell;
@@ -1488,7 +1496,7 @@ function setupVirtualServerTable() {
         data: 'pools',
         type: 'html-num',
         createdCell: createdPoolCell,
-        render: renderPoolCell,
+        render: renderVirtualServerPoolCell,
       },
     ],
     pageLength: 10,
