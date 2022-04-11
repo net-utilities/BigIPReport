@@ -10,7 +10,7 @@ import {
   DIRECT_LINK_GLOBAL_SEARCH_URL,
   DIRECT_LINK_GLOBAL_SEARCH,
 } from '../constants/constants';
-import { waitForLoad } from '../support/helpers';
+import waitForLoad from '../support/helpers';
 
 describe('Loading a page with direct links should yield the expected results', () => {
 

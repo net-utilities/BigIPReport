@@ -18,7 +18,7 @@ import ISiteData from '../Interfaces/ISiteData';
 
 export default async (): Promise<ISiteData> => {
 
-  let jsonResponses: any[];
+  let jsonResponses;
 
   try {
     jsonResponses = await Promise.all(

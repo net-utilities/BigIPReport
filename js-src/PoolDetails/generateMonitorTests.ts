@@ -15,7 +15,7 @@ const generateMonitorTests = (monitor: IMonitor, member: IMember): IMonitorTests
 
   const monitorTests: IMonitorTests = {};
 
-  let curl: string, http: string, netcat: string;
+  let curl: string; let http: string; let netcat: string;
 
   if (['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)) {
 
@@ -34,9 +34,9 @@ const generateMonitorTests = (monitor: IMonitor, member: IMember): IMonitorTests
           curl += ' -0';
         }
 
-        for (const h of headers) {
+        headers.forEach(h => {
           curl += ` -H &quot;${h.key}:${h.value}&quot;`;
-        }
+        })
 
         curl += ` ${protocol}://${escapedIP}:${port}${uri}`;
       }

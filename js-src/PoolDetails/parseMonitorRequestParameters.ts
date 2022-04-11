@@ -1,6 +1,6 @@
 /** ********************************************************************************************************************
  Takes a monitor send string as parameter and returns a request object
- **********************************************************************************************************************/
+ ******************************************************************************************************************** */
 import { IMonitorRequestParameters } from '../Interfaces/IMonitorRequestParameters';
 
 export default function parseMonitorRequestParameters(sendString: string): IMonitorRequestParameters {
@@ -21,10 +21,10 @@ export default function parseMonitorRequestParameters(sendString: string): IMoni
   }
 
   // Add only valid headers
-  for(const h of lines.filter(l => /^[^:]+: *[^:]*$/.test(l))) {
+  lines.filter(l => /^[^:]+: *[^:]*$/.test(l)).forEach(h => {
     const [key, value] = h.split(/:\s*/);
     monitorComponents.headers.push({key, value});
-  }
+  })
 
   return monitorComponents;
 }

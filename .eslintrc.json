@@ -8,7 +8,7 @@
   },
   "parserOptions": {
     "ecmaVersion": 6,
-    "project": "./tsconfig.json"
+    "project": ["./tsconfig.json", "./cypress/tsconfig.json"]
   },
   "plugins": [
     "jquery",

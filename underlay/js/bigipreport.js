@@ -109,10 +109,10 @@ function parseMonitorRequestParameters(sendString) {
         headers: []
     };
     // Add only valid headers
-    for (const h of lines.filter(l => /^[^:]+: *[^:]*$/.test(l))) {
+    lines.filter(l => /^[^:]+: *[^:]*$/.test(l)).forEach(h => {
         const [key, value] = h.split(/:\s*/);
         monitorComponents.headers.push({ key, value });
-    }
+    });
     return monitorComponents;
 }
 
@@ -125,7 +125,9 @@ const generateMonitorTests = (monitor, member) => {
     const protocol = type.replace(/:.*$/, '');
     const { verb, uri, version, headers } = parseMonitorRequestParameters(sendstring);
     const monitorTests = {};
-    let curl, http, netcat;
+    let curl;
+    let http;
+    let netcat;
     if (['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)) {
         if (['http', 'https'].includes(protocol)) {
             if (verb === 'GET' ||
@@ -137,9 +139,9 @@ const generateMonitorTests = (monitor, member) => {
                 if (version === 'HTTP/1.0') {
                     curl += ' -0';
                 }
-                for (const h of headers) {
+                headers.forEach(h => {
                     curl += ` -H &quot;${h.key}:${h.value}&quot;`;
-                }
+                });
                 curl += ` ${protocol}://${escapedIP}:${port}${uri}`;
             }
             monitorTests.curl = curl;
@@ -183,14 +185,14 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 const navCopy = (str) => {
     if (navigator && navigator.clipboard && navigator.clipboard.writeText)
         return navigator.clipboard.writeText(str);
-    return Promise.reject('The Clipboard API is not available.');
+    return Promise.reject(Error('The Clipboard API is not available.'));
 };
 /**
  * Copy data-copy attribute content from a monitor test button
- * @param e
+ * @param event
  */
-const copyToClipBoard = (e) => __awaiter(void 0, void 0, void 0, function* () {
-    const monitorButton = e.target;
+const copyToClipBoard = (event) => __awaiter(void 0, void 0, void 0, function* () {
+    const monitorButton = event.target;
     const copyString = monitorButton.getAttribute('data-copy');
     try {
         yield navCopy(copyString);
@@ -209,7 +211,7 @@ const copyToClipBoard = (e) => __awaiter(void 0, void 0, void 0, function* () {
 });
 /** ********************************************************************************************************************
  Shows the pool details light box
- **********************************************************************************************************************/
+ ******************************************************************************************************************** */
 /**
  * Renders the pool details div
  * @param pool
@@ -217,7 +219,7 @@ const copyToClipBoard = (e) => __awaiter(void 0, void 0, void 0, function* () {
  * @param layer
  */
 function showPoolDetails(pool, loadbalancer, layer = 'first') {
-    const matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
+    const matchingpool = siteData.poolsMap.get(`${loadbalancer}:${pool}`);
     const layerContentDiv = $(`#${layer}layerdetailscontentdiv`);
     updateLocationHash(true);
     let html;
@@ -272,18 +274,14 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
               <tbody>`;
         const poolmonitors = matchingpool.monitors;
         const matchingMonitors = [];
-        const monitors = siteData.monitors;
-        for (const i in poolmonitors) {
-            for (const x in monitors) {
-                if (monitors[x].name === poolmonitors[i] &&
-                    monitors[x].loadbalancer === loadbalancer) {
-                    matchingMonitors.push(monitors[x]);
-                }
-            }
-        }
-        const members = matchingpool.members;
-        for (const i in members) {
-            const member = members[i];
+        const { monitors } = siteData;
+        poolmonitors.forEach(monitorName => {
+            const matchingMonitor = monitors.find(m => m.loadbalancer === loadbalancer && m.name === monitorName);
+            if (matchingMonitor)
+                matchingMonitors.push(matchingMonitor);
+        });
+        const { members } = matchingpool;
+        members.forEach(member => {
             const memberstatus = translateStatus(member);
             table += `
                     <tr>
@@ -293,18 +291,17 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         <td>${member.priority}</td>
                         <td>${member.currentconnections}</td>
                         <td>${member.maximumconnections}</td>
-                        <td>${memberstatus['availability']}</td>
-                        <td>${memberstatus['enabled']}</td>
+                        <td>${memberstatus.availability}</td>
+                        <td>${memberstatus.enabled}</td>
                         <td>${member.status}</td>
                         <td>${memberstatus.realtime}</td>
                     </tr>`;
-        }
+        });
         table += `</tbody></table>
                     <br>`;
         if (matchingMonitors.length > 0) {
             table += '<div class="monitordetailsheader">Assigned monitors</div>';
-            for (const i in matchingMonitors) {
-                const matchingMonitor = matchingMonitors[i];
+            matchingMonitors.forEach(matchingMonitor => {
                 matchingMonitor.sendstring = matchingMonitor.sendstring
                     .replace('<', '&lt;')
                     .replace('>', '&gt;');
@@ -359,7 +356,7 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         <th>Netcat Link</th>
                     </thead>
                     <tbody>`;
-                for (const member of members) {
+                members.forEach(member => {
                     const { name, ip, port } = member;
                     const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]` : ip;
                     const protocol = matchingMonitor.type.replace(/:.*$/, '').toLocaleLowerCase();
@@ -379,11 +376,11 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         <td>${curlLink}</td>
                         <td>${netcatLink}</td>
                       </tr>`;
-                }
+                });
                 table += `
                         </table>
                         <br>`;
-            }
+            });
             table += '</tbody></table>';
         }
         html += table;
