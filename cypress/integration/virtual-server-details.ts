@@ -3,7 +3,7 @@ import {VIP_WITH_IRULE} from '../constants/constants';
 
 let virtualServers: IVirtualServer[]
 
-describe('Pool details should render properly', () => {
+describe('Virtual server details should render properly', () => {
   it('Should show the pace loader while loading the XHRs', () => {
     cy.intercept('/json/virtualservers.json').as('virtualServers');
     cy.intercept('/json/pools.json').as('pools');
@@ -18,7 +18,7 @@ describe('Pool details should render properly', () => {
 
   });
 
-  it('Should show the pool details table when clicking on a pool details link', () => {
+  it('Should show the virtual server details table when clicking on a pool details link', () => {
 
     const index = virtualServers.findIndex(vip => vip.name === VIP_WITH_IRULE);
 
