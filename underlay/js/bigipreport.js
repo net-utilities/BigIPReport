@@ -465,7 +465,7 @@ var getJSONFiles_awaiter = (undefined && undefined.__awaiter) || function (thisA
         $('#jsonloadingerrordetails').append(`${e.message}`);
         $('div.beforedocumentready').hide();
         $('#firstlayerdiv').fadeIn();
-        return;
+        throw (e);
     }
     const [pools, monitors, virtualservers, irules, datagroups, loadbalancers, preferences, knowndevices, certificates, devicegroups, asmpolicies, nat, state, policies, loggederrors,] = jsonResponses;
     const siteData = {
@@ -492,7 +492,7 @@ var getJSONFiles_awaiter = (undefined && undefined.__awaiter) || function (thisA
     siteData.pools.forEach((pool) => {
         pool.poolNum = poolNum;
         siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
-        poolNum++;
+        poolNum += 1;
     });
     return siteData;
 }));

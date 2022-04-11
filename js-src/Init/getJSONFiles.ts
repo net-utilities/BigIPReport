@@ -16,7 +16,7 @@ import ILoggedError from '../Interfaces/ILoggedErrors';
 import JSONFiles from '../Constants/JSONFiles';
 import ISiteData from '../Interfaces/ISiteData';
 
-export default async () => {
+export default async (): Promise<ISiteData> => {
 
   let jsonResponses: any[];
 
@@ -34,7 +34,7 @@ export default async () => {
     $('#jsonloadingerrordetails').append(`${(e as Error).message}`);
     $('div.beforedocumentready').hide();
     $('#firstlayerdiv').fadeIn();
-    return;
+    throw(e);
   }
 
   const [
@@ -80,7 +80,7 @@ export default async () => {
   siteData.pools.forEach((pool) => {
     pool.poolNum = poolNum;
     siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
-    poolNum++;
+    poolNum += 1;
   });
 
   return siteData;
