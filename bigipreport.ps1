@@ -1404,22 +1404,25 @@ function Get-LTMInformation {
             }
             $ObjF5Policy.definition += "`n        Do the following when traffic matches:"
             ForEach ($action in $ruleSet.actionsReference.items) {
-                if ($action.asm -eq "true" -And $action.enable -eq "true" -And $action.request -eq "true"){
-                    $ObjF5Policy.definition += "`n        -Enable asm for policy '" + $action.policy + "' at request time."
-                }
-                if ($action.asm -eq "true" -And $action.disable -eq "true" -And $action.request -eq "true"){
-                    $ObjF5Policy.definition += "`n        -Disable asm at request time."
-                }
-                if ($action.replace -eq "true" -And $action.httpHeader -eq "true" -And $action.request -eq "true"){
-                    $ObjF5Policy.definition += "`n        -Replace HTTP Header named '" + $action.tmName + "' with value '" + $action.value + "' at request time."
-                }
-                if ($action.redirect -eq "true" -And $action.httpReply -eq "true" -And $action.request -eq "true"){
-                    $ObjF5Policy.definition += "`n        -Redirect to location '" + $action.location + "' at request time."
-                }
-                if ($action.forward -eq "true" -And $action.select -eq "true" -And $action.request -eq "true"){ # maybe check if pool exists as well
-                    $ObjF5Policy.definition += "`n        -Forward traffic to pool '" + $action.pool + "' at request time."
-                } else{
-                    $ObjF5Policy.definition += "`n        -Under Construction...`n        " + $action + "`n" #please update the if statements to handle this policy
+                if (Get-Member -inputobject $action -name 'asm') {
+                    if ($action.asm -eq "true" -And $action.enable -eq "true" -And $action.request -eq "true") {
+                        $ObjF5Policy.definition += "`n        -Enable asm for policy '" + $action.policy + "' at request time."
+                    }
+                    if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'disable' ) -And $action.disable -eq "true" -And $action.request -eq "true") {
+                        $ObjF5Policy.definition += "`n        -Disable asm at request time."
+                    }
+                    if ( ( Get-Member -inputobject $action -name 'replace' ) -And $action.replace -eq "true" -And $action.httpHeader -eq "true" -And $action.request -eq "true") {
+                        $ObjF5Policy.definition += "`n        -Replace HTTP Header named '" + $action.tmName + "' with value '" + $action.value + "' at request time."
+                    }
+                    if ( ( Get-Member -inputobject $action -name 'redirect' ) -And $action.redirect -eq "true" -And $action.httpReply -eq "true" -And $action.request -eq "true") {
+                        $ObjF5Policy.definition += "`n        -Redirect to location '" + $action.location + "' at request time."
+                    }
+                    if ( ( Get-Member -inputobject $action -name 'forward' ) -And $action.forward -eq "true" -And $action.select -eq "true" -And $action.request -eq "true") {
+                        # maybe check if pool exists as well
+                        $ObjF5Policy.definition += "`n        -Forward traffic to pool '" + $action.pool + "' at request time."
+                    } else {
+                        $ObjF5Policy.definition += "`n        -Under Construction...`n        " + $action + "`n" #please update the if statements to handle this policy
+                    }
                 }
             }
         }
