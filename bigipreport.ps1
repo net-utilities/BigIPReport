@@ -1369,7 +1369,7 @@ function Get-LTMInformation {
 
     #Region Caching Policy information
 
-    log verbose "Caching Policies from $LoadBalancerName"
+    log verbose "Caching Policies"
 
     $LoadBalancerObjects.Policies = c@ {}
 
