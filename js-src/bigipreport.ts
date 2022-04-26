@@ -2073,7 +2073,7 @@ function setupPoolTable() {
       {
         data: 'monitors',
         render (data: string[]) {
-          return data.length ? data.join(' '): 'None';
+          return data ? data.join(' '): 'None';
         },
         visible: false,
       },
