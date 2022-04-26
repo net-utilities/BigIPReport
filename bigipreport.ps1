@@ -1628,7 +1628,7 @@ function Get-LTMInformation {
               # parse ipv4 addresses 10.0.0.1:port
               $ObjTempVirtualServer.ip = $destination.split(':')[0]
               $ObjTempVirtualServer.port = $destination.split(':')[1]
-              if (($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') ) {
+              if (($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') -And ($VirtualServer.mask -ne 'any6')) {
                 $cidr = Convert-MaskToCIDR($VirtualServer.mask)
                 $ObjTempVirtualServer.ip += '/' + $cidr
               }
