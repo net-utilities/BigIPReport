@@ -12,16 +12,16 @@ import generateMonitorTests from './generateMonitorTests';
 const navCopy = (str: string): Promise<void> => {
   if (navigator && navigator.clipboard && navigator.clipboard.writeText)
     return navigator.clipboard.writeText(str);
-  return Promise.reject('The Clipboard API is not available.');
+  return Promise.reject(Error('The Clipboard API is not available.'));
 };
 
 /**
  * Copy data-copy attribute content from a monitor test button
- * @param e
+ * @param event
  */
-const copyToClipBoard = async (e: MouseEvent): Promise<void> => {
+const copyToClipBoard = async (event: MouseEvent): Promise<void> => {
 
-  const monitorButton = e.target as HTMLButtonElement;
+  const monitorButton = event.target as HTMLButtonElement;
   const copyString = monitorButton.getAttribute('data-copy');
 
   try {
@@ -43,7 +43,7 @@ const copyToClipBoard = async (e: MouseEvent): Promise<void> => {
 
 /** ********************************************************************************************************************
  Shows the pool details light box
- **********************************************************************************************************************/
+ ******************************************************************************************************************** */
 
 /**
  * Renders the pool details div
@@ -53,7 +53,7 @@ const copyToClipBoard = async (e: MouseEvent): Promise<void> => {
  */
 
 export default function showPoolDetails(pool: string, loadbalancer: string, layer = 'first'): void {
-  const matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
+  const matchingpool = siteData.poolsMap.get(`${loadbalancer}:${pool}`);
   const layerContentDiv = $(`#${layer}layerdetailscontentdiv`);
 
   updateLocationHash(true);
@@ -118,23 +118,16 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
     const poolmonitors = matchingpool.monitors;
     const matchingMonitors: IMonitor[] = [];
 
-    const monitors = siteData.monitors;
+    const { monitors } = siteData;
 
-    for (const i in poolmonitors) {
-      for (const x in monitors) {
-        if (
-          monitors[x].name === poolmonitors[i] &&
-          monitors[x].loadbalancer === loadbalancer
-        ) {
-          matchingMonitors.push(monitors[x]);
-        }
-      }
-    }
+    poolmonitors.forEach(monitorName => {
+      const matchingMonitor = monitors.find(m => m.loadbalancer === loadbalancer && m.name === monitorName);
+      if (matchingMonitor) matchingMonitors.push(matchingMonitor);
+    })
 
-    const members = matchingpool.members;
+    const { members } = matchingpool;
 
-    for (const i in members) {
-      const member = members[i];
+   members.forEach(member => {
       const memberstatus = translateStatus(member);
 
       table += `
@@ -145,12 +138,12 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
                         <td>${member.priority}</td>
                         <td>${member.currentconnections}</td>
                         <td>${member.maximumconnections}</td>
-                        <td>${memberstatus['availability']}</td>
-                        <td>${memberstatus['enabled']}</td>
+                        <td>${memberstatus.availability}</td>
+                        <td>${memberstatus.enabled}</td>
                         <td>${member.status}</td>
                         <td>${memberstatus.realtime}</td>
                     </tr>`;
-    }
+    })
 
     table += `</tbody></table>
                     <br>`;
@@ -158,9 +151,7 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
     if (matchingMonitors.length > 0) {
       table += '<div class="monitordetailsheader">Assigned monitors</div>';
 
-      for (const i in matchingMonitors) {
-        const matchingMonitor = matchingMonitors[i];
-
+      matchingMonitors.forEach(matchingMonitor => {
         matchingMonitor.sendstring = matchingMonitor.sendstring
           .replace('<', '&lt;')
           .replace('>', '&gt;');
@@ -217,7 +208,7 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
                     </thead>
                     <tbody>`;
 
-        for (const member of members) {
+        members.forEach(member => {
 
           const {name, ip, port } = member;
           const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]`: ip;
@@ -242,12 +233,12 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
                         <td>${curlLink}</td>
                         <td>${netcatLink}</td>
                       </tr>`;
-        }
+        });
 
         table += `
                         </table>
                         <br>`;
-      }
+      });
 
       table += '</tbody></table>';
     }

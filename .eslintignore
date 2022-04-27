@@ -3,3 +3,4 @@ underlay/js
 js-src/*.js
 TamperMonkeyScripts
 webpack.config.cjs
+js-src/**/*.spec.ts

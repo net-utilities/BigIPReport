@@ -1,5 +1,4 @@
-
-type hasSupport = 'unknown' | 'true' | 'false' | 'ignored';
+type HasSupport = 'unknown' | 'true' | 'false' | 'ignored';
 
 interface ICertificateAlert {
     fileName: string,
@@ -13,7 +12,7 @@ interface ICertificateAlert {
 export interface ISupportState {
     supportErrorMessage: string
     lastChecked: string
-    hasSupport: hasSupport
+    hasSupport: HasSupport
     serial?: string
 
 }

@@ -34,7 +34,7 @@ __webpack_require__.d(__webpack_exports__, {
 ;// CONCATENATED MODULE: ./js-src/PoolDetails/translateStatus.ts
 /** ********************************************************************************************************************
  Translates the status and availability of a member to less cryptic text and returns a dictionary
- **********************************************************************************************************************/
+ ******************************************************************************************************************** */
 function translateStatus(member) {
     const translatedStatus = {
         availability: '',
@@ -43,45 +43,45 @@ function translateStatus(member) {
     };
     switch (member.availability) {
         case 'available':
-            translatedStatus['availability'] = '<span class="memberup">UP</span>';
+            translatedStatus.availability = '<span class="memberup">UP</span>';
             break;
         case 'unknown':
-            translatedStatus['availability'] =
+            translatedStatus.availability =
                 '<span class="memberunknown">UNKNOWN</span>';
             break;
         default:
-            translatedStatus['availability'] = '<span class="memberdown">DOWN</span>';
+            translatedStatus.availability = '<span class="memberdown">DOWN</span>';
     }
     switch (member.enabled) {
         case 'enabled':
-            translatedStatus['enabled'] =
+            translatedStatus.enabled =
                 '<span class="memberenabled">Enabled</span>';
             break;
         case 'disabled-by-parent':
-            translatedStatus['enabled'] =
+            translatedStatus.enabled =
                 '<span class="memberdisabled">Disabled by parent</span>';
             break;
         case 'disabled':
-            translatedStatus['enabled'] =
+            translatedStatus.enabled =
                 '<span class="memberdisabled">Disabled</span>';
             break;
         default:
-            translatedStatus['enabled'] =
+            translatedStatus.enabled =
                 '<span class="memberunknown">Unknown</span>';
     }
     switch (member.realtimestatus) {
         case 'up':
-            translatedStatus['realtime'] = '<span class="memberup">UP</span>';
+            translatedStatus.realtime = '<span class="memberup">UP</span>';
             break;
         case 'down':
-            translatedStatus['realtime'] = '<span class="memberdown">DOWN</span>';
+            translatedStatus.realtime = '<span class="memberdown">DOWN</span>';
             break;
         case 'session_disabled':
-            translatedStatus['realtime'] =
+            translatedStatus.realtime =
                 '<span class="memberdisabled">DISABLED</span>';
             break;
         default:
-            translatedStatus['realtime'] = (member.realtimestatus || 'N/A').toUpperCase();
+            translatedStatus.realtime = (member.realtimestatus || 'N/A').toUpperCase();
     }
     return translatedStatus;
 }
@@ -109,10 +109,10 @@ function parseMonitorRequestParameters(sendString) {
         headers: []
     };
     // Add only valid headers
-    for (const h of lines.filter(l => /^[^:]+: *[^:]*$/.test(l))) {
+    lines.filter(l => /^[^:]+: *[^:]*$/.test(l)).forEach(h => {
         const [key, value] = h.split(/:\s*/);
         monitorComponents.headers.push({ key, value });
-    }
+    });
     return monitorComponents;
 }
 
@@ -125,7 +125,9 @@ const generateMonitorTests = (monitor, member) => {
     const protocol = type.replace(/:.*$/, '');
     const { verb, uri, version, headers } = parseMonitorRequestParameters(sendstring);
     const monitorTests = {};
-    let curl, http, netcat;
+    let curl;
+    let http;
+    let netcat;
     if (['http', 'https', 'tcp', 'tcp-half-open'].includes(protocol)) {
         if (['http', 'https'].includes(protocol)) {
             if (verb === 'GET' ||
@@ -137,9 +139,9 @@ const generateMonitorTests = (monitor, member) => {
                 if (version === 'HTTP/1.0') {
                     curl += ' -0';
                 }
-                for (const h of headers) {
+                headers.forEach(h => {
                     curl += ` -H &quot;${h.key}:${h.value}&quot;`;
-                }
+                });
                 curl += ` ${protocol}://${escapedIP}:${port}${uri}`;
             }
             monitorTests.curl = curl;
@@ -183,14 +185,14 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 const navCopy = (str) => {
     if (navigator && navigator.clipboard && navigator.clipboard.writeText)
         return navigator.clipboard.writeText(str);
-    return Promise.reject('The Clipboard API is not available.');
+    return Promise.reject(Error('The Clipboard API is not available.'));
 };
 /**
  * Copy data-copy attribute content from a monitor test button
- * @param e
+ * @param event
  */
-const copyToClipBoard = (e) => __awaiter(void 0, void 0, void 0, function* () {
-    const monitorButton = e.target;
+const copyToClipBoard = (event) => __awaiter(void 0, void 0, void 0, function* () {
+    const monitorButton = event.target;
     const copyString = monitorButton.getAttribute('data-copy');
     try {
         yield navCopy(copyString);
@@ -209,7 +211,7 @@ const copyToClipBoard = (e) => __awaiter(void 0, void 0, void 0, function* () {
 });
 /** ********************************************************************************************************************
  Shows the pool details light box
- **********************************************************************************************************************/
+ ******************************************************************************************************************** */
 /**
  * Renders the pool details div
  * @param pool
@@ -217,7 +219,7 @@ const copyToClipBoard = (e) => __awaiter(void 0, void 0, void 0, function* () {
  * @param layer
  */
 function showPoolDetails(pool, loadbalancer, layer = 'first') {
-    const matchingpool = siteData.poolsMap.get(loadbalancer + ':' + pool);
+    const matchingpool = siteData.poolsMap.get(`${loadbalancer}:${pool}`);
     const layerContentDiv = $(`#${layer}layerdetailscontentdiv`);
     updateLocationHash(true);
     let html;
@@ -272,18 +274,14 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
               <tbody>`;
         const poolmonitors = matchingpool.monitors;
         const matchingMonitors = [];
-        const monitors = siteData.monitors;
-        for (const i in poolmonitors) {
-            for (const x in monitors) {
-                if (monitors[x].name === poolmonitors[i] &&
-                    monitors[x].loadbalancer === loadbalancer) {
-                    matchingMonitors.push(monitors[x]);
-                }
-            }
-        }
-        const members = matchingpool.members;
-        for (const i in members) {
-            const member = members[i];
+        const { monitors } = siteData;
+        poolmonitors.forEach(monitorName => {
+            const matchingMonitor = monitors.find(m => m.loadbalancer === loadbalancer && m.name === monitorName);
+            if (matchingMonitor)
+                matchingMonitors.push(matchingMonitor);
+        });
+        const { members } = matchingpool;
+        members.forEach(member => {
             const memberstatus = translateStatus(member);
             table += `
                     <tr>
@@ -293,18 +291,17 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         <td>${member.priority}</td>
                         <td>${member.currentconnections}</td>
                         <td>${member.maximumconnections}</td>
-                        <td>${memberstatus['availability']}</td>
-                        <td>${memberstatus['enabled']}</td>
+                        <td>${memberstatus.availability}</td>
+                        <td>${memberstatus.enabled}</td>
                         <td>${member.status}</td>
                         <td>${memberstatus.realtime}</td>
                     </tr>`;
-        }
+        });
         table += `</tbody></table>
                     <br>`;
         if (matchingMonitors.length > 0) {
             table += '<div class="monitordetailsheader">Assigned monitors</div>';
-            for (const i in matchingMonitors) {
-                const matchingMonitor = matchingMonitors[i];
+            matchingMonitors.forEach(matchingMonitor => {
                 matchingMonitor.sendstring = matchingMonitor.sendstring
                     .replace('<', '&lt;')
                     .replace('>', '&gt;');
@@ -359,7 +356,7 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         <th>Netcat Link</th>
                     </thead>
                     <tbody>`;
-                for (const member of members) {
+                members.forEach(member => {
                     const { name, ip, port } = member;
                     const escapedIP = /.+:.+:.+:/.test(ip) ? `[${ip}]` : ip;
                     const protocol = matchingMonitor.type.replace(/:.*$/, '').toLocaleLowerCase();
@@ -379,11 +376,11 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
                         <td>${curlLink}</td>
                         <td>${netcatLink}</td>
                       </tr>`;
-                }
+                });
                 table += `
                         </table>
                         <br>`;
-            }
+            });
             table += '</tbody></table>';
         }
         html += table;
@@ -414,6 +411,89 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
     $(`#${layer}layerdiv`).fadeIn(updateLocationHash);
 }
 
+;// CONCATENATED MODULE: ./js-src/Constants/JSONFiles.ts
+/**
+ * Which JSON Files to load when the script starts
+ * Remember to also change Init/getJSONFiles.ts if changing this
+ * to get the correct order when deconstructing the Promise.All
+ * array.
+ */
+/* harmony default export */ const JSONFiles = ([
+    'json/pools.json',
+    'json/monitors.json',
+    'json/virtualservers.json',
+    'json/irules.json',
+    'json/datagroups.json',
+    'json/loadbalancers.json',
+    'json/preferences.json',
+    'json/knowndevices.json',
+    'json/certificates.json',
+    'json/devicegroups.json',
+    'json/asmpolicies.json',
+    'json/nat.json',
+    'json/state.json',
+    'json/policies.json',
+    'json/loggederrors.json'
+]);
+
+;// CONCATENATED MODULE: ./js-src/Init/getJSONFiles.ts
+var getJSONFiles_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+/* harmony default export */ const getJSONFiles = (() => getJSONFiles_awaiter(void 0, void 0, void 0, function* () {
+    let jsonResponses;
+    try {
+        jsonResponses = yield Promise.all(JSONFiles.map((url) => getJSONFiles_awaiter(void 0, void 0, void 0, function* () {
+            const resp = yield fetch(url, { cache: 'no-cache' });
+            if (resp.status !== 200) {
+                throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
+            }
+            return resp.json();
+        })));
+    }
+    catch (e) {
+        $('#jsonloadingerrordetails').append(`${e.message}`);
+        $('div.beforedocumentready').hide();
+        $('#firstlayerdiv').fadeIn();
+        throw (e);
+    }
+    const [pools, monitors, virtualservers, irules, datagroups, loadbalancers, preferences, knowndevices, certificates, devicegroups, asmpolicies, nat, state, policies, loggederrors,] = jsonResponses;
+    const siteData = {
+        NATdict: nat,
+        asmPolicies: asmpolicies,
+        certificates: certificates,
+        countDown: 0,
+        datagroupdetailsTableData: [],
+        datagroups: datagroups,
+        deviceGroups: devicegroups,
+        irules: irules,
+        loadbalancers: loadbalancers,
+        loggedErrors: loggederrors,
+        monitors: monitors,
+        pools: pools,
+        state: state,
+        virtualservers: virtualservers,
+        policies: policies,
+        knownDevices: knowndevices,
+        preferences: preferences,
+        poolsMap: new Map(),
+    };
+    let poolNum = 0;
+    siteData.pools.forEach((pool) => {
+        pool.poolNum = poolNum;
+        siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
+        poolNum += 1;
+    });
+    return siteData;
+}));
+
 ;// CONCATENATED MODULE: ./js-src/bigipreport.ts
 var bigipreport_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -425,43 +505,20 @@ var bigipreport_awaiter = (undefined && undefined.__awaiter) || function (thisAr
     });
 };
 
-/** ********************************************************************************************************************
+
+/* *********************************************************************************************************************
 
     BigIPReport Javascript
 
-***********************************************************************************************************************/
-const siteData = {
-    NATdict: [],
-    asmPolicies: [],
-    certificates: [],
-    countDown: 0,
-    datagroupdetailsTableData: [],
-    datagroups: [],
-    deviceGroups: [],
-    irules: [],
-    knownDevices: [],
-    loadbalancers: [],
-    loggedErrors: [],
-    monitors: [],
-    pools: [],
-    virtualservers: [],
-    policies: [],
-    poolsMap: new Map(),
+********************************************************************************************************************* */
+// eslint-disable-next-line import/no-mutable-exports
+let siteData = {
+    loggedErrors: []
 };
-/** ********************************************************************************************************************
-
-    Waiting for all pre-requisite objects to load
-
-***********************************************************************************************************************/
-window.addEventListener('load', function () {
-    return bigipreport_awaiter(this, void 0, void 0, function* () {
-        // Animate loader off screen
-        log('Starting window on load', 'INFO');
-        // Prevent caching of ajax requests
-        $(function () {
-            $.ajaxSetup({ cache: false });
-        });
-        $('#firstlayerdetailscontentdiv').html(`
+window.addEventListener('load', () => bigipreport_awaiter(void 0, void 0, void 0, function* () {
+    // Animate loader off screen
+    log('Starting window on load', 'INFO');
+    $('#firstlayerdetailscontentdiv').html(`
     <div id="jsonloadingerrors">
         <span style="font-size: 20px">The following json file did not load:</span>
         <div id="jsonloadingerrordetails"></div>
@@ -488,183 +545,120 @@ window.addEventListener('load', function () {
             problems has been solved.
          </span>
     </div>`);
-        const closeFirstLayerButton = $('a#closefirstlayerbutton');
-        closeFirstLayerButton.text('Close error details');
-        /** ******************************************************************************************************************
-      
-              Lightbox related functions
-      
-          *******************************************************************************************************************/
-        /* Hide the lightbox if clicking outside the information box*/
-        $('body').on('click', function (e) {
-            if (e.target.classList.contains('lightbox')) {
-                $('div#' + e.target.id).fadeOut(function () {
-                    updateLocationHash();
-                });
-            }
-        });
-        closeFirstLayerButton.on('click', function () {
-            $('div#firstlayerdiv').trigger('click');
-        });
-        $('a#closesecondlayerbutton').on('click', function () {
-            $('div#secondlayerdiv').trigger('click');
-        });
-        /**
-         * Example use:
-         * $('div:icontains("Text in page")');
-         * Will return jQuery object containing any/all of the following:
-         * <div>text in page</div>
-         * <div>TEXT in PAGE</div>
-         * <div>Text in page</div>
-         */
-        $.expr[':'].icontains = $.expr.createPseudo(function (text) {
-            return function (e) {
-                return $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0;
-            };
-        });
-        /* syntax highlighting */
-        // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
-        const jsonFiles = [
-            'json/pools.json',
-            'json/monitors.json',
-            'json/virtualservers.json',
-            'json/irules.json',
-            'json/datagroups.json',
-            'json/loadbalancers.json',
-            'json/preferences.json',
-            'json/knowndevices.json',
-            'json/certificates.json',
-            'json/devicegroups.json',
-            'json/asmpolicies.json',
-            'json/nat.json',
-            'json/state.json',
-            'json/policies.json',
-            'json/loggederrors.json'
-        ];
-        let jsonResponses;
-        try {
-            jsonResponses = yield Promise.all(jsonFiles.map((url) => bigipreport_awaiter(this, void 0, void 0, function* () {
-                const resp = yield fetch(url, { cache: 'no-cache' });
-                if (resp.status !== 200) {
-                    throw new Error(`Failed to load ${resp.url}, got a status code of ${resp.status} (${resp.statusText})`);
-                }
-                return resp.json();
-            })));
+    const closeFirstLayerButton = $('a#closefirstlayerbutton');
+    closeFirstLayerButton.text('Close error details');
+    /* *******************************************************************************************************************
+  
+          Lightbox related functions
+  
+      ***************************************************************************************************************** */
+    /* Hide the lightbox if clicking outside the information box */
+    $('body').on('click', (e) => {
+        if (e.target.classList.contains('lightbox')) {
+            $(`div#${e.target.id}`).fadeOut(updateLocationHash);
         }
-        catch (e) {
-            $('#jsonloadingerrordetails').append(`${e.message}`);
-            $('div.beforedocumentready').hide();
-            $('#firstlayerdiv').fadeIn();
-            return;
-        }
-        const [pools, monitors, virtualservers, irules, datagroups, loadbalancers, preferences, knowndevices, certificates, devicegroups, asmpolicies, nat, state, policies, loggederrors,] = jsonResponses;
-        siteData.pools = pools;
-        siteData.poolsMap = new Map();
-        let poolNum = 0;
-        siteData.pools.forEach((pool) => {
-            pool.poolNum = poolNum;
-            siteData.poolsMap.set(`${pool.loadbalancer}:${pool.name}`, pool);
-            poolNum++;
-        });
-        siteData.monitors = monitors;
-        siteData.virtualservers = virtualservers;
-        siteData.irules = irules;
-        siteData.datagroups = datagroups;
-        siteData.loadbalancers = loadbalancers;
-        siteData.preferences = preferences;
-        siteData.knownDevices = knowndevices;
-        siteData.certificates = certificates;
-        siteData.deviceGroups = devicegroups;
-        siteData.asmPolicies = asmpolicies;
-        siteData.NATdict = nat;
-        siteData.state = state;
-        siteData.policies = policies;
-        siteData.loggedErrors = loggederrors.concat(siteData.loggedErrors);
-        // Update the footer
-        const localStartTime = new Date(siteData.preferences.startTime).toString();
-        $('div#report-footer').html(`
+    });
+    closeFirstLayerButton.on('click', () => {
+        $('div#firstlayerdiv').trigger('click');
+    });
+    $('a#closesecondlayerbutton').on('click', () => {
+        $('div#secondlayerdiv').trigger('click');
+    });
+    /**
+     * Example use:
+     * $('div:icontains("Text in page")');
+     * Will return jQuery object containing any/all of the following:
+     * <div>text in page</div>
+     * <div>TEXT in PAGE</div>
+     * <div>Text in page</div>
+     */
+    $.expr[':'].icontains = $.expr.createPseudo((text) => (e) => $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0);
+    /* syntax highlighting */
+    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+    siteData = yield getJSONFiles();
+    // Update the footer
+    const localStartTime = new Date(siteData.preferences.startTime).toString();
+    $('div#report-footer').html(`
     <div class="footer">
-    The report was generated on ${siteData.preferences.scriptServer}
-    using BigIPReport version ${siteData.preferences.scriptVersion}.
-    Script started at <span id="Generationtime">${localStartTime}</span> and took
-    ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
-    BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
-    and <a href="https://rikers.org/">Tim Riker</a>.
+      The report was generated on ${siteData.preferences.scriptServer}
+      using BigIPReport version ${siteData.preferences.scriptVersion}.
+      Script started at <span id="Generationtime">${localStartTime}</span> and took
+      ${Math.round(siteData.preferences.executionTime).toString()} minutes to finish.<br>
+      BigIPReport is written and maintained by <a href="http://loadbalancing.se/about/">Patrik Jonsson</a>
+      and <a href="https://rikers.org/">Tim Riker</a>.
     </div>
   `);
-        /** ***********************************************************************************************************
-      
-                All pre-requisite things have loaded
-      
-            **************************************************************************************************************/
-        // Show statistics from siteData arrays
-        log('Loaded: ' +
-            Object.keys(siteData)
-                .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
-                .map((k) => `${k}: ${siteData[k].length}`)
-                .join(', '), 'INFO');
-        /** ***********************************************************************************************************
-      
-                Load preferences
-      
-            **************************************************************************************************************/
-        loadPreferences();
-        /** ***********************************************************************************************************
-      
-                Test the status VIPs
-      
-        **************************************************************************************************************/
-        initializeStatusVIPs();
-        /* highlight selected menu option */
-        populateSearchParameters(false);
-        const currentSection = $('div#mainholder').attr('data-activesection');
-        if (currentSection === undefined) {
-            showVirtualServers(true);
-        }
-        /** ***********************************************************************************************************
-                This section adds the update check button div and initiates the update checks
-         **************************************************************************************************************/
-        NavButtonDiv(null, null, null); // eslint-disable-line new-cap
-        // Check if there's a new update
-        setInterval(function () {
-            $.ajax('json/preferences.json', {
-                type: 'HEAD',
-                success: NavButtonDiv,
-            });
-        }, 60000);
-        // Attach click events to the main menu buttons and poller div
-        document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
-        document.querySelector('div#poolsbutton').addEventListener('click', showPools);
-        document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
-        document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
-        document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
-        document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
-        document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
-        document.querySelector('div#logsbutton').addEventListener('click', showLogs);
-        document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
-        document.querySelector('div#helpbutton').addEventListener('click', showHelp);
-        document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
-        // Attach module calls to window in order to call them from html rendered by js
-        // These should be removed in favor of event listeners later. See Virtual Server name column
-        // for an example
-        window['showPoolDetails'] = showPoolDetails;
-        window['togglePool'] = togglePool;
-        window['togglePoolHighlight'] = togglePoolHighlight;
-        window['showVirtualServerDetails'] = showVirtualServerDetails;
-        window['showDataGroupDetails'] = showDataGroupDetails;
-        window['showiRuleDetails'] = showiRuleDetails;
-        window['showPolicyDetails'] = showPolicyDetails;
-        window['siteData'] = siteData;
-    });
-});
+    /* ************************************************************************************************************
+  
+            All pre-requisite things have loaded
+  
+       ********************************************************************************************************* */
+    // Show statistics from siteData arrays
+    log(`Loaded: ${Object.keys(siteData)
+        .filter((k) => k !== 'bigipTable' && siteData[k] && siteData[k].length !== undefined)
+        .map((k) => `${k}: ${siteData[k].length}`)
+        .join(', ')}`, 'INFO');
+    /* ************************************************************************************************************
+  
+            Load preferences
+  
+       ********************************************************************************************************* */
+    loadPreferences();
+    /* ***********************************************************************************************************
+  
+            Test the status VIPs
+  
+    *********************************************************************************************************** */
+    initializeStatusVIPs();
+    /* highlight selected menu option */
+    populateSearchParameters(false);
+    const currentSection = $('div#mainholder').attr('data-activesection');
+    if (currentSection === undefined) {
+        showVirtualServers(true);
+    }
+    /* ************************************************************************************************************
+            This section adds the update check button div and initiates the update checks
+     *********************************************************************************************************** */
+    NavButtonDiv(null, null, null); // eslint-disable-line new-cap
+    // Check if there's a new update
+    setInterval(() => {
+        $.ajax('json/preferences.json', {
+            type: 'HEAD',
+            success: NavButtonDiv,
+        });
+    }, 60000);
+    // Attach click events to the main menu buttons and poller div
+    document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
+    document.querySelector('div#poolsbutton').addEventListener('click', showPools);
+    document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
+    document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
+    document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
+    document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
+    document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
+    document.querySelector('div#logsbutton').addEventListener('click', showLogs);
+    document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
+    document.querySelector('div#helpbutton').addEventListener('click', showHelp);
+    document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
+    // Attach module calls to window in order to call them from html rendered by js
+    // These should be removed in favor of event listeners later. See Virtual Server name column
+    // for an example
+    window.showPoolDetails = showPoolDetails;
+    window.togglePool = togglePool;
+    window.togglePoolHighlight = togglePoolHighlight;
+    window.showVirtualServerDetails = showVirtualServerDetails;
+    window.showDataGroupDetails = showDataGroupDetails;
+    window.showiRuleDetails = showiRuleDetails;
+    window.showPolicyDetails = showPolicyDetails;
+    window.siteData = siteData;
+}));
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
     let timesincerefresh = 0;
-    if (siteData.preferences.currentReportDate === undefined && xhr && null != xhr.getResponseHeader('Last-Modified')) {
+    if (siteData.preferences.currentReportDate === undefined && xhr && xhr.getResponseHeader('Last-Modified') != null) {
         // If we have not yet stored the currentReportDate, store it and return
         siteData.preferences.currentReportDate = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
     }
-    else if (xhr && null != xhr.getResponseHeader('Last-Modified')) {
+    else if (xhr && xhr.getResponseHeader('Last-Modified') != null) {
         const latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
         // If there's been a new report, how long ago (in minutes)
         timesincerefresh = Math.round((latestreport - siteData.preferences.currentReportDate) / 60000);
@@ -682,10 +676,10 @@ function NavButtonDiv(response, status, xhr) {
         navbutton +=
             '<li><button onclick="document.location.reload()" class="navbutton">Refresh</button></li>';
     }
-    for (const key in siteData.preferences.NavLinks) {
+    Object.keys(siteData.preferences.NavLinks).forEach((key) => {
         navbutton += `<li><button onclick="window.location.href='${siteData.preferences.NavLinks[key]}'"
                     class="navbutton">${key}</button></li>`;
-    }
+    });
     navbutton += '</ul>';
     $('div#navbuttondiv').html(navbutton);
 }
@@ -699,20 +693,17 @@ function initializeStatusVIPs() {
     siteData.memberStates.ajaxQueue = [];
     siteData.memberStates.ajaxRecent = [];
     siteData.memberStates.ajaxFailures = [];
-    const loadbalancers = siteData.loadbalancers;
+    const { loadbalancers } = siteData;
     // Check if there is any functioning pool status vips
-    const hasConfiguredStatusVIP = loadbalancers.some(function (e) {
-        return /[a-b0-9]+/.test(e.statusvip.url);
-    });
+    const hasConfiguredStatusVIP = loadbalancers.some((e) => /[a-b0-9]+/.test(e.statusvip.url));
     if (hasConfiguredStatusVIP) {
-        for (const i in loadbalancers) {
-            const loadbalancer = loadbalancers[i];
+        loadbalancers.forEach(loadbalancer => {
             // Increase the not configured span for loadbalancers that is eligible for polling but has none configured
             if (loadbalancer.statusvip.url === '' &&
                 (loadbalancer.active || loadbalancer.isonlydevice)) {
                 log(`Loadbalancer ${loadbalancer.name} does not have any status VIP configured`, 'INFO');
                 const realTimeNotConfigured = $('span#realtimenotconfigured');
-                realTimeNotConfigured.text(parseInt(realTimeNotConfigured.text()) + 1);
+                realTimeNotConfigured.text(parseInt(realTimeNotConfigured.text(), 10) + 1);
                 loadbalancer.statusvip.working = false;
                 loadbalancer.statusvip.reason = 'None configured';
             }
@@ -720,7 +711,7 @@ function initializeStatusVIPs() {
                 (loadbalancer.active || loadbalancer.isonlydevice)) {
                 testStatusVIP(loadbalancer);
             }
-        }
+        });
     }
     else {
         log('No status VIPs has been configured', 'INFO');
@@ -729,129 +720,115 @@ function initializeStatusVIPs() {
     }
 }
 function poolMemberStatus(member, type) {
-    const mStatus = member.enabled + ':' + member.availability;
+    const memberStatus = `${member.enabled}:${member.availability}`;
     if (type === 'export') {
         return '';
     }
-    else if (type === 'filter') {
-        return mStatus;
+    if (type === 'filter') {
+        return memberStatus;
     }
-    else if (mStatus === 'enabled:available') {
-        return `<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"
-                title="${mStatus} - Member is able to pass traffic"/></span>`;
+    let returnValue = '';
+    if (memberStatus === 'enabled:available') {
+        returnValue = `<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"
+                title="${memberStatus} - Member is able to pass traffic"/></span>`;
     }
-    else if (mStatus === 'enabled:unknown') {
-        return `<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"
-                title="${mStatus} - Member status unknown"/></span>`;
+    else if (memberStatus === 'enabled:unknown') {
+        returnValue = `<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"
+                title="${memberStatus} - Member status unknown"/></span>`;
     }
-    else if (mStatus === 'enabled:offline') {
-        return `<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"
-                title="${mStatus} - Member is unable to pass traffic"/></span>`;
+    else if (memberStatus === 'enabled:offline') {
+        returnValue = `<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"
+                title="${memberStatus} - Member is unable to pass traffic"/></span>`;
     }
-    else if (mStatus === 'enabled:unavailable') {
-        return `<span class="statusicon"><img src="images/red-diamond-exclamationmark.png" alt="Unavailable (Enabled)"
-                title="${mStatus} - Member connection limit reached"/></span>`;
+    else if (memberStatus === 'enabled:unavailable') {
+        returnValue = `<span class="statusicon">
+                     <img src="images/red-diamond-exclamationmark.png" alt="Unavailable (Enabled)"
+                        title="${memberStatus} - Member connection limit reached"/></span>`;
     }
-    else if (mStatus === 'disabled:available') {
-        return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)"
-                title="${mStatus} - Member is available, but disabled"/></span>`;
+    else if (memberStatus === 'disabled:available') {
+        returnValue = `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Available (Disabled)"
+                title="${memberStatus} - Member is available, but disabled"/></span>`;
     }
-    else if (mStatus === 'disabled:offline' ||
-        mStatus === 'disabled-by-parent:available' ||
-        mStatus === 'disabled-by-parent:offline') {
-        return `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"
-                title="${mStatus} - Member is disabled"/></span>`;
+    else if (memberStatus === 'disabled:offline' ||
+        memberStatus === 'disabled-by-parent:available' ||
+        memberStatus === 'disabled-by-parent:offline') {
+        returnValue = `<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"
+                title="${memberStatus} - Member is disabled"/></span>`;
     }
-    return mStatus;
+    return returnValue;
 }
 function poolStatus(pool, type) {
     if (!pool || type === 'export') {
         return '';
     }
-    const pStatus = pool.enabled + ':' + pool.availability;
+    const { enabled, availability, status } = pool;
+    const pStatus = `${enabled}:${availability}`;
     if (type === 'display' || type === 'print') {
         if (pStatus === 'enabled:available') {
-            return ('<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+            return (`<span class="statusicon">
+            <img src="images/green-circle-checkmark.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+        </span>`);
         }
-        else if (pStatus === 'enabled:unknown') {
-            return ('<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+        if (pStatus === 'enabled:unknown') {
+            return (`<span class="statusicon">
+            <img src="images/blue-square-questionmark.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+         </span>`);
         }
-        else if (pStatus === 'enabled:offline') {
-            return ('<span class="statusicon"><img src="images/red-circle-cross.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+        if (pStatus === 'enabled:offline') {
+            return (`<span class="statusicon">
+            <img src="images/red-circle-cross.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+        </span>`);
         }
-        else if (pStatus === 'disabled-by-parent:available' ||
+        if (pStatus === 'disabled-by-parent:available' ||
             pStatus === 'disabled-by-parent:offline') {
-            return ('<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="' +
-                pStatus +
-                '" title="' +
-                pStatus +
-                ' - ' +
-                pool.status +
-                '"/></span>');
+            return (`<span class="statusicon">
+            <img src="images/black-circle-checkmark.png" alt="${pStatus}" title="${pStatus} - ${status}"/>
+         </span>`);
         }
         return pStatus;
     }
-    else {
-        return pStatus;
-    }
+    return pStatus;
 }
 function virtualServerStatus(row, type) {
-    if (!row.enabled || !row.availability)
+    const { enabled, availability } = row;
+    if (!enabled || !availability)
         return '';
-    const vsStatus = row.enabled + ':' + row.availability;
+    const vsStatus = `${enabled}:${availability}`;
     if (type === 'filter') {
         return vsStatus;
     }
-    else if (vsStatus === 'enabled:available') {
+    if (vsStatus === 'enabled:available') {
         return `<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"
                 title="${vsStatus} - The virtual server is available"/></span>`;
     }
-    else if (vsStatus === 'enabled:unknown') {
+    if (vsStatus === 'enabled:unknown') {
         return ('<span class="statusicon"><img src="images/blue-square-questionmark.png" alt="Unknown (Enabled)"' +
             ` title="${vsStatus} - The children pool member(s) either don't have service checking enabled, or ` +
             'service check results are not available yet"/></span>');
     }
-    else if (vsStatus === 'enabled:offline') {
+    if (vsStatus === 'enabled:offline') {
         return ('<span class="statusicon"><img src="images/red-circle-cross.png" alt="Offline (Enabled)"' +
             ` title="${vsStatus} - The children pool member(s) are down"/></span>`);
     }
-    else if (vsStatus === 'disabled:available') {
+    if (vsStatus === 'disabled:available') {
         return ('<span class="statusicon"><img src="images/black-circle-cross.png" alt="Available (Disabled)"' +
             ` title="${vsStatus} - The virtual server is disabled"/></span>`);
     }
-    else if (vsStatus === 'disabled:unknown') {
+    if (vsStatus === 'disabled:unknown') {
         return ('<span class="statusicon"><img src="images/black-circle-checkmark.png" alt="Unknown (Disabled)"' +
             ` title="${vsStatus} - The children pool member(s) either don't have service checking enabled,` +
             ' or service check results are not available yet"/></span>');
     }
-    else if (vsStatus === 'disabled:offline') {
+    if (vsStatus === 'disabled:offline') {
         return ('<span class="statusicon"><img src="images/black-circle-cross.png" alt="Offline (Disabled)"' +
             ` title="${vsStatus} - The children pool member(s) are down"/></span>`);
     }
-    else if (vsStatus === 'disabled-by-parent:offline') {
+    if (vsStatus === 'disabled-by-parent:offline') {
         return ('<span class="statusicon">' +
             '<img src="images/black-circle-cross.png" alt="Offline (Disabled-by-parent)"' +
             ` title="${vsStatus} - The parent is disabled and the children pool member(s) are down"/></span>`);
     }
-    else if (vsStatus === 'disabled-by-parent:available') {
+    if (vsStatus === 'disabled-by-parent:available') {
         return ('<span class="statusicon">' +
             '<img src="images/black-diamond-exclamationmark.png" alt="Available (Disabled-by-parent)"' +
             ` title="${vsStatus} - The children pool member(s) are available but the parent is disabled"/></span>`);
@@ -861,14 +838,15 @@ function virtualServerStatus(row, type) {
 function createdPoolCell(cell, cellData, rowData, rowIndex) {
     if (rowData.pools) {
         $(cell).addClass('PoolCell');
-        $(cell).attr('id', 'vs-' + rowIndex);
+        $(cell).attr('id', `vs-${rowIndex}`);
     }
 }
 function renderPoolMember(loadbalancer, member, type) {
+    const { name, ip, port } = member;
     let result = '';
     if (member !== null) {
         if (type === 'display' || type === 'print') {
-            result += '<span data-member="' + member.ip + ':' + member.port + '">';
+            result += `<span data-member="${ip}:${port}">`;
         }
         result += poolMemberStatus(member, type);
         if (type === 'display' || type === 'print') {
@@ -877,11 +855,11 @@ function renderPoolMember(loadbalancer, member, type) {
         else {
             result += ' ';
         }
-        const name = member.name.split('/')[2];
-        if ((name !== member.ip + ':' + member.port) && (name !== member.ip + '.' + member.port)) {
-            result += '(' + member.ip + ')';
+        const memberName = name.split('/')[2];
+        if ((memberName !== `${ip}:${port}`) && (memberName !== `${ip}.${port}`)) {
+            result += `(${ip})`;
         }
-        result += name;
+        result += memberName;
     }
     return result;
 }
@@ -892,54 +870,59 @@ function renderPoolMemberCell(type, member, poolNum) {
         </td>
     `;
 }
-function renderPoolCell(data, type, row, meta) {
+/**
+ * Renders the pools associated with a virtual server
+ * @param poolNames
+ * @param type
+ * @param virtualServer
+ * @param meta
+ */
+function renderVirtualServerPoolCell(poolNames, type, virtualServer, meta) {
     if (type === 'sort') {
-        if (data) {
-            return data.length;
-        }
-        else {
-            return 0;
-        }
+        return poolNames ? poolNames.length : 0;
     }
-    if (!data) {
+    if (!poolNames) {
         return 'N/A';
     }
+    const { loadbalancer: vipLoadbalancer } = virtualServer;
     let poolCell = '';
     if (type === 'filter' || type === 'export') {
-        for (let i = 0; i < data.length; i++) {
-            const pool = siteData.poolsMap.get(row.loadbalancer + ':' + data[i]);
+        poolNames.forEach(poolName => {
+            const pool = siteData.poolsMap.get(`${vipLoadbalancer}:${poolName}`);
+            if (!pool)
+                return;
+            const { loadbalancer: poolLoadbalancer, name, members } = pool;
             if (pool) {
-                poolCell += renderPool(pool.loadbalancer, pool.name, type) + ': ';
-                if (pool.members !== null) {
-                    poolCell += renderPoolMember(pool.loadbalancer, pool.members[0], type);
-                    for (let m = 1; m < pool.members.length; m++) {
-                        poolCell +=
-                            ',' + renderPoolMember(pool.loadbalancer, pool.members[m], type);
-                    }
+                poolCell += `${renderPool(poolLoadbalancer, name, type)}: `;
+                if (members !== null) {
+                    poolCell += renderPoolMember(poolLoadbalancer, members[0], type);
+                    members.forEach(m => {
+                        poolCell += `,${renderPoolMember(poolLoadbalancer, m, type)}`;
+                    });
                 }
             }
-        }
+        });
         return poolCell;
     }
     if (type === 'display') {
         const tid = `vs-${meta.row}`;
         poolCell += `
-                    <div class="expand" id="expand-${tid}" style="display: none;">
-                        <a><img src="images/chevron-down.png" alt="down" onclick="togglePool('${tid}')"></a>
-                    </div>
-                    <div class="collapse" id="collapse-${tid}" style="display: block;">
-                        <a><img src="images/chevron-up.png" alt="up" onclick="togglePool('${tid}')"></a>
-                    </div>
-                    <div class="AssociatedPoolsInfo" onclick="togglePool('${tid}')"
-                        id="AssociatedPoolsInfo-${tid}" style="display: none;">
-                        Show ${data.length} associated pools
-                    </div>
-                    <div id="PoolCell-${tid}" class="pooltablediv" style="display: block;">`;
+                      <div class="expand" id="expand-${tid}" style="display: none;">
+                          <a><img src="images/chevron-down.png" alt="down" onclick="togglePool('${tid}')"></a>
+                      </div>
+                      <div class="collapse" id="collapse-${tid}" style="display: block;">
+                          <a><img src="images/chevron-up.png" alt="up" onclick="togglePool('${tid}')"></a>
+                      </div>
+                      <div class="AssociatedPoolsInfo" onclick="togglePool('${tid}')"
+                          id="AssociatedPoolsInfo-${tid}" style="display: none;">
+                          Show ${poolNames.length} associated pools
+                      </div>
+                      <div id="PoolCell-${tid}" class="pooltablediv" style="display: block;">`;
     }
     poolCell += '<table class="pooltable"><tbody>';
-    for (let i = 0; i < data.length; i++) {
-        const pool = siteData.poolsMap.get(row.loadbalancer + ':' + data[i]);
-        // report dumps pools before virtualhosts, so pool might not exist
+    poolNames.forEach(poolName => {
+        const pool = siteData.poolsMap.get(`${vipLoadbalancer}:${poolName}`);
+        // Report dumps pools before virtualhosts, so pool might not exist
         if (pool) {
             const poolClass = `Pool-${pool.poolNum}`;
             poolCell += `<tr class="${poolClass}"`;
@@ -963,12 +946,12 @@ function renderPoolCell(data, type, row, meta) {
             }
             poolCell += '</tr>';
             if (pool.members !== null) {
-                for (let m = 1; m < pool.members.length; m++) {
+                for (let m = 1; m < pool.members.length; m += 1) {
                     poolCell += `<tr class="${poolClass}">${renderPoolMemberCell(type, pool.members[m], pool.poolNum || 0)}</tr>`;
                 }
             }
         }
-    }
+    });
     poolCell += '</tbody></table>';
     poolCell += '</div>';
     return poolCell;
@@ -1016,67 +999,53 @@ function renderList(data, type, row, meta, renderCallback, plural) {
     return result;
 }
 function testStatusVIP(loadbalancer) {
-    const name = loadbalancer.name;
+    const { name, statusvip } = loadbalancer;
     // Find a pool with members on this load balancer
-    let pool;
-    const pools = siteData.pools;
-    for (const i in pools) {
-        if (pools[i].loadbalancer === name && pools[i].members) {
-            pool = pools[i];
-            break;
-        }
-    }
+    const pool = siteData.pools.find(p => p.name === name && p.members);
     if (!pool) {
-        loadbalancer.statusvip.working = false;
-        loadbalancer.statusvip.reason = 'No pools with members found';
+        statusvip.working = false;
+        statusvip.reason = 'No pools with members found';
         log(`No pools with members to test the status vip with on loadbalancer ${name}, marking it as failed`, 'ERROR');
     }
     else {
-        const testURL = loadbalancer.statusvip.url + pool.name;
+        const testURL = statusvip.url + pool.name;
         increaseAjaxQueue(testURL);
         $.ajax({
             dataType: 'json',
             url: testURL,
-            success: function () {
+            success() {
                 const realtimeTestSuccessSpan = $('span#realtimetestsuccess');
-                realtimeTestSuccessSpan.text(parseInt(realtimeTestSuccessSpan.text()) + 1);
-                log('Statusvip test <a href="' +
-                    testURL +
-                    '">' +
-                    testURL +
-                    '</a> was successful on loadbalancer: <b>' +
-                    loadbalancer.name +
-                    '</b>', 'INFO');
-                loadbalancer.statusvip.working = true;
-                loadbalancer.statusvip.reason = '';
+                realtimeTestSuccessSpan.text(parseInt(realtimeTestSuccessSpan.text(), 10) + 1);
+                log(`Statusvip test <a href="${testURL}">${testURL}</a>
+                    was successful on loadbalancer: <b>${name}</b>`, 'INFO');
+                statusvip.working = true;
+                statusvip.reason = '';
                 decreaseAjaxQueue(testURL);
             },
             timeout: 2000,
         })
-            .fail(function (jqxhr) {
+            .fail((jqxhr) => {
             log(`Statusvip test <a href="${testURL}">${testURL}</a> failed on loadbalancer: <b>` +
-                `${loadbalancer.name}</b><br>Information about troubleshooting status VIPs is available` +
+                `${name}</b><br>Information about troubleshooting status VIPs is available` +
                 ` <a href="https://loadbalancing.se/bigip-report/#One_or_more_status_endpoints_has_been_marked_as_failed">
                 here
             </a>`, 'ERROR');
             const realtimeTestFailedSpan = $('span#realtimetestfailed');
-            realtimeTestFailedSpan.text(parseInt(realtimeTestFailedSpan.text()) + 1);
+            realtimeTestFailedSpan.text(parseInt(realtimeTestFailedSpan.text(), 10) + 1);
             loadbalancer.statusvip.working = false;
             loadbalancer.statusvip.reason = jqxhr.statusText;
             decreaseAjaxQueue(testURL);
         })
-            .always(function () {
+            .always(() => {
             if (siteData.memberStates.ajaxQueue.length === 0) {
                 // Tests done, restore the view of the original URL
                 populateSearchParameters(false);
                 // Check if there is any functioning pool status vips
-                const hasWorkingStatusVIP = siteData.loadbalancers.some(function (e) {
-                    return e.statusvip.working;
-                });
+                const hasWorkingStatusVIP = siteData.loadbalancers.some((e) => e.statusvip.working);
                 if (hasWorkingStatusVIP) {
                     log('Status VIPs tested, starting the polling functions', 'INFO');
                     pollCurrentView();
-                    setInterval(function () {
+                    setInterval(() => {
                         if (siteData.memberStates.ajaxQueue.length === 0) {
                             pollCurrentView();
                         }
@@ -1114,6 +1083,7 @@ function pollCurrentView() {
         case 'pools':
             length = poolTableDiv.length;
             break;
+        default: break;
     }
     if (length >= 0 && length <= siteData.preferences.PollingMaxPools) {
         switch (currentSection) {
@@ -1127,13 +1097,14 @@ function pollCurrentView() {
                     getPoolStatusPools(this);
                 });
                 break;
+            default: break;
         }
     }
 }
 function renderLoadBalancer(loadbalancer, type) {
     let balancer;
     if (siteData.preferences.HideLoadBalancerFQDN) {
-        balancer = loadbalancer.split('.')[0];
+        [balancer] = loadbalancer.split('.');
     }
     else {
         balancer = loadbalancer;
@@ -1193,7 +1164,6 @@ function renderPolicy(loadbalancer, name, type) {
     if (name === 'None') {
         return 'None';
     }
-    //const policyName = name.replace(/^\/Common\//, ''); does not work for any reason
     let result = '';
     if (type === 'display') {
         result += `<span class="adcLinkSpan"></span>
@@ -1274,7 +1244,7 @@ function renderDataGroup(loadbalancer, name, type) {
     return result;
 }
 function countdownClock() {
-    siteData.countDown--;
+    siteData.countDown += -1;
     if (siteData.countDown === 0) {
         clearTimeout(siteData.clock);
     }
@@ -1288,22 +1258,19 @@ function countdownClock() {
         case 'pools':
             length = $('table#poolTable details[open][data-name],table#poolTable div[data-name]').length;
             break;
+        default: break;
     }
     let pollingstate = '';
     if (length === 0 || length > siteData.preferences.PollingMaxPools) {
         pollingstate += 'Disabled, ';
     }
-    pollingstate +=
-        length + '/' + siteData.preferences.PollingMaxPools + ' pools open, ';
+    pollingstate += `${length}/${siteData.preferences.PollingMaxPools} pools open, `;
     if (siteData.memberStates) {
         pollingstate +=
-            '<span id="ajaxqueue">' +
-                siteData.memberStates.ajaxQueue.length +
-                '</span>/' +
-                siteData.preferences.PollingMaxQueue +
-                ' queued, ';
+            `<span id="ajaxqueue">${siteData.memberStates.ajaxQueue.length}</span>
+        /${siteData.preferences.PollingMaxQueue} queued, `;
     }
-    pollingstate += 'refresh in ' + siteData.countDown + ' seconds.';
+    pollingstate += `refresh in ${siteData.countDown} seconds.`;
     $('td#pollingstatecell').html(pollingstate);
 }
 function resetClock() {
@@ -1315,7 +1282,7 @@ function resetClock() {
 function getPoolStatus(poolCell) {
     if (siteData.memberStates.ajaxQueue.length >=
         siteData.preferences.PollingMaxQueue) {
-        setTimeout(function () {
+        setTimeout(() => {
             getPoolStatus(poolCell);
         }, 200);
     }
@@ -1330,31 +1297,26 @@ function getPoolStatus(poolCell) {
             if (increaseAjaxQueue(url)) {
                 $.ajax({
                     dataType: 'json',
-                    url: url,
-                    success: function (data) {
+                    url,
+                    success(data) {
                         if (data.success) {
                             decreaseAjaxQueue(url);
-                            for (const memberStatus in data.memberstatuses) {
-                                const statusSpan = $('td.PoolMember[data-pool="' +
-                                    pool.poolNum +
-                                    '"] span[data-member="' +
-                                    memberStatus +
-                                    '"]');
+                            data.memberstatuses.forEach(memberStatus => {
+                                const statusSpan = $(`td.PoolMember[data-pool="${pool.poolNum}"] span[data-member="${memberStatus}"]`);
                                 setMemberState(statusSpan, data.memberstatuses[memberStatus]);
                                 // Update the pool json object
-                                const members = pool.members;
-                                for (const i in members) {
-                                    const member = members[i];
-                                    const ipport = member.ip + ':' + member.port;
+                                const { members } = pool;
+                                members.forEach(member => {
+                                    const ipport = `${member.ip}:${member.port}`;
                                     if (ipport === memberStatus) {
                                         member.realtimestatus = data.memberstatuses[memberStatus];
                                     }
-                                }
-                            }
+                                });
+                            });
                         }
                     },
                     timeout: 2000,
-                }).fail(function () {
+                }).fail(() => {
                     // To be used later in the console
                     // siteData.memberStates.ajaxFailures.push({ url: url, code: jqxhr.status, reason: jqxhr.statusText })
                     decreaseAjaxQueue(url);
@@ -1367,7 +1329,7 @@ function getPoolStatus(poolCell) {
 function getPoolStatusPools(poolCell) {
     if (siteData.memberStates.ajaxQueue.length >=
         siteData.preferences.PollingMaxQueue) {
-        setTimeout(function () {
+        setTimeout(() => {
             getPoolStatusPools(poolCell);
         }, 200);
     }
@@ -1381,28 +1343,27 @@ function getPoolStatusPools(poolCell) {
             if (increaseAjaxQueue(url)) {
                 $.ajax({
                     dataType: 'json',
-                    url: url,
-                    success: function (data) {
+                    url,
+                    success(data) {
                         if (data.success) {
                             decreaseAjaxQueue(url);
-                            for (const memberStatus in data.memberstatuses) {
+                            data.memberstatuses.forEach(memberStatus => {
                                 const statusSpan = $(`table#poolTable details[data-name="${poolName}"] span[data-member="${memberStatus}"],` +
                                     `table#poolTable div[data-name="${poolName}"] span[data-member="${memberStatus}"]`);
                                 setMemberState(statusSpan, data.memberstatuses[memberStatus]);
                                 // Update the pool json object
-                                const members = pool.members;
-                                for (const i in members) {
-                                    const member = members[i];
-                                    const ipport = member.ip + ':' + member.port;
+                                const { members } = pool;
+                                members.forEach(member => {
+                                    const ipport = `${member.ip}:${member.port}`;
                                     if (ipport === memberStatus) {
                                         member.realtimestatus = data.memberstatuses[memberStatus];
                                     }
-                                }
-                            }
+                                });
+                            });
                         }
                     },
                     timeout: 2000,
-                }).fail(function () {
+                }).fail(() => {
                     // To be used later in the console
                     // siteData.memberStates.ajaxFailures.push({ url: url, code: jqxhr.status, reason: jqxhr.statusText })
                     decreaseAjaxQueue(url);
@@ -1463,18 +1424,17 @@ function setMemberState(statusSpan, memberStatus) {
     $(statusIcon).fadeOut(200).html(html).fadeIn(200);
 }
 /** ********************************************************************************************************************
-
     Functions used by the main data table
-
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 /** ********************************************************************************************************************
     Highlight all matches
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 function highlightAll(table) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body = $(table.table().body());
     body.unhighlight();
     const search = [table.search()];
+    // eslint-disable-next-line array-callback-return
     table.columns().every(function () {
         const columnvalue = $('input', this.header()).val();
         if (columnvalue) {
@@ -1487,9 +1447,10 @@ function highlightAll(table) {
 }
 /** ********************************************************************************************************************
     test for valid regex
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 function isRegExp(regExp) {
     try {
+        // eslint-disable-next-line no-new
         new RegExp(regExp);
     }
     catch (e) {
@@ -1499,7 +1460,7 @@ function isRegExp(regExp) {
 }
 /** ********************************************************************************************************************
     Gets the query strings and populates the table
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 function populateSearchParameters(updateHash) {
     const vars = {};
     let hash;
@@ -1508,12 +1469,13 @@ function populateSearchParameters(updateHash) {
         const hashes = window.location.href
             .slice(window.location.href.indexOf('#') + 1)
             .split('&');
-        for (let i = 0; i < hashes.length; i++) {
+        for (let i = 0; i < hashes.length; i += 1) {
             hash = hashes[i].split('=');
+            // eslint-disable-next-line prefer-destructuring
             vars[hash[0]] = hash[1];
         }
-        if (vars['mainsection']) {
-            const activeSection = vars['mainsection'];
+        if (vars.mainsection) {
+            const activeSection = vars.mainsection;
             switch (activeSection) {
                 case 'virtualservers':
                     showVirtualServers(updateHash);
@@ -1545,11 +1507,13 @@ function populateSearchParameters(updateHash) {
                 case 'help':
                     showHelp(updateHash);
                     break;
+                default:
             }
         }
         // Populate the search and column filters
         // Reset the search before applying the global search and column filters
-        //siteData.bigipTable && siteData.bigipTable.search('');
+        // siteData.bigipTable && siteData.bigipTable.search('');
+        // eslint-disable-next-line no-restricted-syntax
         for (const key in vars) {
             const value = vars[key];
             // If it's provided, populate and search with the global string
@@ -1572,29 +1536,29 @@ function populateSearchParameters(updateHash) {
                 }
             }
         }
-        if (vars['pool']) {
-            const poolName = vars['pool'].split('@')[0];
-            const loadBalancer = vars['pool'].split('@')[1];
+        if (vars.pool) {
+            const poolName = vars.pool.split('@')[0];
+            const loadBalancer = vars.pool.split('@')[1];
             showPoolDetails(poolName, loadBalancer);
         }
-        if (vars['virtualserver']) {
-            const virtualServerName = vars['virtualserver'].split('@')[0];
-            const loadBalancer = vars['virtualserver'].split('@')[1];
+        if (vars.virtualserver) {
+            const virtualServerName = vars.virtualserver.split('@')[0];
+            const loadBalancer = vars.virtualserver.split('@')[1];
             showVirtualServerDetails(virtualServerName, loadBalancer);
         }
-        if (vars['datagroup']) {
-            const dataGroupName = vars['datagroup'].split('@')[0];
-            const loadBalancer = vars['datagroup'].split('@')[1];
+        if (vars.datagroup) {
+            const dataGroupName = vars.datagroup.split('@')[0];
+            const loadBalancer = vars.datagroup.split('@')[1];
             showDataGroupDetails(dataGroupName, loadBalancer);
         }
-        if (vars['irule']) {
-            const iruleName = vars['irule'].split('@')[0];
-            const loadBalancer = vars['irule'].split('@')[1];
+        if (vars.irule) {
+            const iruleName = vars.irule.split('@')[0];
+            const loadBalancer = vars.irule.split('@')[1];
             showiRuleDetails(iruleName, loadBalancer);
         }
-        if (vars['policy']) {
-            const policyName = vars['policy'].split('@')[0];
-            const loadBalancer = vars['policy'].split('@')[1];
+        if (vars.policy) {
+            const policyName = vars.policy.split('@')[0];
+            const loadBalancer = vars.policy.split('@')[1];
             showPolicyDetails(policyName, loadBalancer);
         }
     }
@@ -1603,7 +1567,7 @@ function populateSearchParameters(updateHash) {
 
     setup main Virtual Servers table
 
-*************************************************************************************************************/
+************************************************************************************************************ */
 function setupVirtualServerTable() {
     if (siteData.bigipTable) {
         return;
@@ -1661,26 +1625,26 @@ function setupVirtualServerTable() {
   
           Initiate data tables, add a search all columns header and save the standard table header values
   
-      **************************************************************************************************************/
+      ************************************************************************************************************* */
     siteData.bigipTable = $('table#allbigips').DataTable({
         autoWidth: false,
         deferRender: true,
         data: siteData.virtualservers,
-        createdRow: function (row) {
+        createdRow(row) {
             $(row).addClass('virtualserverrow');
         },
         columns: [
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (name, type) {
+                render(name, type) {
                     return renderLoadBalancer(name, type);
                 },
             },
             {
                 data: 'name',
                 className: 'virtualServerCell',
-                render: function (name, type, row) {
+                render(name, type, row) {
                     return renderVirtualServer(row.loadbalancer, name, type);
                 }
             },
@@ -1691,58 +1655,46 @@ function setupVirtualServerTable() {
             },
             {
                 className: 'centeredCell',
-                render: function (data, type, row) {
-                    let result = row.ip + ':' + row.port;
-                    if (siteData.NATdict[row.ip.split('%')[0]]) {
-                        result += '<br>Public IP:' + siteData.NATdict[row.ip.split('%')[0]];
-                    }
-                    return result;
+                render(data, type, row) {
+                    const ipNoRD = row.ip.replace(/%.*/, '');
+                    return `${row.ip}:${row.port}<br>Public IP:${siteData.NATdict[ipNoRD] || ''}`;
                 },
             },
             {
                 className: 'centeredCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     if (!row.sourcexlatetype) {
                         return 'Unknown';
                     }
-                    else {
-                        switch (row.sourcexlatetype) {
-                            case 'snat':
-                                return 'SNAT:' + row.sourcexlatepool;
-                            default:
-                                return row.sourcexlatetype;
-                        }
+                    switch (row.sourcexlatetype) {
+                        case 'snat':
+                            return `SNAT:${row.sourcexlatepool}`;
+                        default:
+                            return row.sourcexlatetype;
                     }
                 },
                 visible: false,
             },
             {
                 className: 'centeredCell',
-                render: function (data, type, row) {
-                    if (!row.asmPolicies) {
+                render(data, type, row) {
+                    const { asmPolicies, loadbalancer } = row;
+                    if (!asmPolicies) {
                         return 'N/A';
                     }
-                    else {
-                        let result = row.asmPolicies;
-                        for (let asm = 0; asm < siteData.asmPolicies.length; asm++) {
-                            if (row.loadbalancer === siteData.asmPolicies[asm].loadbalancer &&
-                                row.asmPolicies[0] === siteData.asmPolicies[asm].name) {
-                                if (siteData.asmPolicies[asm].enforcementMode === 'blocking') {
-                                    result += ' (B)';
-                                }
-                                else {
-                                    result += ' (T)';
-                                }
-                            }
-                        }
-                        return result;
-                    }
+                    const result = [];
+                    asmPolicies.forEach((name) => {
+                        const policy = siteData.asmPolicies.find(p => p.loadbalancer === loadbalancer && p.name === name);
+                        if (policy)
+                            result.push(`${name} ${policy.enforcementMode === 'blocking' ? ' (B)' : ' (T)'}`);
+                    });
+                    return result;
                 },
                 visible: false,
             },
             {
                 className: 'centeredCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     let result = '';
                     if ((row.profiletype === 'Fast L4') || (row.profiletype === 'UDP')) {
                         result += row.profiletype;
@@ -1756,20 +1708,20 @@ function setupVirtualServerTable() {
                         if (row &&
                             row.sslprofileclient &&
                             !row.sslprofileclient.includes('None')) {
-                            result += ' ' + row.sslprofileclient;
+                            result += ` ${row.sslprofileclient}`;
                         }
                         if (row &&
                             row.sslprofileserver &&
                             !row.sslprofileserver.includes('None')) {
-                            result += ' ' + row.sslprofileserver;
+                            result += ` ${row.sslprofileserver}`;
                         }
                         if (row &&
                             row.otherprofiles) {
-                            result += ' ' + row.otherprofiles;
+                            result += ` ${row.otherprofiles}`;
                         }
                         if (row &&
                             row.protocol) {
-                            result += ' protocol=' + row.protocol;
+                            result += ` protocol=${row.protocol}`;
                         }
                     }
                     return result;
@@ -1778,19 +1730,17 @@ function setupVirtualServerTable() {
             },
             {
                 className: 'centeredCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     if (row.compressionprofile === 'None') {
                         return 'No';
                     }
-                    else {
-                        return 'Yes';
-                    }
+                    return 'Yes';
                 },
                 visible: false,
             },
             {
                 className: 'centeredCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     return row.persistence.includes('None') ? 'No' : 'Yes';
                 },
                 visible: false,
@@ -1799,7 +1749,7 @@ function setupVirtualServerTable() {
                 data: 'pools',
                 type: 'html-num',
                 createdCell: createdPoolCell,
-                render: renderPoolCell,
+                render: renderVirtualServerPoolCell,
             },
         ],
         pageLength: 10,
@@ -1813,7 +1763,7 @@ function setupVirtualServerTable() {
                     text: 'Reset',
                     titleAttr: 'Clear global and column filters',
                     className: 'tableHeaderColumnButton resetFilters',
-                    action: function () {
+                    action() {
                         $('table#allbigips thead th input').val('');
                         siteData.bigipTable.search('').columns().search('').draw();
                         updateLocationHash();
@@ -1823,7 +1773,7 @@ function setupVirtualServerTable() {
                     text: 'Expand',
                     titleAttr: 'Temporarily expand all',
                     className: 'tableHeaderColumnButton toggleExpansion',
-                    action: function (e, dt, node) {
+                    action(e, dt, node) {
                         switch (node['0'].innerText) {
                             case 'Expand':
                                 hidePools(false);
@@ -1841,6 +1791,7 @@ function setupVirtualServerTable() {
                                 node['0'].innerHTML = '<span>Expand</span>';
                                 node['0'].title = 'Temporarily expand all';
                                 break;
+                            default:
                         }
                     },
                 },
@@ -1886,11 +1837,12 @@ function setupVirtualServerTable() {
         stateSave: true,
     });
     // Apply the search
+    // eslint-disable-next-line array-callback-return
     siteData.bigipTable.columns().every(function () {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
-        $('input', this.header()).on('keyup change input search', function (e) {
+        $('input', this.header()).on('keyup change input search', (e) => {
             const input = e.target;
             if (that.search() !== input.value) {
                 if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
@@ -1901,20 +1853,18 @@ function setupVirtualServerTable() {
             }
         });
     });
-    $('div#allbigips_filter.dataTables_filter input').on('keyup input', function () {
+    $('div#allbigips_filter.dataTables_filter input').on('keyup input', () => {
         updateLocationHash();
     });
     /** ******************************************************************************************************************
-  
           Add custom data tables functions
-  
-    *********************************************************************************************************************/
+    ******************************************************************************************************************* */
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#allbigips thead th input').on('click', function (e) {
+    $('table#allbigips thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // highlight matches
-    siteData.bigipTable.on('draw', function () {
+    siteData.bigipTable.on('draw', () => {
         const body = $(siteData.bigipTable.table(null).body());
         // reset toggleExpansion button
         const button = $('div#allbigips_wrapper div.dt-buttons button.toggleExpansion');
@@ -1930,7 +1880,7 @@ function setupVirtualServerTable() {
   
           If any search parameters has been sent, populate the search
   
-      **************************************************************************************************************/
+      ************************************************************************************************************* */
     siteData.bigipTable.draw();
 }
 function setupiRuleTable() {
@@ -1978,14 +1928,14 @@ function setupiRuleTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (data, type) {
+                render(data, type) {
                     return renderLoadBalancer(data, type);
                 },
             },
             {
                 data: 'name',
                 className: 'iRuleCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     return renderRule(row.loadbalancer, data, type);
                 },
             },
@@ -1993,27 +1943,27 @@ function setupiRuleTable() {
                 data: 'pools',
                 type: 'html-num',
                 className: 'relative',
-                render: function (data, type, row, meta) {
+                render(data, type, row, meta) {
                     return renderList(data, type, row, meta, renderPool, 'pools');
                 },
             },
             {
                 data: 'datagroups',
                 type: 'html-num',
-                render: function (data, type, row, meta) {
+                render(data, type, row, meta) {
                     return renderList(data, type, row, meta, renderDataGroup, 'datagroups');
                 },
             },
             {
                 data: 'virtualservers',
                 type: 'html-num',
-                render: function (data, type, row, meta) {
+                render(data, type, row, meta) {
                     return renderList(data, type, row, meta, renderVirtualServer, 'virtualservers');
                 },
             },
             {
                 data: 'definition',
-                render: function (data) {
+                render(data) {
                     return data.length;
                 },
             },
@@ -2075,15 +2025,16 @@ function setupiRuleTable() {
         stateSave: true,
     });
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#iRuleTable thead th input').on('click', function (e) {
+    $('table#iRuleTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // Apply the search
+    // eslint-disable-next-line array-callback-return
     siteData.iRuleTable.columns().every(function () {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
-        $('input', this.header()).on('keyup change input search', function (e) {
+        $('input', this.header()).on('keyup change input search', (e) => {
             const input = e.target;
             if (that.search() !== input.value) {
                 if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
@@ -2095,7 +2046,7 @@ function setupiRuleTable() {
         });
     });
     // highlight matches
-    siteData.iRuleTable.on('draw', function () {
+    siteData.iRuleTable.on('draw', () => {
         // reset toggleExpansion button
         const button = $('div#iRuleTable_wrapper div.dt-buttons button.toggleExpansion');
         button[0].innerHTML = '<span>Expand<span>';
@@ -2140,21 +2091,21 @@ function setupPolicyTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     return renderLoadBalancer(data, type);
                 },
             },
             {
                 data: 'name',
                 className: 'PolicyCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     return renderPolicy(row.loadbalancer, data, type);
                 },
             },
             {
                 data: 'virtualservers',
                 type: 'html-num',
-                render: function (data, type, row, meta) {
+                render(data, type, row, meta) {
                     return renderList(data, type, row, meta, renderVirtualServer, 'virtualservers');
                 },
             },
@@ -2216,15 +2167,16 @@ function setupPolicyTable() {
         stateSave: true,
     });
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#PolicyTable thead th input').on('click', function (e) {
+    $('table#PolicyTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // Apply the search
+    // eslint-disable-next-line array-callback-return
     siteData.PolicyTable.columns().every(function () {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
-        $('input', this.header()).on('keyup change input search', function (e) {
+        $('input', this.header()).on('keyup change input search', (e) => {
             const input = e.target;
             if (that.search() !== input.value) {
                 if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
@@ -2236,7 +2188,7 @@ function setupPolicyTable() {
         });
     });
     // highlight matches
-    siteData.PolicyTable.on('draw', function () {
+    siteData.PolicyTable.on('draw', () => {
         // reset toggleExpansion button
         const button = $('div#PolicyTable_wrapper div.dt-buttons button.toggleExpansion');
         button[0].innerHTML = '<span>Expand<span>';
@@ -2294,13 +2246,13 @@ function setupPoolTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (data, type) {
+                render(data, type) {
                     return renderLoadBalancer(data, type);
                 },
             },
             {
                 data: 'name',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     return renderPool(row.loadbalancer, data, type);
                 },
             },
@@ -2316,20 +2268,15 @@ function setupPoolTable() {
             },
             {
                 data: 'monitors',
-                render: function (data) {
-                    if (data) {
-                        return data.join(' ');
-                    }
-                    else {
-                        return 'None';
-                    }
+                render(data) {
+                    return data ? data.join(' ') : 'None';
                 },
                 visible: false,
             },
             {
                 data: 'members',
                 type: 'html-num',
-                render: function (data, type, row, meta) {
+                render(data, type, row, meta) {
                     return renderList(data, type, row, meta, renderPoolMember, 'pool members');
                 },
             },
@@ -2391,15 +2338,16 @@ function setupPoolTable() {
         stateSave: true,
     });
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#poolTable thead th input').on('click', function (e) {
+    $('table#poolTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // Apply the search
+    // eslint-disable-next-line array-callback-return
     siteData.poolTable.columns().every(function () {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
-        $('input', this.header()).on('keyup change input search', function (e) {
+        $('input', this.header()).on('keyup change input search', (e) => {
             const input = e.target;
             if (that.search() !== input.value) {
                 if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
@@ -2411,7 +2359,7 @@ function setupPoolTable() {
         });
     });
     // highlight matches
-    siteData.poolTable.on('draw', function () {
+    siteData.poolTable.on('draw', () => {
         // reset toggleExpansion button
         const button = $('div#poolTable_wrapper div.dt-buttons button.toggleExpansion');
         button[0].innerHTML = '<span>Expand<span>';
@@ -2464,14 +2412,14 @@ function setupDataGroupTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (data, type) {
+                render(data, type) {
                     return renderLoadBalancer(data, type);
                 },
             },
             {
                 data: 'name',
                 className: 'iRuleCell',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     return renderDataGroup(row.loadbalancer, data, type);
                 },
             },
@@ -2482,17 +2430,14 @@ function setupDataGroupTable() {
                 data: 'pools',
                 type: 'html-num',
                 className: 'relative',
-                render: function (data, type, row, meta) {
+                render(data, type, row, meta) {
                     return renderList(data, type, row, meta, renderPool, 'pools');
                 },
             },
             {
                 data: 'data',
-                render: function (data) {
-                    if (data) {
-                        return Object.keys(data).length;
-                    }
-                    return 0;
+                render(data) {
+                    return data ? Object.keys(data).length : 0;
                 },
             },
         ],
@@ -2553,15 +2498,16 @@ function setupDataGroupTable() {
         stateSave: true,
     });
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#dataGroupTable thead th input').on('click', function (e) {
+    $('table#dataGroupTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // Apply the search
+    // eslint-disable-next-line array-callback-return
     siteData.dataGroupTable.columns().every(function () {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
-        $('input', this.header()).on('keyup change input search', function (e) {
+        $('input', this.header()).on('keyup change input search', (e) => {
             const input = e.target;
             if (that.search() !== input.value) {
                 if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
@@ -2573,7 +2519,7 @@ function setupDataGroupTable() {
         });
     });
     // highlight matches
-    siteData.dataGroupTable.on('draw', function () {
+    siteData.dataGroupTable.on('draw', () => {
         // reset toggleExpansion button
         const button = $('div#dataGroupTable_wrapper div.dt-buttons button.toggleExpansion');
         button[0].innerHTML = '<span>Expand<span>';
@@ -2638,13 +2584,13 @@ function setupCertificateTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
-                render: function (data, type) {
+                render(data, type) {
                     return renderLoadBalancer(data, type);
                 },
             },
             {
                 data: 'fileName',
-                render: function (data, type, row) {
+                render(data, type, row) {
                     return renderCertificate(row.loadbalancer, data, type);
                 },
             },
@@ -2658,13 +2604,13 @@ function setupCertificateTable() {
             {
                 data: 'subject.countryName',
                 className: 'certificatecountryname',
-                render: function (data) {
+                render(data) {
                     let result = '';
                     if (data) {
                         result += `<img class="flagicon" alt="${data.toLowerCase()}"
                         src="images/flags/${data.toLowerCase()}.png"/>`;
                     }
-                    return result + ' ' + data;
+                    return `${result} ${data}`;
                 },
                 visible: false,
             },
@@ -2677,7 +2623,7 @@ function setupCertificateTable() {
             },
             {
                 data: 'expirationDate',
-                render: function (data) {
+                render(data) {
                     const certificateDate = new Date(0);
                     certificateDate.setUTCSeconds(data);
                     return certificateDate
@@ -2687,7 +2633,7 @@ function setupCertificateTable() {
                 },
             },
         ],
-        createdRow: function (row, data) {
+        createdRow(row, data) {
             // Get the days left
             const now = new Date();
             const certificateDate = new Date(0);
@@ -2759,15 +2705,16 @@ function setupCertificateTable() {
         stateSave: true,
     });
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#certifcateTable thead th input').on('click', function (e) {
+    $('table#certifcateTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // Apply the search
+    // eslint-disable-next-line array-callback-return
     siteData.certificateTable.columns().every(function () {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
-        $('input', this.header()).on('keyup change input search', function (e) {
+        $('input', this.header()).on('keyup change input search', (e) => {
             const input = e.target;
             if (that.search() !== input.value) {
                 if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
@@ -2779,7 +2726,7 @@ function setupCertificateTable() {
         });
     });
     // Highlight matches
-    siteData.certificateTable.on('draw', function () {
+    siteData.certificateTable.on('draw', () => {
         toggleAdcLinks();
         highlightAll(siteData.certificateTable);
     });
@@ -2870,11 +2817,11 @@ function setupLogsTable() {
                 },
             ],
         },
-        createdRow: function (row, data) {
+        createdRow(row, data) {
             if (data && data.severity) {
                 $('td', row)
                     .eq(1)
-                    .addClass('logseverity' + data.severity.toLowerCase());
+                    .addClass(`logseverity${data.severity.toLowerCase()}`);
             }
         },
         lengthMenu: [
@@ -2885,15 +2832,16 @@ function setupLogsTable() {
         stateSave: true,
     });
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#logstable thead th input').on('click', function (e) {
+    $('table#logstable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // Apply the search
+    // eslint-disable-next-line array-callback-return
     siteData.logTable.columns().every(function () {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
-        $('input', this.header()).on('keyup change input search', function (e) {
+        $('input', this.header()).on('keyup change input search', (e) => {
             const input = e.target;
             if (that.search() !== input.value) {
                 if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
@@ -2905,7 +2853,7 @@ function setupLogsTable() {
         });
     });
     // Highlight matches
-    siteData.logTable.on('draw', function () {
+    siteData.logTable.on('draw', () => {
         toggleAdcLinks();
         highlightAll(siteData.logTable);
     });
@@ -2916,7 +2864,7 @@ function hideMainSection() {
 }
 function showMainSection(section) {
     hideMainSection();
-    $('div#' + section).fadeIn(10, updateLocationHash);
+    $(`div#${section}`).fadeIn(10, updateLocationHash);
 }
 function showVirtualServers(updatehash) {
     hideMainSection();
@@ -3010,7 +2958,7 @@ function showPreferences(updatehash) {
     // siteData.bigipTable.clear().rows.add(siteData.virtualservers).draw();
     // we could make siteData.preferences.HideLoadBalancerFQDN dynamic this way. Might want to redraw all tables.
     // Event handler for auto expand pools
-    autoExpandPool.on('click', function (e) {
+    autoExpandPool.on('click', (e) => {
         const checkBox = e.target;
         localStorage.setItem('autoExpandPools', checkBox.checked.toString());
         if (siteData.bigipTable) {
@@ -3018,13 +2966,13 @@ function showPreferences(updatehash) {
         }
     });
     // Event handler for showing ADC edit links
-    adcLinks.on('click', function (e) {
+    adcLinks.on('click', (e) => {
         const checkBox = e.target;
         localStorage.setItem('showAdcLinks', checkBox.checked.toString());
         toggleAdcLinks();
     });
     // Event handler for regular expression searches
-    regexSearch.on('click', function (e) {
+    regexSearch.on('click', (e) => {
         const checkBox = e.target;
         localStorage.setItem('regexSearch', checkBox.checked.toString());
         toggleRegexSearch();
@@ -3044,8 +2992,8 @@ function showDeviceOverview(updatehash) {
     activateMenuButton('div#deviceoverviewbutton');
     $('div#mainholder').attr('data-activesection', 'deviceoverview');
     updateLocationHash(updatehash);
-    const deviceGroups = siteData.deviceGroups;
-    const loadbalancers = siteData.loadbalancers;
+    const { deviceGroups } = siteData;
+    const { loadbalancers } = siteData;
     let html = `
             <table id="deviceoverviewtable" class="bigiptable display">
                 <thead>
@@ -3064,25 +3012,19 @@ function showDeviceOverview(updatehash) {
                     </tr>
                 </thead>
                 <tbody>`;
-    for (const d in deviceGroups) {
-        const deviceGroup = deviceGroups[d];
+    deviceGroups.forEach(deviceGroup => {
         // Get an icon from a functioning device, if any
         let deviceIcon = 'images/deviceicons/unknowndevice.png';
-        for (const i in deviceGroup.ips) {
-            const loadbalancer = loadbalancers.find(function (o) {
-                return o.ip === deviceGroup.ips[i];
-            });
+        deviceGroup.ips.forEach(ip => {
+            const loadbalancer = loadbalancers.find((o) => o.ip === ip);
             if (loadbalancer) {
                 const model = loadbalancer.model && loadbalancer.model.toUpperCase();
                 deviceIcon = model in siteData.knownDevices ? siteData.knownDevices[model].icon :
                     'images/deviceicons/unknowndevice.png';
-                break;
             }
-        }
+        });
         deviceGroup.ips.forEach((deviceIP, deviceIndex) => {
-            const loadbalancer = loadbalancers.find(function (o) {
-                return o.ip === deviceIP;
-            });
+            const loadbalancer = loadbalancers.find((o) => o.ip === deviceIP);
             // This load balancer has failed to index
             if (!loadbalancer) {
                 html += `
@@ -3139,7 +3081,7 @@ function showDeviceOverview(updatehash) {
             else if (!loadbalancer.success) {
                 html += '<tr class="failed-device" title="Failed to index, using cached data">';
             }
-            else if (deviceStatus == 'green') {
+            else if (deviceStatus === 'green') {
                 html += '<tr title="Secondary device is Active" class="out-of-sync-device">';
             }
             else {
@@ -3189,7 +3131,7 @@ function showDeviceOverview(updatehash) {
         </td>
       </tr>`;
         });
-    }
+    });
     html += `
                 </tbody>
             </table>`;
@@ -3238,12 +3180,12 @@ function log(message, severity, datetime = undefined) {
         const offset = now.getTimezoneOffset();
         now = new Date(now.getTime() - offset * 60000);
         const dateArr = now.toISOString().split('T');
-        datetime = dateArr[0] + ' ' + dateArr[1].replace(/\.[0-9]+Z$/, '');
+        datetime = `${dateArr[0]} ${dateArr[1].replace(/\.[0-9]+Z$/, '')}`;
     }
     siteData.loggedErrors.push({
-        datetime: datetime,
-        severity: severity,
-        message: message,
+        datetime,
+        severity,
+        message,
     });
     if (siteData.logTable) {
         siteData.logTable.destroy();
@@ -3281,7 +3223,7 @@ function updateLocationHash(updatehash = true) {
     const parameters = [];
     const activeSection = $('div#mainholder').attr('data-activesection');
     parameters.push(`mainsection=${activeSection}`);
-    $('table#allbigips thead tr th input').each(function (i, e) {
+    $('table#allbigips thead tr th input').each((i, e) => {
         const input = e;
         if (input.value !== '') {
             parameters.push(`${input.name}=${input.value}`);
@@ -3303,7 +3245,7 @@ function updateLocationHash(updatehash = true) {
 }
 /** ********************************************************************************************************************
     Expands all pool matches in the main table when searching
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 function expandPoolMatches(resultset, searchstring) {
     if (localStorage.autoExpandPools !== 'true' && searchstring !== '') {
         $(resultset)
@@ -3344,11 +3286,12 @@ function toggleExpandCollapseRestore(e, dt, node) {
             node['0'].innerHTML = '<span>Expand</span>';
             node['0'].title = 'Temporarily expand all';
             break;
+        default:
     }
 }
 /** ********************************************************************************************************************
     Collapses all pool cells in the main table
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 function hidePools(hide = (localStorage.autoExpandPools !== 'true')) {
     if (hide) {
         $('.pooltablediv').hide();
@@ -3365,49 +3308,49 @@ function hidePools(hide = (localStorage.autoExpandPools !== 'true')) {
 }
 /** ********************************************************************************************************************
     Expands/collapses a pool cell based on the tid (toggle id)
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 function togglePool(tid) {
     // Store the current window selection
     const selection = window.getSelection();
     // If no text is selected, go ahead and expand or collapse the pool
     if (selection.type !== 'Range') {
-        if ($('#PoolCell-' + tid).is(':visible')) {
-            $('#AssociatedPoolsInfo-' + tid).show();
-            $('#expand-' + tid).show();
-            $('#collapse-' + tid).hide();
-            $('#PoolCell-' + tid).hide();
+        if ($(`#PoolCell-${tid}`).is(':visible')) {
+            $(`#AssociatedPoolsInfo-${tid}`).show();
+            $(`#expand-${tid}`).show();
+            $(`#collapse-${tid}`).hide();
+            $(`#PoolCell-${tid}`).hide();
         }
         else {
-            $('#AssociatedPoolsInfo-' + tid).hide();
-            $('#expand-' + tid).hide();
-            $('#collapse-' + tid).show();
-            $('#PoolCell-' + tid).fadeIn(300);
+            $(`#AssociatedPoolsInfo-${tid}`).hide();
+            $(`#expand-${tid}`).hide();
+            $(`#collapse-${tid}`).show();
+            $(`#PoolCell-${tid}`).fadeIn(300);
         }
     }
 }
 /** ********************************************************************************************************************
     Set the max width of the pool cells in order to make the member column align
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 function setPoolTableCellWidth() {
     let maxwidth = 0;
     const poolName = $('.poolname');
-    poolName.each(function (i, obj) {
+    poolName.each((i, obj) => {
         if (obj.offsetWidth > maxwidth) {
             maxwidth = obj.offsetWidth;
         }
     });
-    poolName.each(function (i, obj) {
+    poolName.each((i, obj) => {
         if (obj.offsetWidth < maxwidth) {
             obj.style.width = maxwidth.toString();
         }
     });
     maxwidth = 0;
-    poolName.each(function (i, obj) {
+    poolName.each((i, obj) => {
         if (obj.offsetWidth > maxwidth) {
             maxwidth = obj.offsetWidth;
         }
     });
-    poolName.each(function (i, obj) {
+    poolName.each((i, obj) => {
         if (obj.offsetWidth < maxwidth) {
             obj.style.width = maxwidth.toString();
         }
@@ -3415,46 +3358,38 @@ function setPoolTableCellWidth() {
 }
 /** ********************************************************************************************************************
  Handles the highlight of content when searching
- **********************************************************************************************************************/
+ ******************************************************************************************************************** */
 // es-lint does not seem to respect hoisting in this case
 // eslint-disable-next-line no-unused-vars
 function togglePoolHighlight(e) {
     if (e.style.backgroundColor === '') {
-        $('.' + e.className).css('background-color', '#BCD4EC');
+        $(`.${e.className}`).css('background-color', '#BCD4EC');
     }
     else {
-        $('.' + e.className).css('background-color', '');
+        $(`.${e.className}`).css('background-color', '');
     }
 }
 /** ********************************************************************************************************************
 
     Functions related to showing the pool details lightbox
 
-***********************************************************************************************************************/
+********************************************************************************************************************* */
 /** ********************************************************************************************************************
     Shows the virtual server details light box
-**********************************************************************************************************************/
+********************************************************************************************************************* */
 function showVirtualServerDetails(virtualserver, loadbalancer) {
     let html;
-    const virtualservers = siteData.virtualservers;
-    let matchingvirtualserver;
+    const { virtualservers } = siteData;
     // Find the matching pool from the JSON object
-    for (const i in virtualservers) {
-        if (virtualservers[i].name === virtualserver &&
-            virtualservers[i].loadbalancer === loadbalancer) {
-            matchingvirtualserver = virtualservers[i];
-        }
-    }
-    // If a pool was found, populate the pool details table and display it on the page
-    if (matchingvirtualserver) {
-        const { name, currentconnections, cpuavg1min, cpuavg5min, cpuavg5sec, maximumconnections, loadbalancer, sourcexlatetype, sourcexlatepool, trafficgroup, defaultpool, description, sslprofileclient, sslprofileserver, compressionprofile, profiletype, persistence, otherprofiles, policies, irules, ip, port, } = matchingvirtualserver;
+    const matchingVirtualServer = virtualservers.find(vip => vip.name === virtualserver && vip.loadbalancer === loadbalancer);
+    // If a virtual server was found, populate the pool details table and display it on the page
+    if (matchingVirtualServer) {
+        const { name, currentconnections, cpuavg1min, cpuavg5min, cpuavg5sec, maximumconnections, sourcexlatetype, sourcexlatepool, trafficgroup, defaultpool, description, sslprofileclient, sslprofileserver, compressionprofile, profiletype, persistence, otherprofiles, policies, irules, ip, port, } = matchingVirtualServer;
         html = '<div class="virtualserverdetailsheader">';
         html +=
-            '<span>Virtual Server: ' + name + '</span><br>';
+            `<span>Virtual Server: ${name}</span><br>`;
         html +=
-            '<span>Load Balancer: ' +
-                renderLoadBalancer(loadbalancer, 'display') +
-                '</span>';
+            `<span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')}</span>`;
         html += '</div>';
         const firstLayer = $('div#firstlayerdetailscontentdiv');
         firstLayer.attr('data-type', 'virtualserver');
@@ -3463,7 +3398,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
         let xlate;
         switch (sourcexlatetype) {
             case 'snat':
-                xlate = 'SNAT:' + sourcexlatepool;
+                xlate = `SNAT:${sourcexlatepool}`;
                 break;
             default:
                 xlate = sourcexlatetype || 'Unknown';
@@ -3547,7 +3482,7 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                      </tr>
               </table>
               <br>`;
-        if (!matchingvirtualserver.policies.some(p => p === 'None')) {
+        if (!matchingVirtualServer.policies.some(p => p === 'None')) {
             table += `<table class="virtualserverdetailstable">
                 <tr><th>Policy name</th></tr>
                 ${policies.map(p => `<tr><td>${renderPolicy(loadbalancer, p, 'display')}</td></tr>`)}`;
@@ -3562,40 +3497,38 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
                 else {
                     table += '    <tr><th>iRule name</th></tr>';
                 }
-                for (const i in irules) {
+                irules.forEach(iRuleName => {
                     // If iRules linking has been set to true show iRule links
                     // and parse data groups
                     if (siteData.preferences.ShowiRuleLinks) {
-                        const iruleobj = getiRule(irules[i], loadbalancer);
-                        if (Object.keys(iruleobj).length === 0) {
+                        const iRule = siteData.irules.find(i => i.name === iRuleName && i.loadbalancer === loadbalancer);
+                        if (!iRule || Object.keys(iRule).length === 0) {
                             table +=
-                                '    <tr><td>' +
-                                    matchingvirtualserver.irules[i] +
-                                    '</td><td>N/A (empty rule)</td></tr>';
+                                `    <tr><td>${iRuleName}</td><td>N/A (empty rule)</td></tr>`;
                         }
                         else {
                             const datagroupdata = [];
-                            if (iruleobj.datagroups && iruleobj.datagroups.length > 0) {
-                                iruleobj.datagroups.forEach((datagroup) => {
-                                    const name = datagroup.split('/')[2];
+                            if (iRule.datagroups && iRule.datagroups.length > 0) {
+                                iRule.datagroups.forEach((datagroup) => {
+                                    const dataGroupName = datagroup.split('/')[2];
                                     if (siteData.preferences.ShowDataGroupLinks) {
                                         datagroupdata.push(renderDataGroup(loadbalancer, datagroup, 'display'));
                                     }
                                     else {
-                                        datagroupdata.push(name);
+                                        datagroupdata.push(dataGroupName);
                                     }
                                 });
                             }
                             else {
                                 datagroupdata.push('N/A');
                             }
-                            table += `    <tr><td>${renderRule(loadbalancer, iruleobj.name, 'display')}</td><td>${datagroupdata.join('<br>')}</td></tr>`;
+                            table += `    <tr><td>${renderRule(loadbalancer, iRule.name, 'display')}</td><td>${datagroupdata.join('<br>')}</td></tr>`;
                         }
                     }
                     else {
-                        table += `        <tr><td>${irules[i]}</td></tr>`;
+                        table += `        <tr><td>${iRuleName}</td></tr>`;
                     }
-                }
+                });
                 table += '</table>';
             }
         }
@@ -3626,42 +3559,26 @@ function showVirtualServerDetails(virtualserver, loadbalancer) {
     toggleAdcLinks();
 }
 /** ********************************************************************************************************************
-    Returns a matching irules object from the irules json data
-**********************************************************************************************************************/
-function getiRule(irule, loadbalancer) {
-    const irules = siteData.irules;
-    let matchingirule;
-    // Find the matching irule from the JSON object
-    for (const i in irules) {
-        if (irules[i].name === irule && irules[i].loadbalancer === loadbalancer) {
-            matchingirule = irules[i];
-        }
-    }
-    return matchingirule;
-}
-/** ********************************************************************************************************************
     Shows the irule details light box
-**********************************************************************************************************************/
-function showiRuleDetails(irule, loadbalancer) {
+********************************************************************************************************************* */
+function showiRuleDetails(name, loadbalancer) {
     // Get the rule object from the json file
-    const matchingirule = getiRule(irule, loadbalancer);
+    const matchingirule = siteData.irules.find(iRule => iRule.name === name && iRule.loadbalancer === loadbalancer);
     let html;
     // If an irule was found, prepare the data to show it
     if (matchingirule) {
         // Populate the header
         html = '<div class="iruledetailsheader">';
-        html += '<span>iRule: ' + matchingirule.name + '</span><br>';
+        html += `<span>iRule: ${matchingirule.name}</span><br>`;
         html +=
-            '<span>Load Balancer: ' +
-                renderLoadBalancer(loadbalancer, 'display') +
-                '</span>';
+            `<span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')}</span>`;
         html += '</div>';
         const secondLayerContent = $('div#secondlayerdetailscontentdiv');
         secondLayerContent.attr('data-type', 'irule');
         secondLayerContent.attr('data-objectname', matchingirule.name);
         secondLayerContent.attr('data-loadbalancer', matchingirule.loadbalancer);
         // Save the definition to a variable for some classic string mangling
-        let definition = matchingirule.definition;
+        let { definition } = matchingirule;
         // Replace those tags with to be sure that the content won't be interpreted as HTML by the browser
         definition = definition.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         // Check if data group links are wanted. Parse and create links if that's the base
@@ -3674,10 +3591,10 @@ function showiRuleDetails(irule, loadbalancer) {
                 try {
                     // negative look behind is part of ES2018
                     // https://github.com/tc39/proposal-regexp-lookbehind
-                    regexp = new RegExp('((?<![\\w-])' + opt + '(?![\\w-]))', 'gi');
+                    regexp = new RegExp(`((?<![\\w-])${opt}(?![\\w-]))`, 'gi');
                 }
                 catch (e) {
-                    regexp = new RegExp('(' + opt + ')\\b', 'gi');
+                    regexp = new RegExp(`(${opt})\\b`, 'gi');
                 }
                 // Prepare the link
                 const link = `<a href="Javascript:showDataGroupDetails('${dg}', '${loadbalancer}')">$1</a>`;
@@ -3692,17 +3609,13 @@ function showiRuleDetails(irule, loadbalancer) {
                 try {
                     // negative look behind is part of ES2018
                     // https://github.com/tc39/proposal-regexp-lookbehind
-                    regexp = new RegExp('((?<![\\w-])' + opt + '(?![\\w-]))', 'gi');
+                    regexp = new RegExp(`((?<![\\w-])${opt}(?![\\w-]))`, 'gi');
                 }
                 catch (e) {
-                    regexp = new RegExp('(' + opt + ')\\b', 'gi');
+                    regexp = new RegExp(`(${opt})\\b`, 'gi');
                 }
                 // Prepare the link
-                const link = '<a href="Javascript:showPoolDetails(\'' +
-                    pool +
-                    '\', \'' +
-                    loadbalancer +
-                    '\')">$1</a>';
+                const link = `<a href="Javascript:showPoolDetails('${pool}', '${loadbalancer}')">$1</a>`;
                 // Do the actual replacement
                 definition = definition.replace(regexp, link);
             });
@@ -3714,19 +3627,13 @@ function showiRuleDetails(irule, loadbalancer) {
                         <tr><th>iRule definiton</th></tr>
                     </thead>
                     <tbody>
-                    <tr><td><pre class="sh_tcl">` +
-                definition +
-                '</pre></td></tr>';
+                    <tr><td><pre class="sh_tcl">${definition}</pre></td></tr>`;
         if (matchingirule.virtualservers &&
             matchingirule.virtualservers.length > 0) {
             html +=
-                '<tr><td>Used by ' +
-                    matchingirule.virtualservers.length +
-                    ' Virtual Servers:<br>' +
-                    matchingirule.virtualservers
-                        .map((vs) => renderVirtualServer(loadbalancer, vs, 'display'))
-                        .join('<br>') +
-                    '</td></tr>';
+                `<tr><td>Used by ${matchingirule.virtualservers.length} Virtual Servers:<br>${matchingirule.virtualservers
+                    .map((vs) => renderVirtualServer(loadbalancer, vs, 'display'))
+                    .join('<br>')}</td></tr>`;
         }
         html += `</tbody>
                 </table>`;
@@ -3742,103 +3649,72 @@ function showiRuleDetails(irule, loadbalancer) {
     toggleAdcLinks();
 }
 /** ********************************************************************************************************************
-    Returns a matching data group object from the data group json data
-**********************************************************************************************************************/
-function getDataGroup(datagroup, loadbalancer) {
-    const datagroups = siteData.datagroups;
-    let matchingdatagroup;
-    // Find the matching data group from the JSON object
-    for (const i in datagroups) {
-        if (datagroups[i].name === datagroup &&
-            datagroups[i].loadbalancer === loadbalancer) {
-            matchingdatagroup = datagroups[i];
-        }
-    }
-    return matchingdatagroup;
-}
-/** ********************************************************************************************************************
- Returns a matching policy object from the policy json data
- **********************************************************************************************************************/
-function getPolicy(policy, loadbalancer) {
-    const policies = siteData.policies;
-    let matchingpolicy;
-    //Find the matching policy from the JSON object
-    for (const p in policies) {
-        if (policies[p].name === policy && policies[p].loadbalancer === loadbalancer) {
-            matchingpolicy = policies[p];
-        }
-    }
-    return matchingpolicy;
-}
-/** ********************************************************************************************************************
  Shows the policy details light box
- **********************************************************************************************************************/
+ ******************************************************************************************************************** */
 function showPolicyDetails(policy, loadbalancer) {
-    //Get the policy object from the json file
-    const matchingpolicy = getPolicy(policy, loadbalancer);
+    // Get the policy object from the json file
+    const matchingPolicy = siteData.policies.find(p => p.name === policy && p.loadbalancer === loadbalancer);
     let html;
-    //If an policy was found, prepare the data to show it
-    if (matchingpolicy) {
-        //Populate the header
+    // If an policy was found, prepare the data to show it
+    if (matchingPolicy) {
+        // Populate the header
         html = `<div class="policydetailsheader">
-               <span>Policy: ${matchingpolicy.name} </span>
+               <span>Policy: ${matchingPolicy.name} </span>
                <br>
                <span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')} </span>
             </div>`;
         const firstLayerContent = $('div#firstlayerdetailscontentdiv');
         firstLayerContent.attr('data-type', 'policy');
-        firstLayerContent.attr('data-objectname', matchingpolicy.name);
-        firstLayerContent.attr('data-loadbalancer', matchingpolicy.loadbalancer);
+        firstLayerContent.attr('data-objectname', matchingPolicy.name);
+        firstLayerContent.attr('data-loadbalancer', matchingPolicy.loadbalancer);
         // Save the definition to a variable for some classic string mangling
-        let definition = matchingpolicy.definition;
+        let { definition } = matchingPolicy;
         // Replace those tags with to be sure that the content won't be interpreted as HTML by the browser
         definition = definition.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        //Prepare the div content
+        // Prepare the div content
         html += `<table class="bigiptable display">
                <thead>
                   <tr><th>Policy definition</th></tr> </thead>
                <tbody>
                  <tr><td><pre class="sh_tcl"> ${definition} </pre></td></tr>`;
-        if (matchingpolicy.virtualservers &&
-            matchingpolicy.virtualservers.length > 0) {
-            html += `<tr><td>Used by ${matchingpolicy.virtualservers.length} Virtual Servers:<br>
-                  ${matchingpolicy.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display'))
+        if (matchingPolicy.virtualservers &&
+            matchingPolicy.virtualservers.length > 0) {
+            html += `<tr><td>Used by ${matchingPolicy.virtualservers.length} Virtual Servers:<br>
+                  ${matchingPolicy.virtualservers.map(vs => renderVirtualServer(loadbalancer, vs, 'display'))
                 .join('<br>')} </td></tr>`;
         }
         html += '</tbody> </table>';
     }
-    //Add the close button to the footer
+    // Add the close button to the footer
     $('a#closefirstlayerbutton').text('Close policy details');
-    //Add the div content to the page
+    // Add the div content to the page
     $('#firstlayerdetailscontentdiv').html(html);
     /* redo syntax highlighting */
     // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
-    //Show the div
+    // Show the div
     $('#firstlayerdiv').fadeIn(updateLocationHash);
     toggleAdcLinks();
 }
 /** ********************************************************************************************************************
     Displays a data group in a lightbox
-**********************************************************************************************************************/
+********************************************************************************************************************* */
 function showDataGroupDetails(datagroup, loadbalancer) {
     // Get a matching data group from the json data
-    const matchingdatagroup = getDataGroup(datagroup, loadbalancer);
+    const matchingDatagroup = siteData.datagroups.find(dg => dg.name === datagroup && dg.loadbalancer === loadbalancer);
     if (siteData.datagroupdetailsTable) {
         siteData.datagroupdetailsTable.destroy();
     }
     // If a pool was found, populate the pool details table and display it on the page
-    if (matchingdatagroup) {
+    if (matchingDatagroup) {
         const secondLayerContent = $('div#secondlayerdetailscontentdiv');
         secondLayerContent.attr('data-type', 'datagroup');
-        secondLayerContent.attr('data-objectname', matchingdatagroup.name);
-        secondLayerContent.attr('data-loadbalancer', matchingdatagroup.loadbalancer);
+        secondLayerContent.attr('data-objectname', matchingDatagroup.name);
+        secondLayerContent.attr('data-loadbalancer', matchingDatagroup.loadbalancer);
         let html = '<div class="datagroupdetailsheader">';
-        html += '<span>Data group: ' + matchingdatagroup.name + '</span><br>';
+        html += `<span>Data group: ${matchingDatagroup.name}</span><br>`;
         html +=
-            '<span>Load Balancer: ' +
-                renderLoadBalancer(loadbalancer, 'display') +
-                '</span><br>';
-        html += '<span class="dgtype">Type: ' + matchingdatagroup.type + '</span>';
+            `<span>Load Balancer: ${renderLoadBalancer(loadbalancer, 'display')}</span><br>`;
+        html += `<span class="dgtype">Type: ${matchingDatagroup.type}</span>`;
         html += '</div>';
         html += `<table id="datagroupdetailsTable" class="datagrouptable display">
                     <thead>
@@ -3848,13 +3724,11 @@ function showDataGroupDetails(datagroup, loadbalancer) {
                         </tr>
                     </thead>
                     <tbody>`;
-        if (Object.keys(matchingdatagroup).length === 0) {
+        if (Object.keys(matchingDatagroup).length === 0) {
             html += '<tr class="emptydg"><td colspan="2">Empty data group</td></tr>';
         }
         else {
-            siteData.datagroupdetailsTableData = $.map(matchingdatagroup.data, function (value, key) {
-                return { key: key, value: value };
-            });
+            siteData.datagroupdetailsTableData = $.map(matchingDatagroup.data, (value, key) => ({ key, value }));
         }
         html += '</tbody></table>';
         $('#secondlayerdetailscontentdiv').html(html);
@@ -3873,20 +3747,16 @@ function showDataGroupDetails(datagroup, loadbalancer) {
                 },
                 {
                     data: 'value',
-                    render: function (data, type) {
+                    render(data, type) {
                         if (data && data.match(/^http(s)?:/)) {
-                            return '<a href="' + data + '">' + data + '</a>';
+                            return `<a href="${data}">${data}</a>`;
                         }
-                        else {
-                            const pool = getPool('/Common/' + data, loadbalancer);
-                            if (pool) {
-                                // Click to see pool details
-                                return renderPool(loadbalancer, pool.name, type);
-                            }
-                            else {
-                                return data;
-                            }
+                        const pool = getPool(`/Common/${data}`, loadbalancer);
+                        if (pool) {
+                            // Click to see pool details
+                            return renderPool(loadbalancer, pool.name, type);
                         }
+                        return data;
                     },
                 },
             ],
@@ -3907,23 +3777,25 @@ function showDataGroupDetails(datagroup, loadbalancer) {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function exportDeviceData() {
-    const loadbalancers = siteData.loadbalancers;
+    const { loadbalancers } = siteData;
     const loadbalancersForExport = [];
     // Loop through the load balancers while anonymizing the data
+    // eslint-disable-next-line no-restricted-syntax
     for (const i in loadbalancers) {
         const loadbalancer = loadbalancers[i];
         let statusvip;
         let newLB;
+        // eslint-disable-next-line no-restricted-syntax
         for (const p in loadbalancer) {
             switch (p) {
                 case 'name':
-                    newLB.name = 'LB' + i;
+                    newLB.name = `LB${i}`;
                     break;
                 case 'serial':
                     newLB.serial = 'XXXX-YYYY';
                     break;
                 case 'ip':
-                    newLB.ip = '10.0.0.' + i;
+                    newLB.ip = `10.0.0.${i}`;
                     break;
                 case 'statusvip':
                     statusvip.url = '';
@@ -3939,48 +3811,46 @@ function exportDeviceData() {
     }
     downLoadTextFile(JSON.stringify(loadbalancersForExport, null, 4), 'loadbalancers.json');
     // Loop through the device groups while anonymizing the data
-    const deviceGroups = siteData.deviceGroups;
+    const { deviceGroups } = siteData;
     const deviceGroupsForExport = [];
     let newDeviceGroup;
+    // eslint-disable-next-line no-restricted-syntax
     for (const d in deviceGroups) {
         const deviceGroup = deviceGroups[d];
-        newDeviceGroup.name = 'DG' + d;
+        newDeviceGroup.name = `DG${d}`;
         newDeviceGroup.ips = [];
+        // eslint-disable-next-line no-restricted-syntax
         for (const i in deviceGroup.ips) {
-            newDeviceGroup.ips.push('10.0.0.' + i);
+            newDeviceGroup.ips.push(`10.0.0.${i}`);
         }
     }
     deviceGroupsForExport.push(newDeviceGroup);
     downLoadTextFile(JSON.stringify(deviceGroupsForExport, null, 4), 'devicegroups.json');
 }
 function loadPreferences() {
-    const preferences = siteData.preferences;
-    for (const k in preferences) {
+    const { preferences } = siteData;
+    Object.keys(preferences).forEach(k => {
         if (localStorage.getItem(k) === null) {
             localStorage.setItem(k, preferences[k]);
         }
-    }
+    });
 }
 function getPool(pool, loadbalancer) {
     return siteData.poolsMap.get(`${loadbalancer}:${pool}`);
 }
 function getVirtualServer(vs, loadbalancer) {
-    return (siteData.virtualservers.find(function (o) {
-        return o.name === vs && o.loadbalancer === loadbalancer;
-    }));
+    return (siteData.virtualservers.find((o) => o.name === vs && o.loadbalancer === loadbalancer));
 }
 function getLoadbalancer(loadbalancer) {
-    return (siteData.loadbalancers.find(function (o) {
-        return o.name === loadbalancer;
-    }) || false);
+    return (siteData.loadbalancers.find((o) => o.name === loadbalancer) || false);
 }
 // a and b are javascript Date objects
 function dateDiffInDays(a, b) {
-    const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+    const msPerDay = 1000 * 60 * 60 * 24;
     // Discard the time and time-zone information.
     const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
     const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-    return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+    return Math.floor((utc2 - utc1) / msPerDay);
 }
 function activateMenuButton(b) {
     $('div.menuitem').removeClass('menuitemactive');
@@ -3994,7 +3864,7 @@ function customizeCSV(csv) {
 }
 function downLoadTextFile(data, fileName) {
     const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
+    element.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`);
     element.setAttribute('download', fileName);
     element.innerHTML = 'download';
     element.style.display = 'none';
