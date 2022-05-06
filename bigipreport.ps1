@@ -256,7 +256,8 @@
 #  5.6.5    2022-03-31   Adding click to copy for monitor tests                                        Patrik Jonsson  No
 #                        Adding unit tests for monitor test rendering
 #                        Now building the javascript files using webpack
-#  5.6.6    2022-04-11   Added stricter linting and parameter typing for functions                     Patrik Jonsson
+#  5.6.6    2022-04-11   Added stricter linting and parameter typing for functions                     Patrik Jonsson  No
+#  5.6.7    2022-05-06   Fixing issue with live polling                                                Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -300,7 +301,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.6"
+$Global:ScriptVersion = "5.6.7"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -1406,7 +1407,7 @@ function Get-LTMInformation {
             $ObjF5Policy.definition += "`n        Do the following when traffic matches:"
             ForEach ($action in $ruleSet.actionsReference.items) {
                 if (Get-Member -inputobject $action -name 'asm') {
-                    if ($action.asm -eq "true" -And $action.enable -eq "true" -And $action.request -eq "true") {
+                    if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'enable' ) -And $action.enable -eq "true" -And $action.request -eq "true") {
                         $ObjF5Policy.definition += "`n        -Enable asm for policy '" + $action.policy + "' at request time."
                     }
                     if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'disable' ) -And $action.disable -eq "true" -And $action.request -eq "true") {
