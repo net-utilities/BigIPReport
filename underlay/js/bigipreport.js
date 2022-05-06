@@ -1000,8 +1000,9 @@ function renderList(data, type, row, meta, renderCallback, plural) {
 }
 function testStatusVIP(loadbalancer) {
     const { name, statusvip } = loadbalancer;
+    const { pools } = siteData;
     // Find a pool with members on this load balancer
-    const pool = siteData.pools.find(p => p.name === name && p.members);
+    const pool = pools.find(p => p.loadbalancer === name && p.members);
     if (!pool) {
         statusvip.working = false;
         statusvip.reason = 'No pools with members found';
@@ -1267,8 +1268,8 @@ function countdownClock() {
     pollingstate += `${length}/${siteData.preferences.PollingMaxPools} pools open, `;
     if (siteData.memberStates) {
         pollingstate +=
-            `<span id="ajaxqueue">${siteData.memberStates.ajaxQueue.length}</span>
-        /${siteData.preferences.PollingMaxQueue} queued, `;
+            `<span id="ajaxqueue">${siteData.memberStates.ajaxQueue.length}</span>/${siteData.preferences.PollingMaxQueue} 
+        queued, `;
     }
     pollingstate += `refresh in ${siteData.countDown} seconds.`;
     $('td#pollingstatecell').html(pollingstate);
@@ -1301,15 +1302,15 @@ function getPoolStatus(poolCell) {
                     success(data) {
                         if (data.success) {
                             decreaseAjaxQueue(url);
-                            data.memberstatuses.forEach(memberStatus => {
-                                const statusSpan = $(`td.PoolMember[data-pool="${pool.poolNum}"] span[data-member="${memberStatus}"]`);
-                                setMemberState(statusSpan, data.memberstatuses[memberStatus]);
+                            Object.keys(data.memberstatuses).forEach(member => {
+                                const statusSpan = $(`td.PoolMember[data-pool="${pool.poolNum}"] span[data-member="${member}"]`);
+                                setMemberState(statusSpan, data.memberstatuses[member]);
                                 // Update the pool json object
                                 const { members } = pool;
-                                members.forEach(member => {
-                                    const ipport = `${member.ip}:${member.port}`;
-                                    if (ipport === memberStatus) {
-                                        member.realtimestatus = data.memberstatuses[memberStatus];
+                                members.forEach(poolMember => {
+                                    const ipport = `${poolMember.ip}:${poolMember.port}`;
+                                    if (ipport === member) {
+                                        poolMember.realtimestatus = data.memberstatuses[member];
                                     }
                                 });
                             });
