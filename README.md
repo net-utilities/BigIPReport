@@ -8,7 +8,7 @@ Demo can be shown here:
 
 Installation instructions are available here:
 
-[https://loadbalancing.se/bigip-report/](https://loadbalancing.se/bigip-report/)
+[https://loadbalancing.se/bigipreport-rest/](https://loadbalancing.se/bigipreport-rest/)
 
 DevCentral codeshare:
 
