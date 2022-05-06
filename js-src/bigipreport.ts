@@ -1037,21 +1037,21 @@ function getPoolStatusPools(poolCell) {
             if (data.success) {
               decreaseAjaxQueue(url);
 
-              data.memberstatuses.forEach(memberStatus => {
+              Object.keys(data.memberstatuses).forEach(member => {
                 const statusSpan = $(
-                  `table#poolTable details[data-name="${poolName}"] span[data-member="${memberStatus}"],` +
-                  `table#poolTable div[data-name="${poolName}"] span[data-member="${memberStatus}"]`
+                  `table#poolTable details[data-name="${poolName}"] span[data-member="${member}"],` +
+                  `table#poolTable div[data-name="${poolName}"] span[data-member="${member}"]`
                 );
 
-                setMemberState(statusSpan, data.memberstatuses[memberStatus]);
+                setMemberState(statusSpan, data.memberstatuses[member]);
 
                 // Update the pool json object
                 const {members} = pool;
 
-                members.forEach(member => {
-                  const ipport = `${member.ip  }:${  member.port}`;
-                  if (ipport === memberStatus) {
-                    member.realtimestatus = data.memberstatuses[memberStatus];
+                members.forEach(poolMember => {
+                  const ipport = `${poolMember.ip  }:${  poolMember.port}`;
+                  if (ipport === member) {
+                    poolMember.realtimestatus = data.memberstatuses[member];
                   }
                 })
               })
