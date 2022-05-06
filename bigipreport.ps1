@@ -256,7 +256,8 @@
 #  5.6.5    2022-03-31   Adding click to copy for monitor tests                                        Patrik Jonsson  No
 #                        Adding unit tests for monitor test rendering
 #                        Now building the javascript files using webpack
-#  5.6.6    2022-04-11   Added stricter linting and parameter typing for functions                     Patrik Jonsson
+#  5.6.6    2022-04-11   Added stricter linting and parameter typing for functions                     Patrik Jonsson  No
+#  5.6.7    2022-05-06   Fixing issue with live polling                                                Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
