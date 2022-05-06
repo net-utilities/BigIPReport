@@ -301,7 +301,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.6"
+$Global:ScriptVersion = "5.6.7"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
