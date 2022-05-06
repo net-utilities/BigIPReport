@@ -1407,7 +1407,7 @@ function Get-LTMInformation {
             $ObjF5Policy.definition += "`n        Do the following when traffic matches:"
             ForEach ($action in $ruleSet.actionsReference.items) {
                 if (Get-Member -inputobject $action -name 'asm') {
-                    if ($action.asm -eq "true" -And $action.enable -eq "true" -And $action.request -eq "true") {
+                    if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'enable' ) -And $action.enable -eq "true" -And $action.request -eq "true") {
                         $ObjF5Policy.definition += "`n        -Enable asm for policy '" + $action.policy + "' at request time."
                     }
                     if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'disable' ) -And $action.disable -eq "true" -And $action.request -eq "true") {
