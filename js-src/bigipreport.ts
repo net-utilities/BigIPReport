@@ -932,7 +932,7 @@ function countdownClock() {
   pollingstate += `${length}/${siteData.preferences.PollingMaxPools} pools open, `;
   if (siteData.memberStates) {
     pollingstate +=
-      `<span id="ajaxqueue">${siteData.memberStates.ajaxQueue.length}</span>/${siteData.preferences.PollingMaxQueue} 
+      `<span id="ajaxqueue">${siteData.memberStates.ajaxQueue.length}</span>/${siteData.preferences.PollingMaxQueue}
         queued, `;
   }
   pollingstate += `refresh in ${siteData.countDown} seconds.`;
@@ -977,10 +977,10 @@ function getPoolStatus(poolCell: HTMLElement) {
               Object.keys(data.memberstatuses).forEach(member => {
 
                 const statusSpan = $(
-                  `td.PoolMember[data-pool="${ 
-                  pool.poolNum 
-                  }"] span[data-member="${ 
-                  member 
+                  `td.PoolMember[data-pool="${
+                  pool.poolNum
+                  }"] span[data-member="${
+                  member
                   }"]`
                 );
 
@@ -1397,8 +1397,12 @@ function setupVirtualServerTable() {
       {
         className: 'centeredCell',
         render (data: undefined, type: string, row: IVirtualServer) {
+          let result = `${row.ip}:${row.port}`
           const ipNoRD = row.ip.replace(/%.*/,'');
-          return `${row.ip  }:${  row.port}<br>Public IP:${siteData.NATdict[ipNoRD] || ''}`;
+          if (siteData.NATdict[ipNoRD]) {
+            result += `<br>Public IP:${siteData.NATdict[ipNoRD]}`;
+          }
+          return result;
         },
       },
       {
@@ -3362,8 +3366,8 @@ function showVirtualServerDetails(virtualserver: string, loadbalancer: string) {
     html +=
       `<span>Virtual Server: ${  name  }</span><br>`;
     html +=
-      `<span>Load Balancer: ${ 
-      renderLoadBalancer(loadbalancer, 'display') 
+      `<span>Load Balancer: ${
+      renderLoadBalancer(loadbalancer, 'display')
       }</span>`;
     html += '</div>';
 
@@ -3493,8 +3497,8 @@ function showVirtualServerDetails(virtualserver: string, loadbalancer: string) {
 
             if (!iRule || Object.keys(iRule).length === 0) {
               table +=
-                `    <tr><td>${ 
-                iRuleName 
+                `    <tr><td>${
+                iRuleName
                 }</td><td>N/A (empty rule)</td></tr>`;
             } else {
               const datagroupdata = [];
@@ -3574,8 +3578,8 @@ function showiRuleDetails(name: string, loadbalancer: string) {
     html = '<div class="iruledetailsheader">';
     html += `<span>iRule: ${  matchingirule.name  }</span><br>`;
     html +=
-      `<span>Load Balancer: ${ 
-      renderLoadBalancer(loadbalancer, 'display') 
+      `<span>Load Balancer: ${
+      renderLoadBalancer(loadbalancer, 'display')
       }</span>`;
     html += '</div>';
 
@@ -3623,10 +3627,10 @@ function showiRuleDetails(name: string, loadbalancer: string) {
         }
         // Prepare the link
         const link =
-          `<a href="Javascript:showPoolDetails('${ 
-          pool 
-          }', '${ 
-          loadbalancer 
+          `<a href="Javascript:showPoolDetails('${
+          pool
+          }', '${
+          loadbalancer
           }')">$1</a>`;
         // Do the actual replacement
         definition = definition.replace(regexp, link);
@@ -3640,8 +3644,8 @@ function showiRuleDetails(name: string, loadbalancer: string) {
                         <tr><th>iRule definiton</th></tr>
                     </thead>
                     <tbody>
-                    <tr><td><pre class="sh_tcl">${ 
-      definition 
+                    <tr><td><pre class="sh_tcl">${
+      definition
       }</pre></td></tr>`;
 
     if (
@@ -3649,12 +3653,12 @@ function showiRuleDetails(name: string, loadbalancer: string) {
       matchingirule.virtualservers.length > 0
     ) {
       html +=
-        `<tr><td>Used by ${ 
-        matchingirule.virtualservers.length 
-        } Virtual Servers:<br>${ 
+        `<tr><td>Used by ${
+        matchingirule.virtualservers.length
+        } Virtual Servers:<br>${
         matchingirule.virtualservers
           .map((vs) => renderVirtualServer(loadbalancer, vs, 'display'))
-          .join('<br>') 
+          .join('<br>')
         }</td></tr>`;
     }
 
@@ -3747,8 +3751,8 @@ function showDataGroupDetails(datagroup, loadbalancer) {
     let html = '<div class="datagroupdetailsheader">';
     html += `<span>Data group: ${  matchingDatagroup.name  }</span><br>`;
     html +=
-      `<span>Load Balancer: ${ 
-      renderLoadBalancer(loadbalancer, 'display') 
+      `<span>Load Balancer: ${
+      renderLoadBalancer(loadbalancer, 'display')
       }</span><br>`;
     html += `<span class="dgtype">Type: ${  matchingDatagroup.type  }</span>`;
     html += '</div>';
