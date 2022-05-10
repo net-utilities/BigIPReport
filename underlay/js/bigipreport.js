@@ -1268,7 +1268,7 @@ function countdownClock() {
     pollingstate += `${length}/${siteData.preferences.PollingMaxPools} pools open, `;
     if (siteData.memberStates) {
         pollingstate +=
-            `<span id="ajaxqueue">${siteData.memberStates.ajaxQueue.length}</span>/${siteData.preferences.PollingMaxQueue} 
+            `<span id="ajaxqueue">${siteData.memberStates.ajaxQueue.length}</span>/${siteData.preferences.PollingMaxQueue}
         queued, `;
     }
     pollingstate += `refresh in ${siteData.countDown} seconds.`;
@@ -1657,8 +1657,12 @@ function setupVirtualServerTable() {
             {
                 className: 'centeredCell',
                 render(data, type, row) {
+                    let result = `${row.ip}:${row.port}`;
                     const ipNoRD = row.ip.replace(/%.*/, '');
-                    return `${row.ip}:${row.port}<br>Public IP:${siteData.NATdict[ipNoRD] || ''}`;
+                    if (siteData.NATdict[ipNoRD]) {
+                        result += `<br>Public IP:${siteData.NATdict[ipNoRD]}`;
+                    }
+                    return result;
                 },
             },
             {
