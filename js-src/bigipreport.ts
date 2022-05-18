@@ -1039,8 +1039,10 @@ function getPoolStatusPools(poolCell) {
 
               Object.keys(data.memberstatuses).forEach(member => {
                 const statusSpan = $(
-                  `table#poolTable details[data-name="${poolName}"] span[data-member="${member}"],` +
-                  `table#poolTable div[data-name="${poolName}"] span[data-member="${member}"]`
+                  `table#poolTable details[data-loadbalancer="${loadbalancerName}"][data-name="${poolName}"] ` +
+                  `span[data-member="${member}"],` +
+                  `table#poolTable div[data-loadbalancer="${loadbalancerName}"][data-name="${poolName}"] ` +
+                  `span[data-member="${member}"]`
                 );
 
                 setMemberState(statusSpan, data.memberstatuses[member]);

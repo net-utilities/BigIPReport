@@ -259,6 +259,7 @@
 #  5.6.6    2022-04-11   Added stricter linting and parameter typing for functions                     Patrik Jonsson  No
 #  5.6.7    2022-05-06   Fixing issue with live polling                                                Patrik Jonsson  No
 #  5.6.8    2022-05-10   Fixing bug where Public IP is always visible even though no NAT file exists   Tim Riker       No
+#  5.6.9    2022-05-18   Ensuring status polling is unique for every device/pool member combination    Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -302,7 +303,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.8"
+$Global:ScriptVersion = "5.6.9"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
