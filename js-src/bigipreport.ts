@@ -1191,39 +1191,41 @@ function populateSearchParameters(updateHash: boolean) {
       vars[hash[0]] = hash[1];
     }
 
-    if (vars.mainsection) {
+    if (vars.m) {
 
-      const activeSection = vars.mainsection;
+      // mainsection in m
+      const activeSection = vars.m;
 
       switch (activeSection) {
-        case 'virtualservers':
+        case 'v':
           showVirtualServers(updateHash);
           break;
-        case 'pools':
+        case 'p':
           showPools(updateHash);
           break;
-        case 'irules':
+        case 'i':
           showiRules(updateHash);
           break;
-        case 'policies':
+        case 'pl':
           showPolicies(updateHash);
           break;
-        case 'deviceoverview':
+        case 'd':
           showDeviceOverview(updateHash);
           break;
-        case 'certificatedetails':
+        case 'c':
           showCertificateDetails(updateHash);
           break;
-        case 'datagroups':
+        case 'dg':
           showDataGroups(updateHash);
           break;
-        case 'logs':
+        case 'l':
           showLogs(updateHash);
           break;
-        case 'preferences':
+        case 's':
+          // preferences = settings = s
           showPreferences(updateHash);
           break;
-        case 'help':
+        case 'h':
           showHelp(updateHash);
           break;
         default:
@@ -1239,12 +1241,19 @@ function populateSearchParameters(updateHash: boolean) {
       const value = vars[key];
 
       // If it's provided, populate and search with the global string
-      if (key === 'global_search') {
-        const allFilterInput = $('#allbigips_filter input');
-        if (allFilterInput) {
-          allFilterInput.val(vars[key]);
-          if (siteData.bigipTable) {
-            siteData.bigipTable.search(
+      const [arr,sub] = key.split(',');
+      if (arr === 'v') {
+        if (siteData.bigipTable) {
+          if (sub === 'q') {
+              siteData.bigipTable.search(
+                vars[key],
+                localStorage.getItem('regexSearch') === 'true',
+                false
+              );
+              siteData.bigipTable.draw();
+          } else {
+            // Validate that the key is a column filter and populate it
+            siteData.bigipTable.column(sub).search(
               vars[key],
               localStorage.getItem('regexSearch') === 'true',
               false
@@ -1252,52 +1261,54 @@ function populateSearchParameters(updateHash: boolean) {
             siteData.bigipTable.draw();
           }
         }
-      } else {
-        // Validate that the key is a column filter and populate it
-        const inputKey = $(`input[name="${key}"]`);
-        if (inputKey.length) {
-          inputKey.val(value);
-          inputKey.trigger('keyup');
+      }
+      if (arr === 'p') {
+        if (siteData.poolTable) {
+          if (sub === 'q') {
+              siteData.poolTable.search(
+                vars[key],
+                localStorage.getItem('regexSearch') === 'true',
+                false
+              );
+              siteData.poolTable.draw();
+          } else {
+            // Validate that the key is a column filter and populate it
+            siteData.poolTable.column(sub).search(
+              vars[key],
+              localStorage.getItem('regexSearch') === 'true',
+              false
+            );
+            siteData.poolTable.draw();
+          }
         }
       }
     }
 
     if (vars.pool) {
-      const poolName = vars.pool.split('@')[0];
-      const loadBalancer = vars.pool.split('@')[1];
-
+      const [poolName, loadBalancer] = vars.pool.split('@');
       showPoolDetails(poolName, loadBalancer);
     }
 
     if (vars.virtualserver) {
-      const virtualServerName = vars.virtualserver.split('@')[0];
-      const loadBalancer = vars.virtualserver.split('@')[1];
-
+      const [virtualServerName, loadBalancer] = vars.virtualserver.split('@');
       showVirtualServerDetails(virtualServerName, loadBalancer);
     }
 
     if (vars.datagroup) {
-      const dataGroupName = vars.datagroup.split('@')[0];
-      const loadBalancer = vars.datagroup.split('@')[1];
-
+      const [dataGroupName, loadBalancer] = vars.datagroup.split('@');
       showDataGroupDetails(dataGroupName, loadBalancer);
     }
 
     if (vars.irule) {
-      const iruleName = vars.irule.split('@')[0];
-      const loadBalancer = vars.irule.split('@')[1];
-
+      const [iruleName, loadBalancer] = vars.irule.split('@');
       showiRuleDetails(iruleName, loadBalancer);
     }
 
     if (vars.policy) {
-      const policyName = vars.policy.split('@')[0];
-      const loadBalancer = vars.policy.split('@')[1];
-
+      const [policyName, loadBalancer] = vars.policy.split('@');
       showPolicyDetails(policyName, loadBalancer);
     }
   }
-
 
 }
 
@@ -1612,6 +1623,7 @@ function setupVirtualServerTable() {
               false
             )
             .draw();
+            updateLocationHash();
         }
       }
     });
@@ -2179,10 +2191,18 @@ function setupPoolTable() {
               false
             )
             .draw();
+            updateLocationHash();
         }
       }
     });
   });
+
+  $('div#poolTable_filter.dataTables_filter input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
 
   // highlight matches
   siteData.poolTable.on('draw', () => {
@@ -2735,7 +2755,7 @@ function hideMainSection() {
 
 function showMainSection(section) {
   hideMainSection();
-  $(`div#${  section}`).fadeIn(10, updateLocationHash);
+  $(`div#${section}`).fadeIn(10, updateLocationHash);
 }
 
 function showVirtualServers(updatehash) {
@@ -3145,19 +3165,40 @@ export function updateLocationHash(updatehash: any = true) : void {
   const parameters = [];
 
   const activeSection = $('div#mainholder').attr('data-activesection');
-  parameters.push(`mainsection=${activeSection}`);
+  // m is mainsection
+  let sections = {
+    'virtualservers': 'v',
+    'pools':'p',
+    'irules':'i',
+    'policies':'pl',
+    'datagroups':'dg',
+    'deviceoverview':'d',
+    'certificatedetails':'c',
+    'logs':'l',
+    'preferences':'s',
+    'help':'h'
+  }
+  parameters.push(`m=${sections[activeSection]}`);
 
-  $('table#allbigips thead tr th input').each((i, e) => {
-    const input = e as HTMLInputElement;
-    if (input.value !== '') {
-      parameters.push(`${input.name}=${input.value}`);
+  if (siteData.bigipTable) {
+    if (siteData.bigipTable.search()) {
+      parameters.push(`v,q=${siteData.bigipTable.search()}`);
     }
-  });
-
-  const globalSearch = $('#allbigips_filter label input').val();
-
-  if (globalSearch && globalSearch !== '') {
-    parameters.push(`global_search=${globalSearch}`);
+    siteData.bigipTable.columns().every(function () {
+      if (this.search()) {
+        parameters.push(`v,${this.index()}=${this.search()}`);
+      }
+    });
+  }
+  if (siteData.poolTable) {
+    if (siteData.poolTable.search()) {
+      parameters.push(`p,q=${siteData.poolTable.search()}`);
+    }
+    siteData.poolTable.columns().every(function () {
+      if (this.search()) {
+        parameters.push(`p,${this.index()}=${this.search()}`);
+      }
+    });
   }
 
   $('div.lightboxcontent:visible').each(function () {
@@ -3167,7 +3208,6 @@ export function updateLocationHash(updatehash: any = true) : void {
 
     parameters.push(`${type}=${objectName}@${loadbalancer}`);
   });
-
   if (updatehash) {
     window.location.hash = parameters.join('&');
   }
@@ -3202,6 +3242,7 @@ function expandMatches(resultset: any) {
 function resetFilters(e: any, dt: any) {
   $(dt.header()).find('input').val('');
   dt.search('').columns().search('').draw();
+  updateLocationHash();
 }
 
 function toggleExpandCollapseRestore(e: any, dt: any, node: any) {
