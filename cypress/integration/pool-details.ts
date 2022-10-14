@@ -39,7 +39,7 @@ describe('Pool details should render properly', () => {
       cy.wrap(cell).find('table.pooltable').should('be.visible')
       cy.get('td.poolname a.tooltip').first().click();
     })
-    
+
     cy.get('div#firstlayerdiv').should('be.visible');
   });
 
