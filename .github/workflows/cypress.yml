@@ -7,10 +7,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - run: npm install http-server
-      - run: 'echo $CERT_PEM | base64 -d > underlay/cert.pem && echo $KEY_PEM | base64 -d > underlay/key.pem'
-        env:
-          CERT_PEM: ${{ secrets.CERT_PEM }}
-          KEY_PEM: ${{ secrets.KEY_PEM }}
+      - run: |
+          openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+          -subj "/C=SE/ST=STOCKHOLM/L=Stockholm/O=NET-UTIL/CN=localhost" \
+          -keyout underlay/key.pem  -out underlay/cert.pem
       - name: Copy json data files to underlay
         run: 'cp cypress/fixtures/* underlay/json/'
       - name: Cypress run
