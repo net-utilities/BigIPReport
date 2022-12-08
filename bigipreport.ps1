@@ -2407,13 +2407,13 @@ if (Test-Path $Global:paths.state) {
 }
 
 # Alerts
-. .\modules\Get-ExpiredCertificates.ps1
+. modules/Get-ExpiredCertificates.ps1
 $Global:State["certificateAlerts"] = Get-ExpiredCertificates -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
 
-. .\modules\Get-SupportEntitlements.ps1
+. modules/Get-SupportEntitlements.ps1
 $Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
 
-. .\modules\Get-FailedDeviceAlerts.ps1
+. modules/Get-FailedDeviceAlerts.ps1
 $Global:State["failedDevices"] = Get-FailedDeviceAlerts -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedDevices -SlackWebHook $SlackWebHook
 
 #End Region
