@@ -1830,15 +1830,30 @@ function setupVirtualServerTable() {
                     },
                 },
                 {
-                    extend: 'csvHtml5',
-                    titleAttr: 'Download current filtered results in CSV format',
                     className: 'tableHeaderColumnButton exportFunctions',
+                    customize: customizeCSV,
                     exportOptions: {
                         columns: ':visible',
                         stripHtml: false,
                         orthogonal: 'export',
                     },
+                    extend: 'csvHtml5',
+                    filename: 'BigIPReport-virtualservers',
+                    titleAttr: 'Download current filtered results in CSV format',
+                },
+                {
+                    className: 'tableHeaderColumnButton exportFunctions',
                     customize: customizeCSV,
+                    exportOptions: {
+                        modifier: { search: 'none' },
+                        orthogonal: 'export',
+                        search: 'none',
+                        stripHtml: false,
+                    },
+                    extend: 'csvHtml5',
+                    filename: 'BigIPReport-all-virtualservers',
+                    text: 'All CSV',
+                    titleAttr: 'Download all results in CSV format',
                 },
             ],
         },
@@ -2021,6 +2036,7 @@ function setupiRuleTable() {
                 },
                 {
                     extend: 'csvHtml5',
+                    filename: 'BigIPReport-irules',
                     className: 'tableHeaderColumnButton exportFunctions',
                     exportOptions: {
                         columns: ':visible',
@@ -2163,6 +2179,7 @@ function setupPolicyTable() {
                 },
                 {
                     extend: 'csvHtml5',
+                    filename: 'BigIPReport-policies',
                     className: 'tableHeaderColumnButton exportFunctions',
                     exportOptions: {
                         columns: ':visible',
@@ -2334,6 +2351,7 @@ function setupPoolTable() {
                 },
                 {
                     extend: 'csvHtml5',
+                    filename: 'BigIPReport-pools',
                     className: 'tableHeaderColumnButton exportFunctions',
                     exportOptions: {
                         columns: ':visible',
@@ -2498,6 +2516,7 @@ function setupDataGroupTable() {
                 },
                 {
                     extend: 'csvHtml5',
+                    filename: 'BigIPReport-datagroups',
                     className: 'tableHeaderColumnButton exportFunctions',
                     exportOptions: {
                         columns: ':visible',
@@ -2705,6 +2724,7 @@ function setupCertificateTable() {
                 },
                 {
                     extend: 'csvHtml5',
+                    filename: 'BigIPReport-certificates',
                     className: 'tableHeaderColumnButton exportFunctions',
                     exportOptions: {
                         columns: ':visible',
@@ -2825,6 +2845,7 @@ function setupLogsTable() {
                 },
                 {
                     extend: 'csvHtml5',
+                    filename: 'BigIPReport-logs',
                     className: 'tableHeaderColumnButton exportFunctions',
                     exportOptions: {
                         columns: ':visible',
