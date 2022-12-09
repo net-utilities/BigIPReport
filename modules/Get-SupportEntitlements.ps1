@@ -6,7 +6,6 @@ Function Get-SupportEntitlements {
     $WaitSecondsBetween = $WaitHoursBetween * 3600
     $Now = ([math]::Floor((Get-Date -UFormat %s)))
 
-
     if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -ne "true") {
         log info "Support Checks has been disabled, skipping"
         return @{}
