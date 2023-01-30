@@ -1192,6 +1192,8 @@ function populateSearchParameters(updateHash: boolean) {
       vars[hash[0]] = hash[1];
     }
 
+    let table:DataTables.Api = null;
+
     if (vars.m) {
 
       // mainsection in m
@@ -1200,27 +1202,35 @@ function populateSearchParameters(updateHash: boolean) {
       switch (activeSection) {
         case 'v':
           showVirtualServers(updateHash);
+          table = siteData.bigipTable;
           break;
         case 'p':
           showPools(updateHash);
+          table = siteData.poolTable;
           break;
         case 'i':
           showiRules(updateHash);
+          table = siteData.iRuleTable;
           break;
         case 'pl':
           showPolicies(updateHash);
+          table = siteData.PolicyTable;
           break;
         case 'd':
           showDeviceOverview(updateHash);
+          table = siteData.dataGroupTable;
           break;
         case 'c':
           showCertificateDetails(updateHash);
+          table = siteData.certificateTable;
           break;
         case 'dg':
           showDataGroups(updateHash);
+          table = siteData.dataGroupTable;
           break;
         case 'l':
           showLogs(updateHash);
+          table = siteData.logTable;
           break;
         case 's':
           // preferences = settings = s
@@ -1238,52 +1248,28 @@ function populateSearchParameters(updateHash: boolean) {
     // siteData.bigipTable && siteData.bigipTable.search('');
 
     // eslint-disable-next-line no-restricted-syntax
-    for (const key in vars) {
-      const value = vars[key];
-
-      // If it's provided, populate and search with the global string
-      const [arr,sub] = key.split(',');
-      if (arr === 'v') {
-        if (siteData.bigipTable) {
-          if (sub === 'q') {
-              siteData.bigipTable.search(
-                vars[key],
-                localStorage.getItem('regexSearch') === 'true',
-                false
-              );
-              siteData.bigipTable.draw();
-          } else {
-            // Validate that the key is a column filter and populate it
-            siteData.bigipTable.column(sub).search(
+    if (table) {
+      Object.keys(vars).forEach(key => {
+        // If it's provided, populate and search with the global string
+        if (key === 'q') {
+          table.search(
               vars[key],
               localStorage.getItem('regexSearch') === 'true',
               false
-            );
-            siteData.bigipTable.draw();
-          }
+          );
+        } else if (!Number.isNaN(key)) {
+          // Validate that the key is a column filter and populate it
+          table.column(key).search(
+            vars[key],
+            localStorage.getItem('regexSearch') === 'true',
+            false
+          );
+          table.column(key).header().querySelector('input').value = vars[key];
         }
-      }
-      if (arr === 'p') {
-        if (siteData.poolTable) {
-          if (sub === 'q') {
-              siteData.poolTable.search(
-                vars[key],
-                localStorage.getItem('regexSearch') === 'true',
-                false
-              );
-              siteData.poolTable.draw();
-          } else {
-            // Validate that the key is a column filter and populate it
-            siteData.poolTable.column(sub).search(
-              vars[key],
-              localStorage.getItem('regexSearch') === 'true',
-              false
-            );
-            siteData.poolTable.draw();
-          }
-        }
-      }
+      });
+      table.draw();
     }
+
 
     if (vars.pool) {
       const [poolName, loadBalancer] = vars.pool.split('@');
