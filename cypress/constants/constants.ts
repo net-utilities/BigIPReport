@@ -29,3 +29,7 @@ export const DIRECT_LINK_SEARCH_BY_VIP_NAME_URL =
 export const DIRECT_LINK_SEARCH_BY_IP_PORT = '10.10.10.2:443';
 export const DIRECT_LINK_SEARCH_BY_IP_PORT_URL =
   `${REPORT_ROOT}/#m=v&3=${DIRECT_LINK_SEARCH_BY_IP_PORT}`;
+
+export const DIRECT_LINK_SEARCH_BY_POOL = 'loadbalancing-se';
+export const DIRECT_LINK_SEARCH_BY_POOL_URL =
+  `${REPORT_ROOT}/#m=v&poolmembers=${DIRECT_LINK_SEARCH_BY_POOL}`;
