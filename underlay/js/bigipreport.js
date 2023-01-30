@@ -1534,7 +1534,7 @@ function populateSearchParameters(updateHash) {
                 if (key === 'q') {
                     table.search(vars[key], localStorage.getItem('regexSearch') === 'true', false);
                 }
-                else if (!Number.isNaN(key)) {
+                else if (key.match(/^[0-9]+$/)) {
                     // Validate that the key is a column filter and populate it
                     table.column(key).search(vars[key], localStorage.getItem('regexSearch') === 'true', false);
                     table.column(key).header().querySelector('input').value = vars[key];
@@ -2050,6 +2050,9 @@ function setupiRuleTable() {
     $('table#iRuleTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
+    $('div#iRuleTable_wrapper input').on('keyup input', () => {
+        updateLocationHash();
+    });
     // Apply the search
     // eslint-disable-next-line array-callback-return
     siteData.iRuleTable.columns().every(function () {
@@ -2192,6 +2195,9 @@ function setupPolicyTable() {
     // Prevents sorting the columns when clicking on the sorting headers
     $('table#PolicyTable thead th input').on('click', (e) => {
         e.stopPropagation();
+    });
+    $('div#PolicyTable_wrapper input').on('keyup input', () => {
+        updateLocationHash();
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
@@ -2530,6 +2536,9 @@ function setupDataGroupTable() {
     $('table#dataGroupTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
+    $('div#dataGroupTable_wrapper input').on('keyup input', () => {
+        updateLocationHash();
+    });
     // Apply the search
     // eslint-disable-next-line array-callback-return
     siteData.dataGroupTable.columns().every(function () {
@@ -2738,6 +2747,9 @@ function setupCertificateTable() {
     $('table#certifcateTable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
+    $('div#certificateTable_wrapper input').on('keyup input', () => {
+        updateLocationHash();
+    });
     // Apply the search
     // eslint-disable-next-line array-callback-return
     siteData.certificateTable.columns().every(function () {
@@ -2865,6 +2877,9 @@ function setupLogTable() {
     // Prevents sorting the columns when clicking on the sorting headers
     $('table#logtable thead th input').on('click', (e) => {
         e.stopPropagation();
+    });
+    $('div#logtable_wrapper input').on('keyup input', () => {
+        updateLocationHash();
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return

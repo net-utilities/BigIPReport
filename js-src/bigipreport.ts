@@ -1257,7 +1257,7 @@ function populateSearchParameters(updateHash: boolean) {
               localStorage.getItem('regexSearch') === 'true',
               false
           );
-        } else if (!Number.isNaN(key)) {
+        } else if (key.match(/^[0-9]+$/)) {
           // Validate that the key is a column filter and populate it
           table.column(key).search(
             vars[key],
@@ -1269,7 +1269,6 @@ function populateSearchParameters(updateHash: boolean) {
       });
       table.draw();
     }
-
 
     if (vars.pool) {
       const [poolName, loadBalancer] = vars.pool.split('@');
@@ -1840,6 +1839,13 @@ function setupiRuleTable() {
     e.stopPropagation();
   });
 
+  $('div#iRuleTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
+
   // Apply the search
   // eslint-disable-next-line array-callback-return
   siteData.iRuleTable.columns().every(function () {
@@ -1994,6 +2000,12 @@ function setupPolicyTable() {
   $('table#PolicyTable thead th input').on('click', (e) => {
     e.stopPropagation();
   });
+  $('div#PolicyTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
   // Apply the search
   // eslint-disable-next-line array-callback-return
   siteData.PolicyTable.columns().every(function () {
@@ -2363,6 +2375,13 @@ function setupDataGroupTable() {
     e.stopPropagation();
   });
 
+  $('div#dataGroupTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
+
   // Apply the search
   // eslint-disable-next-line array-callback-return
   siteData.dataGroupTable.columns().every(function () {
@@ -2586,6 +2605,13 @@ function setupCertificateTable() {
     e.stopPropagation();
   });
 
+  $('div#certificateTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
+
   // Apply the search
   // eslint-disable-next-line array-callback-return
   siteData.certificateTable.columns().every(function () {
@@ -2725,6 +2751,12 @@ function setupLogTable() {
   $('table#logtable thead th input').on('click', (e) => {
     e.stopPropagation();
   });
+  $('div#logtable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
