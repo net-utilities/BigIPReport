@@ -1532,12 +1532,12 @@ function populateSearchParameters(updateHash) {
             Object.keys(vars).forEach(key => {
                 // If it's provided, populate and search with the global string
                 if (key === 'q') {
-                    table.search(vars[key], localStorage.getItem('regexSearch') === 'true', false);
+                    table.search(decodeURIComponent(vars[key]), localStorage.getItem('regexSearch') === 'true', false);
                 }
                 else if (key.match(/^[0-9]+$/)) {
                     // Validate that the key is a column filter and populate it
-                    table.column(key).search(vars[key], localStorage.getItem('regexSearch') === 'true', false);
-                    table.column(key).header().querySelector('input').value = vars[key];
+                    table.column(key).search(decodeURIComponent(vars[key]), localStorage.getItem('regexSearch') === 'true', false);
+                    table.column(key).header().querySelector('input').value = decodeURIComponent(vars[key]);
                 }
             });
             table.draw();
@@ -3293,11 +3293,11 @@ function updateLocationHash(updatehash = true) {
     };
     if (tables[activeSection]) {
         if (tables[activeSection].search()) {
-            parameters.push(`q=${tables[activeSection].search()}`);
+            parameters.push(`q=${encodeURIComponent(tables[activeSection].search())}`);
         }
         tables[activeSection].columns().every(function () {
             if (this.search()) {
-                parameters.push(`${this.index()}=${this.search()}`);
+                parameters.push(`${this.index()}=${encodeURIComponent(this.search())}`);
             }
         });
     }
