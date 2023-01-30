@@ -2770,12 +2770,12 @@ function setupCertificateTable() {
     });
     siteData.certificateTable.draw();
 }
-function setupLogsTable() {
+function setupLogTable() {
     if (siteData.logTable) {
         return;
     }
     const content = `
-    <table id="logstable" class="bigiptable display">
+    <table id="logtable" class="bigiptable display">
       <thead>
         <tr>
           <th>
@@ -2796,7 +2796,7 @@ function setupLogsTable() {
       </tbody>
     </table>`;
     $('div#logs').html(content);
-    siteData.logTable = $('div#logs table#logstable').DataTable({
+    siteData.logTable = $('div#logs table#logtable').DataTable({
         autoWidth: false,
         deferRender: true,
         data: siteData.loggedErrors,
@@ -2871,7 +2871,7 @@ function setupLogsTable() {
         stateSave: true,
     });
     // Prevents sorting the columns when clicking on the sorting headers
-    $('table#logstable thead th input').on('click', (e) => {
+    $('table#logtable thead th input').on('click', (e) => {
         e.stopPropagation();
     });
     // Apply the search
@@ -3200,7 +3200,7 @@ function generateSupportCell(loadbalancer) {
 }
 function showLogs(updatehash) {
     hideMainSection();
-    setupLogsTable();
+    setupLogTable();
     activateMenuButton('div#logsbutton');
     $('div#mainholder').attr('data-activesection', 'logs');
     updateLocationHash(updatehash);
@@ -3229,7 +3229,7 @@ function log(message, severity, datetime = undefined) {
     if (siteData.logTable) {
         siteData.logTable.destroy();
         delete siteData.logTable;
-        setupLogsTable();
+        setupLogTable();
     }
 }
 function toggleAdcLinks() {
@@ -3262,7 +3262,7 @@ function updateLocationHash(updatehash = true) {
     const parameters = [];
     const activeSection = $('div#mainholder').attr('data-activesection');
     // m is mainsection
-    let sections = {
+    const sections = {
         'virtualservers': 'v',
         'pools': 'p',
         'irules': 'i',
@@ -3275,23 +3275,22 @@ function updateLocationHash(updatehash = true) {
         'help': 'h'
     };
     parameters.push(`m=${sections[activeSection]}`);
-    if (siteData.bigipTable) {
-        if (siteData.bigipTable.search()) {
-            parameters.push(`v,q=${siteData.bigipTable.search()}`);
+    const tables = {
+        'virtualservers': siteData.bigipTable,
+        'pools': siteData.poolTable,
+        'irules': siteData.iRuleTable,
+        'policies': siteData.PolicyTable,
+        'datagroups': siteData.dataGroupTable,
+        'certificatedetails': siteData.certificateTable,
+        'logs': siteData.logTable,
+    };
+    if (tables[activeSection]) {
+        if (tables[activeSection].search()) {
+            parameters.push(`q=${tables[activeSection].search()}`);
         }
-        siteData.bigipTable.columns().every(function () {
+        tables[activeSection].columns().every(function () {
             if (this.search()) {
-                parameters.push(`v,${this.index()}=${this.search()}`);
-            }
-        });
-    }
-    if (siteData.poolTable) {
-        if (siteData.poolTable.search()) {
-            parameters.push(`p,q=${siteData.poolTable.search()}`);
-        }
-        siteData.poolTable.columns().every(function () {
-            if (this.search()) {
-                parameters.push(`p,${this.index()}=${this.search()}`);
+                parameters.push(`${this.index()}=${this.search()}`);
             }
         });
     }
@@ -3811,15 +3810,23 @@ function showDataGroupDetails(datagroup, loadbalancer) {
                 {
                     data: 'value',
                     render(data, type) {
-                        if (data && data.match(/^http(s)?:/)) {
-                            return `<a href="${data}">${data}</a>`;
-                        }
-                        const pool = getPool(`/Common/${data}`, loadbalancer);
-                        if (pool) {
-                            // Click to see pool details
-                            return renderPool(loadbalancer, pool.name, type);
-                        }
-                        return data;
+                        const result = [];
+                        data.split(' ').forEach((item) => {
+                            if (item.match(/^http(s)?:/)) {
+                                result.push(`<a href="${item}">${item}</a>`);
+                            }
+                            else {
+                                const pool = getPool(`/Common/${item}`, loadbalancer);
+                                if (pool) {
+                                    // Click to see pool details
+                                    result.push(renderPool(loadbalancer, pool.name, type));
+                                }
+                                else {
+                                    result.push(item);
+                                }
+                            }
+                        });
+                        return result.join(' ');
                     },
                 },
             ],
