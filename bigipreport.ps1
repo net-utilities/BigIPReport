@@ -1471,15 +1471,19 @@ function Get-LTMInformation {
                     continue
                 }
 
-                # if data contains pool names, add to .pools and change type to Pools
-                if ($record.data.contains("/")) {
-                    $TempPool = $Record.data
-                } else {
-                    $TempPool = "/$Partition/" + $Record.data
-                }
+                Foreach ($term in $record.data.Split(" ")) {
+                    # if data contains pool names, add to .pools and change type to Pools
+                    if (!$term.contains("=")) {
+                        if ($term.contains("/")) {
+                            $TempPool = $term
+                        } else {
+                            $TempPool = "/$Partition/" + $term
+                        }
 
-                if ($Pools -contains $TempPool) {
-                    $TempPools += $TempPool
+                        if ($Pools -contains $TempPool) {
+                            $TempPools += $TempPool
+                        }
+                    }
                 }
             }
         }
