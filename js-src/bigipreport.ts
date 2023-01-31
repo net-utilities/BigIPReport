@@ -1,4 +1,3 @@
-import { Certificate } from 'crypto';
 import ISiteData, { PatchedSettings } from './Interfaces/ISiteData';
 import IPool, {IMember} from './Interfaces/IPool';
 import ICertificate from './Interfaces/ICertificate';
@@ -12,7 +11,7 @@ import showPoolDetails from './PoolDetails/showPoolDetails';
 import { ISupportState} from './Interfaces/IState';
 import getJSONFiles from './Init/getJSONFiles';
 import jqXHR = JQuery.jqXHR;
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
 declare function sh_highlightDocument(prefix:any, suffix:any): any;
 
 /* *********************************************************************************************************************
@@ -34,13 +33,21 @@ export let siteData: Partial<ISiteData> = {
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showPoolDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     togglePool: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     togglePoolHighlight: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showVirtualServerDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showDataGroupDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showiRuleDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showPolicyDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     siteData: any;
   }
 }
@@ -185,16 +192,27 @@ window.addEventListener('load', async () => {
 
 
   // Attach click events to the main menu buttons and poller div
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#virtualserversbutton')!.addEventListener('click', showVirtualServers);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#poolsbutton')!.addEventListener('click', showPools)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#irulesbutton')!.addEventListener('click', showiRules)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#datagroupbutton')!.addEventListener('click', showDataGroups)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#policiesbutton')!.addEventListener('click', showPolicies)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#deviceoverviewbutton')!.addEventListener('click', showDeviceOverview)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#certificatebutton')!.addEventListener('click', showCertificateDetails)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#logsbutton')!.addEventListener('click', showLogs)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#preferencesbutton')!.addEventListener('click', showPreferences)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#helpbutton')!.addEventListener('click', showHelp)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#realtimestatusdiv')!.addEventListener('click', pollCurrentView)
 
   // Attach module calls to window in order to call them from html rendered by js
@@ -748,12 +766,12 @@ function pollCurrentView() {
   if (length >= 0 && length <= siteData.preferences.PollingMaxPools) {
     switch (currentSection) {
       case 'virtualservers':
-        visiblePools.each(function () {
+        visiblePools.each(function status() {
           getPoolStatus(this);
         });
         break;
       case 'pools':
-        poolTableDiv.each(function () {
+        poolTableDiv.each(function status() {
           getPoolStatusPools(this);
         });
         break;
@@ -1147,7 +1165,7 @@ function highlightAll(table) {
   const search = [table.search()];
 
   // eslint-disable-next-line array-callback-return
-  table.columns().every(function () {
+  table.columns().every(function column() {
     const columnvalue = $('input', this.header()).val();
     if (columnvalue) {
       search.push(columnvalue);
@@ -1611,7 +1629,7 @@ function setupVirtualServerTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.bigipTable.columns().every(function () {
+  siteData.bigipTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -1850,7 +1868,7 @@ function setupiRuleTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.iRuleTable.columns().every(function () {
+  siteData.iRuleTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -1922,6 +1940,7 @@ function setupPolicyTable() {
       {
         data: 'loadbalancer',
         className: 'loadbalancerCell',
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         render (data, type, row) {
           return renderLoadBalancer(data, type);
         },
@@ -2010,7 +2029,7 @@ function setupPolicyTable() {
   );
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.PolicyTable.columns().every(function () {
+  siteData.PolicyTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2195,7 +2214,7 @@ function setupPoolTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.poolTable.columns().every(function () {
+  siteData.poolTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2386,7 +2405,7 @@ function setupDataGroupTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.dataGroupTable.columns().every(function () {
+  siteData.dataGroupTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2616,7 +2635,7 @@ function setupCertificateTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.certificateTable.columns().every(function () {
+  siteData.certificateTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2762,7 +2781,7 @@ function setupLogTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.logTable.columns().every(function () {
+  siteData.logTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -3235,14 +3254,14 @@ export function updateLocationHash(updatehash: any = true) : void {
     if (tables[activeSection].search()) {
       parameters.push(`q=${encodeURIComponent(tables[activeSection].search())}`);
     }
-    tables[activeSection].columns().every(function () {
+    // eslint-disable-next-line array-callback-return
+    tables[activeSection].columns().every(function column() {
       if (this.search()) {
         parameters.push(`${this.index()}=${encodeURIComponent(this.search())}`);
       }
-      return true;
     });
   }
-  $('div.lightboxcontent:visible').each(function () {
+  $('div.lightboxcontent:visible').each(function lightbox() {
     const type = $(this).attr('data-type');
     const objectName = $(this).attr('data-objectname');
     const loadbalancer = $(this).attr('data-loadbalancer');
@@ -3264,7 +3283,7 @@ function expandPoolMatches(resultset: any, searchstring: string) {
       .children()
       .children()
       .filter('td:has(span.highlight)')
-      .each(function () {
+      .each(function td() {
         if (
           this.classList.contains('PoolCell') ||
           this.classList.contains('relative')

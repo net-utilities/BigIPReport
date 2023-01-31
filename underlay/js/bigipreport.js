@@ -628,16 +628,27 @@ window.addEventListener('load', () => bigipreport_awaiter(void 0, void 0, void 0
         });
     }, 60000);
     // Attach click events to the main menu buttons and poller div
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#virtualserversbutton').addEventListener('click', showVirtualServers);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#poolsbutton').addEventListener('click', showPools);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#irulesbutton').addEventListener('click', showiRules);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#datagroupbutton').addEventListener('click', showDataGroups);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#policiesbutton').addEventListener('click', showPolicies);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#deviceoverviewbutton').addEventListener('click', showDeviceOverview);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#certificatebutton').addEventListener('click', showCertificateDetails);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#logsbutton').addEventListener('click', showLogs);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#preferencesbutton').addEventListener('click', showPreferences);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#helpbutton').addEventListener('click', showHelp);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     document.querySelector('div#realtimestatusdiv').addEventListener('click', pollCurrentView);
     // Attach module calls to window in order to call them from html rendered by js
     // These should be removed in favor of event listeners later. See Virtual Server name column
@@ -1089,12 +1100,12 @@ function pollCurrentView() {
     if (length >= 0 && length <= siteData.preferences.PollingMaxPools) {
         switch (currentSection) {
             case 'virtualservers':
-                visiblePools.each(function () {
+                visiblePools.each(function status() {
                     getPoolStatus(this);
                 });
                 break;
             case 'pools':
-                poolTableDiv.each(function () {
+                poolTableDiv.each(function status() {
                     getPoolStatusPools(this);
                 });
                 break;
@@ -1438,7 +1449,7 @@ function highlightAll(table) {
     body.unhighlight();
     const search = [table.search()];
     // eslint-disable-next-line array-callback-return
-    table.columns().every(function () {
+    table.columns().every(function column() {
         const columnvalue = $('input', this.header()).val();
         if (columnvalue) {
             search.push(columnvalue);
@@ -1858,7 +1869,7 @@ function setupVirtualServerTable() {
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
-    siteData.bigipTable.columns().every(function () {
+    siteData.bigipTable.columns().every(function column() {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
@@ -2055,7 +2066,7 @@ function setupiRuleTable() {
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
-    siteData.iRuleTable.columns().every(function () {
+    siteData.iRuleTable.columns().every(function column() {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
@@ -2116,6 +2127,7 @@ function setupPolicyTable() {
             {
                 data: 'loadbalancer',
                 className: 'loadbalancerCell',
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 render(data, type, row) {
                     return renderLoadBalancer(data, type);
                 },
@@ -2201,7 +2213,7 @@ function setupPolicyTable() {
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
-    siteData.PolicyTable.columns().every(function () {
+    siteData.PolicyTable.columns().every(function column() {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
@@ -2373,7 +2385,7 @@ function setupPoolTable() {
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
-    siteData.poolTable.columns().every(function () {
+    siteData.poolTable.columns().every(function column() {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
@@ -2541,7 +2553,7 @@ function setupDataGroupTable() {
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
-    siteData.dataGroupTable.columns().every(function () {
+    siteData.dataGroupTable.columns().every(function column() {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
@@ -2752,7 +2764,7 @@ function setupCertificateTable() {
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
-    siteData.certificateTable.columns().every(function () {
+    siteData.certificateTable.columns().every(function column() {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
@@ -2883,7 +2895,7 @@ function setupLogTable() {
     });
     // Apply the search
     // eslint-disable-next-line array-callback-return
-    siteData.logTable.columns().every(function () {
+    siteData.logTable.columns().every(function column() {
         // display cached column filter
         $('input', this.header())[0].value = this.search();
         const that = this;
@@ -3295,14 +3307,14 @@ function updateLocationHash(updatehash = true) {
         if (tables[activeSection].search()) {
             parameters.push(`q=${encodeURIComponent(tables[activeSection].search())}`);
         }
-        tables[activeSection].columns().every(function () {
+        // eslint-disable-next-line array-callback-return
+        tables[activeSection].columns().every(function column() {
             if (this.search()) {
                 parameters.push(`${this.index()}=${encodeURIComponent(this.search())}`);
             }
-            return true;
         });
     }
-    $('div.lightboxcontent:visible').each(function () {
+    $('div.lightboxcontent:visible').each(function lightbox() {
         const type = $(this).attr('data-type');
         const objectName = $(this).attr('data-objectname');
         const loadbalancer = $(this).attr('data-loadbalancer');
@@ -3321,7 +3333,7 @@ function expandPoolMatches(resultset, searchstring) {
             .children()
             .children()
             .filter('td:has(span.highlight)')
-            .each(function () {
+            .each(function td() {
             if (this.classList.contains('PoolCell') ||
                 this.classList.contains('relative')) {
                 togglePool(this.id);
