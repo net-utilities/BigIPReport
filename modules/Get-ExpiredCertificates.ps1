@@ -71,7 +71,7 @@ Function Get-ExpiredCertificates {
     $AlertsToSend = $CertificateAlerts.Values | Where-Object { ($Now - $_.lastAlerted) -gt $WaitSecondsBetween }
 
     if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
-        . .\modules\Send-SlackCertificateAlert.ps1
+        . modules/Send-SlackCertificateAlert.ps1
         Send-SlackCertificateAlert -AlertsToSend $AlertsToSend -AlertWhenDaysOld $AlertWhenDaysOld
         if($?){
             ForEach($SentAlert in $AlertsToSend){
