@@ -574,7 +574,7 @@ window.addEventListener('load', () => bigipreport_awaiter(void 0, void 0, void 0
      */
     $.expr[':'].icontains = $.expr.createPseudo((text) => (e) => $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0);
     /* syntax highlighting */
-    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+    sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
     siteData = yield getJSONFiles();
     // Update the footer
     const localStartTime = new Date(siteData.preferences.startTime).toString();
@@ -3712,7 +3712,7 @@ function showiRuleDetails(name, loadbalancer) {
     // Add the div content to the page
     $('#secondlayerdetailscontentdiv').html(html);
     /* redo syntax highlighting */
-    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+    sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
     // Show the div
     $('#secondlayerdiv').fadeIn(updateLocationHash);
     toggleAdcLinks();
@@ -3759,7 +3759,7 @@ function showPolicyDetails(policy, loadbalancer) {
     // Add the div content to the page
     $('#firstlayerdetailscontentdiv').html(html);
     /* redo syntax highlighting */
-    // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+    sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
     // Show the div
     $('#firstlayerdiv').fadeIn(updateLocationHash);
     toggleAdcLinks();
