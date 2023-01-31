@@ -260,7 +260,7 @@
 #  5.6.7    2022-05-06   Fixing issue with live polling                                                Patrik Jonsson  No
 #  5.6.8    2022-05-10   Fixing bug where Public IP is always visible even though no NAT file exists   Tim Riker       No
 #  5.6.9    2022-05-18   Ensuring status polling is unique for every device/pool member combination    Tim Riker       No
-#  5.7.0    2023-01-30   Update hash code, more tables hashes, filenames for csv, empty policies       Tim Riker       No
+#  5.7.0    2023-01-30   Hash update, more tables, csv filenames, policy fixes, syntax highlight       Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
