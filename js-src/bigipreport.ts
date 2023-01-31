@@ -3239,6 +3239,7 @@ export function updateLocationHash(updatehash: any = true) : void {
       if (this.search()) {
         parameters.push(`${this.index()}=${encodeURIComponent(this.search())}`);
       }
+      return true;
     });
   }
   $('div.lightboxcontent:visible').each(function () {
