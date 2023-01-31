@@ -1,4 +1,4 @@
-#! /usr/bin/pwsh
+#! /usr/bin/env pwsh
 #Requires -Version 6
 ################################################################################
 #
@@ -260,6 +260,7 @@
 #  5.6.7    2022-05-06   Fixing issue with live polling                                                Patrik Jonsson  No
 #  5.6.8    2022-05-10   Fixing bug where Public IP is always visible even though no NAT file exists   Tim Riker       No
 #  5.6.9    2022-05-18   Ensuring status polling is unique for every device/pool member combination    Tim Riker       No
+#  5.7.0    2023-01-30   Hash update, more tables, csv filenames, policy fixes, syntax highlight       Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -303,7 +304,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.6.9"
+$Global:ScriptVersion = "5.7.0"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -1390,42 +1391,44 @@ function Get-LTMInformation {
         $ObjF5Policy.definition = "{"
         $ObjF5Policy.definition += "`n    Name: " + $Policy.name
         $ObjF5Policy.definition += "`n    Strategy: " + $exactStrategy
-        $TempCount = 0
-        ForEach ($ruleSet in $Policy.rulesReference.items) {
-            $TempCount += 1
-            $ObjF5Policy.definition += "`n    Rule No." + $TempCount + ": " + $ruleSet.fullPath
-            try {
-                $ObjF5Policy.definition += "`n        Match all of the following conditions:"
-                ForEach ($condition in $ruleSet.conditionsReference.items) {
-                    if($condition.tcp -eq "True" -And $condition.port -eq "True" -And $condition.request -eq "True"){
-                        $ObjF5Policy.definition += "`n        -TCP port is '" + $condition.values + "' at request time.`n"
-                    } else {
-                        $ObjF5Policy.definition += "`n        -Under Construction...`n        " #+ $condition + "`n" #please update the if statements to handle this policy
+        if (Get-Member -inputobject $Policy.rulesReference -name 'items') {
+            $TempCount = 0
+            ForEach ($ruleSet in $Policy.rulesReference.items) {
+                $TempCount += 1
+                $ObjF5Policy.definition += "`n    Rule No." + $TempCount + ": " + $ruleSet.fullPath
+                try {
+                    $ObjF5Policy.definition += "`n        Match all of the following conditions:"
+                    ForEach ($condition in $ruleSet.conditionsReference.items) {
+                        if($condition.tcp -eq "True" -And $condition.port -eq "True" -And $condition.request -eq "True"){
+                            $ObjF5Policy.definition += "`n        -TCP port is '" + $condition.values + "' at request time.`n"
+                        } else {
+                            $ObjF5Policy.definition += "`n        -Under Construction...`n        " #+ $condition + "`n" #please update the if statements to handle this policy
+                        }
                     }
+                } catch {
+                    $ObjF5Policy.definition += "`n        -All traffic.`n"
                 }
-            } catch {
-                $ObjF5Policy.definition += "`n        -All traffic.`n"
-            }
-            $ObjF5Policy.definition += "`n        Do the following when traffic matches:"
-            ForEach ($action in $ruleSet.actionsReference.items) {
-                if (Get-Member -inputobject $action -name 'asm') {
-                    if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'enable' ) -And $action.enable -eq "true" -And $action.request -eq "true") {
-                        $ObjF5Policy.definition += "`n        -Enable asm for policy '" + $action.policy + "' at request time."
-                    }
-                    if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'disable' ) -And $action.disable -eq "true" -And $action.request -eq "true") {
-                        $ObjF5Policy.definition += "`n        -Disable asm at request time."
-                    }
-                    if ( ( Get-Member -inputobject $action -name 'replace' ) -And $action.replace -eq "true" -And $action.httpHeader -eq "true" -And $action.request -eq "true") {
-                        $ObjF5Policy.definition += "`n        -Replace HTTP Header named '" + $action.tmName + "' with value '" + $action.value + "' at request time."
-                    }
-                    if ( ( Get-Member -inputobject $action -name 'redirect' ) -And $action.redirect -eq "true" -And $action.httpReply -eq "true" -And $action.request -eq "true") {
-                        $ObjF5Policy.definition += "`n        -Redirect to location '" + $action.location + "' at request time."
-                    }
-                    if ( ( Get-Member -inputobject $action -name 'forward' ) -And $action.forward -eq "true" -And $action.select -eq "true" -And $action.request -eq "true") {
-                        # maybe check if pool exists as well
-                        $ObjF5Policy.definition += "`n        -Forward traffic to pool '" + $action.pool + "' at request time."
-                    } else {
-                        $ObjF5Policy.definition += "`n        -Under Construction...`n        " + $action + "`n" #please update the if statements to handle this policy
+                $ObjF5Policy.definition += "`n        Do the following when traffic matches:"
+                ForEach ($action in $ruleSet.actionsReference.items) {
+                    if (Get-Member -inputobject $action -name 'asm') {
+                        if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'enable' ) -And $action.enable -eq "true" -And $action.request -eq "true") {
+                            $ObjF5Policy.definition += "`n        -Enable asm for policy '" + $action.policy + "' at request time."
+                        }
+                        if ($action.asm -eq "true" -And ( Get-Member -inputobject $action -name 'disable' ) -And $action.disable -eq "true" -And $action.request -eq "true") {
+                            $ObjF5Policy.definition += "`n        -Disable asm at request time."
+                        }
+                        if ( ( Get-Member -inputobject $action -name 'replace' ) -And $action.replace -eq "true" -And $action.httpHeader -eq "true" -And $action.request -eq "true") {
+                            $ObjF5Policy.definition += "`n        -Replace HTTP Header named '" + $action.tmName + "' with value '" + $action.value + "' at request time."
+                        }
+                        if ( ( Get-Member -inputobject $action -name 'redirect' ) -And $action.redirect -eq "true" -And $action.httpReply -eq "true" -And $action.request -eq "true") {
+                            $ObjF5Policy.definition += "`n        -Redirect to location '" + $action.location + "' at request time."
+                        }
+                        if ( ( Get-Member -inputobject $action -name 'forward' ) -And $action.forward -eq "true" -And $action.select -eq "true" -And $action.request -eq "true") {
+                            # maybe check if pool exists as well
+                            $ObjF5Policy.definition += "`n        -Forward traffic to pool '" + $action.pool + "' at request time."
+                        } else {
+                            $ObjF5Policy.definition += "`n        -Under Construction...`n        " + $action + "`n" #please update the if statements to handle this policy
+                        }
                     }
                 }
             }
@@ -1469,15 +1472,19 @@ function Get-LTMInformation {
                     continue
                 }
 
-                # if data contains pool names, add to .pools and change type to Pools
-                if ($record.data.contains("/")) {
-                    $TempPool = $Record.data
-                } else {
-                    $TempPool = "/$Partition/" + $Record.data
-                }
+                Foreach ($term in $record.data.Split(" ")) {
+                    # if data contains pool names, add to .pools and change type to Pools
+                    if (!$term.contains("=")) {
+                        if ($term.contains("/")) {
+                            $TempPool = $term
+                        } else {
+                            $TempPool = "/$Partition/" + $term
+                        }
 
-                if ($Pools -contains $TempPool) {
-                    $TempPools += $TempPool
+                        if ($Pools -contains $TempPool) {
+                            $TempPools += $TempPool
+                        }
+                    }
                 }
             }
         }
@@ -1761,7 +1768,7 @@ function Get-LTMInformation {
                 $ObjTempVirtualServer.persistence += "None"
             }
 
-            if ("" -ne $ObjTempVirtualServer.defaultpool) {
+            if ($ObjTempVirtualServer.defaultpool) {
                 $ObjTempVirtualServer.pools += $ObjTempVirtualServer.defaultpool
             }
 
@@ -2407,13 +2414,13 @@ if (Test-Path $Global:paths.state) {
 }
 
 # Alerts
-. .\modules\Get-ExpiredCertificates.ps1
+. modules/Get-ExpiredCertificates.ps1
 $Global:State["certificateAlerts"] = Get-ExpiredCertificates -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.CertificateExpiration -SlackWebHook $SlackWebHook
 
-. .\modules\Get-SupportEntitlements.ps1
+. modules/Get-SupportEntitlements.ps1
 $Global:State["supportStates"] = Get-SupportEntitlements -Devices $ReportObjects -State $State -SupportCheckConfig $Bigipreportconfig.Settings.SupportCheck -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedSupportChecks -SlackWebHook $SlackWebHook
 
-. .\modules\Get-FailedDeviceAlerts.ps1
+. modules/Get-FailedDeviceAlerts.ps1
 $Global:State["failedDevices"] = Get-FailedDeviceAlerts -Devices $ReportObjects -State $State -AlertConfig $Bigipreportconfig.Settings.Alerts.FailedDevices -SlackWebHook $SlackWebHook
 
 #End Region

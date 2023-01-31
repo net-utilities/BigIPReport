@@ -54,7 +54,7 @@ Function Get-FailedDeviceAlerts {
     $AlertsToSend = $FailedDeviceAlerts.Values | Where-Object { ($Now - $_.lastAlerted) -gt $WaitSecondsBetween -and $_.numberOfTimesFailed -ge $AlertAfterFailures }
 
     if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
-        . .\modules\Send-SlackFailedDeviceAlert.ps1
+        . modules/Send-SlackFailedDeviceAlert.ps1
         Send-SlackFailedDeviceAlert -AlertsToSend $AlertsToSend
         if($?){
             Foreach($SentAlert in $AlertsToSend){

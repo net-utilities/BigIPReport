@@ -11,6 +11,8 @@ import showPoolDetails from './PoolDetails/showPoolDetails';
 import { ISupportState} from './Interfaces/IState';
 import getJSONFiles from './Init/getJSONFiles';
 import jqXHR = JQuery.jqXHR;
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
+declare function sh_highlightDocument(prefix:any, suffix:any): any;
 
 /* *********************************************************************************************************************
 
@@ -31,13 +33,21 @@ export let siteData: Partial<ISiteData> = {
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showPoolDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     togglePool: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     togglePoolHighlight: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showVirtualServerDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showDataGroupDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showiRuleDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showPolicyDetails: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     siteData: any;
   }
 }
@@ -110,7 +120,7 @@ window.addEventListener('load', async () => {
     (text) => (e) => $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0);
 
   /* syntax highlighting */
-  // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+  sh_highlightDocument('js/', '.js');
 
   siteData = await getJSONFiles();
 
@@ -182,16 +192,27 @@ window.addEventListener('load', async () => {
 
 
   // Attach click events to the main menu buttons and poller div
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#virtualserversbutton')!.addEventListener('click', showVirtualServers);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#poolsbutton')!.addEventListener('click', showPools)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#irulesbutton')!.addEventListener('click', showiRules)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#datagroupbutton')!.addEventListener('click', showDataGroups)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#policiesbutton')!.addEventListener('click', showPolicies)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#deviceoverviewbutton')!.addEventListener('click', showDeviceOverview)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#certificatebutton')!.addEventListener('click', showCertificateDetails)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#logsbutton')!.addEventListener('click', showLogs)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#preferencesbutton')!.addEventListener('click', showPreferences)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#helpbutton')!.addEventListener('click', showHelp)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   document.querySelector('div#realtimestatusdiv')!.addEventListener('click', pollCurrentView)
 
   // Attach module calls to window in order to call them from html rendered by js
@@ -745,12 +766,12 @@ function pollCurrentView() {
   if (length >= 0 && length <= siteData.preferences.PollingMaxPools) {
     switch (currentSection) {
       case 'virtualservers':
-        visiblePools.each(function () {
+        visiblePools.each(function status() {
           getPoolStatus(this);
         });
         break;
       case 'pools':
-        poolTableDiv.each(function () {
+        poolTableDiv.each(function status() {
           getPoolStatusPools(this);
         });
         break;
@@ -1144,7 +1165,7 @@ function highlightAll(table) {
   const search = [table.search()];
 
   // eslint-disable-next-line array-callback-return
-  table.columns().every(function () {
+  table.columns().every(function column() {
     const columnvalue = $('input', this.header()).val();
     if (columnvalue) {
       search.push(columnvalue);
@@ -1191,39 +1212,51 @@ function populateSearchParameters(updateHash: boolean) {
       vars[hash[0]] = hash[1];
     }
 
-    if (vars.mainsection) {
+    let table:DataTables.Api = null;
 
-      const activeSection = vars.mainsection;
+    if (vars.m) {
+
+      // mainsection in m
+      const activeSection = vars.m;
 
       switch (activeSection) {
-        case 'virtualservers':
+        case 'v':
           showVirtualServers(updateHash);
+          table = siteData.bigipTable;
           break;
-        case 'pools':
+        case 'p':
           showPools(updateHash);
+          table = siteData.poolTable;
           break;
-        case 'irules':
+        case 'i':
           showiRules(updateHash);
+          table = siteData.iRuleTable;
           break;
-        case 'policies':
+        case 'pl':
           showPolicies(updateHash);
+          table = siteData.PolicyTable;
           break;
-        case 'deviceoverview':
+        case 'd':
           showDeviceOverview(updateHash);
+          table = siteData.dataGroupTable;
           break;
-        case 'certificatedetails':
+        case 'c':
           showCertificateDetails(updateHash);
+          table = siteData.certificateTable;
           break;
-        case 'datagroups':
+        case 'dg':
           showDataGroups(updateHash);
+          table = siteData.dataGroupTable;
           break;
-        case 'logs':
+        case 'l':
           showLogs(updateHash);
+          table = siteData.logTable;
           break;
-        case 'preferences':
+        case 's':
+          // preferences = settings = s
           showPreferences(updateHash);
           break;
-        case 'help':
+        case 'h':
           showHelp(updateHash);
           break;
         default:
@@ -1235,69 +1268,53 @@ function populateSearchParameters(updateHash: boolean) {
     // siteData.bigipTable && siteData.bigipTable.search('');
 
     // eslint-disable-next-line no-restricted-syntax
-    for (const key in vars) {
-      const value = vars[key];
-
-      // If it's provided, populate and search with the global string
-      if (key === 'global_search') {
-        const allFilterInput = $('#allbigips_filter input');
-        if (allFilterInput) {
-          allFilterInput.val(vars[key]);
-          if (siteData.bigipTable) {
-            siteData.bigipTable.search(
-              vars[key],
+    if (table) {
+      Object.keys(vars).forEach(key => {
+        // If it's provided, populate and search with the global string
+        if (key === 'q') {
+          table.search(
+              decodeURIComponent(vars[key]),
               localStorage.getItem('regexSearch') === 'true',
               false
-            );
-            siteData.bigipTable.draw();
-          }
+          );
+        } else if (key.match(/^[0-9]+$/)) {
+          // Validate that the key is a column filter and populate it
+          table.column(key).search(
+            decodeURIComponent(vars[key]),
+            localStorage.getItem('regexSearch') === 'true',
+            false
+          );
+          table.column(key).header().querySelector('input').value = decodeURIComponent(vars[key]);
         }
-      } else {
-        // Validate that the key is a column filter and populate it
-        const inputKey = $(`input[name="${key}"]`);
-        if (inputKey.length) {
-          inputKey.val(value);
-          inputKey.trigger('keyup');
-        }
-      }
+      });
+      table.draw();
     }
 
     if (vars.pool) {
-      const poolName = vars.pool.split('@')[0];
-      const loadBalancer = vars.pool.split('@')[1];
-
+      const [poolName, loadBalancer] = vars.pool.split('@');
       showPoolDetails(poolName, loadBalancer);
     }
 
     if (vars.virtualserver) {
-      const virtualServerName = vars.virtualserver.split('@')[0];
-      const loadBalancer = vars.virtualserver.split('@')[1];
-
+      const [virtualServerName, loadBalancer] = vars.virtualserver.split('@');
       showVirtualServerDetails(virtualServerName, loadBalancer);
     }
 
     if (vars.datagroup) {
-      const dataGroupName = vars.datagroup.split('@')[0];
-      const loadBalancer = vars.datagroup.split('@')[1];
-
+      const [dataGroupName, loadBalancer] = vars.datagroup.split('@');
       showDataGroupDetails(dataGroupName, loadBalancer);
     }
 
     if (vars.irule) {
-      const iruleName = vars.irule.split('@')[0];
-      const loadBalancer = vars.irule.split('@')[1];
-
+      const [iruleName, loadBalancer] = vars.irule.split('@');
       showiRuleDetails(iruleName, loadBalancer);
     }
 
     if (vars.policy) {
-      const policyName = vars.policy.split('@')[0];
-      const loadBalancer = vars.policy.split('@')[1];
-
+      const [policyName, loadBalancer] = vars.policy.split('@');
       showPolicyDetails(policyName, loadBalancer);
     }
   }
-
 
 }
 
@@ -1575,15 +1592,30 @@ function setupVirtualServerTable() {
           },
         },
         {
-          extend: 'csvHtml5',
-          titleAttr: 'Download current filtered results in CSV format',
           className: 'tableHeaderColumnButton exportFunctions',
+          customize: customizeCSV,
           exportOptions: {
             columns: ':visible',
             stripHtml: false,
             orthogonal: 'export',
           },
+          extend: 'csvHtml5',
+          filename: 'BigIPReport-virtualservers',
+          titleAttr: 'Download current filtered results in CSV format',
+        },
+        {
+          className: 'tableHeaderColumnButton exportFunctions',
           customize: customizeCSV,
+          exportOptions: {
+            modifier: { search:'none' },
+            orthogonal: 'export',
+            search: 'none',
+            stripHtml: false,
+          },
+          extend: 'csvHtml5',
+          filename: 'BigIPReport-all-virtualservers',
+          text: 'All CSV',
+          titleAttr: 'Download all results in CSV format',
         },
       ],
     },
@@ -1597,7 +1629,7 @@ function setupVirtualServerTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.bigipTable.columns().every(function () {
+  siteData.bigipTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -1612,6 +1644,7 @@ function setupVirtualServerTable() {
               false
             )
             .draw();
+            updateLocationHash();
         }
       }
     });
@@ -1802,6 +1835,7 @@ function setupiRuleTable() {
         },
         {
           extend: 'csvHtml5',
+          filename: 'BigIPReport-irules',
           className: 'tableHeaderColumnButton exportFunctions',
           exportOptions: {
             columns: ':visible',
@@ -1825,9 +1859,16 @@ function setupiRuleTable() {
     e.stopPropagation();
   });
 
+  $('div#iRuleTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
+
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.iRuleTable.columns().every(function () {
+  siteData.iRuleTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -1899,6 +1940,7 @@ function setupPolicyTable() {
       {
         data: 'loadbalancer',
         className: 'loadbalancerCell',
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         render (data, type, row) {
           return renderLoadBalancer(data, type);
         },
@@ -1957,6 +1999,7 @@ function setupPolicyTable() {
         },
         {
           extend: 'csvHtml5',
+          filename: 'BigIPReport-policies',
           className: 'tableHeaderColumnButton exportFunctions',
           exportOptions: {
             columns: ':visible',
@@ -1978,9 +2021,15 @@ function setupPolicyTable() {
   $('table#PolicyTable thead th input').on('click', (e) => {
     e.stopPropagation();
   });
+  $('div#PolicyTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.PolicyTable.columns().every(function () {
+  siteData.PolicyTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2139,6 +2188,7 @@ function setupPoolTable() {
         },
         {
           extend: 'csvHtml5',
+          filename: 'BigIPReport-pools',
           className: 'tableHeaderColumnButton exportFunctions',
           exportOptions: {
             columns: ':visible',
@@ -2164,7 +2214,7 @@ function setupPoolTable() {
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.poolTable.columns().every(function () {
+  siteData.poolTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2179,10 +2229,18 @@ function setupPoolTable() {
               false
             )
             .draw();
+            updateLocationHash();
         }
       }
     });
   });
+
+  $('div#poolTable_filter.dataTables_filter input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
 
   // highlight matches
   siteData.poolTable.on('draw', () => {
@@ -2314,6 +2372,7 @@ function setupDataGroupTable() {
         },
         {
           extend: 'csvHtml5',
+          filename: 'BigIPReport-datagroups',
           className: 'tableHeaderColumnButton exportFunctions',
           exportOptions: {
             columns: ':visible',
@@ -2337,9 +2396,16 @@ function setupDataGroupTable() {
     e.stopPropagation();
   });
 
+  $('div#dataGroupTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
+
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.dataGroupTable.columns().every(function () {
+  siteData.dataGroupTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2536,6 +2602,7 @@ function setupCertificateTable() {
         },
         {
           extend: 'csvHtml5',
+          filename: 'BigIPReport-certificates',
           className: 'tableHeaderColumnButton exportFunctions',
           exportOptions: {
             columns: ':visible',
@@ -2559,9 +2626,16 @@ function setupCertificateTable() {
     e.stopPropagation();
   });
 
+  $('div#certificateTable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
+
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.certificateTable.columns().every(function () {
+  siteData.certificateTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2590,13 +2664,13 @@ function setupCertificateTable() {
   siteData.certificateTable.draw();
 }
 
-function setupLogsTable() {
+function setupLogTable() {
   if (siteData.logTable) {
     return;
   }
 
   const content = `
-    <table id="logstable" class="bigiptable display">
+    <table id="logtable" class="bigiptable display">
       <thead>
         <tr>
           <th>
@@ -2619,7 +2693,7 @@ function setupLogsTable() {
 
   $('div#logs').html(content);
 
-  siteData.logTable = $('div#logs table#logstable').DataTable({ // eslint-disable-line new-cap
+  siteData.logTable = $('div#logs table#logtable').DataTable({ // eslint-disable-line new-cap
     autoWidth: false,
     deferRender: true,
     data: siteData.loggedErrors,
@@ -2668,6 +2742,7 @@ function setupLogsTable() {
         },
         {
           extend: 'csvHtml5',
+          filename: 'BigIPReport-logs',
           className: 'tableHeaderColumnButton exportFunctions',
           exportOptions: {
             columns: ':visible',
@@ -2694,13 +2769,19 @@ function setupLogsTable() {
   } as PatchedSettings);
 
   // Prevents sorting the columns when clicking on the sorting headers
-  $('table#logstable thead th input').on('click', (e) => {
+  $('table#logtable thead th input').on('click', (e) => {
     e.stopPropagation();
   });
+  $('div#logtable_wrapper input').on(
+    'keyup input',
+    () => {
+      updateLocationHash();
+    }
+  );
 
   // Apply the search
   // eslint-disable-next-line array-callback-return
-  siteData.logTable.columns().every(function () {
+  siteData.logTable.columns().every(function column() {
     // display cached column filter
     ($('input', this.header())[0] as HTMLInputElement).value = this.search();
     const that = this;
@@ -2735,7 +2816,7 @@ function hideMainSection() {
 
 function showMainSection(section) {
   hideMainSection();
-  $(`div#${  section}`).fadeIn(10, updateLocationHash);
+  $(`div#${section}`).fadeIn(10, updateLocationHash);
 }
 
 function showVirtualServers(updatehash) {
@@ -3073,7 +3154,7 @@ function generateSupportCell(loadbalancer: ILoadbalancer) {
 
 function showLogs(updatehash: any) {
   hideMainSection();
-  setupLogsTable();
+  setupLogTable();
   activateMenuButton('div#logsbutton');
   $('div#mainholder').attr('data-activesection', 'logs');
 
@@ -3110,7 +3191,7 @@ function log(message: string, severity: string, datetime: string | undefined = u
   if (siteData.logTable) {
     siteData.logTable.destroy();
     delete siteData.logTable;
-    setupLogsTable();
+    setupLogTable();
   }
 }
 
@@ -3145,29 +3226,48 @@ export function updateLocationHash(updatehash: any = true) : void {
   const parameters = [];
 
   const activeSection = $('div#mainholder').attr('data-activesection');
-  parameters.push(`mainsection=${activeSection}`);
-
-  $('table#allbigips thead tr th input').each((i, e) => {
-    const input = e as HTMLInputElement;
-    if (input.value !== '') {
-      parameters.push(`${input.name}=${input.value}`);
-    }
-  });
-
-  const globalSearch = $('#allbigips_filter label input').val();
-
-  if (globalSearch && globalSearch !== '') {
-    parameters.push(`global_search=${globalSearch}`);
+  // m is mainsection
+  const sections = {
+    'virtualservers': 'v',
+    'pools':'p',
+    'irules':'i',
+    'policies':'pl',
+    'datagroups':'dg',
+    'deviceoverview':'d',
+    'certificatedetails':'c',
+    'logs':'l',
+    'preferences':'s',
+    'help':'h'
+  }
+  parameters.push(`m=${sections[activeSection]}`);
+  const tables = {
+    'virtualservers': siteData.bigipTable,
+    'pools':siteData.poolTable,
+    'irules':siteData.iRuleTable,
+    'policies':siteData.PolicyTable,
+    'datagroups':siteData.dataGroupTable,
+    'certificatedetails':siteData.certificateTable,
+    'logs':siteData.logTable,
   }
 
-  $('div.lightboxcontent:visible').each(function () {
+  if (tables[activeSection]) {
+    if (tables[activeSection].search()) {
+      parameters.push(`q=${encodeURIComponent(tables[activeSection].search())}`);
+    }
+    // eslint-disable-next-line array-callback-return
+    tables[activeSection].columns().every(function column() {
+      if (this.search()) {
+        parameters.push(`${this.index()}=${encodeURIComponent(this.search())}`);
+      }
+    });
+  }
+  $('div.lightboxcontent:visible').each(function lightbox() {
     const type = $(this).attr('data-type');
     const objectName = $(this).attr('data-objectname');
     const loadbalancer = $(this).attr('data-loadbalancer');
 
     parameters.push(`${type}=${objectName}@${loadbalancer}`);
   });
-
   if (updatehash) {
     window.location.hash = parameters.join('&');
   }
@@ -3183,7 +3283,7 @@ function expandPoolMatches(resultset: any, searchstring: string) {
       .children()
       .children()
       .filter('td:has(span.highlight)')
-      .each(function () {
+      .each(function td() {
         if (
           this.classList.contains('PoolCell') ||
           this.classList.contains('relative')
@@ -3202,6 +3302,7 @@ function expandMatches(resultset: any) {
 function resetFilters(e: any, dt: any) {
   $(dt.header()).find('input').val('');
   dt.search('').columns().search('').draw();
+  updateLocationHash();
 }
 
 function toggleExpandCollapseRestore(e: any, dt: any, node: any) {
@@ -3673,7 +3774,7 @@ function showiRuleDetails(name: string, loadbalancer: string) {
   // Add the div content to the page
   $('#secondlayerdetailscontentdiv').html(html);
   /* redo syntax highlighting */
-  // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+  sh_highlightDocument('js/', '.js');
   // Show the div
   $('#secondlayerdiv').fadeIn(updateLocationHash);
   toggleAdcLinks();
@@ -3722,7 +3823,7 @@ function showPolicyDetails(policy: string, loadbalancer: string) {
   // Add the div content to the page
   $('#firstlayerdetailscontentdiv').html(html);
   /* redo syntax highlighting */
-  // sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+  sh_highlightDocument('js/', '.js');
   // Show the div
   $('#firstlayerdiv').fadeIn(updateLocationHash);
   toggleAdcLinks();
@@ -3797,17 +3898,21 @@ function showDataGroupDetails(datagroup, loadbalancer) {
           {
             data: 'value',
             render (data, type) {
-              if (data && data.match(/^http(s)?:/)) {
-                return `<a href="${  data  }">${  data  }</a>`;
-              }
-                const pool = getPool(`/Common/${  data}`, loadbalancer);
-                if (pool) {
-                  // Click to see pool details
-                  return renderPool(loadbalancer, pool.name, type);
+              const result = [];
+              data.split(' ').forEach((item) => {
+                if (item.match(/^http(s)?:/)) {
+                  result.push(`<a href="${ item }">${ item }</a>`);
+                } else {
+                  const pool = getPool(`/Common/${ item }`, loadbalancer);
+                  if (pool) {
+                    // Click to see pool details
+                    result.push(renderPool(loadbalancer, pool.name, type));
+                  } else {
+                    result.push(item);
+                  }
                 }
-                  return data;
-
-
+              });
+              return result.join(' ');
             },
           },
         ],

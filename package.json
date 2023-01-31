@@ -1,6 +1,6 @@
 {
   "name": "bigipreport",
-  "version": "1.0.0",
+  "version": "5.7.0",
   "description": "This tool will pull the configuration from multiple load balancers and display it in a table.",
   "main": "index.js",
   "type": "module",

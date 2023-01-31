@@ -6,7 +6,6 @@ Function Get-SupportEntitlements {
     $WaitSecondsBetween = $WaitHoursBetween * 3600
     $Now = ([math]::Floor((Get-Date -UFormat %s)))
 
-
     if($Global:Bigipreportconfig.Settings.SupportCheck -and $Global:Bigipreportconfig.Settings.SupportCheck.Enabled -ne "true") {
         log info "Support Checks has been disabled, skipping"
         return @{}
@@ -105,7 +104,7 @@ Function Get-SupportEntitlements {
         $AlertsToSend = $SupportStates.Values | Where-Object { $_.hasSupport -notin @("ignored", "true") -and ($now - $_.lastAlerted) -gt $WaitSecondsBetween }
 
         if ($null -ne $AlertsToSend -and $SlackWebHook -ne "") {
-            . .\modules\Send-SlackSupportStateAlert.ps1
+            . modules/Send-SlackSupportStateAlert.ps1
             Send-SlackSupportStateAlert -AlertsToSend $AlertsToSend -SlackWebhook $SlackWebHook
             if($?){
                 ForEach($SentAlert in $AlertsToSend){
