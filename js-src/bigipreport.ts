@@ -12,6 +12,7 @@ import showPoolDetails from './PoolDetails/showPoolDetails';
 import { ISupportState} from './Interfaces/IState';
 import getJSONFiles from './Init/getJSONFiles';
 import jqXHR = JQuery.jqXHR;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function sh_highlightDocument(prefix:any, suffix:any): any;
 
 /* *********************************************************************************************************************
@@ -112,7 +113,7 @@ window.addEventListener('load', async () => {
     (text) => (e) => $(e).text().toUpperCase().indexOf(text.toUpperCase()) >= 0);
 
   /* syntax highlighting */
-  sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+  sh_highlightDocument('js/', '.js');
 
   siteData = await getJSONFiles();
 
@@ -3753,7 +3754,7 @@ function showiRuleDetails(name: string, loadbalancer: string) {
   // Add the div content to the page
   $('#secondlayerdetailscontentdiv').html(html);
   /* redo syntax highlighting */
-  sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+  sh_highlightDocument('js/', '.js');
   // Show the div
   $('#secondlayerdiv').fadeIn(updateLocationHash);
   toggleAdcLinks();
@@ -3802,7 +3803,7 @@ function showPolicyDetails(policy: string, loadbalancer: string) {
   // Add the div content to the page
   $('#firstlayerdetailscontentdiv').html(html);
   /* redo syntax highlighting */
-  sh_highlightDocument('js/', '.js'); // eslint-disable-line no-undef
+  sh_highlightDocument('js/', '.js');
   // Show the div
   $('#firstlayerdiv').fadeIn(updateLocationHash);
   toggleAdcLinks();
