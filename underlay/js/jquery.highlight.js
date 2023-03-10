@@ -49,7 +49,7 @@ jQuery.extend({
     highlight: function (node, re, nodeName, className) {
         if (node.nodeType === 3) {
             var match = node.data.match(re);
-            if (match) {
+            if (match && match[0].length != 0) {
                 var highlight = document.createElement(nodeName || 'span');
                 highlight.className = className || 'highlight';
                 var wordNode = node.splitText(match.index);
