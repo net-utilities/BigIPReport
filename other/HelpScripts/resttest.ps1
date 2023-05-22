@@ -1,6 +1,8 @@
 #! /usr/bin/env pwsh
 #Requires -Version 6
 
+# resttest.ps1 <f5name> <username:password>
+
 Param(
     $Device,
     $userpass
@@ -31,41 +33,36 @@ Function Get-AuthToken {
     #Convert the body to Json
     $Body = $Body | ConvertTo-Json
 
+    $Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+
+    $Response = ""
     try {
-        $Response = ""
-        $Response  = Invoke-RestMethod -Method "POST" -Headers $Headers -Body $Body -Uri "https://$Device/mgmt/shared/authn/login"
+        #Write-Host "Try with BasicAuthValue=$BasicAuthValue Body=$Body"
+        $Response = Invoke-RestMethod -WebSession $Session -Headers $Headers -Method "POST" -Body $Body -Uri "https://$Device/mgmt/shared/authn/login"
     } catch {
         Write-Host "Could not login as $userpass to $Device : $Response"
         return $null
     }
 
     if ($Response.token.token) {
-        $Headers = @{ "X-F5-Auth-Token" = $Response.token.token; }
-        return $Headers
+        return $Session
     } else {
         return $null
     }
 }
 
-$Headers = Get-AuthToken $Device $userpass
-if (-not ($Headers)) {
+$Session = Get-AuthToken $Device $userpass
+if (-not ($Session)) {
     exit
 }
-$Response1 = Invoke-RestMethod -Headers $Headers -Uri "https://$Device/mgmt/tm/ltm/pool/members/stats?`$filter=partition"
 
-Foreach($PoolStat in $Response1.entries.psobject.properties.Value) {
-    Write-Host "Pool:" $PoolStat.nestedStats.entries.tmName.description
-    Foreach($PoolMemberStat in $PoolStat.nestedStats.entries.psobject.Properties.Value.nestedStats.entries.psobject.Properties.Value) {
-        Write-Host "Member:" $PoolMemberStat.nestedStats.entries.nodeName.description
-    }
-}
-
-$Response2 = Invoke-WebRequest -Headers $Headers -Uri "https://$Device/mgmt/tm/ltm/pool/members/stats?`$filter=partition" |
+$Response2 = Invoke-WebRequest -WebSession $Session -Uri "https://$Device/mgmt/tm/ltm/pool/members/stats?`$filter=partition" |
         ConvertFrom-Json -AsHashtable
 
 Foreach($PoolStat in $Response2.entries.Values) {
     Write-Host "Pool:" $PoolStat.nestedStats.entries.tmName.description
-    Foreach($PoolMemberStat in $PoolStat.nestedStats.entries.Values.nestedStats.entries.Values) {
-        Write-Host "Member:" $PoolMemberStat.nestedStats.Values.nodeName.description
+    $search = 'https://localhost/mgmt/tm/ltm/pool/members/' + $PoolStat.nestedStats.entries.tmName.description.replace("/", "~") + '/members/stats'
+    Foreach($PoolMemberStat in $PoolStat.nestedStats.entries.$search.nestedStats.entries.Values) {
+        Write-Host "Member:" $PoolMemberStat.nestedStats.entries.nodeName.description $PoolMemberStat.nestedStats.entries.port.value
     }
 }
