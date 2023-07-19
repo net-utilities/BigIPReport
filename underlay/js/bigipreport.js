@@ -2591,7 +2591,7 @@ function setupCertificateTable() {
             <th class="loadbalancerHeaderCell">
               <span style="display: none;">Load Balancer</span>
               <input type="search" class="search" placeholder="Load Balancer" />
-              </th>
+            </th>
             <th>
               <span style="display: none;">Name</span>
               <input type="search" class="search" placeholder="Name" />
@@ -3801,8 +3801,14 @@ function showDataGroupDetails(datagroup, loadbalancer) {
         html += `<table id="datagroupdetailsTable" class="datagrouptable display">
                     <thead>
                         <tr>
-                            <th class="keyheader">Key</th>
-                            <th class="valueheader">Value</th>
+                            <th class="keyheader">
+                                <span style="display: none;">Key</span>
+                                <input type="search" class="search" placeholder="Key" />
+                            </th>
+                            <th class="valueheader">
+                                <span style="display: none;">Value</span>
+                                <input type="search" class="search" placeholder="Value" />
+                            </th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -3832,7 +3838,7 @@ function showDataGroupDetails(datagroup, loadbalancer) {
                     render(data, type) {
                         const result = [];
                         data.split(' ').forEach((item) => {
-                            if (item.match(/^http(s)?:/)) {
+                            if (type === 'display' && item.match(/^http(s)?:/)) {
                                 result.push(`<a href="${item}">${item}</a>`);
                             }
                             else {
@@ -3850,18 +3856,67 @@ function showDataGroupDetails(datagroup, loadbalancer) {
                     },
                 },
             ],
-            dom: 'frtilp',
+            dom: 'fBrtilp',
             lengthMenu: [
                 [10, 25, 50, 100, -1],
                 [10, 25, 50, 100, 'All'],
             ],
             search: { regex: localStorage.getItem('regexSearch') === 'true' },
             stateSave: true,
+            buttons: {
+                buttons: [
+                    {
+                        text: 'Reset filters',
+                        className: 'tableHeaderColumnButton resetFilters',
+                        action: resetFilters,
+                    },
+                    {
+                        extend: 'copyHtml5',
+                        className: 'tableHeaderColumnButton exportFunctions',
+                        exportOptions: {
+                            columns: ':visible',
+                            stripHtml: false,
+                            orthogonal: 'export',
+                        },
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        filename: matchingDatagroup.name.split(/\//).pop(),
+                        className: 'tableHeaderColumnButton exportFunctions',
+                        exportOptions: {
+                            columns: ':visible',
+                            stripHtml: false,
+                            orthogonal: 'export',
+                        },
+                        customize: customizeCSV,
+                    },
+                ],
+            },
         });
     }
     else {
         $('#secondlayerdetailscontentdiv').html('');
     }
+    $('table#datagroupdetailsTable thead th input').on('click', (e) => {
+        e.stopPropagation();
+    });
+    // Apply the search
+    // eslint-disable-next-line array-callback-return
+    siteData.datagroupdetailsTable.columns().every(function column() {
+        // display cached column filter
+        $('input', this.header())[0].value = this.search();
+        const that = this;
+        $('input', this.header()).on('keyup change input search', (e) => {
+            const input = e.target;
+            if (that.search() !== input.value) {
+                if ((localStorage.getItem('regexSearch') !== 'true') || isRegExp(input.value)) {
+                    that
+                        .search(input.value, localStorage.getItem('regexSearch') === 'true', false)
+                        .draw();
+                }
+            }
+        });
+    });
     $('a#closesecondlayerbutton').text('Close data group details');
     $('#secondlayerdiv').fadeIn(updateLocationHash);
 }
