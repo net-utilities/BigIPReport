@@ -263,6 +263,7 @@
 #  5.7.0    2023-01-30   Hash update, more tables, csv filenames, policy fixes, syntax highlight       Tim Riker       No
 #  5.7.1    2023-03-11   Fixing syntax highlighting of zero length matches                             Tim Riker       No
 #  5.7.3    2023-03-11   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
+#  5.7.4    2023-03-11   Adding availabilty and enabled as columns to the vs table                     Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -306,7 +307,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.3"
+$Global:ScriptVersion = "5.7.4"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date

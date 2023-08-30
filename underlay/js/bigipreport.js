@@ -1591,10 +1591,20 @@ function setupVirtualServerTable() {
           <tr>
             <th class="loadbalancerHeaderCell">
               <span style="display: none;">Load Balancer</span>
-              <input type="search" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
+              <input type="search" name="loadbalancer" class="search" placeholder="Load Balancer" />
+            </th>
             <th>
               <span style="display: none;">Name</span>
-              <input type="search" name="name" class="search" placeholder="Name" /></th>
+              <input type="search" name="name" class="search" placeholder="Name" />
+            </th>
+            <th>
+              <span style="display: none;">Availability</span>
+              <input type="search" name="availability" class="search" placeholder="Availability" />
+            </th>
+            <th>
+              <span style="display: none;">Enabled</span>
+              <input type="search" name="enabled" class="search" placeholder="Enabled" />
+            </th>
             <th>
                <span style="display: none;">Description</span>
                <input type="search" name="description" class="search" placeholder="Description" />
@@ -1659,6 +1669,16 @@ function setupVirtualServerTable() {
                 render(name, type, row) {
                     return renderVirtualServer(row.loadbalancer, name, type);
                 }
+            },
+            {
+                className: 'centeredCell',
+                data: 'enabled',
+                visible: false
+            },
+            {
+                className: 'centeredCell',
+                data: 'availability',
+                visible: false
             },
             {
                 className: 'centeredCell',
