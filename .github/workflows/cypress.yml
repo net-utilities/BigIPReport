@@ -6,6 +6,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - run: npm install http-server
       - run: |
           openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
@@ -14,6 +17,9 @@ jobs:
       - name: Copy json data files to underlay
         run: 'cp cypress/fixtures/* underlay/json/'
       - name: Cypress run
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v6
         with:
-          start: 'npm run start'
+          start: npm run start
+          wait-on: https://localhost:8443
+        env:
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
