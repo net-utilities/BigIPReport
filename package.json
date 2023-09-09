@@ -4,8 +4,8 @@
   "description": "This tool will pull the configuration from multiple load balancers and display it in a table.",
   "main": "index.js",
   "scripts": {
-    "e2e": "cypress run",
-    "e2e:dev": "cypress open",
+    "e2e": "cypress run --browser chrome",
+    "e2e:dev": "cypress open --browser chrome",
     "build": "webpack",
     "build:dev": "webpack --watch",
     "lint": "eslint . --ext .ts",

@@ -1,5 +1,6 @@
 import IVirtualServer from '../../js-src/Interfaces/IVirtualServer';
 import {VIP_WITH_IRULE} from '../constants/constants';
+import waitForLoad from '../support/helpers';
 
 let virtualServers: IVirtualServer[]
 
@@ -20,13 +21,11 @@ describe('Virtual server details should render properly', () => {
 
   it('Should show the virtual server details table when clicking on a pool details link', () => {
 
+    waitForLoad('https://localhost:8443')
     const index = virtualServers.findIndex(vip => vip.name === VIP_WITH_IRULE);
 
     cy.get('table#allbigips > tbody > tr').eq(index).find('td.virtualServerCell').click();
     cy.get('div#firstlayerdiv').should('be.visible');
-  });
-
-  it('Should display the correct title', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-shadow
     const vip = virtualServers.find(vip => vip.name === VIP_WITH_IRULE);
@@ -36,31 +35,19 @@ describe('Virtual server details should render properly', () => {
     cy.get('div#firstlayerdiv div.virtualserverdetailsheader')
       .should('contain.text', `Virtual Server: ${name}`);
 
-  })
-
-  it('Should display the all associated iRules', () => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const vip = virtualServers.find(vip => vip.name === VIP_WITH_IRULE);
-
     const { irules } = vip;
 
     cy.get('table tbody tr th').contains('iRule name').should('exist');
     irules.forEach(r => {
       cy.get(`a[data-originalvirtualservername="${r}"]`).should('exist');
     })
-  })
 
-  it('Clicking on an iRule should display the iRule modal', () => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const vip = virtualServers.find(vip => vip.name === VIP_WITH_IRULE);
-
-    const { irules } = vip;
-    const name = irules[0];
+    const iRuleName = irules[0];
 
     cy.get('table tbody tr th').contains('iRule name').should('exist');
-    cy.get(`a[data-originalvirtualservername="${name}"]`).click();
+    cy.get(`a[data-originalvirtualservername="${iRuleName}"]`).click();
     cy.get('div#secondlayerdiv').should('be.visible');
-    cy.get('div.iruledetailsheader span').should('contain.text', `iRule: ${name}`);
+    cy.get('div.iruledetailsheader span').should('contain.text', `iRule: ${iRuleName}`);
   })
 
 })
