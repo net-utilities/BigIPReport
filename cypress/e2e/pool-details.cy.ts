@@ -1,6 +1,7 @@
 import IVirtualServer from '../../js-src/Interfaces/IVirtualServer';
 import IPool from '../../js-src/Interfaces/IPool';
 import IMonitor from '../../js-src/Interfaces/IMonitor';
+import waitForLoad from '../support/helpers';
 import {LOADBALANCING_SE_POOL, VIP_WITH_IRULE} from '../constants/constants';
 
 let virtualServers: IVirtualServer[]
@@ -33,6 +34,7 @@ describe('Pool details should render properly', () => {
 
   it('Should show the pool details table when clicking on a pool details link', () => {
 
+    waitForLoad('https://localhost:8443')
     const index = virtualServers.findIndex(vip => vip.name === VIP_WITH_IRULE);
 
     cy.get('table#allbigips > tbody > tr').eq(index).find('td.PoolCell').click().within(cell => {
@@ -41,17 +43,10 @@ describe('Pool details should render properly', () => {
     })
 
     cy.get('div#firstlayerdiv').should('be.visible');
-  });
 
-  it('Should display the correct title', () => {
     const pool = pools.find(p => p.name === LOADBALANCING_SE_POOL);
     cy.get('div#firstlayerdiv div.pooldetailsheader')
       .should('contain.text', `Pool: ${pool.name}`);
-  })
-
-  it('Should render associated pool properties correctly', () => {
-
-    const pool = pools.find(p => p.name === LOADBALANCING_SE_POOL);
 
     cy.get('div#firstlayerdiv table.pooldetailstable').first().within(table => {
       cy.wrap(table).find('tbody tr td').eq(0).should('contain.text', pool.description);
@@ -64,10 +59,6 @@ describe('Pool details should render properly', () => {
       cy.wrap(table).find('tbody tr td')
         .eq(4).should('contain.text', pool.allowsnat);
     })
-  })
-
-  it('Should load associated pool members correctly', () => {
-    const pool = pools.find(p => p.name === LOADBALANCING_SE_POOL);
 
     cy.get('div#firstlayerdiv table.pooldetailstable').eq(1).find('tbody tr').each((row, i) => {
       cy.wrap(row).find('td').eq(0).should('contain.text', pool.members[i].name);
@@ -82,10 +73,6 @@ describe('Pool details should render properly', () => {
       cy.wrap(row).find('td').eq(8).should('contain.text', pool.members[i].status);
       cy.wrap(row).find('td').eq(9).should('contain.text', pool.members[i].realtimestatus || 'N/A');
     })
-  })
-
-  it('Should load associated pool monitors correctly', () => {
-    const pool = pools.find(p => p.name === LOADBALANCING_SE_POOL);
 
     // Get the matching monitor objects as an array
     const matchingMonitors = pool.monitors.map(monitorName => monitors.find(monitor => monitor.name === monitorName))
@@ -110,9 +97,7 @@ describe('Pool details should render properly', () => {
         })
       })
     })
-  })
 
-  it('Clicking on the Close pool details button should close the pool details', () => {
     cy.get('a#closefirstlayerbutton').click();
     cy.get('div#firstlayerdiv').should('not.be.visible');
   })
