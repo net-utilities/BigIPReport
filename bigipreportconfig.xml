@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
     <!--Leave the version information intact-->
-    <Settings version="5.7.3">
+    <Settings version="5.7.4">
 
         <!--
         ***************************************************************************
@@ -562,7 +562,7 @@
             </IgnoredDevices>
         </SupportCheck>
 
-       <!--
+        <!--
             *************************************************
             *  The webhook to use when sending Slack alerts
             *  Leave empty if not using Slack alerts
