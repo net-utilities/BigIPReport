@@ -263,6 +263,7 @@
 #  5.7.0    2023-01-30   Hash update, more tables, csv filenames, policy fixes, syntax highlight       Tim Riker       No
 #  5.7.1    2023-03-11   Fixing syntax highlighting of zero length matches                             Tim Riker       No
 #  5.7.3    2023-03-11   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
+#  5.7.4    2023-03-11   Exporting nodes as separate json file                                         Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -306,7 +307,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.3"
+$Global:ScriptVersion = "5.7.4"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -823,6 +824,7 @@ $Global:DeviceGroups = @();
 $Global:paths = c@ {}
 $Global:paths.preferences = $Global:bigipreportconfig.Settings.ReportRoot + "json/preferences.json"
 $Global:paths.pools = $Global:bigipreportconfig.Settings.ReportRoot + "json/pools.json"
+$Global:paths.nodes = $Global:bigipreportconfig.Settings.ReportRoot + "json/nodes.json"
 $Global:paths.monitors = $Global:bigipreportconfig.Settings.ReportRoot + "json/monitors.json"
 $Global:paths.virtualservers = $Global:bigipreportconfig.Settings.ReportRoot + "json/virtualservers.json"
 $Global:paths.irules = $Global:bigipreportconfig.Settings.ReportRoot + "json/irules.json"
@@ -905,6 +907,7 @@ Add-Type @'
     public class iRule {
         public string name;
         public string[] pools;
+        public string[] nodes;
         public string[] datagroups;
         public string[] virtualservers;
         public string definition;
@@ -923,6 +926,7 @@ Add-Type @'
         public string name;
         public string description;
         public string loadbalancer;
+        public bool orphaned;
     }
 
     public class Monitor {
@@ -1201,7 +1205,7 @@ function Get-LTMInformation {
         $ObjTempNode = New-Object Node
 
         $ObjTempNode.ip = $Node.address
-        $ObjTempNode.name = $Node.name
+        $ObjTempNode.name = $Node.fullPath
         if (Get-Member -inputobject $Node -name "description") {
             $ObjTempNode.description = [Regex]::Unescape($Node.description)
         } else {
@@ -1548,6 +1552,7 @@ function Get-LTMInformation {
         if ($Partition -ne $LastPartition) {
             $SearchPools = $Pools -replace "/$Partition/", ""
             $SearchDataGroups = $DataGroups -replace "/$Partition/", ""
+            $SearchNodes = $Nodes | ForEach-Object { $_.address }
         }
 
         $LastPartition = $Partition
@@ -1555,6 +1560,10 @@ function Get-LTMInformation {
         $MatchedPools = @($SearchPools | Where-Object { $ObjiRule.definition -match '(?<![\w-])' + [regex]::Escape($_) + '(?![\w-])' } | Sort-Object -Unique)
         $MatchedPools = $MatchedPools -replace "^([^/])", "/$Partition/`$1"
         $ObjiRule.pools = $MatchedPools
+
+        $MatchedNodes = @($SearchNodes | Where-Object { $ObjiRule.definition -match '(?<![\w-])' + [regex]::Escape($_) + '(?![\w-])' } | Sort-Object -Unique)
+        $MatchedNodes = $MatchedNodes -replace "^([^/])", "/$Partition/`$1"
+        $ObjiRule.nodes = $MatchedNodes
 
         $MatchedDataGroups = @($SearchDataGroups | Where-Object { $ObjiRule.definition -match '(?<![\w-])' + [regex]::Escape($_) + '(?![\w-])' } | Sort-Object -Unique)
         $MatchedDataGroups = $MatchedDataGroups -replace "^([^/])", "/$Partition/`$1"
@@ -1852,6 +1861,29 @@ function Get-LTMInformation {
         }
     }
     #EndRegion
+
+    #Region Get Orphaned Nodes
+    log verbose "Detecting orphaned nodes"
+
+    try {
+        $PoolNodes = $LoadBalancerObjects.Pools.Values.members.ip | Unique
+    } catch {
+        $PoolNodes = $()
+    }
+
+    try {
+        $iRuleNodes = $LoadBalancerObjects.iRules.Values.nodes | Foreach-Object { $_ -replace '^/.+/', ''} | Unique
+    } catch {
+        $iRuleNodes = $()
+    }
+
+    Foreach ($Node in $LoadBalancerObjects.Nodes.Values) {
+        If ($PoolNodes -NotContains $Node.ip -and $iRuleNodes -notcontains $Node.ip) {
+            $LoadBalancerObjects.Nodes[$Node.name].orphaned = $true
+        }
+    }
+    #EndRegion
+
 }
 #EndRegion Get-LTMInformation
 
@@ -2040,6 +2072,7 @@ function GetDeviceInfo {
         $StatsMsg = "Stats:"
         $StatsMsg += " VS:" + $LoadBalancerObjects.VirtualServers.Keys.Count
         $StatsMsg += " P:" + $LoadBalancerObjects.Pools.Keys.Count
+        $StatsMsg += " N:" + $LoadBalancerObjects.Nodes.Keys.Count
         $StatsMsg += " R:" + $LoadBalancerObjects.iRules.Keys.Count
         $StatsMsg += " POL:" + $LoadBalancerObjects.Policies.Keys.Count
         $StatsMsg += " DG:" + $LoadBalancerObjects.DataGroups.Keys.Count
@@ -2101,6 +2134,7 @@ $Global:Out.iRules = @()
 $Global:Out.Policies = @()
 $Global:Out.Monitors = @()
 $Global:Out.Pools = @()
+$Global:Out.Nodes = @()
 $Global:Out.VirtualServers = @()
 
 $jobs = @()
@@ -2126,7 +2160,7 @@ do {
                         log $obj.severity ($job.name + ':' + $obj.message) $obj.datetime
                     } elseif ($obj["LoadBalancer"]) {
                         $Global:ReportObjects.add($obj.LoadBalancer.ip, $obj)
-                        Foreach ($thing in ("ASMPolicies", "Certificates", "DataGroups", "iRules", "Monitors", "Policies", "Pools", "VirtualServers")) {
+                        Foreach ($thing in ("ASMPolicies", "Certificates", "DataGroups", "iRules", "Monitors", "Policies", "Pools", "Nodes", "VirtualServers")) {
                             if ($obj[$thing]) {
                                 Foreach ($object in $obj.$thing.Values) {
                                     $Global:Out.$thing += $object
@@ -2233,6 +2267,7 @@ Function Write-TemporaryFiles {
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.loadbalancers -Data @( $Global:ReportObjects.Values.LoadBalancer | Sort-Object name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.nat -Data $Global:NATdict
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.pools -Data @( $Global:Out.Pools | Sort-Object loadbalancer, name )
+    $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.nodes -Data @( $Global:Out.Nodes | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.monitors -Data @( $Global:Out.Monitors | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.virtualservers -Data @( $Global:Out.VirtualServers | Sort-Object loadbalancer, name )
     $WriteStatuses += Write-JSONFile -DestinationFile $Global:paths.certificates -Data @( $Global:Out.Certificates | Sort-Object loadbalancer, fileName )
@@ -2295,6 +2330,11 @@ Foreach ($DeviceGroup in $Global:Bigipreportconfig.Settings.DeviceGroups.DeviceG
                 }
                 If ($LoadBalancerObjects.Pools.Count -eq 0) {
                     log error "$LoadBalancerName does not have any Pool data"
+                    $MissingData = $true
+                    $FailedDevice = $true
+                }
+                If ($LoadBalancerObjects.Nodes.Count -eq 0) {
+                    log error "$LoadBalancerName does not have any Node data"
                     $MissingData = $true
                     $FailedDevice = $true
                 }
@@ -2371,6 +2411,7 @@ if ($MissingData) {
             # This could be so much shorter if we used the same keys in paths and Out
             $Global:Out.iRules += $TemporaryCache['irules'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
             $Global:Out.Pools += $TemporaryCache['pools'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
+            $Global:Out.Nodes += $TemporaryCache['nodes'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
             $Global:Out.Monitors += $TemporaryCache['monitors'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
             $Global:Out.VirtualServers += $TemporaryCache['virtualservers'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
             $Global:Out.Certificates += $TemporaryCache['certificates'] | Where-Object { $_.loadbalancer -eq $LoadBalancerName }
@@ -2433,6 +2474,7 @@ $StatsMsg += " G:" + $Global:DeviceGroups.Count
 $StatsMsg += " LB:" + $Global:ReportObjects.Values.LoadBalancer.Count
 $StatsMsg += " VS:" + $Global:Out.VirtualServers.Length
 $StatsMsg += " P:" + $Global:Out.Pools.Length
+$StatsMsg += " N:" + $Global:Out.Nodes.Length
 $StatsMsg += " R:" + $Global:Out.iRules.Length
 $StatsMsg += " POL:" + $Global:Out.Policies.Length
 $StatsMsg += " DG:" + $Global:Out.DataGroups.Length
