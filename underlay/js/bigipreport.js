@@ -26,9 +26,9 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  "av": () => (/* binding */ renderLoadBalancer),
-  "HM": () => (/* binding */ siteData),
-  "nJ": () => (/* binding */ updateLocationHash)
+  a: () => (/* binding */ renderLoadBalancer),
+  siteData: () => (/* binding */ siteData),
+  n: () => (/* binding */ updateLocationHash)
 });
 
 ;// CONCATENATED MODULE: ./js-src/PoolDetails/translateStatus.ts
@@ -619,7 +619,7 @@ window.addEventListener('load', () => bigipreport_awaiter(void 0, void 0, void 0
     /* ************************************************************************************************************
             This section adds the update check button div and initiates the update checks
      *********************************************************************************************************** */
-    NavButtonDiv(null, null, null); // eslint-disable-line new-cap
+    NavButtonDiv(null, 'null', null); // eslint-disable-line new-cap
     // Check if there's a new update
     setInterval(() => {
         $.ajax('json/preferences.json', {
@@ -664,7 +664,7 @@ window.addEventListener('load', () => bigipreport_awaiter(void 0, void 0, void 0
 }));
 // update Navigation Buttons based on HEAD polling date (if available)
 function NavButtonDiv(response, status, xhr) {
-    let timesincerefresh = 0;
+    let timeSinceRefresh = 0;
     if (siteData.preferences.currentReportDate === undefined && xhr && xhr.getResponseHeader('Last-Modified') != null) {
         // If we have not yet stored the currentReportDate, store it and return
         siteData.preferences.currentReportDate = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
@@ -672,27 +672,27 @@ function NavButtonDiv(response, status, xhr) {
     else if (xhr && xhr.getResponseHeader('Last-Modified') != null) {
         const latestreport = new Date(xhr.getResponseHeader('Last-Modified')).getTime();
         // If there's been a new report, how long ago (in minutes)
-        timesincerefresh = Math.round((latestreport - siteData.preferences.currentReportDate) / 60000);
+        timeSinceRefresh = Math.round((latestreport - siteData.preferences.currentReportDate) / 60000);
     }
-    let navbutton = '<ul>';
-    if (timesincerefresh > 60) {
-        navbutton +=
+    let navButton = '<ul>';
+    if (timeSinceRefresh > 60) {
+        navButton +=
             '<li><button onclick="document.location.reload()" class="navbutton urgent">Update available</a></li>';
     }
-    else if (timesincerefresh > 0) {
-        navbutton +=
+    else if (timeSinceRefresh > 0) {
+        navButton +=
             '<li><button onclick="document.location.reload()" class="navbutton important">Update available</a></li>';
     }
     else {
-        navbutton +=
+        navButton +=
             '<li><button onclick="document.location.reload()" class="navbutton">Refresh</button></li>';
     }
     Object.keys(siteData.preferences.NavLinks).forEach((key) => {
-        navbutton += `<li><button onclick="window.location.href='${siteData.preferences.NavLinks[key]}'"
+        navButton += `<li><button onclick="window.location.href='${siteData.preferences.NavLinks[key]}'"
                     class="navbutton">${key}</button></li>`;
     });
-    navbutton += '</ul>';
-    $('div#navbuttondiv').html(navbutton);
+    navButton += '</ul>';
+    $('div#navbuttondiv').html(navButton);
 }
 function initializeStatusVIPs() {
     // Also initialize the ajaxQueue
@@ -3223,6 +3223,7 @@ function generateSupportCell(loadbalancer) {
       />
   </td>`;
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function showLogs(updatehash) {
     hideMainSection();
     setupLogTable();
@@ -3231,6 +3232,7 @@ function showLogs(updatehash) {
     updateLocationHash(updatehash);
     showMainSection('logs');
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function showHelp(updatehash) {
     hideMainSection();
     activateMenuButton('div#helpbutton');
