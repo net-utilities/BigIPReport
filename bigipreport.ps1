@@ -264,6 +264,7 @@
 #  5.7.1    2023-03-11   Fixing syntax highlighting of zero length matches                             Tim Riker       No
 #  5.7.3    2023-03-11   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
 #  5.7.4    2023-03-11   Exporting nodes as separate json file                                         Patrik Jonsson  No
+#  5.7.5    2023-03-11   Adding enabled and availabilty as virtual columns on virtual server export    Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -307,7 +308,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.4"
+$Global:ScriptVersion = "5.7.5"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date

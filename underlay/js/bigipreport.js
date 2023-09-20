@@ -26,9 +26,9 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  a: () => (/* binding */ renderLoadBalancer),
-  siteData: () => (/* binding */ siteData),
-  n: () => (/* binding */ updateLocationHash)
+  "av": () => (/* binding */ renderLoadBalancer),
+  "HM": () => (/* binding */ siteData),
+  "nJ": () => (/* binding */ updateLocationHash)
 });
 
 ;// CONCATENATED MODULE: ./js-src/PoolDetails/translateStatus.ts
@@ -808,6 +808,10 @@ function virtualServerStatus(row, type) {
     if (type === 'filter') {
         return vsStatus;
     }
+    if (type === 'export') {
+        // split into fields later
+        return `${enabled}@SPLIT@${availability}@SPLIT@`;
+    }
     if (vsStatus === 'enabled:available') {
         return `<span class="statusicon"><img src="images/green-circle-checkmark.png" alt="Available (Enabled)"
                 title="${vsStatus} - The virtual server is available"/></span>`;
@@ -1133,7 +1137,7 @@ function renderVirtualServer(loadbalancer, name, type) {
         result += `<span class="adcLinkSpan"><a target="_blank" href="https://${loadbalancer}`;
         result += `/tmui/Control/jspmap/tmui/locallb/virtual_server/properties.jsp?name=${name}">Edit</a></span>`;
     }
-    if (type === 'display' || type === 'print' || type === 'filter') {
+    if (type === 'display' || type === 'print' || type === 'filter' || type === 'export') {
         const vs = getVirtualServer(name, loadbalancer);
         result += virtualServerStatus(vs, type);
     }
@@ -1591,10 +1595,12 @@ function setupVirtualServerTable() {
           <tr>
             <th class="loadbalancerHeaderCell">
               <span style="display: none;">Load Balancer</span>
-              <input type="search" name="loadbalancer" class="search" placeholder="Load Balancer" /></th>
+              <input type="search" name="loadbalancer" class="search" placeholder="Load Balancer" />
+            </th>
             <th>
               <span style="display: none;">Name</span>
-              <input type="search" name="name" class="search" placeholder="Name" /></th>
+              <input type="search" name="name" class="search" placeholder="Name" />
+            </th>
             <th>
                <span style="display: none;">Description</span>
                <input type="search" name="description" class="search" placeholder="Description" />
@@ -4002,9 +4008,14 @@ function activateMenuButton(b) {
     $(b).addClass('menuitemactive');
 }
 function customizeCSV(csv) {
-    const csvRows = csv.split('\n');
+    let csvRows = csv.split('\n');
     // table headings have a span and a placeholder, replace with placeholder
     csvRows[0] = csvRows[0].replace(/<span[^>]*>[^<]*<\/span>[^>]*<[^>]* placeholder=""([^"]*)""[^>]*>/gi, '$1');
+    if (csv.includes('@SPLIT@')) {
+        // split Name, if present, into Enabled, Availability and Name
+        csvRows[0] = csvRows[0].replace(/Name/gi, 'Enabled@SPLIT@Availability@SPLIT@Name');
+        csvRows = csvRows.map(x => x.replace(/@SPLIT@/g, '","'));
+    }
     return csvRows.join('\n');
 }
 function downLoadTextFile(data, fileName) {
