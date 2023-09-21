@@ -181,7 +181,7 @@ window.addEventListener('load', async () => {
           This section adds the update check button div and initiates the update checks
    *********************************************************************************************************** */
 
-  NavButtonDiv(null, null, null); // eslint-disable-line new-cap
+  NavButtonDiv(null, 'null', null); // eslint-disable-line new-cap
   // Check if there's a new update
   setInterval( () => {
     $.ajax('json/preferences.json', {
@@ -230,8 +230,8 @@ window.addEventListener('load', async () => {
 });
 
 // update Navigation Buttons based on HEAD polling date (if available)
-function NavButtonDiv(response: any, status: any, xhr: jqXHR<any>) {
-  let timesincerefresh = 0;
+function NavButtonDiv(response: null, status: string, xhr: jqXHR|null) {
+  let timeSinceRefresh = 0;
   if (siteData.preferences.currentReportDate === undefined && xhr && xhr.getResponseHeader('Last-Modified') != null) {
     // If we have not yet stored the currentReportDate, store it and return
     siteData.preferences.currentReportDate = new Date(
@@ -242,28 +242,28 @@ function NavButtonDiv(response: any, status: any, xhr: jqXHR<any>) {
       xhr.getResponseHeader('Last-Modified')
     ).getTime();
     // If there's been a new report, how long ago (in minutes)
-    timesincerefresh = Math.round(
+    timeSinceRefresh = Math.round(
       (latestreport - siteData.preferences.currentReportDate) / 60000
     );
   }
 
-  let navbutton = '<ul>';
-  if (timesincerefresh > 60) {
-    navbutton +=
+  let navButton = '<ul>';
+  if (timeSinceRefresh > 60) {
+    navButton +=
       '<li><button onclick="document.location.reload()" class="navbutton urgent">Update available</a></li>';
-  } else if (timesincerefresh > 0) {
-    navbutton +=
+  } else if (timeSinceRefresh > 0) {
+    navButton +=
       '<li><button onclick="document.location.reload()" class="navbutton important">Update available</a></li>';
   } else {
-    navbutton +=
+    navButton +=
       '<li><button onclick="document.location.reload()" class="navbutton">Refresh</button></li>';
   }
   Object.keys(siteData.preferences.NavLinks).forEach((key) => {
-    navbutton += `<li><button onclick="window.location.href='${siteData.preferences.NavLinks[key]}'"
+    navButton += `<li><button onclick="window.location.href='${siteData.preferences.NavLinks[key]}'"
                     class="navbutton">${key}</button></li>`;
   });
-  navbutton += '</ul>';
-  $('div#navbuttondiv').html(navbutton);
+  navButton += '</ul>';
+  $('div#navbuttondiv').html(navButton);
 }
 
 function initializeStatusVIPs() {
@@ -474,7 +474,7 @@ function virtualServerStatus(row: IVirtualServer, type: string) {
   return vsStatus;
 }
 
-function createdPoolCell(cell: Node, cellData: any, rowData: any, rowIndex: number) {
+function createdPoolCell(cell: Node, cellData: IPool[], rowData: IVirtualServer, rowIndex: number) {
   if (rowData.pools) {
     $(cell).addClass('PoolCell');
     $(cell).attr('id', `vs-${rowIndex}`);
@@ -1552,7 +1552,7 @@ function setupVirtualServerTable() {
           text: 'Expand',
           titleAttr: 'Temporarily expand all',
           className: 'tableHeaderColumnButton toggleExpansion',
-          action (e: any, dt: any, node: any) {
+          action (e: never, dt: never, node: HTMLElement) {
             switch (node['0'].innerText) {
               case 'Expand':
                 hidePools(false);
@@ -3159,6 +3159,7 @@ function generateSupportCell(loadbalancer: ILoadbalancer) {
   </td>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function showLogs(updatehash: any) {
   hideMainSection();
   setupLogTable();
@@ -3170,6 +3171,7 @@ function showLogs(updatehash: any) {
   showMainSection('logs');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function showHelp(updatehash: any) {
   hideMainSection();
   activateMenuButton('div#helpbutton');
@@ -3229,6 +3231,7 @@ function toggleRegexSearch() {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function updateLocationHash(updatehash: any = true) : void {
   const parameters = [];
 
@@ -3284,6 +3287,7 @@ export function updateLocationHash(updatehash: any = true) : void {
     Expands all pool matches in the main table when searching
 ********************************************************************************************************************* */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function expandPoolMatches(resultset: any, searchstring: string) {
   if (localStorage.autoExpandPools !== 'true' && searchstring !== '') {
     $(resultset)
@@ -3301,17 +3305,20 @@ function expandPoolMatches(resultset: any, searchstring: string) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function expandMatches(resultset: any) {
   $(resultset).find('details').removeAttr('open');
   $(resultset).find('details:has(span.highlight)').attr('open', '');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function resetFilters(e: any, dt: any) {
   $(dt.header()).find('input').val('');
   dt.search('').columns().search('').draw();
   updateLocationHash();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toggleExpandCollapseRestore(e: any, dt: any, node: any) {
   switch (node['0'].innerText) {
     case 'Expand':
