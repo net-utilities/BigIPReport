@@ -265,6 +265,7 @@
 #  5.7.3    2023-03-11   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
 #  5.7.4    2023-03-11   Exporting nodes as separate json file                                         Patrik Jonsson  No
 #  5.7.5    2023-03-11   Adding enabled and availabilty as virtual columns on virtual server export    Tim Riker       No
+#  5.7.6    2023-03-11   Adding support for port lists                                                 Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -308,7 +309,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.5"
+$Global:ScriptVersion = "5.7.6"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -877,6 +878,19 @@ Add-Type @'
         public string loadbalancer;
     }
 
+    public class PortList {
+        public string name;
+        public string[] ports;
+        public string loadbalancer;
+    }
+
+    public class TrafficMatching {
+        public string name;
+        public string destinationaddressinline;
+        public string[] destinationportlist;
+        public string loadbalancer;
+    }
+
     public class Member {
         public string name;
         public string ip;
@@ -1125,6 +1139,62 @@ function Get-LTMInformation {
             $ObjTempPolicy.loadbalancer = $LoadBalancerName
 
             $LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
+        }
+    }
+
+    #EndRegion
+
+    #Region Cache Port Lists
+
+    log verbose "Caching port lists"
+    $Response = ""
+    try {
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/net/port-list"
+    } catch {
+        $Line = $_.InvocationInfo.ScriptLineNumber
+        log error "Error loading certificates. $_ (line $Line)"
+    }
+
+    $LoadBalancerObjects.PortLists = c@ {}
+
+    if( Get-Member -InputObject $Response -Name 'items' ){
+        Foreach ($PortList in $Response.items) {
+            $ObjPortList = New-Object -TypeName "PortList"
+            $ObjPortList.name = $PortList.fullPath
+            $ObjPortList.ports = $PortList.ports.name
+            $ObjPortList.loadbalancer = $LoadBalancerName
+            $LoadBalancerObjects.PortLists.add($ObjPortList.name, $ObjPortList)
+        }
+    }
+
+    #EndRegion
+
+    #Region Cache Traffic matching
+
+    log verbose "Caching traffic matching"
+    $Response = ""
+    try {
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/traffic-matching-criteria"
+    } catch {
+        $Line = $_.InvocationInfo.ScriptLineNumber
+        log error "Error loading traffic matchings. $_ (line $Line)"
+    }
+
+    $LoadBalancerObjects.TrafficMatchings = c@ {}
+
+    if( Get-Member -InputObject $Response -Name 'items' ){
+        Foreach ($TrafficMatching in $Response.items) {
+            $ObjTrafficMatching = New-Object -TypeName "TrafficMatching"
+            $ObjTrafficMatching.name = $TrafficMatching.fullPath
+            if (Get-Member -inputobject $TrafficMatching -name "destinationPortList"){
+                $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
+            }
+            if (Get-Member -inputobject $TrafficMatching -name "destinationAddressInline"){
+                $ObjTrafficMatching.destinationaddressinline = $TrafficMatching.destinationAddressInline
+            }
+
+            $ObjTrafficMatching.loadbalancer = $LoadBalancerName
+            $LoadBalancerObjects.TrafficMatchings.add($ObjTrafficMatching.name, $ObjTrafficMatching)
         }
     }
 
@@ -1658,6 +1728,17 @@ function Get-LTMInformation {
                 $cidr = Convert-MaskToCIDR($VirtualServer.mask)
                 $ObjTempVirtualServer.ip += '/' + $cidr
               }
+            }
+
+            if(Get-Member -InputObject $VirtualServer -name 'trafficMatchingCriteria'){
+                $MatchingTrafficCriteria = $LoadBalancerObjects.TrafficMatchings[$VirtualServer.trafficMatchingCriteria]
+                $PortList = $MatchingTrafficCriteria.destinationportlist
+                if($PortList.length -gt 0){
+                    $ObjTempVirtualServer.port = $PortList -join ','
+                }
+                if($MatchingTrafficCriteria.destinationaddressinline){
+                    $ObjTempVirtualServer.ip = $MatchingTrafficCriteria.destinationaddressinline
+                }
             }
 
             if (($ObjTempVirtualServer.port) -eq 0) {
