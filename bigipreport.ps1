@@ -878,6 +878,12 @@ Add-Type @'
         public string loadbalancer;
     }
 
+    public class AddressList {
+      public string name;
+      public string[] addresses;
+      public string loadbalancer;
+    }
+
     public class PortList {
         public string name;
         public string[] ports;
@@ -887,6 +893,7 @@ Add-Type @'
     public class TrafficMatching {
         public string name;
         public string destinationaddressinline;
+        public string[] destinationaddresslist;
         public string[] destinationportlist;
         public string loadbalancer;
     }
@@ -1076,7 +1083,7 @@ if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
 Function Convert-MaskToCIDR([string] $dottedMask)
 {
   $result = 0;
-  # ensure we have a valid IP address
+  # ensure we have a valid IPv4 address (broken for IPv6)
   [IPAddress] $ip = $dottedMask;
   $octets = $ip.IPAddressToString.Split('.');
   foreach($octet in $octets)
@@ -1144,6 +1151,31 @@ function Get-LTMInformation {
 
     #EndRegion
 
+    #Region Cache Address Lists
+
+    log verbose "Caching address lists"
+    $Response = ""
+    try {
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/net/address-list"
+    } catch {
+        $Line = $_.InvocationInfo.ScriptLineNumber
+        log error "Error loading address list . $_ (line $Line)"
+    }
+
+    $LoadBalancerObjects.AddressLists = c@ {}
+
+    if (Get-Member -InputObject $Response -Name 'items') {
+        Foreach ($AddressList in $Response.items) {
+            $ObjAddressList = New-Object -TypeName "AddressList"
+            $ObjAddressList.name = $AddressList.fullPath
+            $ObjAddressList.addresses = $AddressList.addresses.name
+            $ObjAddressList.loadbalancer = $LoadBalancerName
+            $LoadBalancerObjects.AddressLists.add($ObjAddressList.name, $ObjAddressList)
+        }
+    }
+
+    #EndRegion
+
     #Region Cache Port Lists
 
     log verbose "Caching port lists"
@@ -1152,12 +1184,12 @@ function Get-LTMInformation {
         $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/net/port-list"
     } catch {
         $Line = $_.InvocationInfo.ScriptLineNumber
-        log error "Error loading certificates. $_ (line $Line)"
+        log error "Error loading port lists . $_ (line $Line)"
     }
 
     $LoadBalancerObjects.PortLists = c@ {}
 
-    if( Get-Member -InputObject $Response -Name 'items' ){
+    if (Get-Member -InputObject $Response -Name 'items') {
         Foreach ($PortList in $Response.items) {
             $ObjPortList = New-Object -TypeName "PortList"
             $ObjPortList.name = $PortList.fullPath
@@ -1186,10 +1218,13 @@ function Get-LTMInformation {
         Foreach ($TrafficMatching in $Response.items) {
             $ObjTrafficMatching = New-Object -TypeName "TrafficMatching"
             $ObjTrafficMatching.name = $TrafficMatching.fullPath
-            if (Get-Member -inputobject $TrafficMatching -name "destinationPortList"){
-                $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
+            if (Get-Member -inputobject $TrafficMatching -name "destinationAddressList") {
+                $ObjTrafficMatching.destinationaddresslist = $LoadBalancerObjects.AddressLists[$TrafficMatching.destinationaddresslist].addresses
             }
-            if (Get-Member -inputobject $TrafficMatching -name "destinationAddressInline"){
+            if (Get-Member -inputobject $TrafficMatching -name "destinationPortList") {
+              $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
+            }
+            if (Get-Member -inputobject $TrafficMatching -name "destinationAddressInline") {
                 $ObjTrafficMatching.destinationaddressinline = $TrafficMatching.destinationAddressInline
             }
 
@@ -1719,25 +1754,40 @@ function Get-LTMInformation {
             if ($destination -match ':.*\.') {
                 # parse ipv6 addresses deaf:beef::1.port
                 $ObjTempVirtualServer.ip = $destination.split('.')[0]
+                $ObjTempVirtualServer.trafficgroup = $TrafficGroupDict["/" + $VirtualServer.partition + "/" + $ObjTempVirtualServer.ip]
                 $ObjTempVirtualServer.port = $destination.split('.')[1]
             } else {
                 # parse ipv4 addresses 10.0.0.1:port
                 $ObjTempVirtualServer.ip = $destination.split(':')[0]
+                $ObjTempVirtualServer.trafficgroup = $TrafficGroupDict["/" + $VirtualServer.partition + "/" + $ObjTempVirtualServer.ip]
                 $ObjTempVirtualServer.port = $destination.split(':')[1]
-                if (($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') -And ($VirtualServer.mask -ne 'any6')) {
+                if ($VirtualServer.mask -And ($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') -And ($VirtualServer.mask -ne 'any6')) {
                     $cidr = Convert-MaskToCIDR($VirtualServer.mask)
                     $ObjTempVirtualServer.ip += '/' + $cidr
                 }
+                #log verbose ("ipport|" + $ObjTempVirtualServer.name + '|' + $ObjTempVirtualServer.ip + '|' + $ObjTempVirtualServer.port + '|' + $VirtualServer.mask)
             }
 
-            if(Get-Member -InputObject $VirtualServer -name 'trafficMatchingCriteria'){
+            if (Get-Member -InputObject $VirtualServer -name 'trafficMatchingCriteria'){
                 $MatchingTrafficCriteria = $LoadBalancerObjects.TrafficMatchings[$VirtualServer.trafficMatchingCriteria]
-                $PortList = $MatchingTrafficCriteria.destinationportlist
-                if($portList -And $PortList.length -gt 0){
-                    $ObjTempVirtualServer.port = $PortList -join ','
-                }
-                if($MatchingTrafficCriteria.destinationaddressinline){
-                    $ObjTempVirtualServer.ip = $MatchingTrafficCriteria.destinationaddressinline
+                if ($MatchingTrafficCriteria) {
+                    if ($MatchingTrafficCriteria.destinationaddresslist) {
+                        $AddressList = $MatchingTrafficCriteria.destinationaddresslist
+                        if ($AddressList -And $AddressList.length -gt 0) {
+                            $ObjTempVirtualServer.ip = $AddressList -join ','
+                            log verbose ($ObjTempVirtualServer.name + '|' + $ObjTempVirtualServer.ip)
+                        }
+                    } elseif ($MatchingTrafficCriteria.destinationaddressinline) {
+                        $ObjTempVirtualServer.ip = $MatchingTrafficCriteria.destinationaddressinline + $ObjTempVirtualServer.ip
+                        log verbose ("addressinline|" + $ObjTempVirtualServer.ip)
+                    }
+                    if ($MatchingTrafficCriteria.destinationportlist) {
+                        $PortList = $MatchingTrafficCriteria.destinationportlist
+                        if ($PortList -And $PortList.length -gt 0) {
+                            $ObjTempVirtualServer.port = $PortList -join ','
+                            log verbose ($ObjTempVirtualServer.name + '|' + $ObjTempVirtualServer.port)
+                        }
+                    }
                 }
             }
 
@@ -1898,8 +1948,6 @@ function Get-LTMInformation {
             if ($null -ne $VirtualServerSASMPolicies) {
                 $ObjTempVirtualServer.asmPolicies = $VirtualServerSASMPolicies.name
             }
-
-            $ObjTempVirtualServer.trafficgroup = $TrafficGroupDict["/" + $VirtualServer.partition + "/" + $ObjTempVirtualServer.ip]
 
             $ObjTempVirtualServer.availability = $VirtualStatsDict[$ObjTempVirtualServer.name].'status.availabilityState'.description
             $ObjTempVirtualServer.enabled = $VirtualStatsDict[$ObjTempVirtualServer.name].'status.enabledState'.description
@@ -2167,6 +2215,8 @@ function GetDeviceInfo {
         log info "Not active, and won't be indexed"
         return
     }
+
+	# TODO: Discard login token here
 }
 
 
