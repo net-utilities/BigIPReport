@@ -1880,7 +1880,7 @@ function Get-LTMInformation {
             #hard coded check parameter to avoid the situation that every policy ref link has to be opened
             if($VirtualServer.policiesReference -match "items=System.Object"){
                 try {
-                    log verbose ("Polling policy reference information for " + $VirtualServer.fullPath)
+                    log verbose ("Polling policy for " + $VirtualServer.fullPath)
 
                     $uri = "https://$LoadBalancerIP/mgmt/tm/ltm/virtual/" + $VirtualServer.fullPath.replace("/", "~") + "/policies"
                     $Response = Invoke-WebRequest -WebSession $Session -Uri $uri | ConvertFrom-Json -AsHashtable
