@@ -1717,23 +1717,23 @@ function Get-LTMInformation {
             # remove partition name if present (internal vs do not have a partition)
             $destination = $VirtualServer.destination -replace ".*/", ""
             if ($destination -match ':.*\.') {
-              # parse ipv6 addresses deaf:beef::1.port
-              $ObjTempVirtualServer.ip = $destination.split('.')[0]
-              $ObjTempVirtualServer.port = $destination.split('.')[1]
+                # parse ipv6 addresses deaf:beef::1.port
+                $ObjTempVirtualServer.ip = $destination.split('.')[0]
+                $ObjTempVirtualServer.port = $destination.split('.')[1]
             } else {
-              # parse ipv4 addresses 10.0.0.1:port
-              $ObjTempVirtualServer.ip = $destination.split(':')[0]
-              $ObjTempVirtualServer.port = $destination.split(':')[1]
-              if (($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') -And ($VirtualServer.mask -ne 'any6')) {
-                $cidr = Convert-MaskToCIDR($VirtualServer.mask)
-                $ObjTempVirtualServer.ip += '/' + $cidr
-              }
+                # parse ipv4 addresses 10.0.0.1:port
+                $ObjTempVirtualServer.ip = $destination.split(':')[0]
+                $ObjTempVirtualServer.port = $destination.split(':')[1]
+                if (($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') -And ($VirtualServer.mask -ne 'any6')) {
+                    $cidr = Convert-MaskToCIDR($VirtualServer.mask)
+                    $ObjTempVirtualServer.ip += '/' + $cidr
+                }
             }
 
             if(Get-Member -InputObject $VirtualServer -name 'trafficMatchingCriteria'){
                 $MatchingTrafficCriteria = $LoadBalancerObjects.TrafficMatchings[$VirtualServer.trafficMatchingCriteria]
                 $PortList = $MatchingTrafficCriteria.destinationportlist
-                if($PortList.length -gt 0){
+                if($portList -And $PortList.length -gt 0){
                     $ObjTempVirtualServer.port = $PortList -join ','
                 }
                 if($MatchingTrafficCriteria.destinationaddressinline){
