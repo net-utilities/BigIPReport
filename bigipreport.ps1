@@ -1775,17 +1775,14 @@ function Get-LTMInformation {
                         $AddressList = $MatchingTrafficCriteria.destinationaddresslist
                         if ($AddressList -And $AddressList.length -gt 0) {
                             $ObjTempVirtualServer.ip = $AddressList -join ','
-                            log verbose ($ObjTempVirtualServer.name + '|' + $ObjTempVirtualServer.ip)
                         }
                     } elseif ($MatchingTrafficCriteria.destinationaddressinline) {
                         $ObjTempVirtualServer.ip = $MatchingTrafficCriteria.destinationaddressinline + $ObjTempVirtualServer.ip
-                        log verbose ("addressinline|" + $ObjTempVirtualServer.ip)
                     }
                     if ($MatchingTrafficCriteria.destinationportlist) {
                         $PortList = $MatchingTrafficCriteria.destinationportlist
                         if ($PortList -And $PortList.length -gt 0) {
                             $ObjTempVirtualServer.port = $PortList -join ','
-                            log verbose ($ObjTempVirtualServer.name + '|' + $ObjTempVirtualServer.port)
                         }
                     }
                 }
