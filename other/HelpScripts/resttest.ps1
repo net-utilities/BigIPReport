@@ -33,36 +33,22 @@ Function Get-AuthToken {
     #Convert the body to Json
     $Body = $Body | ConvertTo-Json
 
-    $Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-
     $Response = ""
     try {
         #Write-Host "Try with BasicAuthValue=$BasicAuthValue Body=$Body"
         $Response = Invoke-RestMethod -WebSession $Session -Headers $Headers -Method "POST" -Body $Body -Uri "https://$Device/mgmt/shared/authn/login"
-    } catch {
+
+        if ($Response.token.token) {
+          $Session.Headers.Add('X-F5-Auth-Token', $Response.token.token)
+          $null = $Session.Headers.Remove('Authorization')
+        }
+      } catch {
         Write-Host "Could not login as $userpass to $Device : $Response"
-        return $null
-    }
-
-    if ($Response.token.token) {
-        return $Session
-    } else {
-        return $null
+        exit
     }
 }
 
-$Session = Get-AuthToken $Device $userpass
-if (-not ($Session)) {
-    exit
-}
-
-$Response2 = Invoke-WebRequest -WebSession $Session -Uri "https://$Device/mgmt/tm/ltm/pool/members/stats?`$filter=partition" |
-        ConvertFrom-Json -AsHashtable
-
-Foreach($PoolStat in $Response2.entries.Values) {
-    Write-Host "Pool:" $PoolStat.nestedStats.entries.tmName.description
-    $search = 'https://localhost/mgmt/tm/ltm/pool/members/' + $PoolStat.nestedStats.entries.tmName.description.replace("/", "~") + '/members/stats'
-    Foreach($PoolMemberStat in $PoolStat.nestedStats.entries.$search.nestedStats.entries.Values) {
-        Write-Host "Member:" $PoolMemberStat.nestedStats.entries.nodeName.description $PoolMemberStat.nestedStats.entries.port.value
-    }
-}
+$Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+Get-AuthToken $Device $userpass
+$Response2 = Invoke-WebRequest -WebSession $Session -Uri "https://$Device/mgmt/tm/sys/global-settings" | ConvertFrom-Json -AsHashtable
+"Hostname is: " + $Response2.hostname
