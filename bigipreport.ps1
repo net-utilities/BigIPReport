@@ -265,7 +265,8 @@
 #  5.7.3    2023-07-19   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
 #  5.7.4    2023-09-19   Exporting nodes as separate json file                                         Patrik Jonsson  No
 #  5.7.5    2023-09-20   Adding enabled and availabilty as virtual columns on virtual server export    Tim Riker       No
-#  5.7.6    2024-01-24   Adding support for address and port lists, discard login token after use      Patrik Jonsson  No
+#  5.7.6    2023-11-17   Updating docker base images                                                   Patrik Jonsson  No
+#  5.7.7    2024-01-24   Adding support for address and port lists, discard login token after use      Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -309,7 +310,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.6"
+$Global:ScriptVersion = "5.7.7"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
