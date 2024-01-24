@@ -262,10 +262,10 @@
 #  5.6.9    2022-05-18   Ensuring status polling is unique for every device/pool member combination    Tim Riker       No
 #  5.7.0    2023-01-30   Hash update, more tables, csv filenames, policy fixes, syntax highlight       Tim Riker       No
 #  5.7.1    2023-03-11   Fixing syntax highlighting of zero length matches                             Tim Riker       No
-#  5.7.3    2023-03-11   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
-#  5.7.4    2023-03-11   Exporting nodes as separate json file                                         Patrik Jonsson  No
-#  5.7.5    2023-03-11   Adding enabled and availabilty as virtual columns on virtual server export    Tim Riker       No
-#  5.7.6    2023-03-11   Adding support for port lists                                                 Patrik Jonsson  No
+#  5.7.3    2023-07-19   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
+#  5.7.4    2023-09-19   Exporting nodes as separate json file                                         Patrik Jonsson  No
+#  5.7.5    2023-09-20   Adding enabled and availabilty as virtual columns on virtual server export    Tim Riker       No
+#  5.7.6    2024-01-24   Adding support for address and port lists, discard login token after use      Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
