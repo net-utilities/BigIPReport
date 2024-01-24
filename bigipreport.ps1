@@ -262,9 +262,10 @@
 #  5.6.9    2022-05-18   Ensuring status polling is unique for every device/pool member combination    Tim Riker       No
 #  5.7.0    2023-01-30   Hash update, more tables, csv filenames, policy fixes, syntax highlight       Tim Riker       No
 #  5.7.1    2023-03-11   Fixing syntax highlighting of zero length matches                             Tim Riker       No
-#  5.7.3    2023-03-11   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
-#  5.7.4    2023-03-11   Exporting nodes as separate json file                                         Patrik Jonsson  No
-#  5.7.5    2023-03-11   Adding enabled and availabilty as virtual columns on virtual server export    Tim Riker       No
+#  5.7.3    2023-07-19   Copy, CSV, and column filters for datagroup details                           Tim Riker       No
+#  5.7.4    2023-09-19   Exporting nodes as separate json file                                         Patrik Jonsson  No
+#  5.7.5    2023-09-20   Adding enabled and availabilty as virtual columns on virtual server export    Tim Riker       No
+#  5.7.6    2024-01-24   Adding support for address and port lists, discard login token after use      Patrik Jonsson  No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -308,7 +309,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.5"
+$Global:ScriptVersion = "5.7.6"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -877,6 +878,26 @@ Add-Type @'
         public string loadbalancer;
     }
 
+    public class AddressList {
+      public string name;
+      public string[] addresses;
+      public string loadbalancer;
+    }
+
+    public class PortList {
+        public string name;
+        public string[] ports;
+        public string loadbalancer;
+    }
+
+    public class TrafficMatching {
+        public string name;
+        public string destinationaddressinline;
+        public string[] destinationaddresslist;
+        public string[] destinationportlist;
+        public string loadbalancer;
+    }
+
     public class Member {
         public string name;
         public string ip;
@@ -1062,7 +1083,7 @@ if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
 Function Convert-MaskToCIDR([string] $dottedMask)
 {
   $result = 0;
-  # ensure we have a valid IP address
+  # ensure we have a valid IPv4 address (broken for IPv6)
   [IPAddress] $ip = $dottedMask;
   $octets = $ip.IPAddressToString.Split('.');
   foreach($octet in $octets)
@@ -1125,6 +1146,90 @@ function Get-LTMInformation {
             $ObjTempPolicy.loadbalancer = $LoadBalancerName
 
             $LoadBalancerObjects.ASMPolicies.add($ObjTempPolicy.name, $ObjTempPolicy)
+        }
+    }
+
+    #EndRegion
+
+    #Region Cache Address Lists
+
+    log verbose "Caching address lists"
+    $Response = ""
+    try {
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/net/address-list"
+    } catch {
+        $Line = $_.InvocationInfo.ScriptLineNumber
+        log error "Error loading address list . $_ (line $Line)"
+    }
+
+    $LoadBalancerObjects.AddressLists = c@ {}
+
+    if (Get-Member -InputObject $Response -Name 'items') {
+        Foreach ($AddressList in $Response.items) {
+            $ObjAddressList = New-Object -TypeName "AddressList"
+            $ObjAddressList.name = $AddressList.fullPath
+            $ObjAddressList.addresses = $AddressList.addresses.name
+            $ObjAddressList.loadbalancer = $LoadBalancerName
+            $LoadBalancerObjects.AddressLists.add($ObjAddressList.name, $ObjAddressList)
+        }
+    }
+
+    #EndRegion
+
+    #Region Cache Port Lists
+
+    log verbose "Caching port lists"
+    $Response = ""
+    try {
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/net/port-list"
+    } catch {
+        $Line = $_.InvocationInfo.ScriptLineNumber
+        log error "Error loading port lists . $_ (line $Line)"
+    }
+
+    $LoadBalancerObjects.PortLists = c@ {}
+
+    if (Get-Member -InputObject $Response -Name 'items') {
+        Foreach ($PortList in $Response.items) {
+            $ObjPortList = New-Object -TypeName "PortList"
+            $ObjPortList.name = $PortList.fullPath
+            $ObjPortList.ports = $PortList.ports.name
+            $ObjPortList.loadbalancer = $LoadBalancerName
+            $LoadBalancerObjects.PortLists.add($ObjPortList.name, $ObjPortList)
+        }
+    }
+
+    #EndRegion
+
+    #Region Cache Traffic matching
+
+    log verbose "Caching traffic matching"
+    $Response = ""
+    try {
+        $Response = Invoke-RestMethod -WebSession $Session -Uri "https://$LoadBalancerIP/mgmt/tm/ltm/traffic-matching-criteria"
+    } catch {
+        $Line = $_.InvocationInfo.ScriptLineNumber
+        log error "Error loading traffic matchings. $_ (line $Line)"
+    }
+
+    $LoadBalancerObjects.TrafficMatchings = c@ {}
+
+    if( Get-Member -InputObject $Response -Name 'items' ){
+        Foreach ($TrafficMatching in $Response.items) {
+            $ObjTrafficMatching = New-Object -TypeName "TrafficMatching"
+            $ObjTrafficMatching.name = $TrafficMatching.fullPath
+            if (Get-Member -inputobject $TrafficMatching -name "destinationAddressList") {
+                $ObjTrafficMatching.destinationaddresslist = $LoadBalancerObjects.AddressLists[$TrafficMatching.destinationaddresslist].addresses
+            }
+            if (Get-Member -inputobject $TrafficMatching -name "destinationPortList") {
+              $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
+            }
+            if (Get-Member -inputobject $TrafficMatching -name "destinationAddressInline") {
+                $ObjTrafficMatching.destinationaddressinline = $TrafficMatching.destinationAddressInline
+            }
+
+            $ObjTrafficMatching.loadbalancer = $LoadBalancerName
+            $LoadBalancerObjects.TrafficMatchings.add($ObjTrafficMatching.name, $ObjTrafficMatching)
         }
     }
 
@@ -1647,17 +1752,40 @@ function Get-LTMInformation {
             # remove partition name if present (internal vs do not have a partition)
             $destination = $VirtualServer.destination -replace ".*/", ""
             if ($destination -match ':.*\.') {
-              # parse ipv6 addresses deaf:beef::1.port
-              $ObjTempVirtualServer.ip = $destination.split('.')[0]
-              $ObjTempVirtualServer.port = $destination.split('.')[1]
+                # parse ipv6 addresses deaf:beef::1.port
+                $ObjTempVirtualServer.ip = $destination.split('.')[0]
+                $ObjTempVirtualServer.trafficgroup = $TrafficGroupDict["/" + $VirtualServer.partition + "/" + $ObjTempVirtualServer.ip]
+                $ObjTempVirtualServer.port = $destination.split('.')[1]
             } else {
-              # parse ipv4 addresses 10.0.0.1:port
-              $ObjTempVirtualServer.ip = $destination.split(':')[0]
-              $ObjTempVirtualServer.port = $destination.split(':')[1]
-              if (($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') -And ($VirtualServer.mask -ne 'any6')) {
-                $cidr = Convert-MaskToCIDR($VirtualServer.mask)
-                $ObjTempVirtualServer.ip += '/' + $cidr
-              }
+                # parse ipv4 addresses 10.0.0.1:port
+                $ObjTempVirtualServer.ip = $destination.split(':')[0]
+                $ObjTempVirtualServer.trafficgroup = $TrafficGroupDict["/" + $VirtualServer.partition + "/" + $ObjTempVirtualServer.ip]
+                $ObjTempVirtualServer.port = $destination.split(':')[1]
+                if ($VirtualServer.mask -And ($VirtualServer.mask -ne '255.255.255.255') -And ($VirtualServer.mask -ne 'any') -And ($VirtualServer.mask -ne 'any6')) {
+                    $cidr = Convert-MaskToCIDR($VirtualServer.mask)
+                    $ObjTempVirtualServer.ip += '/' + $cidr
+                }
+                #log verbose ("ipport|" + $ObjTempVirtualServer.name + '|' + $ObjTempVirtualServer.ip + '|' + $ObjTempVirtualServer.port + '|' + $VirtualServer.mask)
+            }
+
+            if (Get-Member -InputObject $VirtualServer -name 'trafficMatchingCriteria'){
+                $MatchingTrafficCriteria = $LoadBalancerObjects.TrafficMatchings[$VirtualServer.trafficMatchingCriteria]
+                if ($MatchingTrafficCriteria) {
+                    if ($MatchingTrafficCriteria.destinationaddresslist) {
+                        $AddressList = $MatchingTrafficCriteria.destinationaddresslist
+                        if ($AddressList -And $AddressList.length -gt 0) {
+                            $ObjTempVirtualServer.ip = $AddressList -join ','
+                        }
+                    } elseif ($MatchingTrafficCriteria.destinationaddressinline) {
+                        $ObjTempVirtualServer.ip = $MatchingTrafficCriteria.destinationaddressinline + $ObjTempVirtualServer.ip
+                    }
+                    if ($MatchingTrafficCriteria.destinationportlist) {
+                        $PortList = $MatchingTrafficCriteria.destinationportlist
+                        if ($PortList -And $PortList.length -gt 0) {
+                            $ObjTempVirtualServer.port = $PortList -join ','
+                        }
+                    }
+                }
             }
 
             if (($ObjTempVirtualServer.port) -eq 0) {
@@ -1749,7 +1877,7 @@ function Get-LTMInformation {
             #hard coded check parameter to avoid the situation that every policy ref link has to be opened
             if($VirtualServer.policiesReference -match "items=System.Object"){
                 try {
-                    log verbose ("Polling policy reference information for " + $VirtualServer.fullPath)
+                    log verbose ("Polling policy for " + $VirtualServer.fullPath)
 
                     $uri = "https://$LoadBalancerIP/mgmt/tm/ltm/virtual/" + $VirtualServer.fullPath.replace("/", "~") + "/policies"
                     $Response = Invoke-WebRequest -WebSession $Session -Uri $uri | ConvertFrom-Json -AsHashtable
@@ -1817,8 +1945,6 @@ function Get-LTMInformation {
             if ($null -ne $VirtualServerSASMPolicies) {
                 $ObjTempVirtualServer.asmPolicies = $VirtualServerSASMPolicies.name
             }
-
-            $ObjTempVirtualServer.trafficgroup = $TrafficGroupDict["/" + $VirtualServer.partition + "/" + $ObjTempVirtualServer.ip]
 
             $ObjTempVirtualServer.availability = $VirtualStatsDict[$ObjTempVirtualServer.name].'status.availabilityState'.description
             $ObjTempVirtualServer.enabled = $VirtualStatsDict[$ObjTempVirtualServer.name].'status.enabledState'.description
@@ -2084,10 +2210,11 @@ function GetDeviceInfo {
         log success $StatsMsg
     } else {
         log info "Not active, and won't be indexed"
-        return
     }
-}
 
+    # Discard login token
+    $Response = Invoke-RestMethod -WebSession $Session -Method "DELETE" -Uri ("https://$LoadBalancerIP/mgmt/shared/authz/tokens/" + $Session.Headers["X-F5-Auth-Token"] )
+}
 
 #Region Job handling
 $JobsToStart = @()
