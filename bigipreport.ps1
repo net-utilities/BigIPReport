@@ -2210,12 +2210,11 @@ function GetDeviceInfo {
         log success $StatsMsg
     } else {
         log info "Not active, and won't be indexed"
-        return
     }
 
-	# TODO: Discard login token here
+    # Discard login token
+    $Response = Invoke-RestMethod -WebSession $Session -Method "DELETE" -Uri ("https://$LoadBalancerIP/mgmt/shared/authz/tokens/" + $Session.Headers["X-F5-Auth-Token"] )
 }
-
 
 #Region Job handling
 $JobsToStart = @()

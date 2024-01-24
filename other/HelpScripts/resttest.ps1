@@ -50,5 +50,9 @@ Function Get-AuthToken {
 
 $Session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 Get-AuthToken $Device $userpass
+
 $Response2 = Invoke-WebRequest -WebSession $Session -Uri "https://$Device/mgmt/tm/sys/global-settings" | ConvertFrom-Json -AsHashtable
 "Hostname is: " + $Response2.hostname
+
+$null = Invoke-WebRequest -WebSession $Session -Method "DELETE" -Uri ("https://$Device/mgmt/shared/authz/tokens/" + $Session.Headers["X-F5-Auth-Token"]) | ConvertFrom-Json -AsHashtable
+
