@@ -895,6 +895,7 @@ Add-Type @'
         public string name;
         public string destinationaddressinline;
         public string[] destinationaddresslist;
+        public string destinationportinline;
         public string[] destinationportlist;
         public string loadbalancer;
     }
@@ -1222,13 +1223,16 @@ function Get-LTMInformation {
             if (Get-Member -inputobject $TrafficMatching -name "destinationAddressList") {
                 $ObjTrafficMatching.destinationaddresslist = $LoadBalancerObjects.AddressLists[$TrafficMatching.destinationaddresslist].addresses
             }
-            if (Get-Member -inputobject $TrafficMatching -name "destinationPortList") {
-                $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
-            }
             if (Get-Member -inputobject $TrafficMatching -name "destinationAddressInline") {
                 $ObjTrafficMatching.destinationaddressinline = $TrafficMatching.destinationAddressInline
             }
-
+            if (Get-Member -inputobject $TrafficMatching -name "destinationPortList") {
+                $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
+            }
+            if (Get-Member -inputobject $TrafficMatching -name "destinationPortInline") {
+                $ObjTrafficMatching.destinationportinline = $TrafficMatching.destinationPortInline
+            }
+            $TrafficMatching
             $ObjTrafficMatching.loadbalancer = $LoadBalancerName
             $LoadBalancerObjects.TrafficMatchings.add($ObjTrafficMatching.name, $ObjTrafficMatching)
         }
@@ -1785,6 +1789,8 @@ function Get-LTMInformation {
                         if ($PortList -And $PortList.length -gt 0) {
                             $ObjTempVirtualServer.port = $PortList -join ','
                         }
+                    } elseif ($MatchingTrafficCriteria.destinationportinline) {
+                        $ObjTempVirtualServer.port = $MatchingTrafficCriteria.destinationportinline
                     }
                 }
             }
