@@ -570,13 +570,13 @@ if ($null -eq $Env:F5_PASSWORD) {
 }
 
 if (Test-ConfigPath "Settings/DeviceGroups/DeviceGroup/Device"){
-  if (@($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count -eq 0){
-      log error "No load balancers configured"
-      $SaneConfig = $false
-  }
+    if (@($Global:Bigipreportconfig.Settings.DeviceGroups.DeviceGroup.Device).Count -eq 0){
+        log error "No load balancers configured"
+        $SaneConfig = $false
+    }
 } else {
-  log error "Configuration file missing Device entries"
-  $SaneConfig = $false
+    log error "Configuration file missing Device entries"
+    $SaneConfig = $false
 }
 
 if (-not (Test-ConfigPath "/Settings/DeviceGroups/DeviceGroup")) {
@@ -680,10 +680,10 @@ if (-not (Test-ConfigPath "/Settings/SkipCertificateCheck")) {
 }
 
 if (-not (Test-ConfigPath "/Settings/RestPageSize")) {
-  log error "Configuration file missing RestPageSize"
-  $SaneConfig = $false
+    log error "Configuration file missing RestPageSize"
+    $SaneConfig = $false
 } else {
-  $Global:RestPageSize = $Global:Bigipreportconfig.Settings.RestPageSize
+    $Global:RestPageSize = $Global:Bigipreportconfig.Settings.RestPageSize
 }
 
 if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/Settings/SupportCheck/Enabled") -or -not (Test-ConfigPath "/Settings/SupportCheck/Username") -or -not (Test-ConfigPath "/Settings/SupportCheck/Password") ){
@@ -880,9 +880,9 @@ Add-Type @'
     }
 
     public class AddressList {
-      public string name;
-      public string[] addresses;
-      public string loadbalancer;
+        public string name;
+        public string[] addresses;
+        public string loadbalancer;
     }
 
     public class PortList {
@@ -1083,19 +1083,19 @@ if ($Global:Bigipreportconfig.Settings.NATFilePath -ne "") {
 
 Function Convert-MaskToCIDR([string] $dottedMask)
 {
-  $result = 0;
-  # ensure we have a valid IPv4 address (broken for IPv6)
-  [IPAddress] $ip = $dottedMask;
-  $octets = $ip.IPAddressToString.Split('.');
-  foreach($octet in $octets)
-  {
-    while(0 -ne $octet)
+    $result = 0;
+    # ensure we have a valid IPv4 address (broken for IPv6)
+    [IPAddress] $ip = $dottedMask;
+    $octets = $ip.IPAddressToString.Split('.');
+    foreach($octet in $octets)
     {
-      $octet = ($octet -shl 1) -band [byte]::MaxValue
-      $result++;
+        while(0 -ne $octet)
+        {
+            $octet = ($octet -shl 1) -band [byte]::MaxValue
+            $result++;
+        }
     }
-  }
-  return $result;
+    return $result;
 }
 
 #Region Get-LTMInformation
@@ -1223,7 +1223,7 @@ function Get-LTMInformation {
                 $ObjTrafficMatching.destinationaddresslist = $LoadBalancerObjects.AddressLists[$TrafficMatching.destinationaddresslist].addresses
             }
             if (Get-Member -inputobject $TrafficMatching -name "destinationPortList") {
-              $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
+                $ObjTrafficMatching.destinationportlist = $LoadBalancerObjects.PortLists[$TrafficMatching.destinationportlist].ports
             }
             if (Get-Member -inputobject $TrafficMatching -name "destinationAddressInline") {
                 $ObjTrafficMatching.destinationaddressinline = $TrafficMatching.destinationAddressInline
@@ -1445,13 +1445,13 @@ function Get-LTMInformation {
                 }
             }
             Foreach ($MemberStat in $MemberStats.Values) {
-              if ($MemberStat.nestedStats.entries.nodeName.description.contains(':')) {
-                # IPv6 has dot separator for port
-                $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + '.' + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
-              } else {
-                # IPv4 has colon separator for port
-                $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + ':' + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
-              }
+                if ($MemberStat.nestedStats.entries.nodeName.description.contains(':')) {
+                    # IPv6 has dot separator for port
+                    $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + '.' + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
+                } else {
+                    # IPv4 has colon separator for port
+                    $MemberStatsDict.add($MemberStat.nestedStats.entries.nodeName.description + ':' + $MemberStat.nestedStats.entries.port.value, $MemberStat.nestedStats.entries)
+                }
             }
             try {
                 Foreach ($PoolMember in $Pool.membersReference.items) {
@@ -1460,9 +1460,9 @@ function Get-LTMInformation {
                     $ObjTempMember.Name = $PoolMember.fullPath
                     $ObjTempMember.ip = $PoolMember.address
                     if ($PoolMember.name -match ':.*\.') {
-                      $ObjTempMember.Port = $PoolMember.name.split('.')[1]
+                        $ObjTempMember.Port = $PoolMember.name.split('.')[1]
                     } else {
-                      $ObjTempMember.Port = $PoolMember.name.split(':')[1]
+                        $ObjTempMember.Port = $PoolMember.name.split(':')[1]
                     }
                     $ObjTempMember.Priority = $PoolMember.priorityGroup
                     $ObjTempMember.Status = $PoolMember.state
@@ -1798,7 +1798,7 @@ function Get-LTMInformation {
             }
 
             if (Get-Member -inputobject $VirtualServer -name 'ipProtocol') {
-              $ObjTempVirtualServer.protocol = $VirtualServer.ipProtocol
+                $ObjTempVirtualServer.protocol = $VirtualServer.ipProtocol
             }
 
             #Set the ssl profile to None by default, then check if there's an SSL profile and
@@ -1845,8 +1845,8 @@ function Get-LTMInformation {
                 $ObjTempVirtualServer.sslprofileserver += "None";
             }
             if ($null -eq $ObjTempVirtualServer.otherprofiles) {
-              $ObjTempVirtualServer.otherprofiles += "None";
-          }
+                $ObjTempVirtualServer.otherprofiles += "None";
+            }
 
             #Get the iRules of the Virtual server
             $ObjTempVirtualServer.irules = @();
@@ -1994,13 +1994,13 @@ function Get-LTMInformation {
     log verbose "Detecting orphaned nodes"
 
     try {
-        $PoolNodes = $LoadBalancerObjects.Pools.Values.members.ip | Unique
+        $PoolNodes = $LoadBalancerObjects.Pools.Values.members.ip | Get-Unique
     } catch {
         $PoolNodes = $()
     }
 
     try {
-        $iRuleNodes = $LoadBalancerObjects.iRules.Values.nodes | Foreach-Object { $_ -replace '^/.+/', ''} | Unique
+        $iRuleNodes = $LoadBalancerObjects.iRules.Values.nodes | Foreach-Object { $_ -replace '^/.+/', ''} | Get-Unique
     } catch {
         $iRuleNodes = $()
     }
