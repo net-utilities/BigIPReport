@@ -1232,7 +1232,7 @@ function Get-LTMInformation {
             if (Get-Member -inputobject $TrafficMatching -name "destinationPortInline") {
                 $ObjTrafficMatching.destinationportinline = $TrafficMatching.destinationPortInline
             }
-            $TrafficMatching
+
             $ObjTrafficMatching.loadbalancer = $LoadBalancerName
             $LoadBalancerObjects.TrafficMatchings.add($ObjTrafficMatching.name, $ObjTrafficMatching)
         }
