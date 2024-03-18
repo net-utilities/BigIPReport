@@ -268,6 +268,7 @@
 #  5.7.6    2023-11-17   Updating docker base images                                                   Patrik Jonsson  No
 #  5.7.7    2024-01-24   Adding support for address and port lists, discard login token after use      Patrik Jonsson  No
 #  5.7.8    2024-02-04   Handle destinationportinline                                                  Tim Riker       No
+#  5.7.9    2024-03-18   Bump follow-redirects from 1.15.4 to 1.15.6 (#146)                            Dependabot      No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -311,7 +312,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.8"
+$Global:ScriptVersion = "5.7.9"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
