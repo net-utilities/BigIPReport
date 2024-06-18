@@ -270,6 +270,7 @@
 #  5.7.8    2024-02-04   Handle destinationportinline                                                  Tim Riker       No
 #  5.7.9    2024-03-18   Bump follow-redirects from 1.15.4 to 1.15.6 (#146)                            Dependabot      No
 #  5.7.10   2024-05-04   Updating nginx docker container base for the frontend container               Patrik Jonsson  No
+#  5.7.11   2024-06-18   Bump braces from 3.0.2 to 3.0.3                                               Dependabot      No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -313,7 +314,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.10"
+$Global:ScriptVersion = "5.7.11"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
