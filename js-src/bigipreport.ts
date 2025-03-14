@@ -1979,8 +1979,8 @@ function setupPolicyTable() {
       {
         data: 'name',
         className: 'PolicyCell',
-        render (data, type, row, meta) {
-          return renderList(data, type, row, meta, renderPolicy, 'policies');
+        render (data, type, row) {
+          return renderPolicy(row.loadbalancer, data, type);
         },
       },
       {
