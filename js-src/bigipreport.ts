@@ -846,12 +846,37 @@ function renderRule(loadbalancer: string, name: string, type: string) {
   return result;
 }
 
+function renderMonitor(loadbalancer: string, name: string, type: string) {
+  if (name === '') {
+    return 'None';
+  }
+  const monitorName = name.replace(/^\/Common\//, '');
+  let result = '';
+  if (type === 'display') {
+    result += `<span class="adcLinkSpan">
+                 <a target="_blank"
+                 href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/monitor/properties.jsp?name=${name}">
+                     Edit
+                 </a>
+               </span>
+               <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
+                href="Javascript:showiRuleDetails('${name}','${loadbalancer}');">`;
+  }
+  result += monitorName;
+  if (type === 'display') {
+    result += `<span class="detailsicon"><img src="images/details.png" alt="details"></span>
+                      <p>Click to see Monitor details</p>
+                   </a>`;
+  }
+  return result;
+}
+
 function renderPolicy(loadbalancer: string, name: string, type: string) {
-  const polName = name.replace(/^\/Common\//, '');
-  if (name === 'None') {
+  if (!name) {
     return 'None';
   }
   let result = '';
+  const polName = name.replace(/^\/Common\//, '');
   if (type === 'display') {
     result += `<span class="adcLinkSpan">
                  <a target="_blank"
@@ -1961,8 +1986,8 @@ function setupPolicyTable() {
       {
         data: 'name',
         className: 'PolicyCell',
-        render (data, type, row) {
-          return renderPolicy(row.loadbalancer, data, type);
+        render (data, type, row, meta) {
+          return renderList(data, type, row, meta, renderPolicy, 'policies');
         },
       },
       {
@@ -2142,8 +2167,8 @@ function setupPoolTable() {
       },
       {
         data: 'monitors',
-        render (data: string[]) {
-          return data ? data.join(' '): 'None';
+        render (data, type, row, meta) {
+          return renderList(data, type, row, meta, renderMonitor, 'monitors');
         },
         visible: false,
       },
