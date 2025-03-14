@@ -2079,6 +2079,9 @@ function GetDeviceInfo {
             $TokenReference = $TokenRequest.token.name;
             $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
 
+            # remove old Authorizatio header to use only the token
+            $Session.Headers.Remove('Authorization') | Out-Null
+
             # Add the token to the session
             $Session.Headers.Add('X-F5-Auth-Token', $AuthToken)
             $Body = @{ timeout = 7200 } | ConvertTo-Json
