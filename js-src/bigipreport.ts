@@ -858,21 +858,14 @@ function renderMonitor(loadbalancer: string, name: string, type: string) {
                  href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/monitor/properties.jsp?name=${name}">
                      Edit
                  </a>
-               </span>
-               <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
-                href="Javascript:showiRuleDetails('${name}','${loadbalancer}');">`;
+               </span>`;
   }
   result += monitorName;
-  if (type === 'display') {
-    result += `<span class="detailsicon"><img src="images/details.png" alt="details"></span>
-                      <p>Click to see Monitor details</p>
-                   </a>`;
-  }
   return result;
 }
 
 function renderPolicy(loadbalancer: string, name: string, type: string) {
-  if (!name) {
+  if (name === 'None') {
     return 'None';
   }
   let result = '';
@@ -884,8 +877,8 @@ function renderPolicy(loadbalancer: string, name: string, type: string) {
                      Edit
                  </a>
                </span>
-               <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
-                href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
+                <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
+                 href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
   }
   result += polName;
   if (type === 'display') {

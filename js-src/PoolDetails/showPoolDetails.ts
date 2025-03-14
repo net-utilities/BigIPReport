@@ -120,10 +120,12 @@ export default function showPoolDetails(pool: string, loadbalancer: string, laye
 
     const { monitors } = siteData;
 
-    poolmonitors.forEach(monitorName => {
-      const matchingMonitor = monitors.find(m => m.loadbalancer === loadbalancer && m.name === monitorName);
-      if (matchingMonitor) matchingMonitors.push(matchingMonitor);
-    })
+    if (poolmonitors && poolmonitors.length) {
+      poolmonitors.forEach(monitorName => {
+        const matchingMonitor = monitors.find(m => m.loadbalancer === loadbalancer && m.name === monitorName);
+        if (matchingMonitor) matchingMonitors.push(matchingMonitor);
+      })
+    }
 
     const { members } = matchingpool;
 
