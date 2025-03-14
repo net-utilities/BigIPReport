@@ -884,11 +884,11 @@ table#deviceoverviewtable img.support-icon {
 }
 
 table#deviceoverviewtable tr.out-of-sync-device {
-    background: #FFF8F0;
+    background: #efe8e0;
 }
 
 table#deviceoverviewtable tr.failed-device {
-    background: #fff7f7;
+    background: #efe7e7;
 }
 
 /****************************************************************************************************************************
