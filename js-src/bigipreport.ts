@@ -847,16 +847,22 @@ function renderRule(loadbalancer: string, name: string, type: string) {
 }
 
 function renderPolicy(loadbalancer: string, name: string, type: string) {
+  const polName = name.replace(/^\/Common\//, '');
   if (name === 'None') {
     return 'None';
   }
   let result = '';
   if (type === 'display') {
-    result += `<span class="adcLinkSpan"></span>
-                <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
-                 href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
+    result += `<span class="adcLinkSpan">
+                 <a target="_blank"
+                 href="https://${loadbalancer}/dms/asm/policies/${name.replace(/\//g, '~')}/general-settings">
+                     Edit
+                 </a>
+               </span>
+               <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
+                href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
   }
-  result += name;
+  result += polName;
   if (type === 'display') {
     result += `<span class="detailsicon"><img src="images/details.png" alt="details"></span>
                        <p>Click to see policy details</p>
