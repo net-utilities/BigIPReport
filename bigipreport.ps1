@@ -2079,7 +2079,7 @@ function GetDeviceInfo {
             $TokenReference = $TokenRequest.token.name;
             $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
 
-            # remove old Authorizatio header to use only the token
+            # remove old Authorization header to use only the token
             $Session.Headers.Remove('Authorization') | Out-Null
 
             # Add the token to the session
