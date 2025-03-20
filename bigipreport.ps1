@@ -273,6 +273,7 @@
 #  5.7.11   2024-06-18   Bump braces from 3.0.2 to 3.0.3                                               Dependabot      No
 #  5.7.12   2024-06-18   Bump braces from 3.0.2 to 3.0.3                                               Dependabot      No
 #  5.7.13   2024-10-16   Build containers to run as non-root                                           Patrik Jonsson  No
+#  5.7.14   2025-03-14   edit monitor and policy links, clean Authorization, pools without monitors    Tim Riker       No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -316,7 +317,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.13"
+$Global:ScriptVersion = "5.7.14"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
@@ -2078,6 +2079,9 @@ function GetDeviceInfo {
             $AuthToken = $TokenRequest.token.token
             $TokenReference = $TokenRequest.token.name;
             $TokenStartTime = Get-Date -Date $TokenRequest.token.startTime
+
+            # remove old Authorization header to use only the token
+            $Session.Headers.Remove('Authorization') | Out-Null
 
             # Add the token to the session
             $Session.Headers.Add('X-F5-Auth-Token', $AuthToken)

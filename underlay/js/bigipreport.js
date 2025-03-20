@@ -26,9 +26,9 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  a: () => (/* binding */ renderLoadBalancer),
-  siteData: () => (/* binding */ siteData),
-  n: () => (/* binding */ updateLocationHash)
+  "av": () => (/* binding */ renderLoadBalancer),
+  "HM": () => (/* binding */ siteData),
+  "nJ": () => (/* binding */ updateLocationHash)
 });
 
 ;// CONCATENATED MODULE: ./js-src/PoolDetails/translateStatus.ts
@@ -275,11 +275,13 @@ function showPoolDetails(pool, loadbalancer, layer = 'first') {
         const poolmonitors = matchingpool.monitors;
         const matchingMonitors = [];
         const { monitors } = siteData;
-        poolmonitors.forEach(monitorName => {
-            const matchingMonitor = monitors.find(m => m.loadbalancer === loadbalancer && m.name === monitorName);
-            if (matchingMonitor)
-                matchingMonitors.push(matchingMonitor);
-        });
+        if (poolmonitors && poolmonitors.length) {
+            poolmonitors.forEach(monitorName => {
+                const matchingMonitor = monitors.find(m => m.loadbalancer === loadbalancer && m.name === monitorName);
+                if (matchingMonitor)
+                    matchingMonitors.push(matchingMonitor);
+            });
+        }
         const { members } = matchingpool;
         members.forEach(member => {
             const memberstatus = translateStatus(member);
@@ -1176,17 +1178,40 @@ function renderRule(loadbalancer, name, type) {
     }
     return result;
 }
+function renderMonitor(loadbalancer, name, type) {
+    if (name === '') {
+        return 'None';
+    }
+    const monitorName = name.replace(/^\/Common\//, '');
+    let result = '';
+    if (type === 'display') {
+        result += `<span class="adcLinkSpan">
+                 <a target="_blank"
+                 href="https://${loadbalancer}/tmui/Control/jspmap/tmui/locallb/monitor/properties.jsp?name=${name}">
+                     Edit
+                 </a>
+               </span>`;
+    }
+    result += monitorName;
+    return result;
+}
 function renderPolicy(loadbalancer, name, type) {
     if (name === 'None') {
         return 'None';
     }
     let result = '';
+    const polName = name.replace(/^\/Common\//, '');
     if (type === 'display') {
-        result += `<span class="adcLinkSpan"></span>
+        result += `<span class="adcLinkSpan">
+                 <a target="_blank"
+                 href="https://${loadbalancer}/dms/asm/policies/${name.replace(/\//g, '~')}/general-settings">
+                     Edit
+                 </a>
+               </span>
                 <a class="tooltip" data-originalvirtualservername="${name}" data-loadbalancer="${loadbalancer}"
                  href="Javascript:showPolicyDetails('${name}','${loadbalancer}');">`;
     }
-    result += name;
+    result += polName;
     if (type === 'display') {
         result += `<span class="detailsicon"><img src="images/details.png" alt="details"></span>
                        <p>Click to see policy details</p>
@@ -2315,8 +2340,8 @@ function setupPoolTable() {
             },
             {
                 data: 'monitors',
-                render(data) {
-                    return data ? data.join(' ') : 'None';
+                render(data, type, row, meta) {
+                    return renderList(data, type, row, meta, renderMonitor, 'monitors');
                 },
                 visible: false,
             },
@@ -3285,6 +3310,7 @@ function toggleRegexSearch() {
         }
     });
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateLocationHash(updatehash = true) {
     const parameters = [];
     const activeSection = $('div#mainholder').attr('data-activesection');
@@ -3335,6 +3361,7 @@ function updateLocationHash(updatehash = true) {
 /** ********************************************************************************************************************
     Expands all pool matches in the main table when searching
 ********************************************************************************************************************* */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function expandPoolMatches(resultset, searchstring) {
     if (localStorage.autoExpandPools !== 'true' && searchstring !== '') {
         $(resultset)
@@ -3349,15 +3376,18 @@ function expandPoolMatches(resultset, searchstring) {
         });
     }
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function expandMatches(resultset) {
     $(resultset).find('details').removeAttr('open');
     $(resultset).find('details:has(span.highlight)').attr('open', '');
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function resetFilters(e, dt) {
     $(dt.header()).find('input').val('');
     dt.search('').columns().search('').draw();
     updateLocationHash();
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toggleExpandCollapseRestore(e, dt, node) {
     switch (node['0'].innerText) {
         case 'Expand':
