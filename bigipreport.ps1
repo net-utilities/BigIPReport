@@ -274,6 +274,7 @@
 #  5.7.12   2024-06-18   Bump braces from 3.0.2 to 3.0.3                                               Dependabot      No
 #  5.7.13   2024-10-16   Build containers to run as non-root                                           Patrik Jonsson  No
 #  5.7.14   2025-03-14   edit monitor and policy links, clean Authorization, pools without monitors    Tim Riker       No
+#  5.7.15   2025-11-14   Update docker base image dependencies                                         Patrikk Jonsson No
 #
 #  This script generates a report of the LTM configuration on F5 BigIP's.
 #  It started out as pet project to help co-workers know which traffic goes where but grew.
@@ -317,7 +318,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.14"
+$Global:ScriptVersion = "5.7.15"
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
