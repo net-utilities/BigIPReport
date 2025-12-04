@@ -2499,6 +2499,10 @@ function setupCertificateTable() {
               <input type="search" class="search" placeholder="SAN" />
             </th>
             <th>
+              <span style="display: none;">Issuer</span>
+              <input type="search" class="search" placeholder="Issuer" />
+            </th>
+            <th>
               <span style="display: none;">Country</span>
               <input type="search" class="search" placeholder="Country Name" />
             </th>
@@ -2547,6 +2551,10 @@ function setupCertificateTable() {
       },
       {
         data: 'subjectAlternativeName',
+        visible: false,
+      },
+      {
+        data: 'issuer',
         visible: false,
       },
       {
