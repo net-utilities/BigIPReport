@@ -127,7 +127,10 @@ const KnownDevices: IKnownDevices = {
   D63: {
     hardwareType: 'appliance',
     icon: 'images/deviceicons/unknowndevice.png',
-    softwareVersions: ['9.0.0 - 9.1.3', '9.2.0 - 9.2.5', '9.3.0 - 9.3.1', '9.4.0 - 9.4.8', '10.0.0 - 10.2.4', '11.0.0 - 11.1.0**'],
+    softwareVersions: [
+      '9.0.0 - 9.1.3', '9.2.0 - 9.2.5', '9.3.0 - 9.3.1',
+      '9.4.0 - 9.4.8', '10.0.0 - 10.2.4', '11.0.0 - 11.1.0**',
+    ],
   },
   D88: {
     hardwareType: 'appliance',
