@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: data-collector
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 10
+  schedule: "{{ .Values.dataCollector.schedule }}"
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 1800
+      backoffLimit: 1
+      template:
+        spec:
+          hostname: bigipreport-data-collector
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 2000
+            seccompProfile:
+              type: RuntimeDefault
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: frontend
+                  topologyKey: "kubernetes.io/hostname"
+          containers:
+          - name: bigipreport
+            image: "{{ .Values.dataCollector.image.repository }}:{{ .Values.dataCollector.image.tag | default .Chart.AppVersion }}"
+            resources:
+              requests:
+                memory: "600Mi"
+                cpu: "500m"
+              limits:
+                memory: "1024Mi"
+                cpu: "1"
+            env:
+            - name: F5_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: bigipreport-secrets
+                  key: F5_USERNAME
+            - name: F5_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bigipreport-secrets
+                  key: F5_PASSWORD
+            volumeMounts:
+              - name: bigipreport-underlay
+                mountPath: /opt/bigipreport/json
+              - name: configuration
+                mountPath: /opt/bigipreport/bigipreportconfig.xml
+                subPath: bigipreportconfig.xml
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+          restartPolicy: Never
+          volumes:
+            - name: bigipreport-underlay
+              persistentVolumeClaim:
+                claimName: bigipreport-pvc
+            - name: configuration
+              configMap:
+                name: bigipreport-config

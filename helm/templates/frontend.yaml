@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: "{{ .Release.Namespace }}"
+  name: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "1"
+        volumeMounts:
+          - name: bigipreport-underlay
+            mountPath: /usr/share/nginx/html/json
+            readOnly: true
+        ports:
+        - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+        - name: bigipreport-underlay
+          persistentVolumeClaim:
+            claimName: bigipreport-pvc
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true

@@ -1,0 +1,12 @@
+dataCollector:
+  image:
+    repository: ghcr.io/net-utilities/bigipreport-data-collector
+    tag: ""
+  schedule: "*/30 * * * *"
+
+frontend:
+  image:
+    repository: ghcr.io/net-utilities/bigipreport-frontend
+    tag: ""
+
+pvcSize: 100Mi
