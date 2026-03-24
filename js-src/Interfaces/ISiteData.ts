@@ -3,7 +3,7 @@ import ICertificate from './ICertificate';
 import IDataGroup from './IDataGroup';
 import IDeviceGroup from './IDeviceGroup';
 import IIrule from './IIrule';
-import IKnownDevice from './IKnowndevice';
+import IKnownDevices from './IKnownDevices';
 import ILoadbalancer from './ILoadbalancer';
 import ILoggedError from './ILoggedErrors';
 import IMonitor from './IMonitor';
@@ -38,7 +38,7 @@ export default interface ISiteData {
   iRuleTable?: DataTables.Api,
   PolicyTable?: DataTables.Api,
   irules: IIrule[],
-  knownDevices: IKnownDevice[],
+  knownDevices: IKnownDevices,
   loadbalancers: ILoadbalancer[],
   logTable?: DataTables.Api,
   loggedErrors: ILoggedError[],

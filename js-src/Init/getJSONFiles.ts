@@ -5,8 +5,8 @@ import IIrule from '../Interfaces/IIrule';
 import IDataGroup from '../Interfaces/IDataGroup';
 import ILoadbalancer from '../Interfaces/ILoadbalancer';
 import IPreferences from '../Interfaces/IPreferences';
-import IKnownDevice from '../Interfaces/IKnowndevice';
 import ICertificate from '../Interfaces/ICertificate';
+import KnownDevices from '../Constants/KnownDevices';
 import IDeviceGroup from '../Interfaces/IDeviceGroup';
 import IASMPolicy from '../Interfaces/IASMPolicy';
 import INAT from '../Interfaces/INAT';
@@ -45,7 +45,6 @@ export default async (): Promise<ISiteData> => {
     datagroups,
     loadbalancers,
     preferences,
-    knowndevices,
     certificates,
     devicegroups,
     asmpolicies,
@@ -71,7 +70,7 @@ export default async (): Promise<ISiteData> => {
     state: state as IState,
     virtualservers: virtualservers as IVirtualServer[],
     policies: policies as IPolicy[],
-    knownDevices: knowndevices as IKnownDevice[],
+    knownDevices: KnownDevices,
     preferences: preferences as IPreferences,
     poolsMap: new Map<string, IPool>(),
   };

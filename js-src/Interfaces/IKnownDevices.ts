@@ -1,9 +1,9 @@
 interface IDeviceProperties {
-  hardwareType: string,
+  hardwareType?: string,
   icon: string,
   softwareVersions: string[],
 }
 
-export default interface IKnownDevice {
+export default interface IKnownDevices {
     [key: string]: IDeviceProperties
 }

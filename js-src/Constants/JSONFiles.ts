@@ -13,7 +13,6 @@ export default [
   'json/datagroups.json',
   'json/loadbalancers.json',
   'json/preferences.json',
-  'json/knowndevices.json',
   'json/certificates.json',
   'json/devicegroups.json',
   'json/asmpolicies.json',
