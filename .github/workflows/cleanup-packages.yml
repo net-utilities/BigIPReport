@@ -1,0 +1,39 @@
+name: Clean up old package versions
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"  # Every Sunday at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: none
+  packages: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        package:
+          - bigipreport-frontend
+          - bigipreport-data-collector
+          - charts/bigipreport
+
+    steps:
+      - name: Delete untagged versions older than 30 days
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: true
+
+      - name: Delete non-release tagged versions older than 30 days
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 5
+          ignore-versions: "^v?\\d+\\.\\d+(\\.\\d+)?$"
+          older-than: 30

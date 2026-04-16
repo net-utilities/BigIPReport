@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "bigipreport.fullname" . }}-data-collector
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "bigipreport.labels" . | nindent 4 }}
+    app.kubernetes.io/component: data-collector
+spec:
+  schedule: {{ .Values.dataCollector.schedule | quote }}
+  concurrencyPolicy: {{ .Values.dataCollector.concurrencyPolicy }}
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 10
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: {{ .Values.dataCollector.activeDeadlineSeconds }}
+      backoffLimit: {{ .Values.dataCollector.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            {{- include "bigipreport.labels" . | nindent 12 }}
+            app.kubernetes.io/component: data-collector
+        spec:
+          hostname: {{ include "bigipreport.fullname" . }}-data-collector
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 2000
+            seccompProfile:
+              type: RuntimeDefault
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      {{- include "bigipreport.frontendSelectorLabels" . | nindent 22 }}
+                  topologyKey: kubernetes.io/hostname
+          containers:
+          - name: bigipreport
+            image: "{{ .Values.dataCollector.image.repository }}:{{ .Values.dataCollector.image.tag | default .Chart.AppVersion }}"
+            resources:
+              {{- toYaml .Values.dataCollector.resources | nindent 14 }}
+            env:
+            - name: F5_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dataCollector.secret.name | quote }}
+                  key: F5_USERNAME
+            - name: F5_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dataCollector.secret.name | quote }}
+                  key: F5_PASSWORD
+            volumeMounts:
+              - name: bigipreport-underlay
+                mountPath: /opt/bigipreport/json
+              - name: configuration
+                mountPath: /opt/bigipreport/bigipreportconfig.xml
+                subPath: bigipreportconfig.xml
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+          restartPolicy: Never
+          volumes:
+            - name: bigipreport-underlay
+              persistentVolumeClaim:
+                claimName: {{ include "bigipreport.pvcName" . }}
+            - name: configuration
+              configMap:
+                name: {{ include "bigipreport.configMapName" . }}

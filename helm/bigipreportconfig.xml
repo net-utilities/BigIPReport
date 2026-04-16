@@ -1,0 +1,610 @@
+<?xml version="1.0"?>
+    <!--Leave the version information intact-->
+    <Settings version="5.7.16">
+
+        <!--
+        ***************************************************************************
+        *
+        *        Mandatory configuration section
+        *        All fields in this section must be configured in order for the script to work
+        *
+        ***************************************************************************
+        -->
+
+        <!--
+        *******************************************************************************
+        *
+        *    Credentials used for gathering the data
+        *    You need to use the same credentials for all load balancers
+        *
+        *    For security reasons I'd advise you to create a dedicated user for this script using the following settings
+        *    Role: Guest
+        *    Partition Access: All
+        *    Terminal Access: Disabled
+        *
+        *******************************************************************************
+        -->
+
+        <Credentials>
+            <Username></Username>
+            <Password></Password>
+        </Credentials>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This section contains the load balancers which configuration you want base the report on.
+        *
+        *    Examples with and without configured status vips:
+            <DeviceGroups>
+                <DeviceGroup>
+                    <Name>Stockholm QA</Name>
+                    <Device>192.168.10.23</Device>
+                    <Device>192.168.10.23</Device>
+                    <StatusVip>https://lb1statusvip.domain.local</StatusVip>
+                </DeviceGroup>
+                <DeviceGroup>
+                    <Name>London Cluster</Name>
+                    <Device>192.168.11.55</Device>
+                    <Device>192.168.11.56</Device>
+                    <StatusVip></StatusVip>
+                </DeviceGroup>
+                <DeviceGroup>
+                    <Name>lb-ext.example.com</Name>
+                    <Device>lb-ext-a.example.com</Device>
+                    <Device>lb-ext-b.example.com</Device>
+                    <StatusVip>https://lb-ext-s.example.com</StatusVip>
+                </DeviceGroup>
+            </DeviceGroups>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <DeviceGroups>
+            <DeviceGroup>
+                <Name></Name>
+                <Device></Device>
+                <Device></Device>
+                <StatusVip></StatusVip>
+            </DeviceGroup>
+        </DeviceGroups>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Which folder to store the generated report in. Can be a local path or a network path.
+        *
+        *    Examples
+        *    <ReportRoot>D:/Inetpub/wwwroot/</ReportRoot>
+        *    or
+        *    <ReportRoot>//aserver.domain.local/wwwshare$/</ReportRoot>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <ReportRoot></ReportRoot>
+
+        <!--
+        ************************************************************
+        *
+        *    Optional configuration below
+        *    The section below contains optional configuration.
+        *
+        *    Leave as is, or configure as you like.
+        *
+        ************************************************************
+        -->
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    The build script runs one parent thread and one thread for each listed Device.
+        *    The MaxJobs setting controls how many parallel PowerShell jobs are launched.
+        *    Increasing it will work well if your build host has the memory and cpu power.
+        *
+        *    Decreasing it may be required if running on a build machine with fewer resources.
+        *
+        *
+        *    Example:
+        *    <MaxJobs>10</MaxJobs>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <MaxJobs>10</MaxJobs>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Log settings
+        *
+        *    <Enabled>      - Determines if the logging is enabled or not. If it is enabled you MUST configure the other settings too.
+        *    <LogFilePath>  - Where to store the log. Does not need a full path. Can also be a share.
+        *    <LogLevel>     - Which level to log. Verbose = Informational messages included, Normal = only errors/warnings
+        *    <MaximumLines> - How many lines the logfile should be kept at (will be pruned at the end of script runtime).
+        *                     Depending on your environment, but you'll want to set this to a quite high number.
+        *
+        *    Example of enabled logging:
+        *    <Logsettings>
+        *        <Enabled>true</Enabled>
+        *        <LogFilePath>C:/Script/Log/bigipreport.log</LogFilePath>
+        *        <LogLevel>Verbose</LogLevel>
+        *        <MaximumLines>100000</MaximumLines>
+        *    </LogSettings>
+        *
+        *    Example of disabled logging:
+        *    <LogSettings>
+        *        <Enabled>false</Enabled>
+        *        <LogFilePath></LogFilePath>
+        *        <LogLevel></LogLevel>
+        *        <MaximumLines></MaximumLines>
+        *    </LogSettings>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <LogSettings>
+            <Enabled>false</Enabled>
+            <LogFilePath></LogFilePath>
+            <LogLevel></LogLevel>
+            <MaximumLines></MaximumLines>
+        </LogSettings>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This section controls how much information you want to see on the screen.
+        *    Useful for debugging, but there's no harm to leave it on verbose
+        *
+        *    Levels:
+        *    Normal        - Only errors
+        *    Verbose        - Informational messages too
+        *
+        *    Examples:
+        *    <Outputlevel>Normal</Outputlevel>
+        *    <Outputlevel>Verbose</Outputlevel>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <Outputlevel>Verbose</Outputlevel>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This section contains optional navigation links that will be added to the upper right
+        *
+        *    Example
+        *   <NavLinks>
+        *       <NavLink>
+        *           <Text>json</Text>
+        *           <URI>json/</URI>
+        *       </NavLink>
+        *       <NavLink>
+        *           <Text>DevCentral</Text>
+        *           <URI>https://devcentral.f5.com/</URI>
+        *       </NavLink>
+        *       <NavLink>
+        *           <Text>F5 Support</Text>
+        *           <URI>https://support.f5.com/</URI>
+        *       </NavLink>
+        *   </NavLinks>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <NavLinks>
+        </NavLinks>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Pool exceptions contains pools you don't want shown in the report, for instance any syslog pools.
+        *    Can be left blank ($Global:poolexceptions = @())
+        *
+        *    Example:
+        *    <PoolExceptions>
+        *        <PoolException>/Common/mypool</PoolException>
+        *        <PoolException>/Common/invisiblepool</PoolException>
+        *        <PoolException>/Common/syslog_pool</PoolException>
+        *        <PoolException>/MyPartition/anotherpool</PoolException>
+        *    </PoolExceptions>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <PoolExceptions>
+        </PoolExceptions>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    In many cases the load balancer is using internal virtual addresses while letting the firewall do the NAT.
+        *    If you want to add external IP translation you can put them in a file.
+        *
+        *    The text file should contain rows with the format [public ip]=[private ip]
+        *    1.1.1.1=10.10.10.1
+        *    1.1.1.2=10.10.10.2
+        *
+        *    Examples of enabled nat file:
+        *    <NATFilePath>natfile.txt</NATFilePath>
+        *    or
+        *    <NATFilePath>C:/NATs/natfile.nat</NATFilePath>
+        *    or
+        *    <NATFilePath>//myserver/share/natfile.txt</NATFilePath>
+        *
+        *    Example of disabled NAT file
+        *    <NATFilePath></NATFilePath>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <NATFilePath></NATFilePath>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This variable enables or disables the use of brotli compression.
+        *    If enabled .br files will be created. The web server needs to offer these precompressed files transparently.
+        *
+        *    To enable, set the variable to true, otherwise false
+        *
+        *    Example:
+        *    <UseBrotli>true</UseBrotli>
+        *    or
+        *    <UseBrotli>false</UseBrotli>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <UseBrotli>true</UseBrotli>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This variable enables skipping certificate checks for Invoke-RestMethod and Invoke-WebRequest
+        *    We recommend using valid DNS hostnames and certificates on F5s. Wildcard certficates work.
+        *    Many sites use IP addresses and invalid device certificates, so skip is enabled by default.
+        *
+        *    To enable, set the variable to true, otherwise false
+        *
+        *    Example:
+        *    <SkipCertificateCheck>false</SkipCertificateCheck>
+        *    or
+        *    <SkipCertificateCheck>true</SkipCertificateCheck>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <SkipCertificateCheck>true</SkipCertificateCheck>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    This variable sets the page size for requesting pools and virtualserver details.
+        *    The REST service slows down a lot with large configurations. This splits up the requests
+        *    so they are more likely to avoid timing out. You might also adjust the REST timeouts
+        *    if your version of BIG-IP supports it.
+        *    https://support.f5.com/csp/article/K94602685
+        *
+        *    Example:
+        *    <RestPageSize>50</RestPageSize>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <RestPageSize>50</RestPageSize>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    In this section you can choose to hide partition information to save space in the report.
+        *    To show, set to true. To hide, set to false.
+        *
+        *    Example:
+        *    <PartitionInformation>
+        *        <ShowPoolPartition>false</ShowPoolPartition>
+        *        <ShowPoolMemberPartition>false</ShowPoolMemberPartition>
+        *    </PartitionInformation>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <PartitionInformation>
+            <ShowPoolPartition>false</ShowPoolPartition>
+            <ShowPoolMemberPartition>false</ShowPoolMemberPartition>
+        </PartitionInformation>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    In this section you can choose to hide the load balancer TLD section to save space in the report.
+        *    This means that "loadbalancername.mydomain.local" is shown as "loadbalancername"
+        *
+        *    Example:
+        *    <HideLoadBalancerFQDN>true</HideLoadBalancerFQDN>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <HideLoadBalancerFQDN>true</HideLoadBalancerFQDN>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Expand all Pools in table views by default?
+        *    Probably only useful for small sites.
+        *    User can override.
+        *    Searches normally expand pools with matches
+        *
+        *    Example:
+        *    <autoExpandPools>false</autoExpandPools>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <autoExpandPools>false</autoExpandPools>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Show Direct links to BIG-IP to edit objects
+        *    User can override.
+        *
+        *    Example:
+        *    <showAdcLinks>false</showAdcLinks>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <showAdcLinks>false</showAdcLinks>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Enable Regular Expression searches by default?
+        *    User can override.
+        *    This enables searches like "stage|development" and wildcard searching.
+        *
+        *    Example:
+        *    <regexSearch>true</regexSearch>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <regexSearch>true</regexSearch>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Error reporting
+        *    This means that "loadbalancername.mydomain.local" is shown as "loadbalancername"
+        *
+        *    <Enabled>        This variable controls if the reports sends emails or not.
+        *                    Note that if you use this one you MUST configure the mailerrorto and mailfrom variables too.
+        *                    Set to true to enable. False to disable
+        *
+        *    <Sender>        This is the variable containing the sender mail of the report.
+        *
+        *    <Recipients>    Contains the recipients of the report. Multiple recipients can be configured.
+        *
+        *    <SMTPServer>    Contains the address to the smtp server.
+        *
+        *    Example of enabled error reporting
+        *    <ErrorReporting>
+        *        <Enabled>true</Enabled>
+        *        <Sender>myscript@mydomain.com</Sender>
+        *        <Recipients>
+        *            <Recipient>opsteam@mydomain.com</Recipient>
+        *        </Recipients>
+        *        <SMTPServer>mysmtpserver.mydomain.com</SMTPServer>
+        *    </ErrorReporting>
+        *
+        *    Example of disabled error reporting:
+        *    <ErrorReporting>
+        *        <Enabled>false</Enabled>
+        *    </ErrorReporting>
+        -->
+
+        <ErrorReporting>
+            <Enabled>false</Enabled>
+        </ErrorReporting>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    In this section you can choose to generate a report even if there are errors
+        *    This means even if one or more of the loadbalancers is unreachable a report will still be written
+        *
+        *    Example:
+        *    <ErrorReportAnyway>true</ErrorReportAnyway>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <ErrorReportAnyway>false</ErrorReportAnyway>
+
+        <!--
+        **************************************************************************************************************************************
+        *
+        *    Share the report should authenticate
+        *    Used if the report is generated on a separate server
+        *
+        *    Example of share config:
+        *    <Shares>
+        *        <Share>
+        *                <Path>//myserver/myshare</Path>
+        *                <Username>shareuser</Username>
+        *                <Password>password</Password>
+        *        </Share>
+        *    </Shares>
+        *
+        *    Example of no share
+        *    <Shares>
+        *    </Shares>
+        *
+        **************************************************************************************************************************************
+        -->
+
+        <Shares>
+        </Shares>
+
+        <!--
+        ***********************************************************************************************************************************************
+        *
+        *    Global irules configuration
+        *    Here you can configure if virtual server irules and data groups should be listed and if they should be linked
+        *
+        *    Note:
+        *    If you set any of these options to from true to false the report will clear any information in the next update from the json files
+        *    in order to make sure that no unwanted data is available to clients
+        *
+        *    Right now you can't configure data group links unless irules are enabled.
+        *    Let me know if this is an issue and I'll see if I can fix it in a future version.
+        *
+        *    Example of when irules are showing in the virtual server details and both irules + data groups are available for clients to see:
+        *    <iRules>
+        *        <Enabled>true</Enabled>
+        *        <ShowiRuleLinks>true</ShowiRuleLinks>
+        *        <ShowDataGroupLinks>true</ShowDataGroupLinks>
+        *    </iRules>
+        *
+        *    Example of when irules are showing in the virtual server details, irules are available, but not the data groups:
+        *    <iRules>
+        *        <Enabled>true</Enabled>
+        *        <ShowiRuleLinks>true</ShowiRuleLinks>
+        *        <ShowDataGroupLinks>false</ShowDataGroupLinks>
+        *    </iRules>
+        *    Example of when no iRules or data groups is shown at all in the virtual server details:
+        *    <iRules>
+        *        <Enabled>false</Enabled>
+        *        <ShowiRuleLinks>false</ShowiRuleLinks>
+        *        <ShowDataGroupLinks>false</ShowDataGroupLinks>
+        *    </iRules>
+        *
+        ************************************************************************************************************************************************
+        -->
+
+        <iRules>
+            <Enabled>true</Enabled>
+            <ShowiRuleLinks>true</ShowiRuleLinks>
+            <ShowDataGroupLinks>true</ShowDataGroupLinks>
+        </iRules>
+
+        <!--
+        ***********************************************************************************************************************************************
+        *
+        *    Realtime data
+        *
+        *    This section configures the maximum queue and the refresh rate of the report data.
+        *
+        *    Realtime data is not enabled through the configuration file, but via the BigIP configuration.
+        *    More information about this is available here:
+        *    https://loadbalancing.se/bigip-report/#Realtime_Pool_Member_State
+        *
+        *    Update a maximum of 10 pools, 5 at a time.
+        *    <RealTimeMemberStates>
+        *        <MaxPools>
+        *            10
+        *        </MaxPools>
+        *        <MaxQueue>
+        *            5
+        *        </MaxQueue>
+        *        <RefreshRate>
+        *            60
+        *        </RefreshRate>
+        *    </RealTimeMemberStates>
+        *
+        ************************************************************************************************************************************************
+        -->
+
+        <RealTimeMemberStates>
+            <MaxPools>50</MaxPools>
+            <MaxQueue>2</MaxQueue>
+            <RefreshRate>60</RefreshRate>
+        </RealTimeMemberStates>
+
+
+        <!--
+        ***********************************************************************************************************************************************
+        *
+        *    Support Check
+        *
+        *    The script reaches out to F5 and validates your support entitlement status for each serial number.
+        *    This requires the server that runs the Powershell script to have access to api-u.f5.com
+        *
+        *    If you get information that your device does not appear to have support, hover the mouse over the icon to see
+        *    either the script error or the response from the F5 API
+        *
+        *    If you need an account you can create one here:
+        *    https://support.f5.com/csp/my-support/home
+        *
+        *    Just remember to associate all your licenses with this account. You can do this by mailing F5 support
+        *    on support@f5.com with all your serial numbers once the account has been created.
+        *
+        *    Enabled: If the support check should be done or not
+        *    Username: F5 Support account username
+        *    Password: The password for the aforementioned account
+        *    IgnoreDevices: A list of the devices you want to ignore.
+        *
+        *    Please note that this should be the FQDN of the device and not the host, ie device-lb-01.dom.com instead of just device-lb-01
+        *
+        *
+        ************************************************************************************************************************************************
+        -->
+
+        <SupportCheck>
+            <Enabled>False</Enabled>
+            <Username></Username>
+            <Password></Password>
+            <IgnoredDevices>
+                <Device></Device>
+            </IgnoredDevices>
+        </SupportCheck>
+
+        <!--
+            *************************************************
+            *  The webhook to use when sending Slack alerts
+            *  Leave empty if not using Slack alerts
+            *************************************************
+        -->
+
+        <SlackWebhook></SlackWebhook>
+
+        <!--
+            **********************************************************************************************************
+            * CertificateExpiration
+            * Description: Have BigIPReport alert when certificates are about to expire
+            * WaitHoursBetween: How many hours between alerting, per certificate
+            * SlackEnabled: If you want to send this alert via Slack (don't forget to configure the web hook above)
+            *
+            * FailedSupportChecks
+            * Description: Have BigIPReport alert when it find a serial number that does not
+            *              have support entitlement
+            * WaitHoursBetween: How many hours between alerts, per serial
+            * SlackEnabled: If you want to send this alert via Slack (don't forget to configure the web hook above)
+            *
+            * FailedDevices:
+            * Description: Have BigIPReport alert when it's unable to index a device
+            * WaitHoursBetween: How many hours between alerts, per loadbalancer
+            * AlertAfterFailures: Don't alert until X failures to index the device
+            * SlackEnabled: If you want to send this alert via Slack (don't forget to configure the web hook above)
+        -->
+
+        <Alerts>
+            <CertificateExpiration>
+                <AlertWhenDaysToExpiration>30</AlertWhenDaysToExpiration>
+                <WaitHoursBetween>24</WaitHoursBetween>
+                <SlackEnabled>False</SlackEnabled>
+            </CertificateExpiration>
+            <FailedSupportChecks>
+                <WaitHoursBetween>168</WaitHoursBetween>
+                <SlackEnabled>False</SlackEnabled>
+            </FailedSupportChecks>
+            <FailedDevices>
+                <WaitHoursBetween>2</WaitHoursBetween>
+                <AlertAfterFailures>2</AlertAfterFailures>
+                <SlackEnabled>False</SlackEnabled>
+            </FailedDevices>
+        </Alerts>
+    </Settings>

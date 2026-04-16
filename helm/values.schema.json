@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "dataCollector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "schedule", "secret", "resources", "concurrencyPolicy", "activeDeadlineSeconds", "backoffLimit"],
+      "properties": {
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "tag"],
+          "properties": {
+            "repository": { "type": "string", "minLength": 1 },
+            "tag": { "type": "string" }
+          }
+        },
+        "schedule": { "type": "string", "minLength": 1 },
+        "secret": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 }
+          }
+        },
+        "resources": { "type": "object" },
+        "concurrencyPolicy": { "type": "string", "enum": ["Allow", "Forbid", "Replace"] },
+        "activeDeadlineSeconds": { "type": "integer", "minimum": 1 },
+        "backoffLimit": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replicas", "image", "resources"],
+      "properties": {
+        "replicas": { "type": "integer", "minimum": 1 },
+        "service": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["ClusterIP", "NodePort", "LoadBalancer"]
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "tag"],
+          "properties": {
+            "repository": { "type": "string", "minLength": 1 },
+            "tag": { "type": "string" }
+          }
+        },
+        "resources": { "type": "object" }
+      }
+    },
+    "persistentStorage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "storageClassName"],
+      "properties": {
+        "size": { "type": "string", "minLength": 1 },
+        "storageClassName": { "type": "string" }
+      }
+    }
+  },
+  "required": ["dataCollector", "frontend", "persistentStorage"]
+}

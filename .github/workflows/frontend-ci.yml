@@ -1,0 +1,157 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/cypress/**'
+      - 'frontend/underlay/index.html'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/tsconfig.json'
+      - 'frontend/webpack.config.cjs'
+      - 'frontend/.eslintrc.json'
+      - 'frontend/.eslintignore'
+      - 'frontend/Dockerfile'
+      - 'frontend/.dockerignore'
+      - '.github/workflows/frontend-ci.yml'
+  push:
+    branches: ['main']
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/cypress/**'
+      - 'frontend/underlay/index.html'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/tsconfig.json'
+      - 'frontend/webpack.config.cjs'
+      - 'frontend/.eslintrc.json'
+      - 'frontend/.eslintignore'
+      - 'frontend/Dockerfile'
+      - 'frontend/.dockerignore'
+      - '.github/workflows/frontend-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build frontend
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm --prefix frontend ci
+
+      - name: Build bundle
+        run: npm --prefix frontend run build
+
+      - name: Pack underlay artifact
+        run: tar -C frontend -czf frontend-underlay.tgz underlay
+
+      - name: Upload underlay artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-underlay-tar
+          path: frontend-underlay.tgz
+          if-no-files-found: error
+
+      - name: Upload built bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-built-js
+          path: frontend/underlay/js/bigipreport.js
+          if-no-files-found: error
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install pre-requisites
+        run: npm --prefix frontend ci
+
+      - name: Lint
+        run: npm --prefix frontend run lint
+
+  verify-underlay-js:
+    name: Verify underlay JS matches webpack build
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download built bundle artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-built-js
+          path: artifacts/frontend-built-js
+
+      - name: Fail if committed bigipreport.js differs from build
+        run: |
+          if ! cmp -s artifacts/frontend-built-js/bigipreport.js frontend/underlay/js/bigipreport.js; then
+            echo "::error::frontend/underlay/js/bigipreport.js is out of sync with webpack. Run \`npm --prefix frontend run build\` locally and commit the result."
+            diff -u frontend/underlay/js/bigipreport.js artifacts/frontend-built-js/bigipreport.js | sed -n '1,200p'
+            exit 1
+          fi
+
+  cypress:
+    name: Cypress
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm --prefix frontend ci
+
+      - name: Download underlay artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-underlay-tar
+          path: .
+
+      - name: Restore underlay artifact
+        run: tar -xzf frontend-underlay.tgz -C frontend
+
+      - run: |
+          openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+          -subj "/C=SE/ST=STOCKHOLM/L=Stockholm/O=NET-UTIL/CN=localhost" \
+          -keyout frontend/underlay/key.pem  -out frontend/underlay/cert.pem
+
+      - name: Copy json data files to underlay
+        run: 'mkdir -p frontend/underlay/json && cp frontend/cypress/fixtures/* frontend/underlay/json/'
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: npm run start
+          wait-on: https://localhost:8443
+          working-directory: frontend
+          config-file: cypress.config.ts
+        env:
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
