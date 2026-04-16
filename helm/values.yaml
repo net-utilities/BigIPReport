@@ -1,0 +1,40 @@
+# Defaults for a typical install. Uncommon options (name overrides, pull secrets,
+# extra labels, NetworkPolicy, CronJob history, etc.) are not listed here — see
+# "Advanced customization" in README.md.
+
+dataCollector:
+  image:
+    repository: ghcr.io/net-utilities/bigipreport-data-collector
+    tag: ""
+  schedule: "*/30 * * * *"
+  secret:
+    name: bigipreport-secrets
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 500m
+    limits:
+      memory: 1024Mi
+      cpu: "1"
+  concurrencyPolicy: Forbid
+  activeDeadlineSeconds: 1800
+  backoffLimit: 1
+
+frontend:
+  replicas: 1
+  service:
+    type: ClusterIP
+  image:
+    repository: ghcr.io/net-utilities/bigipreport-frontend
+    tag: ""
+  resources:
+    requests:
+      memory: 50Mi
+      cpu: 250m
+    limits:
+      memory: 256Mi
+      cpu: "1"
+
+persistentStorage:
+  size: 100Mi
+  storageClassName: ""

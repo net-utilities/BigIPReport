@@ -2,6 +2,14 @@
 
 This tool will pull the configuration from multiple load balancers and display it in a table.
 
+## Repository layout
+
+- `frontend/`: TypeScript source, frontend build tooling, and frontend container files.
+- `frontend/underlay/`: built static site served by nginx (`index.html`, `css/`, `js/`, `json/`).
+- `data-collector/`: PowerShell collector script, modules, XML config, and data-collector container files.
+- `helm/`: Helm chart.
+- `frontend/cypress/`: Cypress end-to-end tests.
+
 Demo can be shown here:
 
 [https://loadbalancing.se/bigipreportdemo](https://loadbalancing.se/bigipreportdemo)
@@ -22,10 +30,10 @@ DevCentral codeshare:
 
 # Developing Javascript
 1. Install NodeJS
-2. Run `npm install` which uses `package.json`
+2. Run `cd frontend && npm install`
 3. Run `npm run build:dev`
 
-The typescript files will now be transpiled and written to js folder path when changes are detected.
+The TypeScript files will now be transpiled and written to `frontend/underlay/js` when changes are detected.
 
 [More details on how to contribute to BigIPReport](https://loadbalancing.se/2022/01/19/contributing-to-bigipreport/)
 

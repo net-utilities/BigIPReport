@@ -1,0 +1,142 @@
+name: Build preview Docker images
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: docker-preview-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        include:
+          - image: bigipreport-frontend
+            context: frontend
+          - image: bigipreport-data-collector
+            context: data-collector
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute short SHA
+        id: sha
+        run: |
+          full="${{ github.event.pull_request.head.sha }}"
+          echo "short=${full:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=sha-${{ steps.sha.outputs.short }}
+            type=ref,event=pr
+            type=ref,event=branch
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}-preview
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-preview
+
+  pr-images-comment:
+    name: Comment preview image tags on PR
+    needs: build-preview
+    if: needs.build-preview.result == 'success' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Upsert PR comment with image tags
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = "<!-- docker-preview-images -->";
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.issue.number;
+            const headSha = context.payload.pull_request.head.sha;
+            const shortSha = headSha.substring(0, 7);
+            const tag = `sha-${shortSha}`;
+            const fe = `ghcr.io/${owner}/bigipreport-frontend`;
+            const dc = `ghcr.io/${owner}/bigipreport-data-collector`;
+            const feFull = `${fe}:${tag}`;
+            const dcFull = `${dc}:${tag}`;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            const body = [
+              marker,
+              `**Preview images** · [workflow run](${runUrl}) — _this comment is updated on each push._`,
+              "",
+              "**Temporary image references**",
+              "",
+              feFull,
+              dcFull,
+              "",
+              "**Helm example**",
+              "",
+              "```bash",
+              "helm upgrade --install bigipreport ./helm --namespace bigipreport --create-namespace \\",
+              `  --set frontend.image.repository=${fe} \\`,
+              `  --set frontend.image.tag=${tag} \\`,
+              `  --set dataCollector.image.repository=${dc} \\`,
+              `  --set dataCollector.image.tag=${tag}`,
+              "```",
+              "",
+            ].join("\n");
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: pr,
+              per_page: 100,
+            });
+
+            const existing = comments.find(
+              (c) => c.user?.type === "Bot" && typeof c.body === "string" && c.body.includes(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr,
+                body,
+              });
+            }

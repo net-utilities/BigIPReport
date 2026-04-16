@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "bigipreport.fullname" . }}-frontend
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "bigipreport.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      {{- include "bigipreport.frontendSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "bigipreport.labels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
+        ports:
+        - name: http
+          containerPort: 8080
+        resources:
+          {{- toYaml .Values.frontend.resources | nindent 10 }}
+        volumeMounts:
+          - name: bigipreport-underlay
+            mountPath: /usr/share/nginx/html/json
+            readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+        - name: bigipreport-underlay
+          persistentVolumeClaim:
+            claimName: {{ include "bigipreport.pvcName" . }}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
