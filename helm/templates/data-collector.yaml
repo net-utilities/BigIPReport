@@ -59,7 +59,7 @@ spec:
               - name: bigipreport-underlay
                 mountPath: /opt/bigipreport/json
               - name: configuration
-                mountPath: /opt/bigipreport/bigipreportconfig.xml
+                mountPath: /opt/bigipreport/data-collector/bigipreport.ps1
                 subPath: bigipreportconfig.xml
             securityContext:
               allowPrivilegeEscalation: false
