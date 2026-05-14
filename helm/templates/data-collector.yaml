@@ -53,6 +53,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.dataCollector.secret.name | quote }}
                   key: F5_PASSWORD
+            - name: REPORT_ROOT
+              value: /opt/bigipreport/
             volumeMounts:
               - name: bigipreport-underlay
                 mountPath: /opt/bigipreport/json

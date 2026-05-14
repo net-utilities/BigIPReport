@@ -454,6 +454,10 @@ if (-not (Test-ConfigPath "/Settings/SupportCheck") -or -not (Test-ConfigPath "/
     }
 }
 
+if ($env:REPORT_ROOT) {
+    $Global:bigipreportconfig.Settings.ReportRoot = $env:REPORT_ROOT
+}
+
 if (Test-ConfigPath "/Settings/ReportRoot") {
     # Make sure the report root ends with / or \
     if (-not $Global:bigipreportconfig.Settings.ReportRoot.endswith("/") -and -not $Global:bigipreportconfig.Settings.ReportRoot.endswith("\")) {
