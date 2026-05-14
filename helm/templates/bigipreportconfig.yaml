@@ -7,4 +7,4 @@ metadata:
     {{- include "bigipreport.labels" . | nindent 4 }}
 data:
   bigipreportconfig.xml: |
-    {{- .Files.Get "bigipreportconfig.xml" | nindent 4 }}
+{{ .Files.Get "bigipreportconfig.xml" | indent 4 }}
