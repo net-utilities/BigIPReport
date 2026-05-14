@@ -1,4 +1,4 @@
-name: Build preview Docker images
+name: Build preview artifacts
 
 on:
   pull_request:
@@ -66,10 +66,50 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.image }}-preview
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}-preview
 
+  build-helm-preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Compute short SHA
+        id: sha
+        run: |
+          full="${{ github.event.pull_request.head.sha }}"
+          echo "short=${full:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate config source
+        run: |
+          if [[ ! -f "data-collector/bigipreportconfig.xml" ]]; then
+            echo "Missing data-collector/bigipreportconfig.xml in repository."
+            exit 1
+          fi
+
+      - name: Log in to ghcr.io
+        run: |
+          helm registry login ghcr.io \
+            --username "${{ github.actor }}" \
+            --password "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Lint, package, and push chart
+        run: |
+          SHORT_SHA="${{ steps.sha.outputs.short }}"
+          CHART_VERSION="0.0.0-sha.${SHORT_SHA}"
+          cp data-collector/bigipreportconfig.xml helm/
+          mkdir -p chart-dist
+          helm lint helm/
+          helm package helm/ --version "${CHART_VERSION}" --app-version "${SHORT_SHA}" --destination chart-dist/
+          helm push "chart-dist/bigipreport-${CHART_VERSION}.tgz" "oci://ghcr.io/${{ github.repository_owner }}/charts"
+
   pr-images-comment:
     name: Comment preview image tags on PR
-    needs: build-preview
-    if: needs.build-preview.result == 'success' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [build-preview, build-helm-preview]
+    if: needs.build-preview.result == 'success' && needs.build-helm-preview.result == 'success' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -87,25 +127,33 @@ jobs:
             const headSha = context.payload.pull_request.head.sha;
             const shortSha = headSha.substring(0, 7);
             const tag = `sha-${shortSha}`;
+            const chartVersion = `0.0.0-sha.${shortSha}`;
             const fe = `ghcr.io/${owner}/bigipreport-frontend`;
             const dc = `ghcr.io/${owner}/bigipreport-data-collector`;
+            const chart = `oci://ghcr.io/${owner}/charts/bigipreport`;
             const feFull = `${fe}:${tag}`;
             const dcFull = `${dc}:${tag}`;
             const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
 
             const body = [
               marker,
-              `**Preview images** · [workflow run](${runUrl}) — _this comment is updated on each push._`,
+              `**Preview artifacts** · [workflow run](${runUrl}) — _this comment is updated on each push._`,
               "",
               "**Temporary image references**",
               "",
               feFull,
               dcFull,
               "",
+              "**Helm chart**",
+              "",
+              `${chart}:${chartVersion}`,
+              "",
               "**Helm example**",
               "",
               "```bash",
-              "helm upgrade --install bigipreport ./helm --namespace bigipreport --create-namespace \\",
+              `helm upgrade --install bigipreport ${chart} \\`,
+              `  --version ${chartVersion} \\`,
+              "  --namespace bigipreport --create-namespace \\",
               `  --set frontend.image.repository=${fe} \\`,
               `  --set frontend.image.tag=${tag} \\`,
               `  --set dataCollector.image.repository=${dc} \\`,
