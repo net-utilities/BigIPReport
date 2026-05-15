@@ -5,7 +5,6 @@
 *.tmp
 *.xml
 !data-collector/bigipreportconfig.xml
-!helm/bigipreportconfig.xml
 .idea
 .vscode
 node_modules
