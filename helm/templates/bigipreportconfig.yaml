@@ -1,3 +1,7 @@
+{{- if not .Values.config.existingConfigMap }}
+{{- if not .Values.config.xml }}
+{{- fail "config.xml is required: use --set-file config.xml=/path/to/bigipreportconfig.xml or set config.xml in values" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,4 +11,5 @@ metadata:
     {{- include "bigipreport.labels" . | nindent 4 }}
 data:
   bigipreportconfig.xml: |
-{{ .Files.Get "bigipreportconfig.xml" | indent 4 }}
+{{ .Values.config.xml | nindent 4 }}
+{{- end }}

@@ -73,4 +73,4 @@ spec:
                 claimName: {{ include "bigipreport.pvcName" . }}
             - name: configuration
               configMap:
-                name: {{ include "bigipreport.configMapName" . }}
+                name: {{ .Values.config.existingConfigMap | default (include "bigipreport.configMapName" .) }}

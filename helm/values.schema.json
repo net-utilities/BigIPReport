@@ -3,6 +3,16 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
+    "validateResources": { "type": "boolean" },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["xml", "existingConfigMap"],
+      "properties": {
+        "xml": { "type": "string" },
+        "existingConfigMap": { "type": "string" }
+      }
+    },
     "dataCollector": {
       "type": "object",
       "additionalProperties": false,
@@ -71,5 +81,5 @@
       }
     }
   },
-  "required": ["dataCollector", "frontend", "persistentStorage"]
+  "required": ["config", "dataCollector", "frontend", "persistentStorage"]
 }

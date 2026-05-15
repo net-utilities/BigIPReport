@@ -50,8 +50,7 @@ jobs:
       - name: Lint, package, and push chart
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          cp data-collector/bigipreportconfig.xml helm/
           mkdir -p chart-dist
-          helm lint helm/
+          helm lint helm/ --set-file config.xml=data-collector/bigipreportconfig.xml
           helm package helm/ --version "${VERSION}" --app-version "${VERSION}" --destination chart-dist/
           helm push "chart-dist/bigipreport-${VERSION}.tgz" "oci://ghcr.io/${{ github.repository_owner }}/charts"

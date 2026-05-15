@@ -14,13 +14,7 @@ This chart deploys [BigIPReport](https://github.com/net-utilities/BigIPReport): 
 
 Resource names are prefixed with the Helm release name (e.g. `myrel-bigipreport-frontend`) so multiple releases can coexist in one namespace.
 
-The collector uses **required** pod affinity to the frontend pod so both workloads share the same **ReadWriteOnce** volume on one node. Until the frontend pod is running and scheduled, collector Jobs may stay **Pending**—that is expected (there is nothing to collect without the UI).
-
-## Upgrading from chart 1.0.x
-
-Chart **1.1.x** changes Kubernetes **Deployment** label selectors and resource names (Helm `fullname` pattern). In-place `helm upgrade` from 1.0.x can fail because **Deployment `spec.selector` is immutable**.
-
-Typical approach: uninstall the old release (or delete the old Deployment / PVC if you manage data carefully), then install chart **1.1.x** fresh. Read release notes and back up PVC data before destructive steps.
+Pod affinity to the frontend pod is **required** so both workloads share the same **ReadWriteOnce** volume on one node. Until the frontend pod is running and scheduled, collector Jobs may stay **Pending**—that is expected (there is nothing to collect without the UI).
 
 ## Prerequisites
 
@@ -34,18 +28,66 @@ Typical approach: uninstall the old release (or delete the old Deployment / PVC 
     -n <namespace>
   ```
 
-## Configuration file
+### Optional: validate prerequisites at install time
 
-Released chart artifacts ship an **example** `bigipreportconfig.xml` beside `Chart.yaml`. Helm inlines it into a ConfigMap named `<release>-bigipreport-config` (`.Files.Get`). Swap it for your environment’s XML before install when you are not just trying the defaults. If you render directly from a sparse checkout, that file must still be present next to `Chart.yaml` or `helm template` / `helm install` will fail.
+Set **`validateResources: true`** (or `--set validateResources=true`) on `helm install` / `helm upgrade` when Helm can reach the cluster API. The chart then verifies, before applying manifests:
 
-To get around this simply copy `data-collector/bigipreportconfig.xml` to `helm/bigipreportconfig.xml` in the repo.
+- The F5 credentials `Secret` (`dataCollector.secret.name`) exists and has `F5_USERNAME` and `F5_PASSWORD`
+- `config.existingConfigMap` exists with a `bigipreportconfig.xml` key, if set
+- `ingress.tlsSecretName` exists, if ingress TLS is enabled
+
+This does **not** run during offline `helm template` or `helm lint` (default is `validateResources: false`). `lookup` cannot distinguish a missing Secret from a disconnected cluster, so keep validation off in CI that only renders manifests.
+
+## Configuration file (`bigipreportconfig.xml`)
+
+The chart does **not** bundle `bigipreportconfig.xml`. You must supply your environment’s config at install time. The canonical example in this repository is [`data-collector/bigipreportconfig.xml`](../data-collector/bigipreportconfig.xml) — copy and edit it for your BIG-IPs and device groups.
+
+Helm renders the XML into a ConfigMap named `<release>-bigipreport-config`, unless you point at an existing ConfigMap (see below).
+
+**Recommended:** pass the file with `--set-file` so your values YAML stays small:
+
+```bash
+helm upgrade --install bigipreport oci://ghcr.io/<owner>/charts/bigipreport \
+  -f my-values.yaml \
+  --set-file config.xml=./bigipreportconfig.xml \
+  -n bigipreport --create-namespace
+```
+
+You can also set `config.xml` inline in a values file (fine for small configs). Install fails if neither `config.xml` nor `config.existingConfigMap` is set.
+
+F5 API credentials should live in the Kubernetes `Secret` (`F5_USERNAME` / `F5_PASSWORD`); the collector prefers those over `<Credentials>` in the XML.
+
+### Existing ConfigMap (GitOps)
+
+To manage the ConfigMap outside Helm, set `config.existingConfigMap` to its name. The chart will not create a ConfigMap and the collector mounts yours instead.
 
 ## Install
 
+From OCI (after creating the F5 credentials secret):
+
 ```bash
-helm install bigipreport <path-to-chart> -n bigipreport --create-namespace
-helm upgrade bigipreport <path-to-chart> -n bigipreport
-helm template bigipreport <path-to-chart>
+helm upgrade --install bigipreport oci://ghcr.io/net-utilities/charts/bigipreport \
+  -f my-values.yaml \
+  --set-file config.xml=./bigipreportconfig.xml \
+  --set validateResources=true \
+  -n bigipreport --create-namespace
+```
+
+From a local chart directory (development):
+
+```bash
+helm upgrade --install bigipreport ./helm \
+  -f my-values.yaml \
+  --set-file config.xml=./bigipreportconfig.xml \
+  -n bigipreport --create-namespace
+```
+
+Render manifests without applying:
+
+```bash
+helm template bigipreport ./helm \
+  -f my-values.yaml \
+  --set-file config.xml=./bigipreportconfig.xml
 ```
 
 ## Configuration (`values.yaml`)
@@ -54,6 +96,9 @@ helm template bigipreport <path-to-chart>
 
 | Key | Description | Default |
 |-----|-------------|---------|
+| `validateResources` | Check cluster for prerequisite Secrets/ConfigMaps at install | `false` |
+| `config.xml` | Full `bigipreportconfig.xml` content (required unless `config.existingConfigMap` is set) | `""` |
+| `config.existingConfigMap` | Use an existing ConfigMap instead of creating one | `""` |
 | `dataCollector.image.repository` | Data collector image | `ghcr.io/net-utilities/bigipreport-data-collector` |
 | `dataCollector.image.tag` | Image tag; empty uses `Chart.yaml` `appVersion` | `""` |
 | `dataCollector.schedule` | Cron schedule for the collector | `*/30 * * * *` |
@@ -100,7 +145,9 @@ The chart intentionally keeps [`values.yaml`](values.yaml) small. For anything b
 The templates still honor Helm’s usual `.Values.nameOverride` and `.Values.fullnameOverride` if you supply them (they are not in the default `values.yaml`):
 
 ```bash
-helm install myrel ./helm -n apps --set nameOverride=bir
+helm install myrel ./helm -n apps \
+  --set nameOverride=bir \
+  --set-file config.xml=./bigipreportconfig.xml
 ```
 
 See [`templates/_helpers.tpl`](templates/_helpers.tpl) for how names are composed.

@@ -100,9 +100,8 @@ jobs:
         run: |
           SHORT_SHA="${{ steps.sha.outputs.short }}"
           CHART_VERSION="0.0.0-sha.${SHORT_SHA}"
-          cp data-collector/bigipreportconfig.xml helm/
           mkdir -p chart-dist
-          helm lint helm/
+          helm lint helm/ --set-file config.xml=data-collector/bigipreportconfig.xml
           helm package helm/ --version "${CHART_VERSION}" --app-version "${SHORT_SHA}" --destination chart-dist/
           helm push "chart-dist/bigipreport-${CHART_VERSION}.tgz" "oci://ghcr.io/${{ github.repository_owner }}/charts"
 
@@ -154,6 +153,7 @@ jobs:
               `helm upgrade --install bigipreport ${chart} \\`,
               `  --version ${chartVersion} \\`,
               "  --namespace bigipreport --create-namespace \\",
+              "  --set-file config.xml=./bigipreportconfig.xml \\",
               `  --set frontend.image.repository=${fe} \\`,
               `  --set frontend.image.tag=${tag} \\`,
               `  --set dataCollector.image.repository=${dc} \\`,

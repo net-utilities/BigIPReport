@@ -63,3 +63,40 @@ ConfigMap name for bigipreportconfig.xml
 {{- define "bigipreport.configMapName" -}}
 {{ include "bigipreport.fullname" . }}-config
 {{- end }}
+
+{{/*
+Cluster-time checks for prerequisites (requires validateResources: true and a reachable API).
+*/}}
+{{- define "bigipreport.validatePrerequisites" -}}
+{{- if .Values.validateResources }}
+{{- $ns := .Release.Namespace }}
+{{- $secretName := .Values.dataCollector.secret.name }}
+{{- $secret := lookup "v1" "Secret" $ns $secretName }}
+{{- if not $secret }}
+{{- fail (printf "validateResources: Secret %q not found in namespace %q. Create it before install, for example:\n  kubectl create secret generic %s --from-literal=F5_USERNAME='…' --from-literal=F5_PASSWORD='…' -n %s" $secretName $ns $secretName $ns) }}
+{{- end }}
+{{- if not (hasKey $secret.data "F5_USERNAME") }}
+{{- fail (printf "validateResources: Secret %q in namespace %q is missing required key F5_USERNAME" $secretName $ns) }}
+{{- end }}
+{{- if not (hasKey $secret.data "F5_PASSWORD") }}
+{{- fail (printf "validateResources: Secret %q in namespace %q is missing required key F5_PASSWORD" $secretName $ns) }}
+{{- end }}
+{{- if .Values.config.existingConfigMap }}
+{{- $cmName := .Values.config.existingConfigMap }}
+{{- $cm := lookup "v1" "ConfigMap" $ns $cmName }}
+{{- if not $cm }}
+{{- fail (printf "validateResources: ConfigMap %q not found in namespace %q (config.existingConfigMap)" $cmName $ns) }}
+{{- end }}
+{{- if not (hasKey $cm.data "bigipreportconfig.xml") }}
+{{- fail (printf "validateResources: ConfigMap %q must contain key bigipreportconfig.xml" $cmName) }}
+{{- end }}
+{{- end }}
+{{- if and .Values.ingress.enabled .Values.ingress.tls .Values.ingress.tlsSecretName }}
+{{- $tlsName := .Values.ingress.tlsSecretName }}
+{{- $tls := lookup "v1" "Secret" $ns $tlsName }}
+{{- if not $tls }}
+{{- fail (printf "validateResources: TLS Secret %q not found in namespace %q (ingress.tlsSecretName)" $tlsName $ns) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}

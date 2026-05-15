@@ -2,6 +2,23 @@
 # extra labels, NetworkPolicy, CronJob history, etc.) are not listed here — see
 # "Advanced customization" in README.md.
 
+
+# This is where the bigipreportconfig.xml file is stored
+# When installing the chart you have two options:
+# 1. Use the --set-file config.xml=./bigipreportconfig.xml option which 
+#    will put the content if ./bigipreportconfig.xml into the config.xml field
+#    and create a ConfigMap with the name <release>-bigipreport-config
+# 2. Use the existingConfigMap option which will use the ConfigMap with the
+#    name <existingConfigMap>
+config:
+  # Required unless existingConfigMap is set. Prefer: --set-file config.xml=./bigipreportconfig.xml
+  xml: ""
+  existingConfigMap: ""
+
+# When true, helm install/upgrade checks the cluster for prerequisite Secrets and
+# ConfigMaps (requires API access; leave false for offline helm template / lint).
+validateResources: false
+
 dataCollector:
   image:
     repository: ghcr.io/net-utilities/bigipreport-data-collector

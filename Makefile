@@ -1,9 +1,6 @@
 # =============================================================================
-# BigIPReport — Helm chart testing helpers (local development only)
-#
 # This Makefile is NOT the supported production install path. It exists so
-# contributors can lint, render, and try the chart from this repo while working
-# on it. For real deployments, follow helm/README.md.
+# contributors can lint, render, and test repo resources locally
 #
 # Prerequisites: helm, kubectl (for install), and a cluster context you intend
 # to use for testing.
@@ -22,10 +19,10 @@ HELM_NAMESPACE ?= bigipreport
 HELM_VALUES    ?= $(HELM_CHART)/test-values.yaml
 HELM_OUTPUT    ?= $(ROOT_DIR)build/helm
 
-CONFIG_SRC  := $(ROOT_DIR)data-collector/bigipreportconfig.xml
-CONFIG_DEST := $(HELM_CHART)/bigipreportconfig.xml
+CONFIG_SRC := $(ROOT_DIR)data-collector/bigipreportconfig.xml
+HELM_CONFIG  := --set-file config.xml=$(CONFIG_SRC)
 
-.PHONY: help check-helm prepare-chart helm-lint helm-template helm-template-file \
+.PHONY: help check-helm check-config helm-lint helm-template helm-template-file \
         helm-install helm-upgrade helm-uninstall
 
 help: ## Show testing targets for the Helm chart
@@ -42,34 +39,33 @@ check-helm: ## Verify helm is on PATH
 		exit 1; \
 	}
 
-prepare-chart: $(CONFIG_DEST) ## Copy bigipreportconfig.xml into the chart if missing
-
-$(CONFIG_DEST): $(CONFIG_SRC)
+check-config: ## Verify bigipreportconfig.xml exists for chart rendering
 	@test -f '$(CONFIG_SRC)' || { \
 		echo "error: missing $(CONFIG_SRC)"; exit 1; \
 	}
-	@cp '$(CONFIG_SRC)' '$(CONFIG_DEST)'
-	@echo "copied $(CONFIG_SRC) -> $(CONFIG_DEST)"
 
-helm-lint: check-helm prepare-chart ## Run helm lint against the chart
-	helm lint '$(HELM_CHART)' -f '$(HELM_VALUES)'
+helm-lint: check-helm check-config ## Run helm lint against the chart
+	helm lint '$(HELM_CHART)' -f '$(HELM_VALUES)' $(HELM_CONFIG)
 
-helm-template: check-helm prepare-chart helm-lint ## Render manifests to stdout
+helm-template: check-helm check-config helm-lint ## Render manifests to stdout
 	helm template '$(HELM_RELEASE)' '$(HELM_CHART)' \
 		-f '$(HELM_VALUES)' \
+		$(HELM_CONFIG) \
 		--namespace '$(HELM_NAMESPACE)'
 
-helm-template-file: check-helm prepare-chart helm-lint ## Render manifests to $(HELM_OUTPUT)/manifests.yaml
+helm-template-file: check-helm check-config helm-lint ## Render manifests to $(HELM_OUTPUT)/manifests.yaml
 	@mkdir -p '$(HELM_OUTPUT)'
 	helm template '$(HELM_RELEASE)' '$(HELM_CHART)' \
 		-f '$(HELM_VALUES)' \
+		$(HELM_CONFIG) \
 		--namespace '$(HELM_NAMESPACE)' \
 		> '$(HELM_OUTPUT)/manifests.yaml'
 	@echo "wrote $(HELM_OUTPUT)/manifests.yaml"
 
-helm-install: check-helm prepare-chart helm-lint ## Install or upgrade the chart on your test cluster
+helm-install: check-helm check-config helm-lint ## Install or upgrade the chart on your test cluster
 	helm upgrade --install '$(HELM_RELEASE)' '$(HELM_CHART)' \
 		-f '$(HELM_VALUES)' \
+		$(HELM_CONFIG) \
 		--namespace '$(HELM_NAMESPACE)' \
 		--create-namespace
 
