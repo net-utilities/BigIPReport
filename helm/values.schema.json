@@ -6,7 +6,7 @@
     "dataCollector": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["image", "schedule", "secret", "resources", "concurrencyPolicy", "activeDeadlineSeconds", "backoffLimit"],
+      "required": ["image", "schedule", "secret", "resources", "concurrencyPolicy", "activeDeadlineSeconds", "backoffLimit", "failedJobsHistoryLimit"],
       "properties": {
         "image": {
           "type": "object",
@@ -29,7 +29,8 @@
         "resources": { "type": "object" },
         "concurrencyPolicy": { "type": "string", "enum": ["Allow", "Forbid", "Replace"] },
         "activeDeadlineSeconds": { "type": "integer", "minimum": 1 },
-        "backoffLimit": { "type": "integer", "minimum": 0 }
+        "backoffLimit": { "type": "integer", "minimum": 0 },
+        "failedJobsHistoryLimit": { "type": "integer", "minimum": 0 }
       }
     },
     "frontend": {

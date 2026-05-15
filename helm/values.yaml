@@ -19,6 +19,7 @@ dataCollector:
   concurrencyPolicy: Forbid
   activeDeadlineSeconds: 1800
   backoffLimit: 1
+  failedJobsHistoryLimit: 3
 
 frontend:
   replicas: 1
@@ -34,6 +35,13 @@ frontend:
     limits:
       memory: 256Mi
       cpu: "1"
+
+ingress:
+  enabled: true
+  className: ""
+  host: bigipreport.site.com
+  tls: true
+  tlsSecretName: ""
 
 persistentStorage:
   size: 100Mi

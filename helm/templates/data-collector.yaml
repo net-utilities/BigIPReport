@@ -10,7 +10,7 @@ spec:
   schedule: {{ .Values.dataCollector.schedule | quote }}
   concurrencyPolicy: {{ .Values.dataCollector.concurrencyPolicy }}
   successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 10
+  failedJobsHistoryLimit: {{ .Values.dataCollector.failedJobsHistoryLimit }}
   startingDeadlineSeconds: 300
   jobTemplate:
     spec:
