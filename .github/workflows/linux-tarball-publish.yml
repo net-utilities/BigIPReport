@@ -89,13 +89,12 @@ jobs:
           else
             echo "Creating release with default install notes"
             NOTES_FILE="$(mktemp)"
-            cat >"$NOTES_FILE" <<EOF
-## Classic Linux install
-
-Download \`${PKG}.tar.gz\` and follow the installation guide:
-
-https://loadbalancing.se/bigipreport-rest/
-EOF
+            {
+              echo '## Classic Linux install'
+              echo ''
+              printf 'Download `%s.tar.gz` and follow the installation guide:\n\n' "$PKG"
+              echo 'https://loadbalancing.se/bigipreport-rest/'
+            } >"$NOTES_FILE"
             gh release create "$TAG" \
               --title "$TAG" \
               --notes-file "$NOTES_FILE" \
