@@ -1,0 +1,24 @@
+{{- if and .Values.ingress.enabled .Values.ingress.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "bigipreport.fullname" . }}-tls
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "bigipreport.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "bigipreport.certManagerTlsSecretName" . | quote }}
+  issuerRef:
+    {{- if .Values.ingress.certManager.clusterIssuer }}
+    name: {{ .Values.ingress.certManager.clusterIssuer | quote }}
+    kind: ClusterIssuer
+    {{- else }}
+    name: {{ .Values.ingress.certManager.issuer | quote }}
+    kind: Issuer
+    {{- end }}
+  dnsNames:
+    - {{ .Values.ingress.host | quote }}
+    {{- range .Values.ingress.certManager.dnsNames }}
+    - {{ . | quote }}
+    {{- end }}
+{{- end }}

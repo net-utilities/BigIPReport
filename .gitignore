@@ -4,16 +4,38 @@
 *.gz
 *.tmp
 *.xml
-!bigipreportconfig.xml
+
+!data-collector/bigipreportconfig.xml
 .idea
 .vscode
+
 node_modules
-underlay/json/*.json
-!underlay/json/knowndevices.json
-underlay/web.config
+dist/
+
+frontend/underlay/json/*.json
+frontend/underlay/web.config
+
 config/
-underlay/js/*
-!underlay/js/bigipreport.js
-underlay/*.pem
-cypress/videos
-cypress/screenshots
+
+# Docker secrets
+f5_username
+f5_password
+
+# Docker Compose F5 credentials (see docker-compose.yml)
+secrets/f5_username
+secrets/f5_password
+
+frontend/underlay/*.pem
+frontend/cypress/videos
+frontend/cypress/screenshots
+
+# `tsc` mirror output under underlay/js (not used at runtime; webpack bundles app + copies vendor JS)
+frontend/underlay/js/Interfaces/
+frontend/underlay/js/PoolDetails/
+frontend/underlay/js/MemberPolling/
+
+#Cursor
+.cursor/rules/*.mdc
+
+# Temporary support scripts
+scripts/*

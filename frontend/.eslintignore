@@ -1,0 +1,7 @@
+node_modules
+underlay/js
+src/*.js
+TamperMonkeyScripts
+webpack.config.cjs
+src/**/*.spec.ts
+cypress.config.ts

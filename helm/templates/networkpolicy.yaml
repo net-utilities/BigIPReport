@@ -1,0 +1,37 @@
+{{- if .Values.egress.networkPolicy.enabled }}
+{{- $_ := include "bigipreport.validateNetworkPolicyEgress" . -}}
+{{- $root := . }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "bigipreport.fullname" . }}-data-collector-egress
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "bigipreport.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "bigipreport.dataCollectorSelectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Egress
+  egress:
+    {{- if or (not (hasKey .Values.egress.networkPolicy "allowClusterDNS")) .Values.egress.networkPolicy.allowClusterDNS }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    {{- end }}
+    {{- range .Values.egress.networkPolicy.cidrs }}
+    - to:
+        - ipBlock:
+            cidr: {{ . | quote }}
+      ports:
+        {{- include "bigipreport.networkPolicyPorts" $root | nindent 8 }}
+    {{- end }}
+{{- end }}

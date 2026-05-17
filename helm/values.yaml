@@ -1,0 +1,99 @@
+# Defaults for a typical install. Uncommon options (name overrides, pull secrets,
+# extra labels, NetworkPolicy, CronJob history, etc.) are not listed here — see
+# "Advanced customization" in README.md.
+
+
+# This is where the bigipreportconfig.xml file is stored
+# When installing the chart you have two options:
+# 1. Use the --set-file config.xml=./bigipreportconfig.xml option which 
+#    will put the content if ./bigipreportconfig.xml into the config.xml field
+#    and create a ConfigMap with the name <release>-bigipreport-config
+# 2. Use the existingConfigMap option which will use the ConfigMap with the
+#    name <existingConfigMap>
+config:
+  # Required unless existingConfigMap is set. Prefer: --set-file config.xml=./bigipreportconfig.xml
+  xml: ""
+  existingConfigMap: ""
+
+# When true, helm install/upgrade checks the cluster for prerequisite Secrets and
+# ConfigMaps (requires API access; leave false for offline helm template / lint).
+validateResources: false
+
+dataCollector:
+  image:
+    repository: ghcr.io/net-utilities/bigipreport-data-collector
+    tag: ""
+  schedule: "*/30 * * * *"
+  secret:
+    name: bigipreport-secrets
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 500m
+    limits:
+      memory: 1024Mi
+      cpu: "1"
+  concurrencyPolicy: Forbid
+  activeDeadlineSeconds: 1800
+  backoffLimit: 1
+  failedJobsHistoryLimit: 3
+
+frontend:
+  replicas: 1
+  service:
+    type: ClusterIP
+  image:
+    repository: ghcr.io/net-utilities/bigipreport-frontend
+    tag: ""
+  resources:
+    requests:
+      memory: 50Mi
+      cpu: 250m
+    limits:
+      memory: 256Mi
+      cpu: "1"
+
+ingress:
+  enabled: true
+  className: ""
+  host: bigipreport.site.com
+  # Enable HTTPS on the Ingress.
+  tls: false
+  # Existing TLS Secret (only when certManager.enabled is false).
+  tlsSecretName: ""
+  # Issue a TLS cert via cert-manager (secret: <release>-bigipreport-tls).
+  certManager:
+    enabled: false
+    # Use clusterIssuer or issuer, not both.
+    clusterIssuer: ""
+    issuer: ""
+    # Extra SANs in addition to ingress.host
+    dnsNames: []
+
+persistentStorage:
+  size: 100Mi
+  storageClassName: ""
+
+# Pick one egress mechanism for the data collector (BIG-IP API access).
+egress:
+  cilium:
+    enabled: false
+    hosts: []
+    # - matchName: bigip-01.example.com
+    # - matchPattern: "*.example.com"
+    ports:
+      - port: 443
+        protocol: TCP
+  istio:
+    enabled: false
+    serviceEntry:
+      enabled: false
+      hosts: []
+      # - matchName: bigip-01.example.com
+  networkPolicy:
+    enabled: false
+    ports:
+      - port: 443
+        protocol: TCP
+    cidrs: []
+    # - 203.0.113.10/32

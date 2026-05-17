@@ -1,0 +1,53 @@
+# Local stack for BigIPReport frontend + scheduled data collector.
+#
+# Prerequisites:
+#   1. Edit config/bigipreportconfig.xml (device groups, etc.; copy from data-collector/ if needed).
+#   2. Create credential secret files (not committed; see .gitignore):
+#        mkdir -p secrets
+#        printf '%s' 'your-user'  > secrets/f5_username
+#        printf '%s' 'your-pass'  > secrets/f5_password
+#      chmod 600 secrets/f5_*
+#
+# Usage:
+#   docker compose up -d --build
+#
+# Interval: COLLECT_INTERVAL_MINUTES in .env (default 30;)
+# UI: http://localhost:8080
+
+services:
+  data-collector:
+    build:
+      context: ./data-collector
+      dockerfile: Dockerfile
+    entrypoint: ["/opt/bigipreport/data-collector/collect-loop.sh"]
+    environment:
+      REPORT_ROOT: /opt/bigipreport/
+      COLLECT_INTERVAL_MINUTES: ${COLLECT_INTERVAL_MINUTES:-1}
+    secrets:
+      - f5_username
+      - f5_password
+    volumes:
+      - json-data:/opt/bigipreport/json
+      - ./config/bigipreportconfig.xml:/opt/bigipreport/data-collector/bigipreportconfig.xml:ro
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - data-collector
+    ports:
+      - "8080:8080"
+    volumes:
+      - json-data:/usr/share/nginx/html/json:ro
+    restart: unless-stopped
+
+secrets:
+  f5_username:
+    file: ./secrets/f5_username
+  f5_password:
+    file: ./secrets/f5_password
+
+volumes:
+  json-data:

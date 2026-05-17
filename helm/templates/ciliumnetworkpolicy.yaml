@@ -1,0 +1,58 @@
+{{- if .Values.egress.cilium.enabled }}
+{{- $_ := include "bigipreport.validateCiliumEgress" . -}}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: egress-f5-api
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "bigipreport.labels" . | nindent 4 }}
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "bigipreport.dataCollectorSelectorLabels" . | nindent 6 }}
+  egress:
+    {{- if or (not (hasKey .Values.egress.cilium "allowClusterDNS")) .Values.egress.cilium.allowClusterDNS }}
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    {{- end }}
+    - toFQDNs:
+      {{- include "bigipreport.ciliumToFQDNs" . | nindent 6 }}
+      toPorts:
+        - ports:
+            {{- range .Values.egress.cilium.ports }}
+            - port: {{ .port | quote }}
+              protocol: {{ .protocol }}
+            {{- end }}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ingress-bigipreport-frontend
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "bigipreport.labels" . | nindent 4 }}
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "bigipreport.frontendSelectorLabels" . | nindent 6 }}
+  ingress:
+    - fromEntities:
+        - world
+        - host
+        - remote-node
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+{{- end }}

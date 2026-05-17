@@ -1,0 +1,17 @@
+apiVersion: v2
+name: bigipreport
+description: Web interface providing an overview of F5 BIG-IP LTM configurations across multiple load balancers
+type: application
+version: 1.2.0
+appVersion: 5.7.0
+home: https://github.com/net-utilities/BigIPReport
+sources:
+  - https://github.com/net-utilities/BigIPReport
+keywords:
+  - bigip
+  - f5
+  - loadbalancer
+  - ltm
+maintainers:
+  - name: net-utilities
+    url: https://github.com/net-utilities

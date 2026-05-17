@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "validateResources": { "type": "boolean" },
+    "podSecurity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "frontend": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runAsUser": { "type": "integer", "minimum": 1 },
+            "runAsGroup": { "type": "integer", "minimum": 1 },
+            "fsGroup": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "dataCollector": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runAsUser": { "type": "integer", "minimum": 1 },
+            "runAsGroup": { "type": "integer", "minimum": 1 },
+            "fsGroup": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["xml", "existingConfigMap"],
+      "properties": {
+        "xml": { "type": "string" },
+        "existingConfigMap": { "type": "string" }
+      }
+    },
+    "dataCollector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "schedule", "secret", "resources", "concurrencyPolicy", "activeDeadlineSeconds", "backoffLimit", "failedJobsHistoryLimit"],
+      "properties": {
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "tag"],
+          "properties": {
+            "repository": { "type": "string", "minLength": 1 },
+            "tag": { "type": "string" }
+          }
+        },
+        "schedule": { "type": "string", "minLength": 1 },
+        "secret": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 }
+          }
+        },
+        "resources": { "type": "object" },
+        "concurrencyPolicy": { "type": "string", "enum": ["Allow", "Forbid", "Replace"] },
+        "activeDeadlineSeconds": { "type": "integer", "minimum": 1 },
+        "backoffLimit": { "type": "integer", "minimum": 0 },
+        "failedJobsHistoryLimit": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replicas", "image", "resources"],
+      "properties": {
+        "replicas": { "type": "integer", "minimum": 1 },
+        "service": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["ClusterIP", "NodePort", "LoadBalancer"]
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "tag"],
+          "properties": {
+            "repository": { "type": "string", "minLength": 1 },
+            "tag": { "type": "string" }
+          }
+        },
+        "resources": { "type": "object" }
+      }
+    },
+    "persistentStorage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "storageClassName"],
+      "properties": {
+        "size": { "type": "string", "minLength": 1 },
+        "storageClassName": { "type": "string" }
+      }
+    },
+    "egress": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cilium": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "hosts": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  { "type": "string", "minLength": 1 },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "matchName": { "type": "string", "minLength": 1 },
+                      "matchPattern": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                ]
+              }
+            },
+            "ports": { "type": "array" },
+            "allowClusterDNS": { "type": "boolean" }
+          }
+        },
+        "istio": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "serviceEntry": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "hosts": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      { "type": "string", "minLength": 1 },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "matchName": { "type": "string", "minLength": 1 },
+                          "matchPattern": { "type": "string", "minLength": 1 }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "ports": { "type": "array" },
+            "cidrs": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "allowClusterDNS": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  },
+  "required": ["config", "dataCollector", "frontend", "persistentStorage"]
+}
