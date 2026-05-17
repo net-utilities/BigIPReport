@@ -287,6 +287,28 @@ Function Test-ConfigPath {
     Return $NodeList.Count -gt 0
 }
 
+Function Get-F5Credential {
+    Param([ValidateSet('Username', 'Password')][string]$Kind)
+
+    $SecretFile = "/run/secrets/f5_$($Kind.ToLower())"
+    if (Test-Path -LiteralPath $SecretFile) {
+        $Value = (Get-Content -LiteralPath $SecretFile -Raw).Trim()
+        if ($Value) { return $Value }
+    }
+
+    $EnvName = "F5_$Kind".ToUpper()
+    $EnvValue = [Environment]::GetEnvironmentVariable($EnvName)
+    if ($EnvValue) { return $EnvValue }
+
+    $ConfigXPath = "/Settings/Credentials/$Kind"
+    if (Test-ConfigPath $ConfigXPath) {
+        $ConfigValue = $Global:Bigipreportconfig.Settings.Credentials.$Kind
+        if ($ConfigValue) { return $ConfigValue }
+    }
+
+    throw "$Kind not found. Configure $SecretFile, environment variable $EnvName, or $Kind in the configuration file."
+}
+
 
 ################################################################################
 #
@@ -297,28 +319,12 @@ Function Test-ConfigPath {
 #Region pre-execution
 $SaneConfig = $true
 
-if ($null -eq $Env:F5_USERNAME) {
-    if (Test-ConfigPath "/Settings/Credentials/Username") {
-        if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
-            log error "Username empty. Configure Username in the configuration file or define an environment variable named F5_USERNAME"
-            $SaneConfig = $false
-        }
-    } else {
-        log error "Configuration file missing Username"
-        $SaneConfig = $false
-    }
-}
-
-if ($null -eq $Env:F5_PASSWORD) {
-    if (Test-ConfigPath "/Settings/Credentials/Password") {
-        if ($Global:Bigipreportconfig.Settings.Credentials.Username -eq ""){
-            log error "Password empty. Configure Password in the configuration file or define an environment variable named F5_PASSWORD"
-            $SaneConfig = $false
-        }
-    } else {
-        log error "Configuration file missing Password"
-        $SaneConfig = $false
-    }
+try {
+    $Env:F5_USERNAME = Get-F5Credential -Kind Username
+    $Env:F5_PASSWORD = Get-F5Credential -Kind Password
+} catch {
+    log error $_.Exception.Message
+    $SaneConfig = $false
 }
 
 if (Test-ConfigPath "Settings/DeviceGroups/DeviceGroup/Device"){
@@ -1786,14 +1792,6 @@ function GetDeviceInfo {
 
     $User = $Env:F5_USERNAME
     $Password = $Env:F5_PASSWORD
-
-    # If the environment environment variables are not set, use the configuration file instead
-    if ($null -eq $User) {
-        $User = $Global:Bigipreportconfig.Settings.Credentials.Username
-    }
-    if ($null -eq $Password) {
-        $Password = $Global:Bigipreportconfig.Settings.Credentials.Password
-    }
 
     #Create the string that is converted to Base64
     $Credentials = $User + ":" + $Password

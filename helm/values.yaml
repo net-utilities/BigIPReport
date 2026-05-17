@@ -63,3 +63,27 @@ ingress:
 persistentStorage:
   size: 100Mi
   storageClassName: ""
+
+# Pick one egress mechanism for the data collector (BIG-IP API access).
+egress:
+  cilium:
+    enabled: false
+    hosts: []
+    # - matchName: bigip-01.example.com
+    # - matchPattern: "*.example.com"
+    ports:
+      - port: 443
+        protocol: TCP
+  istio:
+    enabled: false
+    serviceEntry:
+      enabled: false
+      hosts: []
+      # - matchName: bigip-01.example.com
+  networkPolicy:
+    enabled: false
+    ports:
+      - port: 443
+        protocol: TCP
+    cidrs: []
+    # - 203.0.113.10/32

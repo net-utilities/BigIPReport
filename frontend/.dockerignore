@@ -1,2 +1,2 @@
-node_modules
-cypress
+# Report JSON is supplied at runtime via the shared volume (data collector writes it).
+underlay/json

@@ -175,9 +175,47 @@ Patch the container `imagePullPolicy` similarly, or use a post-renderer / fork.
 
 Patch `metadata.labels` / `metadata.annotations` on Deployments, CronJobs, Pods, PVC, or ConfigMap as needed. If the same label must exist on **both** frontend and collector pods, apply both patches (or one Kustomize patch targeting multiple resources).
 
-### NetworkPolicy
+### Egress network controls (optional)
 
-This chart **does not** ship a `NetworkPolicy` manifest. Add your own policy in GitOps or `kubectl apply -f` tailored to your namespace and ingress controller.
+Enable **one** mechanism for data-collector egress to F5 (from `bigipreportconfig.xml` `<Device>` / `<StatusVip>` hostnames).
+
+**Cilium** (`egress.cilium.enabled`):
+
+```yaml
+egress:
+  cilium:
+    enabled: true
+    hosts:
+      - matchName: bigip-01.example.com
+      - matchPattern: "*.example.com"
+    ports:
+      - port: 443
+        protocol: TCP
+```
+
+**Istio** (`egress.istio.serviceEntry.enabled`) — ServiceEntry with HTTPS on 443:
+
+```yaml
+egress:
+  istio:
+    serviceEntry:
+      enabled: true
+      hosts:
+        - matchName: bigip-01.example.com
+```
+
+**Kubernetes NetworkPolicy** (`egress.networkPolicy.enabled`) — list F5 management IPs/networks as `cidrs` (`ipBlock` on port 443; cannot match FQDNs):
+
+```yaml
+egress:
+  networkPolicy:
+    enabled: true
+    ports:
+      - port: 443
+        protocol: TCP
+    cidrs:
+      - 203.0.113.10/32
+```
 
 ### CronJob history and deadlines
 

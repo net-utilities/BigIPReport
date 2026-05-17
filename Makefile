@@ -23,7 +23,7 @@ CONFIG_SRC := $(ROOT_DIR)data-collector/bigipreportconfig.xml
 HELM_CONFIG  := --set-file config.xml=$(CONFIG_SRC)
 
 .PHONY: help check-helm check-config helm-lint helm-template helm-template-file \
-        helm-install helm-upgrade helm-uninstall
+        helm-install helm-upgrade helm-uninstall docker-reset
 
 help: ## Show testing targets for the Helm chart
 	@echo "BigIPReport — Helm chart testing (local repo only; not for production)"
@@ -73,3 +73,21 @@ helm-upgrade: helm-install ## Alias for helm-install (idempotent upgrade --insta
 
 helm-uninstall: check-helm ## Remove the test release from the cluster
 	helm uninstall '$(HELM_RELEASE)' --namespace '$(HELM_NAMESPACE)'
+
+docker-reset: ## Stop docker compose and remove volumes (prompts; deletes all report data)
+	@set -e; \
+	cd '$(ROOT_DIR)'; \
+	command -v docker >/dev/null 2>&1 || { echo "error: docker is required" >&2; exit 1; }; \
+	docker compose version >/dev/null 2>&1 || { echo "error: docker compose is required" >&2; exit 1; }; \
+	printf '%s\n' \
+		"" \
+		"*** WARNING: docker-reset will destroy all local compose data ***" \
+		"" \
+		"This stops the BigIPReport stack and removes the json-data volume (all JSON / .br report files)" \
+		"" \
+		"This cannot be undone. You will need to run a new data collector after starting again." \
+		""; \
+	read -r -p "Press Enter to continue, or Ctrl+C to cancel: " _ </dev/tty; \
+	echo "Stopping containers and removing volumes..."; \
+	docker compose down -v --remove-orphans; \
+	echo "Done. Start again with: docker compose up -d --build"

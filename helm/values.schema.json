@@ -79,6 +79,80 @@
         "size": { "type": "string", "minLength": 1 },
         "storageClassName": { "type": "string" }
       }
+    },
+    "egress": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cilium": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "hosts": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  { "type": "string", "minLength": 1 },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "matchName": { "type": "string", "minLength": 1 },
+                      "matchPattern": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                ]
+              }
+            },
+            "ports": { "type": "array" },
+            "allowClusterDNS": { "type": "boolean" }
+          }
+        },
+        "istio": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "serviceEntry": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "hosts": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      { "type": "string", "minLength": 1 },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "matchName": { "type": "string", "minLength": 1 },
+                          "matchPattern": { "type": "string", "minLength": 1 }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "ports": { "type": "array" },
+            "cidrs": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "allowClusterDNS": { "type": "boolean" }
+          }
+        }
+      }
     }
   },
   "required": ["config", "dataCollector", "frontend", "persistentStorage"]

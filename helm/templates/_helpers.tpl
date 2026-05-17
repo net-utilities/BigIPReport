@@ -65,6 +65,86 @@ ConfigMap name for bigipreportconfig.xml
 {{- end }}
 
 {{/*
+Labels for data-collector pods (CronJob jobs).
+*/}}
+{{- define "bigipreport.dataCollectorSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "bigipreport.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: data-collector
+{{- end }}
+
+{{/*
+Fail when egress.cilium.enabled without hosts.
+*/}}
+{{- define "bigipreport.validateCiliumEgress" -}}
+{{- if and .Values.egress.cilium.enabled (not .Values.egress.cilium.hosts) }}
+{{- fail "egress.cilium.hosts must list at least one host when egress.cilium.enabled is true" }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Fail when egress.networkPolicy.enabled without cidrs.
+*/}}
+{{- define "bigipreport.validateNetworkPolicyEgress" -}}
+{{- if and .Values.egress.networkPolicy.enabled (not .Values.egress.networkPolicy.cidrs) }}
+{{- fail "egress.networkPolicy.cidrs must list at least one CIDR when egress.networkPolicy.enabled is true" }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Fail when istio.serviceEntry.enabled without hosts.
+*/}}
+{{- define "bigipreport.validateIstioServiceEntry" -}}
+{{- if and .Values.egress.istio.serviceEntry.enabled (not .Values.egress.istio.serviceEntry.hosts) }}
+{{- fail "egress.istio.serviceEntry.hosts must list at least one host when egress.istio.serviceEntry.enabled is true" }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Cilium toFQDNs entries from egress.cilium.hosts (string, matchName, or matchPattern).
+*/}}
+{{- define "bigipreport.ciliumToFQDNs" -}}
+{{- range .Values.egress.cilium.hosts }}
+{{- if kindIs "string" . }}
+- matchName: {{ . | quote }}
+{{- else if .matchName }}
+- matchName: {{ .matchName | quote }}
+{{- else if .matchPattern }}
+- matchPattern: {{ .matchPattern | quote }}
+{{- else }}
+{{- fail "egress.cilium.hosts: each entry must be a hostname string or an object with matchName or matchPattern" }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Host strings for Istio ServiceEntry (from egress.istio.serviceEntry.hosts).
+*/}}
+{{- define "bigipreport.istioServiceEntryHosts" -}}
+{{- range .Values.egress.istio.serviceEntry.hosts }}
+{{- if kindIs "string" . }}
+- {{ . | quote }}
+{{- else if .matchName }}
+- {{ .matchName | quote }}
+{{- else if .matchPattern }}
+- {{ .matchPattern | quote }}
+{{- else }}
+{{- fail "egress.istio.serviceEntry.hosts: each entry must be a hostname string or an object with matchName or matchPattern" }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Kubernetes NetworkPolicy egress port list from egress.networkPolicy.ports.
+*/}}
+{{- define "bigipreport.networkPolicyPorts" -}}
+{{- range .Values.egress.networkPolicy.ports }}
+- protocol: {{ .protocol }}
+  port: {{ .port }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Cluster-time checks for prerequisites (requires validateResources: true and a reachable API).
 */}}
 {{- define "bigipreport.validatePrerequisites" -}}

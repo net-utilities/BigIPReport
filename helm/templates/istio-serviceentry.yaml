@@ -1,0 +1,20 @@
+{{- if .Values.egress.istio.serviceEntry.enabled }}
+{{- $_ := include "bigipreport.validateIstioServiceEntry" . -}}
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: {{ include "bigipreport.fullname" . }}-f5-egress
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "bigipreport.labels" . | nindent 4 }}
+spec:
+  hosts:
+    {{- include "bigipreport.istioServiceEntryHosts" . | nindent 4 }}
+  location: MESH_EXTERNAL
+  resolution: DNS
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+{{- end }}
