@@ -74,6 +74,49 @@ app.kubernetes.io/component: data-collector
 {{- end }}
 
 {{/*
+TLS Secret created by cert-manager for this release (<release>-tls).
+*/}}
+{{- define "bigipreport.certManagerTlsSecretName" -}}
+{{- printf "%s-tls" (include "bigipreport.fullname" .) }}
+{{- end }}
+
+{{/*
+TLS Secret name for Ingress: cert-manager secret when issuing, else an existing tlsSecretName.
+*/}}
+{{- define "bigipreport.ingressTlsSecretName" -}}
+{{- if .Values.ingress.certManager.enabled }}
+{{- include "bigipreport.certManagerTlsSecretName" . }}
+{{- else if .Values.ingress.tlsSecretName }}
+{{- .Values.ingress.tlsSecretName }}
+{{- end }}
+{{- end }}
+
+{{/*
+Validate ingress TLS / cert-manager settings at render time.
+*/}}
+{{- define "bigipreport.validateIngressCertManager" -}}
+{{- if .Values.ingress.certManager.enabled }}
+{{- if not .Values.ingress.enabled }}
+{{- fail "ingress.certManager.enabled requires ingress.enabled" }}
+{{- end }}
+{{- if not .Values.ingress.tls }}
+{{- fail "ingress.certManager.enabled requires ingress.tls" }}
+{{- end }}
+{{- if .Values.ingress.tlsSecretName }}
+{{- fail "ingress.tlsSecretName is for an existing TLS Secret only; leave empty when ingress.certManager.enabled" }}
+{{- end }}
+{{- if and .Values.ingress.certManager.clusterIssuer .Values.ingress.certManager.issuer }}
+{{- fail "ingress.certManager: set clusterIssuer or issuer, not both" }}
+{{- end }}
+{{- if not (or .Values.ingress.certManager.clusterIssuer .Values.ingress.certManager.issuer) }}
+{{- fail "ingress.certManager.enabled requires ingress.certManager.clusterIssuer or ingress.certManager.issuer" }}
+{{- end }}
+{{- else if and .Values.ingress.enabled .Values.ingress.tls (not .Values.ingress.tlsSecretName) }}
+{{- fail "ingress.tls is true: set ingress.tlsSecretName to an existing Secret, or enable ingress.certManager" }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Fail when egress.cilium.enabled without hosts.
 */}}
 {{- define "bigipreport.validateCiliumEgress" -}}
@@ -145,6 +188,80 @@ Kubernetes NetworkPolicy egress port list from egress.networkPolicy.ports.
 {{- end -}}
 
 {{/*
+Container image ref. Empty .tag falls back to .appVersion (Chart.yaml appVersion).
+*/}}
+{{- define "bigipreport.image" -}}
+{{- $repo := required "repository is required" .repository -}}
+{{- $tag := .tag | default "" | toString -}}
+{{- if eq $tag "" -}}
+{{- $tag = required "appVersion is required when image tag is empty" .appVersion | toString -}}
+{{- end -}}
+{{- printf "%s:%s" $repo $tag -}}
+{{- end }}
+
+{{/*
+Pod/container securityContext for the frontend (defaults: UID/GID 101). Override via podSecurity.frontend.
+*/}}
+{{- define "bigipreport.frontendPodSecurityContext" -}}
+{{- $ps := dict -}}
+{{- if and .Values.podSecurity .Values.podSecurity.frontend }}{{- $ps = .Values.podSecurity.frontend }}{{- end }}
+{{- include "bigipreport.restrictedPodSecurityContext" (dict "runAsUser" ($ps.runAsUser | default 101) "runAsGroup" ($ps.runAsGroup | default 101) "fsGroup" ($ps.fsGroup | default 101)) }}
+{{- end }}
+
+{{- define "bigipreport.frontendContainerSecurityContext" -}}
+{{- $ps := dict -}}
+{{- if and .Values.podSecurity .Values.podSecurity.frontend }}{{- $ps = .Values.podSecurity.frontend }}{{- end }}
+{{- include "bigipreport.restrictedContainerSecurityContext" (dict "runAsUser" ($ps.runAsUser | default 101) "runAsGroup" ($ps.runAsGroup | default 101)) }}
+{{- end }}
+
+{{/*
+Pod/container securityContext for the data collector (defaults: UID/GID 1000). Override via podSecurity.dataCollector.
+*/}}
+{{- define "bigipreport.dataCollectorPodSecurityContext" -}}
+{{- $ps := dict -}}
+{{- if and .Values.podSecurity .Values.podSecurity.dataCollector }}{{- $ps = .Values.podSecurity.dataCollector }}{{- end }}
+{{- include "bigipreport.restrictedPodSecurityContext" (dict "runAsUser" ($ps.runAsUser | default 1000) "runAsGroup" ($ps.runAsGroup | default 1000) "fsGroup" ($ps.fsGroup | default 1000)) }}
+{{- end }}
+
+{{- define "bigipreport.dataCollectorContainerSecurityContext" -}}
+{{- $ps := dict -}}
+{{- if and .Values.podSecurity .Values.podSecurity.dataCollector }}{{- $ps = .Values.podSecurity.dataCollector }}{{- end }}
+{{- include "bigipreport.restrictedContainerSecurityContext" (dict "runAsUser" ($ps.runAsUser | default 1000) "runAsGroup" ($ps.runAsGroup | default 1000)) }}
+{{- end }}
+
+{{/*
+Least-privilege pod securityContext. Pass runAsUser (required); runAsGroup and fsGroup default to runAsUser.
+*/}}
+{{- define "bigipreport.restrictedPodSecurityContext" -}}
+{{- $uid := required "runAsUser is required" .runAsUser -}}
+{{- $gid := .runAsGroup | default $uid -}}
+runAsNonRoot: true
+runAsUser: {{ $uid }}
+runAsGroup: {{ $gid }}
+fsGroup: {{ .fsGroup | default $gid }}
+seccompProfile:
+  type: RuntimeDefault
+{{- end }}
+
+{{/*
+Least-privilege container securityContext.
+*/}}
+{{- define "bigipreport.restrictedContainerSecurityContext" -}}
+{{- $uid := required "runAsUser is required" .runAsUser -}}
+{{- $gid := .runAsGroup | default $uid -}}
+allowPrivilegeEscalation: false
+capabilities:
+  drop:
+    - ALL
+readOnlyRootFilesystem: {{ .readOnlyRootFilesystem | default true }}
+runAsNonRoot: true
+runAsUser: {{ $uid }}
+runAsGroup: {{ $gid }}
+seccompProfile:
+  type: RuntimeDefault
+{{- end }}
+
+{{/*
 Cluster-time checks for prerequisites (requires validateResources: true and a reachable API).
 */}}
 {{- define "bigipreport.validatePrerequisites" -}}
@@ -171,11 +288,13 @@ Cluster-time checks for prerequisites (requires validateResources: true and a re
 {{- fail (printf "validateResources: ConfigMap %q must contain key bigipreportconfig.xml" $cmName) }}
 {{- end }}
 {{- end }}
-{{- if and .Values.ingress.enabled .Values.ingress.tls .Values.ingress.tlsSecretName }}
-{{- $tlsName := .Values.ingress.tlsSecretName }}
+{{- if and .Values.ingress.enabled .Values.ingress.tls (not .Values.ingress.certManager.enabled) }}
+{{- $tlsName := include "bigipreport.ingressTlsSecretName" . }}
+{{- if $tlsName }}
 {{- $tls := lookup "v1" "Secret" $ns $tlsName }}
 {{- if not $tls }}
 {{- fail (printf "validateResources: TLS Secret %q not found in namespace %q (ingress.tlsSecretName)" $tlsName $ns) }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

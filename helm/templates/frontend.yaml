@@ -17,9 +17,13 @@ spec:
         {{- include "bigipreport.labels" . | nindent 8 }}
         app.kubernetes.io/component: frontend
     spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        {{- include "bigipreport.frontendPodSecurityContext" . | nindent 8 }}
       containers:
       - name: frontend
-        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
+        image: {{ include "bigipreport.image" (dict "repository" .Values.frontend.image.repository "tag" .Values.frontend.image.tag "appVersion" .Chart.AppVersion) | quote }}
         ports:
         - name: http
           containerPort: 8080
@@ -29,6 +33,10 @@ spec:
           - name: bigipreport-underlay
             mountPath: /usr/share/nginx/html/json
             readOnly: true
+          - name: tmp
+            mountPath: /tmp
+          - name: var-log-nginx
+            mountPath: /var/log/nginx
         readinessProbe:
           httpGet:
             path: /
@@ -42,15 +50,12 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 20
         securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
+          {{- include "bigipreport.frontendContainerSecurityContext" . | nindent 10 }}
       volumes:
         - name: bigipreport-underlay
           persistentVolumeClaim:
             claimName: {{ include "bigipreport.pvcName" . }}
-      securityContext:
-        seccompProfile:
-          type: RuntimeDefault
-        runAsNonRoot: true
+        - name: tmp
+          emptyDir: {}
+        - name: var-log-nginx
+          emptyDir: {}

@@ -22,14 +22,11 @@ spec:
             {{- include "bigipreport.labels" . | nindent 12 }}
             app.kubernetes.io/component: data-collector
         spec:
+          automountServiceAccountToken: false
+          enableServiceLinks: false
           hostname: {{ include "bigipreport.fullname" . }}-data-collector
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-            fsGroup: 2000
-            seccompProfile:
-              type: RuntimeDefault
+            {{- include "bigipreport.dataCollectorPodSecurityContext" . | nindent 12 }}
           affinity:
             podAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
@@ -39,7 +36,7 @@ spec:
                   topologyKey: kubernetes.io/hostname
           containers:
           - name: bigipreport
-            image: "{{ .Values.dataCollector.image.repository }}:{{ .Values.dataCollector.image.tag | default .Chart.AppVersion }}"
+            image: {{ include "bigipreport.image" (dict "repository" .Values.dataCollector.image.repository "tag" .Values.dataCollector.image.tag "appVersion" .Chart.AppVersion) | quote }}
             resources:
               {{- toYaml .Values.dataCollector.resources | nindent 14 }}
             env:
@@ -55,17 +52,21 @@ spec:
                   key: F5_PASSWORD
             - name: REPORT_ROOT
               value: /opt/bigipreport/
+            - name: HOME
+              value: /tmp
+            - name: TMPDIR
+              value: /tmp
             volumeMounts:
               - name: bigipreport-underlay
                 mountPath: /opt/bigipreport/json
               - name: configuration
                 mountPath: /opt/bigipreport/data-collector/bigipreportconfig.xml
                 subPath: bigipreportconfig.xml
+                readOnly: true
+              - name: tmp
+                mountPath: /tmp
             securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                - ALL
+              {{- include "bigipreport.dataCollectorContainerSecurityContext" . | nindent 14 }}
           restartPolicy: Never
           volumes:
             - name: bigipreport-underlay
@@ -74,3 +75,5 @@ spec:
             - name: configuration
               configMap:
                 name: {{ .Values.config.existingConfigMap | default (include "bigipreport.configMapName" .) }}
+            - name: tmp
+              emptyDir: {}

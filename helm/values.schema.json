@@ -4,6 +4,30 @@
   "additionalProperties": true,
   "properties": {
     "validateResources": { "type": "boolean" },
+    "podSecurity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "frontend": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runAsUser": { "type": "integer", "minimum": 1 },
+            "runAsGroup": { "type": "integer", "minimum": 1 },
+            "fsGroup": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "dataCollector": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runAsUser": { "type": "integer", "minimum": 1 },
+            "runAsGroup": { "type": "integer", "minimum": 1 },
+            "fsGroup": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
     "config": {
       "type": "object",
       "additionalProperties": false,

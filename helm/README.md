@@ -114,6 +114,30 @@ helm template bigipreport ./helm \
 | `frontend.resources` | Frontend CPU/memory requests and limits | see `values.yaml` |
 | `persistentStorage.size` | PVC size | `100Mi` |
 | `persistentStorage.storageClassName` | PVC `storageClassName`; empty uses cluster default | `""` |
+| `ingress.enabled` | Expose the UI via Ingress | `true` |
+| `ingress.host` | Ingress hostname | `bigipreport.site.com` |
+| `ingress.tls` | Enable HTTPS on the Ingress | `false` |
+| `ingress.tlsSecretName` | Name of an **existing** TLS Secret (only when cert-manager is off) | `""` |
+| `ingress.certManager.enabled` | Issue a cert via cert-manager (`<release>-bigipreport-tls` secret) | `false` |
+| `ingress.certManager.clusterIssuer` | `ClusterIssuer` name (e.g. `letsencrypt-prod`) | `""` |
+| `ingress.certManager.issuer` | Namespaced `Issuer` name (use instead of `clusterIssuer`) | `""` |
+
+### TLS with cert-manager
+
+When [cert-manager](https://cert-manager.io/) is installed in the cluster, the chart requests a certificate and wires the Ingress to the generated Secret `<release>-bigipreport-tls`. Do not set `ingress.tlsSecretName` in that mode — use it only for a cert you manage yourself:
+
+```yaml
+ingress:
+  enabled: true
+  host: bigipreport.example.com
+  className: cilium
+  tls: true
+  certManager:
+    enabled: true
+    clusterIssuer: letsencrypt-prod
+```
+
+Use `issuer` instead of `clusterIssuer` for a namespaced Issuer. The TLS Secret is created by cert-manager; with `validateResources: true` the chart does not require the Secret to exist before install.
 
 **Fixed in templates (not in `values.yaml`):** Service listens on **port 80** (target frontend 8080); CronJob keeps `successfulJobsHistoryLimit` 1, `failedJobsHistoryLimit` 10, `startingDeadlineSeconds` 300.
 

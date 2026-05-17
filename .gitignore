@@ -33,6 +33,5 @@ frontend/underlay/js/Interfaces/
 frontend/underlay/js/PoolDetails/
 frontend/underlay/js/MemberPolling/
 
-# Helm
-helm/templates/ciliumnetworkpolicy.yaml
-helm/test-values.yaml
+#Cursor
+.cursor/rules/*.mdc

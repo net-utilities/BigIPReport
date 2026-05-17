@@ -1,7 +1,7 @@
 # Local stack for BigIPReport frontend + scheduled data collector.
 #
 # Prerequisites:
-#   1. Edit data-collector/bigipreportconfig.xml (device groups, etc.).
+#   1. Edit config/bigipreportconfig.xml (device groups, etc.; copy from data-collector/ if needed).
 #   2. Create credential secret files (not committed; see .gitignore):
 #        mkdir -p secrets
 #        printf '%s' 'your-user'  > secrets/f5_username

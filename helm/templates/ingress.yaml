@@ -1,4 +1,5 @@
 {{- if .Values.ingress.enabled }}
+{{- $tlsSecret := include "bigipreport.ingressTlsSecretName" . }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -13,11 +14,11 @@ metadata:
   {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className | quote }}
-  {{- if and .Values.ingress.tls .Values.ingress.tlsSecretName }}
+  {{- if and .Values.ingress.tls $tlsSecret }}
   tls:
     - hosts:
         - {{ .Values.ingress.host | quote }}
-      secretName: {{ .Values.ingress.tlsSecretName | quote }}
+      secretName: {{ $tlsSecret | quote }}
   {{- end }}
   rules:
     - host: {{ .Values.ingress.host | quote }}

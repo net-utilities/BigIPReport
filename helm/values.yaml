@@ -57,8 +57,18 @@ ingress:
   enabled: true
   className: ""
   host: bigipreport.site.com
-  tls: true
+  # Enable HTTPS on the Ingress.
+  tls: false
+  # Existing TLS Secret (only when certManager.enabled is false).
   tlsSecretName: ""
+  # Issue a TLS cert via cert-manager (secret: <release>-bigipreport-tls).
+  certManager:
+    enabled: false
+    # Use clusterIssuer or issuer, not both.
+    clusterIssuer: ""
+    issuer: ""
+    # Extra SANs in addition to ingress.host
+    dnsNames: []
 
 persistentStorage:
   size: 100Mi

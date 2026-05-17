@@ -1,1 +1,2 @@
+{{- $_ := include "bigipreport.validateIngressCertManager" . -}}
 {{- $_ := include "bigipreport.validatePrerequisites" . -}}

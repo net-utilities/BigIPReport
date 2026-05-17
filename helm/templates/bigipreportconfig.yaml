@@ -11,5 +11,5 @@ metadata:
     {{- include "bigipreport.labels" . | nindent 4 }}
 data:
   bigipreportconfig.xml: |
-{{ .Values.config.xml | nindent 4 }}
+{{- .Values.config.xml | trim | nindent 4 }}
 {{- end }}
