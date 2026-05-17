@@ -76,16 +76,29 @@ jobs:
           echo "pkg=${PKG}" >> "${GITHUB_OUTPUT}"
 
       - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body: |
-            ## Classic Linux install
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          PKG="${{ steps.archive.outputs.pkg }}"
 
-            Download `${{ steps.archive.outputs.pkg }}.tar.gz` and follow the installation guide:
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release exists; uploading assets only (body unchanged)"
+            gh release upload "$TAG" --clobber "${PKG}.tar.gz" SHA256SUMS
+          else
+            echo "Creating release with default install notes"
+            NOTES_FILE="$(mktemp)"
+            cat >"$NOTES_FILE" <<EOF
+## Classic Linux install
 
-            https://loadbalancing.se/bigipreport-rest/
-          files: |
-            ${{ steps.archive.outputs.pkg }}.tar.gz
-            SHA256SUMS
+Download \`${PKG}.tar.gz\` and follow the installation guide:
+
+https://loadbalancing.se/bigipreport-rest/
+EOF
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes-file "$NOTES_FILE" \
+              "${PKG}.tar.gz" SHA256SUMS
+            rm -f "$NOTES_FILE"
+          fi
