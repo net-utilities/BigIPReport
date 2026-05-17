@@ -10,6 +10,7 @@
 .vscode
 
 node_modules
+dist/
 
 frontend/underlay/json/*.json
 frontend/underlay/web.config
@@ -35,3 +36,6 @@ frontend/underlay/js/MemberPolling/
 
 #Cursor
 .cursor/rules/*.mdc
+
+# Temporary support scripts
+scripts/*

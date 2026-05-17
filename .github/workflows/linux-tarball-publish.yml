@@ -1,0 +1,91 @@
+name: Publish Linux release tarball
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release-approval:
+    runs-on: ubuntu-24.04
+    environment: release
+    steps:
+      - name: Release approved
+        run: echo "Environment 'release' approved; publishing Linux tarball."
+
+  build-tarball:
+    needs: release-approval
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+
+      - name: Stage release tree and create archive
+        id: archive
+        run: |
+          set -euo pipefail
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          PKG="bigipreport-v${VERSION}"
+          STAGING="dist/${PKG}"
+
+          CONTRIB_SUBDIRS=(
+            apache
+            HelpScripts
+            iis
+            PoolStatusiRule
+            ServeBrotliViaF5
+          )
+
+          rm -rf "$STAGING"
+          mkdir -p "$STAGING/modules" "$STAGING/other" "$STAGING/underlay/json"
+
+          cp "data-collector/bigipreport.ps1" "${STAGING}/${PKG}.ps1"
+          cp "data-collector/bigipreportconfig.xml" "${STAGING}/bigipreportconfig.xml"
+          cp -R data-collector/modules/. "${STAGING}/modules/"
+
+          for subdir in "${CONTRIB_SUBDIRS[@]}"; do
+            cp -R "contrib/${subdir}" "${STAGING}/other/${subdir}"
+          done
+
+          rsync -a \
+            --exclude 'json' \
+            --exclude 'cert.pem' \
+            --exclude 'key.pem' \
+            --exclude '.DS_Store' \
+            frontend/underlay/ "${STAGING}/underlay/"
+          touch "${STAGING}/underlay/json/.gitkeep"
+
+          tar czf "${PKG}.tar.gz" -C dist "${PKG}"
+          sha256sum "${PKG}.tar.gz" > SHA256SUMS
+          echo "pkg=${PKG}" >> "${GITHUB_OUTPUT}"
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: |
+            ## Classic Linux install
+
+            Download `${{ steps.archive.outputs.pkg }}.tar.gz` and follow the installation guide:
+
+            https://loadbalancing.se/bigipreport-rest/
+          files: |
+            ${{ steps.archive.outputs.pkg }}.tar.gz
+            SHA256SUMS
