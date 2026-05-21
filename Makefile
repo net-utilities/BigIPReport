@@ -31,11 +31,26 @@ HELM              := helm
 HELM_POD_LABELS := app.kubernetes.io/instance=$(HELM_RELEASE)
 LOG_TAIL          ?= 100
 
+DOCS_DIR          := $(ROOT_DIR)docs
+JEKYLL_IMAGE      ?= jekyll/builder:latest
+DOCS_PORT         ?= 4000
+DOCS_BASEURL      ?= /BigIPReport
+# jekyll/builder defaults BUNDLE_* to /usr/local/bundle; override so gems persist under docs/vendor/bundle.
+JEKYLL_ENV        := -e BUNDLE_PATH=/site/vendor/bundle -e BUNDLE_APP_CONFIG=/site/.bundle
+JEKYLL_DOCKER     := docker run --rm \
+	-v '$(DOCS_DIR):/site' \
+	-w /site \
+	$(JEKYLL_ENV) \
+	'$(JEKYLL_IMAGE)' \
+	bash -lc
+JEKYLL_BUNDLE     := bundle config set --local path vendor/bundle && (bundle check || bundle install)
+
 .PHONY: help check-helm check-kubectl check-config check-helm-values \
         helm-lint helm-template helm-template-file helm-images \
         helm-install helm-upgrade helm-uninstall helm-clean-jobs \
         helm-describe-frontend helm-describe-data-collector \
-        helm-logs-frontend helm-logs-data-collector docker-reset
+        helm-logs-frontend helm-logs-data-collector docker-reset \
+        check-docker docs-serve docs-build docs-clean
 
 help: ## Show testing targets for the Helm chart
 	@echo "BigIPReport — Helm chart testing (local repo only; not for production)"
@@ -127,6 +142,30 @@ helm-logs-frontend: check-kubectl ## kubectl logs from frontend pods (LOG_TAIL=1
 helm-logs-data-collector: check-kubectl ## kubectl logs from data-collector job pods (LOG_TAIL=100; ARGS=-f to follow)
 	$(KUBECTL) logs -l '$(HELM_POD_LABELS),app.kubernetes.io/component=data-collector' --tail=$(LOG_TAIL) --prefix $(ARGS)
 
+check-docker: ## Verify docker is on PATH
+	@command -v docker >/dev/null 2>&1 || { \
+		echo "error: docker is required (https://docs.docker.com/get-docker/)"; \
+		exit 1; \
+	}
+
+docs-serve: check-docker ## Serve Jekyll docs at http://localhost:4000/BigIPReport/ (DOCS_PORT=4000)
+	@echo "Serving docs at http://localhost:$(DOCS_PORT)$(DOCS_BASEURL)/ (Ctrl+C to stop)"
+	docker run --rm -it \
+		-v '$(DOCS_DIR):/site' \
+		-w /site \
+		$(JEKYLL_ENV) \
+		-p '$(DOCS_PORT):4000' \
+		'$(JEKYLL_IMAGE)' \
+		bash -lc '$(JEKYLL_BUNDLE) && bundle exec jekyll serve --host 0.0.0.0 --baseurl "$(DOCS_BASEURL)" --livereload'
+
+docs-build: check-docker ## Build Jekyll docs site to docs/_site
+	$(JEKYLL_DOCKER) '$(JEKYLL_BUNDLE) && bundle exec jekyll build --baseurl "$(DOCS_BASEURL)"'
+	@echo "wrote $(DOCS_DIR)/_site"
+
+docs-clean: ## Remove local docs build output
+	rm -rf '$(ROOT_DIR)site' '$(DOCS_DIR)/_site' '$(DOCS_DIR)/.bundle' '$(DOCS_DIR)/vendor' \
+		'$(DOCS_DIR)/Gemfile.lock'
+
 docker-reset: ## Stop docker compose and remove volumes (prompts; deletes all report data)
 	@set -e; \
 	cd '$(ROOT_DIR)'; \
@@ -143,4 +182,4 @@ docker-reset: ## Stop docker compose and remove volumes (prompts; deletes all re
 	read -r -p "Press Enter to continue, or Ctrl+C to cancel: " _ </dev/tty; \
 	echo "Stopping containers and removing volumes..."; \
 	docker compose down -v --remove-orphans; \
-	echo "Done. Start again with: docker compose up -d --build"
+	echo "Done. Start again with: docker compose up -d"

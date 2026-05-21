@@ -16,7 +16,7 @@ Demo can be shown here:
 
 Installation instructions are available here:
 
-[https://loadbalancing.se/bigipreport-rest/](https://loadbalancing.se/bigipreport-rest/)
+[https://net-utilities.github.io/BigIPReport/](https://net-utilities.github.io/BigIPReport/)
 
 DevCentral codeshare:
 
