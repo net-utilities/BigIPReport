@@ -6,7 +6,7 @@ on:
       - 'docs/**'
       - '.github/workflows/docs.yml'
   push:
-    branches: ['main']
+    branches: ['master']
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'
