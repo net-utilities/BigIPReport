@@ -39,3 +39,10 @@ frontend/underlay/js/MemberPolling/
 
 # Temporary support scripts
 scripts/*
+
+# Jekyll docs preview / docs-build
+site/
+docs/_site
+docs/.bundle
+docs/vendor
+docs/Gemfile.lock

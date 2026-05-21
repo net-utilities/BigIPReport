@@ -8,21 +8,26 @@
 #        printf '%s' 'your-pass'  > secrets/f5_password
 #      chmod 600 secrets/f5_*
 #
-# Usage:
+# Usage (published images from ghcr.io):
+#   docker compose up -d
+#
+# Build from local source instead (optional):
 #   docker compose up -d --build
 #
-# Interval: COLLECT_INTERVAL_MINUTES in .env (default 30;)
+# Images: ghcr.io/...:latest (published on release; pin a version in image: if you need a fixed tag)
+# Collection period: COLLECT_INTERVAL_MINUTES on data-collector (minutes between run starts; edit to change)
 # UI: http://localhost:8080
 
 services:
   data-collector:
+    image: ghcr.io/net-utilities/bigipreport-data-collector:latest
     build:
       context: ./data-collector
       dockerfile: Dockerfile
     entrypoint: ["/opt/bigipreport/data-collector/collect-loop.sh"]
     environment:
       REPORT_ROOT: /opt/bigipreport/
-      COLLECT_INTERVAL_MINUTES: ${COLLECT_INTERVAL_MINUTES:-1}
+      COLLECT_INTERVAL_MINUTES: 30
     secrets:
       - f5_username
       - f5_password
@@ -32,6 +37,7 @@ services:
     restart: unless-stopped
 
   frontend:
+    image: ghcr.io/net-utilities/bigipreport-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

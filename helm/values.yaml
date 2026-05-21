@@ -1,30 +1,34 @@
-# Defaults for a typical install. Uncommon options (name overrides, pull secrets,
-# extra labels, NetworkPolicy, CronJob history, etc.) are not listed here — see
-# "Advanced customization" in README.md.
+# Defaults for a typical install. Advanced options (nameOverride, imagePullSecrets,
+# extra labels, pod security contexts, etc.) are documented in helm/README.md.
 
-
-# This is where the bigipreportconfig.xml file is stored
-# When installing the chart you have two options:
-# 1. Use the --set-file config.xml=./bigipreportconfig.xml option which 
-#    will put the content if ./bigipreportconfig.xml into the config.xml field
-#    and create a ConfigMap with the name <release>-bigipreport-config
-# 2. Use the existingConfigMap option which will use the ConfigMap with the
-#    name <existingConfigMap>
+# -----------------------------------------------------------------------------
+# bigipreportconfig.xml (device list, optional tuning — not F5 credentials)
+# -----------------------------------------------------------------------------
 config:
-  # Required unless existingConfigMap is set. Prefer: --set-file config.xml=./bigipreportconfig.xml
+  # Full XML content. Required unless existingConfigMap is set.
+  # Prefer at install time: helm upgrade --install ... --set-file config.xml=./bigipreportconfig.xml
   xml: ""
+  # Name of a ConfigMap you manage yourself (key must be bigipreportconfig.xml).
+  # When set, the chart does not create a ConfigMap and config.xml is ignored.
   existingConfigMap: ""
 
-# When true, helm install/upgrade checks the cluster for prerequisite Secrets and
-# ConfigMaps (requires API access; leave false for offline helm template / lint).
+# When true, helm install/upgrade queries the cluster API to verify prerequisites
+# (F5 Secret, optional ConfigMap / TLS Secret) before applying manifests.
+# Leave false for offline helm template / helm lint (no cluster required).
 validateResources: false
 
+# -----------------------------------------------------------------------------
+# Data collector (CronJob — runs bigipreport.ps1 on a schedule)
+# -----------------------------------------------------------------------------
 dataCollector:
   image:
     repository: ghcr.io/net-utilities/bigipreport-data-collector
+    # Empty uses Chart.yaml appVersion (e.g. 5.7.0). Set to pin or override (e.g. latest).
     tag: ""
+  # Cron expression. Default: every 30 minutes.
   schedule: "*/30 * * * *"
   secret:
+    # Kubernetes Secret in the release namespace with keys F5_USERNAME and F5_PASSWORD.
     name: bigipreport-secrets
   resources:
     requests:
@@ -33,14 +37,23 @@ dataCollector:
     limits:
       memory: 1024Mi
       cpu: "1"
+  # Forbid: do not start a new Job if the previous one is still running.
   concurrencyPolicy: Forbid
+  # Kill the Job if it runs longer than this (seconds). Large estates may need more.
   activeDeadlineSeconds: 1800
+  # Retries per Job before marking failed.
   backoffLimit: 1
+  # How many failed collector Jobs to keep for kubectl logs (successful history is fixed at 1).
   failedJobsHistoryLimit: 3
 
+# -----------------------------------------------------------------------------
+# Frontend (nginx — serves static UI and reads JSON from the shared volume)
+# -----------------------------------------------------------------------------
 frontend:
+  # Must stay 1: PVC is ReadWriteOnce and collector Jobs require pod affinity to this pod.
   replicas: 1
   service:
+    # ClusterIP (in-cluster), NodePort, or LoadBalancer.
     type: ClusterIP
   image:
     repository: ghcr.io/net-utilities/bigipreport-frontend
@@ -53,31 +66,45 @@ frontend:
       memory: 256Mi
       cpu: "1"
 
+# -----------------------------------------------------------------------------
+# Ingress (optional external URL for the UI)
+# -----------------------------------------------------------------------------
 ingress:
   enabled: true
+  # IngressClass name (e.g. nginx, cilium). Empty uses the cluster default class.
   className: ""
   host: bigipreport.site.com
-  # Enable HTTPS on the Ingress.
+  # When true, Ingress references a TLS Secret (see tlsSecretName or certManager).
   tls: false
-  # Existing TLS Secret (only when certManager.enabled is false).
+  # Existing TLS Secret in the namespace (only when certManager.enabled is false).
   tlsSecretName: ""
-  # Issue a TLS cert via cert-manager (secret: <release>-bigipreport-tls).
   certManager:
+    # Request a certificate via cert-manager; creates Secret <release-fullname>-tls.
     enabled: false
-    # Use clusterIssuer or issuer, not both.
+    # ClusterIssuer name (cluster-wide). Set clusterIssuer or issuer, not both.
     clusterIssuer: ""
+    # Namespaced Issuer name (alternative to clusterIssuer).
     issuer: ""
-    # Extra SANs in addition to ingress.host
+    # Additional DNS names on the certificate besides ingress.host.
     dnsNames: []
 
+# -----------------------------------------------------------------------------
+# Shared JSON storage (collector writes, frontend reads)
+# -----------------------------------------------------------------------------
 persistentStorage:
   size: 100Mi
+  # Storage class for the RWO PVC. Empty uses the cluster default StorageClass.
   storageClassName: ""
 
-# Pick one egress mechanism for the data collector (BIG-IP API access).
+# -----------------------------------------------------------------------------
+# Egress for collector → BIG-IP management HTTPS (port 443)
+# Enable at most one mechanism that fits your cluster. Hosts/CIDRs should match
+# <Device> and <StatusVip> hostnames in bigipreportconfig.xml.
+# -----------------------------------------------------------------------------
 egress:
   cilium:
     enabled: false
+    # Required when enabled. FQDN entries for Cilium toEntities / matchName / matchPattern.
     hosts: []
     # - matchName: bigip-01.example.com
     # - matchPattern: "*.example.com"
@@ -85,9 +112,9 @@ egress:
       - port: 443
         protocol: TCP
   istio:
-    enabled: false
     serviceEntry:
       enabled: false
+      # Required when enabled. Hosts for the ServiceEntry (BIG-IP management names).
       hosts: []
       # - matchName: bigip-01.example.com
   networkPolicy:
@@ -95,5 +122,6 @@ egress:
     ports:
       - port: 443
         protocol: TCP
+    # Required when enabled. CIDR blocks allowed for egress (management IPs or networks).
     cidrs: []
     # - 203.0.113.10/32

@@ -1,0 +1,22 @@
+title: BigIPReport
+description: BigIP LTM configuration report (REST)
+theme: just-the-docs
+color_scheme: tactile
+
+url: https://net-utilities.github.io
+baseurl: /BigIPReport
+
+aux_links:
+  GitHub: https://github.com/net-utilities/BigIPReport
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-github-metadata
+
+github:
+  repository: net-utilities/BigIPReport
+
+markdown: kramdown
+kramdown:
+  input: GFM
