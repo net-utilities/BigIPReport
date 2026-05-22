@@ -52,5 +52,8 @@
   },
   "dependencies": {
     "http-server": "^13.1.0"
+  },
+  "overrides": {
+    "serialize-javascript": "7.0.5"
   }
 }
