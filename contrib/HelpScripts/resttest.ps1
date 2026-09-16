@@ -54,5 +54,12 @@ Get-AuthToken $Device $userpass
 $Response2 = Invoke-WebRequest -WebSession $Session -Uri "https://$Device/mgmt/tm/sys/global-settings" | ConvertFrom-Json -AsHashtable
 "Hostname is: " + $Response2.hostname
 
-$null = Invoke-WebRequest -WebSession $Session -Method "DELETE" -Uri ("https://$Device/mgmt/shared/authz/tokens/" + $Session.Headers["X-F5-Auth-Token"]) | ConvertFrom-Json -AsHashtable
+try {
+    $DeleteResponse = Invoke-WebRequest -WebSession $Session -Method "DELETE" -Uri ("https://$Device/mgmt/shared/authz/tokens/" + $Session.Headers["X-F5-Auth-Token"])
+    if ($DeleteResponse.StatusCode -ne 200) {
+        Write-Host "Warning: Token deletion may have failed. Status code: $($DeleteResponse.StatusCode)"
+    }
+} catch {
+    Write-Host "Warning: Failed to delete auth token for $Device. The token may remain valid: $_"
+}
 
