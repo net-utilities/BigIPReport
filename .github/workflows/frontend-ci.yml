@@ -145,12 +145,22 @@ jobs:
       - name: Copy json data files to underlay
         run: 'mkdir -p frontend/underlay/json && cp frontend/cypress/fixtures/* frontend/underlay/json/'
 
+      # Started here rather than via the action's start/wait-on: its readiness
+      # check (got) rejects the self-signed cert regardless of
+      # NODE_TLS_REJECT_UNAUTHORIZED.
+      - name: Start test server
+        working-directory: frontend
+        run: |
+          nohup npm run start > http-server.log 2>&1 &
+          if ! timeout 60 bash -c 'until curl -ksf -o /dev/null https://localhost:8443; do sleep 1; done'; then
+            cat http-server.log
+            exit 1
+          fi
+
       - name: Cypress run
         uses: cypress-io/github-action@c541a95ea92d9239347a2355f2e895cd4b3f8060 # v7.4.6
         with:
           install: false
-          start: npm run start
-          wait-on: https://localhost:8443
           working-directory: frontend
           config-file: cypress.config.ts
         env:
