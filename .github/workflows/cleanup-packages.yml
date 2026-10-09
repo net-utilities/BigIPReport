@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 3 * * 0"  # Every Sunday at 03:00 UTC
   workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Only log what would be deleted"
+        type: boolean
+        default: true
 
 permissions:
   contents: none
@@ -21,19 +26,16 @@ jobs:
           - charts/bigipreport
 
     steps:
-      - name: Delete untagged versions older than 30 days
-        uses: actions/delete-package-versions@v5
+      # Only PR preview tags (pr-N, sha-xxxxxxx, chart 0.0.0-sha.xxxxxxx) and
+      # untagged versions are removed. Release tags and latest are always kept,
+      # as are platform/attestation children of kept images.
+      - name: Delete PR preview and untagged versions older than 30 days
+        uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          package-name: ${{ matrix.package }}
-          package-type: container
-          min-versions-to-keep: 0
-          delete-only-untagged-versions: true
-
-      - name: Delete non-release tagged versions older than 30 days
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ matrix.package }}
-          package-type: container
-          min-versions-to-keep: 5
-          ignore-versions: "^v?\\d+\\.\\d+(\\.\\d+)?$"
-          older-than: 30
+          package: ${{ matrix.package }}
+          use-regex: true
+          delete-tags: '^(pr-\d+|sha-[0-9a-f]+|0\.0\.0-sha\.[0-9a-f]+)$'
+          exclude-tags: '^v?\d+\.\d+(\.\d+)?$|^latest$'
+          delete-untagged: true
+          older-than: 30 days
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
