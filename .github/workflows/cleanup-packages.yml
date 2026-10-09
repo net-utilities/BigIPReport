@@ -30,7 +30,7 @@ jobs:
       # untagged versions are removed. Release tags and latest are always kept,
       # as are platform/attestation children of kept images.
       - name: Delete PR preview and untagged versions older than 30 days
-        uses: dataaxiom/ghcr-cleanup-action@v1
+        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
         with:
           package: ${{ matrix.package }}
           use-regex: true
