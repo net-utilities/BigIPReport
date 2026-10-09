@@ -4,6 +4,16 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to rebuild (e.g. v5.8.5)"
+        required: true
+        type: string
+      latest:
+        description: "Also move the latest tag to this release"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -14,6 +24,13 @@ jobs:
     runs-on: ubuntu-24.04
     environment: release
     steps:
+      - name: Validate tag input
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Invalid tag: $TAG"; exit 1; }
+
       - name: Release approved
         run: echo "Environment 'release' approved; publishing container images."
 
@@ -32,6 +49,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -50,10 +69,13 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             # Git tag is v* (keep that). Publish both bare semver and v-prefixed image tags for pulls either way.
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}.{{minor}}
+            # On manual rebuilds the version comes from the tag input instead of the ref.
+            type=semver,pattern={{version}},value=${{ inputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }}
+            type=semver,pattern=v{{version}},value=${{ inputs.tag }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ inputs.tag }}
+          flavor: |
+            latest=${{ github.event_name == 'push' && 'auto' || inputs.latest }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
