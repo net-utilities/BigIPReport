@@ -145,12 +145,19 @@ jobs:
       - name: Copy json data files to underlay
         run: 'mkdir -p frontend/underlay/json && cp frontend/cypress/fixtures/* frontend/underlay/json/'
 
+      - name: Start test server
+        working-directory: frontend
+        run: |
+          nohup npm run start > http-server.log 2>&1 &
+          if ! timeout 60 bash -c 'until curl -ksf -o /dev/null https://localhost:8443; do sleep 1; done'; then
+            cat http-server.log
+            exit 1
+          fi
+
       - name: Cypress run
         uses: cypress-io/github-action@f790eee7a50d9505912f50c2095510be7de06aa7 # v6.10.9
         with:
           install: false
-          start: npm run start
-          wait-on: https://localhost:8443
           working-directory: frontend
           config-file: cypress.config.ts
         env:

@@ -69,8 +69,6 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             # Git tag is v* (keep that). Publish both bare semver and v-prefixed image tags for pulls either way.
-            # On manual rebuilds the version comes from the tag input instead of the ref,
-            # and the floating X.Y tags only move when latest is requested.
             type=semver,pattern={{version}},value=${{ inputs.tag }}
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }},enable=${{ github.event_name == 'push' || inputs.latest }}
             type=semver,pattern=v{{version}},value=${{ inputs.tag }}
