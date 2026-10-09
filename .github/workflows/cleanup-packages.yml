@@ -35,7 +35,7 @@ jobs:
           package: ${{ matrix.package }}
           use-regex: true
           delete-tags: '^(pr-\d+|sha-[0-9a-f]+|0\.0\.0-sha\.[0-9a-f]+)$'
-          exclude-tags: '^v?\d+\.\d+(\.\d+)?$|^latest$'
+          exclude-tags: '^v?\d+\.\d+$|^v?\d+\.\d+\.\d+$|^latest$'
           delete-untagged: true
           older-than: 30 days
           dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
