@@ -10,5 +10,7 @@ RUN mkdir -p /opt/bigipreport/json \
 COPY --chown=bigipreport:bigipreport bigipreport.ps1 ./data-collector/bigipreport.ps1
 COPY --chown=bigipreport:bigipreport modules/ ./data-collector/modules/
 COPY --chmod=755 --chown=bigipreport:bigipreport collect-loop.sh ./data-collector/collect-loop.sh
+ARG BIGIPREPORT_VERSION=dev
+ENV BIGIPREPORT_VERSION=${BIGIPREPORT_VERSION}
 USER bigipreport
 ENTRYPOINT ["pwsh", "-File", "/opt/bigipreport/data-collector/bigipreport.ps1"]

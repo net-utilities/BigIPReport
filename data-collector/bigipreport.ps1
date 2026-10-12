@@ -62,7 +62,7 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
 }
 
 #Script version
-$Global:ScriptVersion = "5.7.16"
+$Global:ScriptVersion = if ($env:BIGIPREPORT_VERSION) { $env:BIGIPREPORT_VERSION } else { "dev" }
 
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
