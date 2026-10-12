@@ -5,10 +5,11 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY webpack.config.cjs tsconfig.json ./
 COPY src ./src
-RUN npm run build
+COPY underlay ./underlay
+RUN npm run build \
+    && sed -i "s#js/bigipreport.js#js/bigipreport.js?v=$(sha256sum underlay/js/bigipreport.js | cut -c1-12)#" underlay/index.html
 
 FROM nginxinc/nginx-unprivileged:1.29-alpine
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
-COPY underlay/ /usr/share/nginx/html/
-COPY --from=builder /app/underlay/js/bigipreport.js /usr/share/nginx/html/js/bigipreport.js
+COPY --from=builder /app/underlay/ /usr/share/nginx/html/
