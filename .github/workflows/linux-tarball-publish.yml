@@ -56,6 +56,8 @@ jobs:
           mkdir -p "$STAGING/modules" "$STAGING/other" "$STAGING/underlay/json"
 
           cp "data-collector/bigipreport.ps1" "${STAGING}/${PKG}.ps1"
+          sed -i -E 's/^\$Global:ScriptVersion = .*/$Global:ScriptVersion = "'"${VERSION}"'"/' "${STAGING}/${PKG}.ps1"
+          grep -qF "\$Global:ScriptVersion = \"${VERSION}\"" "${STAGING}/${PKG}.ps1"
           cp "data-collector/bigipreportconfig.xml" "${STAGING}/bigipreportconfig.xml"
           cp -R data-collector/modules/. "${STAGING}/modules/"
 
