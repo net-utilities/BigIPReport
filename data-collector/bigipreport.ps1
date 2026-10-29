@@ -61,9 +61,6 @@ if ([IO.Directory]::GetCurrentDirectory() -ne $PSScriptRoot) {
     [IO.Directory]::SetCurrentDirectory($PSScriptRoot)
 }
 
-#Script version
-$Global:ScriptVersion = if ($env:BIGIPREPORT_VERSION) { $env:BIGIPREPORT_VERSION } else { "dev" }
-
 #Variable used to calculate the time used to generate the report.
 $Global:StartTime = Get-Date
 
@@ -177,6 +174,28 @@ if (Test-Path $ConfigurationFile) {
     log error "Failed to load config file $ConfigurationFile from $PSScriptRoot. Aborting."
     Exit
 }
+
+Function Get-ScriptVersion {
+    if ($env:BIGIPREPORT_VERSION) { return $env:BIGIPREPORT_VERSION }
+
+    $RepoRoot = Split-Path $PSScriptRoot -Parent
+    if (-not (Test-Path (Join-Path $RepoRoot ".git"))) { return "dev" }
+
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        log warning "Running from a git checkout but git is not in PATH, reporting version as dev"
+        return "dev"
+    }
+
+    $Described = git -C $PSScriptRoot describe --tags --match 'v*' 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        log warning "git describe failed, reporting version as dev: $Described"
+        return "dev"
+    }
+    return $Described -replace '^v', ''
+}
+
+#Script version
+$Global:ScriptVersion = Get-ScriptVersion
 
 ################################################################################
 #
